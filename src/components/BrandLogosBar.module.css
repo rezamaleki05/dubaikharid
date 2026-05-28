@@ -98,7 +98,7 @@
 
 @media (max-width: 768px) {
   .brandCard { padding: 12px 25px; min-width: 90px; }
-  .marqueeInner { animation-duration: 20s; }
+  .marqueeInner { animation-duration: 45s; }
   .marqueeTrack {
     -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
     mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
