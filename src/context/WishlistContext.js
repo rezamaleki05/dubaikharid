@@ -10,7 +10,7 @@ export function WishlistProvider({ children }) {
   // Load from localStorage on mount
   useEffect(() => {
     try {
-      const savedWishlist = localStorage.getItem('dubiShopWishlist');
+      const savedWishlist = localStorage.getItem('dubaiKharidWishlist');
       if (savedWishlist) {
         setWishlistItems(JSON.parse(savedWishlist));
       }
@@ -22,7 +22,7 @@ export function WishlistProvider({ children }) {
   // Save to localStorage when wishlist changes
   useEffect(() => {
     try {
-      localStorage.setItem('dubiShopWishlist', JSON.stringify(wishlistItems));
+      localStorage.setItem('dubaiKharidWishlist', JSON.stringify(wishlistItems));
     } catch (error) {
       console.error('Failed to save wishlist:', error);
     }

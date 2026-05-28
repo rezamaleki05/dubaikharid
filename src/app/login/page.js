@@ -120,10 +120,7 @@ export default function LoginPage() {
         <div className={styles.authCard}>
           {/* Logo Area */}
           <div className={styles.logoArea}>
-            <div className={styles.logo}>
-              <span className={styles.logoDubi}>DUBI</span>
-              <span className={styles.logoShop}>SHOP</span>
-            </div>
+            <img src="/images/logo dubai kharid.png" alt="دبی خرید" className={styles.logoImg} />
             <p className={styles.subtitle}>خرید مستقیم از بازارهای بین‌المللی دبی به ایران</p>
           </div>
 

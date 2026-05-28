@@ -62,7 +62,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     setTimeout(() => {
       // Generate standard random tracking code
       const randNum = Math.floor(10000 + Math.random() * 90000);
-      setTrackingCode(`DUBI-${randNum}`);
+      setTrackingCode(`DKHARID-${randNum}`);
       setStep(3);
       if (onCartIncrement) {
         onCartIncrement();
@@ -210,7 +210,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             </div>
 
             <p className={styles.successDesc}>
-              کارشناسان دبی شاپ ظرف حداکثر <strong>۳۰ دقیقه آینده</strong> جهت هماهنگی نهایی خرید، تأیید رنگ/سایز و صدور فاکتور نهایی و نحوه پرداخت ایمن با شماره تلفن <strong>{formData.phone}</strong> تماس خواهند گرفت.
+              کارشناسان دبی خرید ظرف حداکثر <strong>۳۰ دقیقه آینده</strong> جهت هماهنگی نهایی خرید، تأیید رنگ/سایز و صدور فاکتور نهایی و نحوه پرداخت ایمن با شماره تلفن <strong>{formData.phone}</strong> تماس خواهند گرفت.
             </p>
 
             <div className={styles.successBadges}>

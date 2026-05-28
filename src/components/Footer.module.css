@@ -25,11 +25,13 @@
 .logo {
   display: flex;
   align-items: center;
-  font-size: 1.8rem;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  gap: 2px;
   margin-bottom: 20px;
+}
+
+.logoImg {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logoMain {

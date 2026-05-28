@@ -36,19 +36,11 @@
   margin-bottom: 24px;
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: 1.5px;
-  margin-bottom: 6px;
-}
-
-.logoDubi {
-  color: #fff;
-}
-
-.logoShop {
-  color: var(--orange);
+.logoImg {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 12px;
 }
 
 .subtitle {

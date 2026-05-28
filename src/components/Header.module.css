@@ -61,6 +61,11 @@
   flex-shrink: 0;
   line-height: 1;
 }
+.logoImg {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
 .logoDubi {
   font-size: 26px;
   font-weight: 900;

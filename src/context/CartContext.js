@@ -10,7 +10,7 @@ export function CartProvider({ children }) {
   // Load from localStorage on mount
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem('dubiShopCart');
+      const savedCart = localStorage.getItem('dubaiKharidCart');
       if (savedCart) {
         setCartItems(JSON.parse(savedCart));
       }
@@ -22,7 +22,7 @@ export function CartProvider({ children }) {
   // Save to localStorage when cart changes
   useEffect(() => {
     try {
-      localStorage.setItem('dubiShopCart', JSON.stringify(cartItems));
+      localStorage.setItem('dubaiKharidCart', JSON.stringify(cartItems));
     } catch (error) {
       console.error('Failed to save cart:', error);
     }

@@ -9,12 +9,10 @@ export default function Footer() {
           <div className={styles.footerTopInner}>
             <div className={styles.aboutCol}>
               <div className={styles.logo}>
-                <span className={styles.logoMain}>DUBI</span>
-                <span className={styles.logoSub}>SHOP</span>
-                <span className={styles.logoArrow}>▶</span>
+                <img src="/images/logo dubai kharid.png" alt="دبی خرید" className={styles.logoImg} />
               </div>
               <p className={styles.aboutText}>
-                دبی شاپ به عنوان معتبرترین کارگزار خرید مستقیم از بازارهای بین‌المللی امارات و دبی، به شما امکان می‌دهد کالاهای اصل را از آمازون، نون، شین و... خریداری کرده و با کارگو اختصاصی هوایی با کمترین هزینه در ایران درب منزل دریافت کنید.
+                دبی خرید به عنوان معتبرترین کارگزار خرید مستقیم از بازارهای بین‌المللی امارات و دبی، به شما امکان می‌دهد کالاهای اصل را از آمازون، نون، شین و... خریداری کرده و با کارگو اختصاصی هوایی با کمترین هزینه در ایران درب منزل دریافت کنید.
               </p>
               <div className={styles.socials}>
                 <a href="#" aria-label="اینستاگرام">📸</a>
@@ -46,7 +44,7 @@ export default function Footer() {
               </div>
 
               <div className={styles.linksCol}>
-                <h4>تماس با دبی شاپ</h4>
+                <h4>تماس با دبی خرید</h4>
                 <p className={styles.contactItem}>
                   📍 <strong>دفتر تهران:</strong> تهران، خیابان ولیعصر، نرسیده به میدان ونک، برج نگار، طبقه ۱۵
                 </p>
@@ -67,7 +65,7 @@ export default function Footer() {
         <div className="container">
           <div className={styles.footerBottomInner}>
             <p className={styles.copyright}>
-              © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>دبی شاپ (DUBI SHOP)</strong> می‌باشد.
+              © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>دبی خرید (DUBAI KHARID)</strong> می‌باشد.
             </p>
             <div className={styles.trustLogos}>
               <span className={styles.trustBadge}>🛡️ ضمانت اصالت</span>

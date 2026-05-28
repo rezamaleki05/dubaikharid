@@ -56,8 +56,7 @@ export default function Header() {
 
             {/* Logo */}
             <a href="/" className={styles.logo}>
-              <span className={styles.logoDubi}>DUBI</span>
-              <span className={styles.logoShop}>SHOP</span>
+              <img src="/images/logo dubai kharid.png" alt="دبی خرید" className={styles.logoImg} />
             </a>
 
             {/* Search — CENTER */}
