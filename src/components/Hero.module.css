@@ -1,0 +1,203 @@
+.hero {
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* ── Background image ── */
+.bgImage {
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/headerBG .png');
+  background-size: cover;
+  background-position: center 20%;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* ── Gradient overlay ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  /* Darken right side for text, and bottom to blend with dark page background */
+  background: linear-gradient(to bottom, transparent 40%, rgba(9,3,20,0.6) 80%, rgba(0,0,0,0.9) 100%),
+              linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, transparent 100%);
+  z-index: 1;
+}
+
+/* ── Inner flex row ── */
+.inner {
+  display: flex;
+  align-items: center;
+  min-height: 480px;
+  padding: 60px 0 80px 0;
+}
+
+/* Text block takes right half */
+.content {
+  flex: 0 0 55%;
+  max-width: 55%;
+  animation: fadeUp 0.65s ease both;
+}
+
+/* Spacer (left half) = transparent to show image */
+.spacer {
+  flex: 1;
+}
+
+/* ── Breadcrumb ── */
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8a320;
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  border: 1px solid rgba(248, 163, 32, 0.3);
+  padding: 6px 16px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+}
+.breadDiamond { font-size: 16px; color: #f87820; line-height: 1; margin-top: -2px; }
+
+/* ── Title ── */
+.title {
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1.25;
+  color: #ffffff;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+}
+.highlight {
+  color: #f8a320;
+  text-shadow: 0 0 30px rgba(248,163,32,0.35), 0 2px 20px rgba(0,0,0,0.6);
+}
+
+/* ── Description ── */
+.desc {
+  font-size: 14.5px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.9;
+  margin-bottom: 32px;
+  font-weight: 400;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  max-width: 480px;
+}
+
+/* ── Buttons ── */
+.btns {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #ff8a00, #ff5722);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  padding: 12px 30px;
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 6px 24px rgba(248,120,32,0.4);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btnPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(248,120,32,0.6);
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.25);
+  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btnSecondary:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.5);
+}
+
+/* ── Stats ── */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.statIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.statText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.statNum {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+.statLabel {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 500;
+}
+.statDivider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .content { flex: 0 0 70%; max-width: 70%; }
+  .title { font-size: 34px; }
+}
+@media (max-width: 640px) {
+  .hero { min-height: 420px; }
+  .inner { min-height: 420px; padding: 40px 0 60px 0; }
+  .content { flex: 0 0 100%; max-width: 100%; }
+  .spacer { display: none; }
+  .overlay {
+    background: linear-gradient(to bottom, rgba(11,14,20,0.6) 0%, #0b0e14 100%);
+  }
+  .title { font-size: 28px; }
+  .desc { font-size: 13.5px; }
+  .stats { gap: 15px; flex-wrap: wrap; }
+}

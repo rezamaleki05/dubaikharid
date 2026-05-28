@@ -1,0 +1,106 @@
+/* Wrapper section to blend with dark theme */
+.sectionWrapper {
+  background: transparent;
+  padding: 30px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Container */
+.brandBar {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  overflow: hidden;
+  padding: 10px 0;
+  user-select: none;
+}
+
+/* Outer track — clips overflow and applies edge fade */
+.marqueeTrack {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  width: 100%;
+  direction: ltr;
+  /* Fade edges for a polished look (transparent at edges, solid in middle) */
+  -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+
+/* Inner flex row — animated */
+.marqueeInner {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  width: max-content;
+  direction: ltr;
+  /* Animate to -100% (its own full width) */
+  animation: marqueeScroll 60s linear infinite;
+}
+
+/* Pause on hover */
+.marqueeInner:hover {
+  animation-play-state: paused;
+}
+
+/* Each brand card */
+.brandCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 45px;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: #fff;
+  text-decoration: none;
+  min-width: 120px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Hover effects */
+.brandCard:hover {
+  opacity: 1;
+}
+
+/* Logo wrapper */
+.brandLogoWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #fff;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s;
+}
+
+.brandLogoWrap img, .brandLogoWrap svg {
+  max-width: 110px;
+  max-height: 42px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.brandCard:hover .brandLogoWrap {
+  transform: scale(1.08); /* Scale slightly */
+  /* Orange glow on hover */
+  filter: drop-shadow(0 0 15px rgba(248, 120, 32, 0.6)) drop-shadow(0 0 30px rgba(248, 120, 32, 0.3));
+}
+
+/* ── Marquee keyframes ── */
+@keyframes marqueeScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@media (max-width: 768px) {
+  .brandCard { padding: 12px 25px; min-width: 90px; }
+  .marqueeInner { animation-duration: 20s; }
+  .marqueeTrack {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+}
