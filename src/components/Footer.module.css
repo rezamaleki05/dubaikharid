@@ -32,6 +32,7 @@
   height: 45px;
   width: auto;
   object-fit: contain;
+  filter: brightness(0) invert(53%) sepia(91%) saturate(1874%) hue-rotate(346deg) brightness(99%) contrast(98%);
 }
 
 .logoMain {
