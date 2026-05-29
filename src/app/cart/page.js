@@ -51,7 +51,16 @@ export default function CartPage() {
       weight: totalWeight,
       category: 'shopping_cart_checkout',
       name: `سبد خرید دبی خرید شامل ${cartItems.length} محصول`,
-      brand: 'دبی خرید'
+      brand: 'دبی خرید',
+      items: cartItems.map(item => ({
+        name: item.name,
+        brand: item.brand,
+        quantity: item.quantity,
+        color: item.selectedColor || '',
+        size: item.selectedSize || '',
+        priceAed: item.priceAed,
+        discountPercent: item.discountPercent || 0
+      }))
     };
 
     setModalOrderData(orderData);

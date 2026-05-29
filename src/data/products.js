@@ -296,13 +296,58 @@ export const bagsAndAccessoriesProducts = [
   }
 ];
 
-export const getAllProducts = () => [
-  ...laptops,
-  ...trendingProducts,
-  ...menProducts,
-  ...womenProducts,
-  ...kidsProducts,
-  ...bagsAndAccessoriesProducts
-];
+export const getAllProducts = () => {
+  const base = [
+    ...laptops,
+    ...trendingProducts,
+    ...menProducts,
+    ...womenProducts,
+    ...kidsProducts,
+    ...bagsAndAccessoriesProducts
+  ];
+  return base;
+};
 
 export const getProductById = (id) => getAllProducts().find(p => p.id === id);
+
+// Self-executing localStorage dynamic product injector
+if (typeof window !== 'undefined') {
+  try {
+    const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+    if (saved) {
+      const uploaded = JSON.parse(saved);
+      uploaded.forEach(prod => {
+        if (prod && prod.id) {
+          // Flatten standard lists to check duplicates
+          const all = [
+            ...laptops,
+            ...trendingProducts,
+            ...menProducts,
+            ...womenProducts,
+            ...kidsProducts,
+            ...bagsAndAccessoriesProducts
+          ];
+          if (!all.some(p => p.id === prod.id)) {
+            // Route dynamically based on gender or category tags
+            if (prod.gender === 'men') {
+              menProducts.push(prod);
+            } else if (prod.gender === 'women') {
+              womenProducts.push(prod);
+            } else if (prod.gender === 'kids') {
+              kidsProducts.push(prod);
+            } else if (prod.category === 'electronics') {
+              laptops.push(prod);
+            } else if (prod.category === 'bags' || prod.category === 'accessories' || prod.category === 'watches_glasses' || prod.category === 'wallets_belts') {
+              bagsAndAccessoriesProducts.push(prod);
+            } else {
+              trendingProducts.push(prod);
+            }
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Error loading dynamic uploaded products:', e);
+  }
+}
+

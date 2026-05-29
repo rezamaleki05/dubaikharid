@@ -66,6 +66,7 @@ export default function Footer() {
           <div className={styles.footerBottomInner}>
             <p className={styles.copyright}>
               © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>دبی خرید (DUBAI KHARID)</strong> می‌باشد.
+              <a href="/admin" style={{ opacity: 0.3, textDecoration: 'none', color: '#fff', fontSize: '10px', marginRight: '10px' }} title="ورود به پنل مدیریت">🔑 ورود ادمین</a>
             </p>
             <div className={styles.trustLogos}>
               <span className={styles.trustBadge}>🛡️ ضمانت اصالت</span>

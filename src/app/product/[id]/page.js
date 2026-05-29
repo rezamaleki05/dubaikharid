@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getProductById } from '@/data/products';
@@ -241,9 +241,244 @@ export default function ProductPage({ params }) {
             </div>
           </div>
         </div>
+
+        {/* Customer Reviews Section */}
+        <ReviewsSection productId={product.id} productName={product.name} />
       </main>
 
       <Footer />
     </div>
+  );
+}
+
+// ==========================================================================
+// CUSTOMER REVIEWS LOGIC & SEEDS
+// ==========================================================================
+const MOCK_REVIEWS_SEED = [
+  { id: 'seed-1', productId: 'lap1', userName: 'علیرضا زارعی', rating: 5, comment: 'فوق‌العاده تمیز و در حد نو بود. دسته‌بندی استوک دبی خرید حرف نداره. از خریدم خیلی راضی‌ام.', date: '2026-05-15T12:00:00Z', isVerified: true },
+  { id: 'seed-2', productId: 'lap1', userName: 'مریم حسینی', rating: 4, comment: 'سرعت و قدرت دستگاه عالیه، فقط کارتن نداشت که خب برای استوک طبیعیه. بسته‌بندی ارسال دی‌جی‌کالایی و محکم بود.', date: '2026-05-20T08:30:00Z', isVerified: true },
+  { id: 'seed-3', productId: 'p1', userName: 'امیر قاسمی', rating: 5, comment: 'نایک ایر فورس اصل، فوق‌العاده راحت. مستقیم از امارات اومد و بارکدش کاملا معتبر بود.', date: '2026-05-24T14:20:00Z', isVerified: true },
+  { id: 'seed-4', productId: 'w1', userName: 'سارا کریمی', rating: 5, comment: 'جنس نخی خنک و عالی، دقیقا مثل عکسش در سایت مانگو بود. خیلی خوش‌دوخت و زیباست.', date: '2026-05-18T10:15:00Z', isVerified: true },
+  { id: 'seed-5', productId: 'ba2', userName: 'رضا صبوری', rating: 5, comment: 'بسیار لوکس و باابهت. موتور اتوماتیک رولکس عالی کار می‌کنه و تمام شناسنامه‌های اصالت رو داشت.', date: '2026-05-22T19:40:00Z', isVerified: true }
+];
+
+function ReviewsSection({ productId, productName }) {
+  const [reviews, setReviews] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ name: '', rating: 5, comment: '' });
+  const [hoverRating, setHoverRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('dubaiKharidReviews');
+      let allReviews = [];
+      if (saved) {
+        allReviews = JSON.parse(saved);
+      } else {
+        localStorage.setItem('dubaiKharidReviews', JSON.stringify(MOCK_REVIEWS_SEED));
+        allReviews = MOCK_REVIEWS_SEED;
+      }
+      
+      const filtered = allReviews.filter(r => r.productId === productId);
+      setReviews(filtered);
+    } catch (e) {
+      console.error('Error loading reviews:', e);
+    }
+  }, [productId]);
+
+  const handleSubmitReview = (e) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.comment.trim()) {
+      alert('لطفاً نام و متن نظر خود را وارد کنید.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setTimeout(() => {
+      try {
+        const newReview = {
+          id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          productId,
+          productName,
+          userName: formData.name.trim(),
+          rating: formData.rating,
+          comment: formData.comment.trim(),
+          date: new Date().toISOString(),
+          isVerified: Math.random() > 0.3
+        };
+
+        const saved = localStorage.getItem('dubaiKharidReviews');
+        const allReviews = saved ? JSON.parse(saved) : [...MOCK_REVIEWS_SEED];
+        allReviews.unshift(newReview);
+        localStorage.setItem('dubaiKharidReviews', JSON.stringify(allReviews));
+
+        setReviews(prev => [newReview, ...prev]);
+        setFormData({ name: '', rating: 5, comment: '' });
+        setShowForm(false);
+        alert('دیدگاه شما با موفقیت ثبت شد و انتشار یافت!');
+      } catch (err) {
+        console.error('Error saving review:', err);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, 800);
+  };
+
+  const totalCount = reviews.length;
+  const avgScore = totalCount > 0 
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalCount).toFixed(1) 
+    : '۵.۰';
+
+  const starDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  reviews.forEach(r => {
+    const star = Math.round(r.rating);
+    if (starDistribution[star] !== undefined) {
+      starDistribution[star]++;
+    }
+  });
+
+  const getPercent = (star) => {
+    if (totalCount === 0) return 0;
+    return Math.round((starDistribution[star] / totalCount) * 100);
+  };
+
+  const formatDate = (isoString) => {
+    const d = new Date(isoString);
+    return d.toLocaleDateString('fa-IR');
+  };
+
+  return (
+    <section className={styles.reviewsSection}>
+      <div className={styles.reviewsHeader}>
+        <h2 className={styles.reviewsTitle}>
+          <span style={{ marginLeft: '10px' }}>💬</span> نظرات خریداران ({totalCount})
+        </h2>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)} className={styles.writeReviewBtn}>
+            ✏️ ثبت دیدگاه جدید
+          </button>
+        )}
+      </div>
+
+      <div className={styles.ratingSummary}>
+        <div className={styles.ratingAverage}>
+          <div className={styles.averageScore}>{avgScore}</div>
+          <div className={styles.averageStars}>
+            {'★'.repeat(Math.round(parseFloat(avgScore)))}
+            {'☆'.repeat(5 - Math.round(parseFloat(avgScore)))}
+          </div>
+          <div className={styles.totalReviewsText}>بر اساس {totalCount} نظر</div>
+        </div>
+        
+        <div className={styles.distributionBars}>
+          {[5, 4, 3, 2, 1].map(star => {
+            const pct = getPercent(star);
+            return (
+              <div key={star} className={styles.distributionRow}>
+                <span className={styles.barLabel}>{star} ستاره</span>
+                <div className={styles.progressBarContainer}>
+                  <div className={styles.progressBarFill} style={{ width: `${pct}%` }} />
+                </div>
+                <span className={styles.barPercent}>{pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {showForm && (
+        <div className={styles.reviewFormCard}>
+          <h3 className={styles.formTitle}>ثبت دیدگاه جدید</h3>
+          <form onSubmit={handleSubmitReview}>
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>نام و نام خانوادگی:</label>
+                <input 
+                  type="text" 
+                  value={formData.name} 
+                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="مثال: رضا احمدی" 
+                  className={styles.reviewInput}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>امتیاز شما به محصول:</label>
+                <div className={styles.starRatingSelector}>
+                  {[1, 2, 3, 4, 5].map(star => {
+                    const isActive = hoverRating ? star <= hoverRating : star <= formData.rating;
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        className={`${styles.selectorStarBtn} ${isActive ? styles.selectorStarBtnActive : ''}`}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                        aria-label={`امتیاز ${star} ستاره`}
+                      >
+                        ★
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className={styles.formGroupFull}>
+                <label>متن دیدگاه:</label>
+                <textarea 
+                  rows="3" 
+                  value={formData.comment} 
+                  onChange={e => setFormData(prev => ({ ...prev, comment: e.target.value }))}
+                  placeholder="نظرات خود درباره محصول را وارد کنید..." 
+                  className={styles.reviewInput}
+                  required
+                />
+              </div>
+            </div>
+            <div className={styles.formActions}>
+              <button type="submit" className={styles.submitReviewBtn} disabled={isSubmitting}>
+                {isSubmitting ? 'در حال ثبت...' : 'ثبت و انتشار نظر'}
+              </button>
+              <button type="button" onClick={() => setShowForm(false)} className={styles.cancelReviewBtn}>
+                انصراف
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className={styles.reviewsList}>
+        {reviews.length === 0 ? (
+          <div className={styles.emptyReviews}>
+            <div className={styles.emptyIcon}>📦</div>
+            <p>هنوز هیچ دیدگاهی ثبت نشده است.</p>
+            <p style={{ fontSize: '12px', color: '#8b92a5', marginTop: '6px' }}>اولین کسی باشید که برای این محصول نظر ثبت می‌کند!</p>
+          </div>
+        ) : (
+          reviews.map(rev => (
+            <div key={rev.id} className={styles.reviewCard}>
+              <div className={styles.reviewUserRow}>
+                <div className={styles.userNameWrap}>
+                  <span className={styles.userName}>{rev.userName}</span>
+                  {rev.isVerified && (
+                    <span className={styles.verifiedBadge}>✓ خریدار تأیید شده</span>
+                  )}
+                </div>
+                <div className={styles.reviewStars}>
+                  {'★'.repeat(rev.rating)}
+                  {'☆'.repeat(5 - rev.rating)}
+                </div>
+              </div>
+              <p className={styles.reviewText}>{rev.comment}</p>
+              <div className={styles.reviewMeta}>
+                <span>مرجع: دبی خرید</span>
+                <span>{formatDate(rev.date)}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
   );
 }

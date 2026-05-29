@@ -67,6 +67,8 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     e.preventDefault();
     if (!validateForm()) return;
 
+    const cleanPhone = toEnglishDigits(formData.phone.trim().replace(/\s+/g, ''));
+
     // Transition to loading step
     setStep(2);
 
@@ -74,7 +76,33 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     setTimeout(() => {
       // Generate standard random tracking code
       const randNum = Math.floor(10000 + Math.random() * 90000);
-      setTrackingCode(`DKHARID-${randNum}`);
+      const tracking = `DKHARID-${randNum}`;
+      setTrackingCode(tracking);
+
+      // Save order lead to localStorage for Admin Panel
+      try {
+        const existingLeads = JSON.parse(localStorage.getItem('dubaiKharidLeads') || '[]');
+        const newLead = {
+          id: tracking,
+          customerName: formData.name.trim(),
+          phone: cleanPhone,
+          address: formData.address.trim(),
+          notes: formData.notes.trim(),
+          productName: orderData.productName || orderData.name || 'کالای سفارشی دبی',
+          brand: orderData.brand || 'سفارشی',
+          weight: orderData.weight || 0.5,
+          totalToman: orderData.totalToman || ((orderData.price || 0) * 19500),
+          priceAed: orderData.priceAed || orderData.price || 0,
+          date: new Date().toISOString(),
+          status: 'pending', // 'pending' = در انتظار بررسی, 'contacted' = تماس گرفته شده, etc.
+          items: orderData.items || null
+        };
+        existingLeads.unshift(newLead);
+        localStorage.setItem('dubaiKharidLeads', JSON.stringify(existingLeads));
+      } catch (err) {
+        console.error('Failed to save checkout lead locally:', err);
+      }
+
       setStep(3);
       if (onCartIncrement) {
         onCartIncrement();
