@@ -8,42 +8,44 @@ import styles from './Brands.module.css';
 // ── DATA ARRAYS ──
 const steps = [
   { id: 1, title: '۱. انتخاب برند', desc: 'برند مورد نظر خود را انتخاب کنید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> },
-  { id: 2, title: '۲. ورود به سایت اصلی', desc: 'با کلیک روی لوگو وارد سایت رسمی برند شوید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> },
+  { id: 2, title: '۲. ورود به سایت اصلی', desc: 'با کلیک روی لوگو یا دکمه ورود، وارد سایت رسمی امارات شوید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> },
   { id: 3, title: '۳. انتخاب محصول', desc: 'لینک محصول را کپی کنید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> },
   { id: 4, title: '۴. ارسال لینک محصول', desc: 'لینک محصول یا عکس از محصول انتخابی خود را برای ما ارسال کنید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> }
 ];
 
 const categories = ['همه برندها', 'مد و پوشاک', 'کیف و کفش', 'ساعت و اکسسوری', 'عطر و آرایشی', 'تکنولوژی', 'خانه و دکوراسیون', 'ورزشی ( اسپورت )'];
 
+// Brands database with direct UAE official storefront URLs
 const brandsData = [
-  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI' },
-  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV' },
-  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL' },
-  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA' },
-  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR' },
-  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS' },
-  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX' },
-  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier' },
-  { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY' },
-  { id: 'fendi', name: 'Fendi', faName: 'فندی', cat: 'مد و پوشاک', hasImage: false, fallback: 'FENDI' },
-  { id: 'balenciaga', name: 'Balenciaga', faName: 'بالنسیاگا', cat: 'مد و پوشاک', hasImage: false, fallback: 'BALENCIAGA' },
-  { id: 'saintlaurent', name: 'Saint Laurent', faName: 'سن لورن', cat: 'مد و پوشاک', hasImage: false, fallback: 'YSL' },
-  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg' },
-  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png' },
-  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png' },
-  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '' },
-  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG' },
-  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA' },
-  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson' }
+  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI', url: 'https://www.gucci.com/ae/en/' },
+  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV', url: 'https://ae.louisvuitton.com/eng-ae/homepage' },
+  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL', url: 'https://www.chanel.com/ae/' },
+  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
+  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
+  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
+  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
+  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
+  { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
+  { id: 'fendi', name: 'Fendi', faName: 'فندی', cat: 'مد و پوشاک', hasImage: false, fallback: 'FENDI', url: 'https://www.fendi.com/ae-en/' },
+  { id: 'balenciaga', name: 'Balenciaga', faName: 'بالنسیاگا', cat: 'مد و پوشاک', hasImage: false, fallback: 'BALENCIAGA', url: 'https://www.balenciaga.com/en-ae' },
+  { id: 'saintlaurent', name: 'Saint Laurent', faName: 'سن لورن', cat: 'مد و پوشاک', hasImage: false, fallback: 'YSL', url: 'https://www.ysl.com/en-ae' },
+  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg', url: 'https://www.nike.com/ae/' },
+  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png', url: 'https://www.adidas.ae' },
+  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png', url: 'https://m.shein.com/ae' },
+  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '', url: 'https://www.apple.com/ae/' },
+  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG', url: 'https://www.samsung.com/ae/' },
+  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA', url: 'https://www.sephora.ae' },
+  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' }
 ];
 
+// Shopping portals database with direct UAE URLs
 const storesData = [
-  { id: 'noon', name: 'Noon', desc: 'فروشگاه آنلاین چندمنظوره با ارسال سریع در دبی', url: 'noon.com', hasImage: true, img: '/images/logo/Noon.webp' },
-  { id: 'namshi', name: 'Namshi', desc: 'مد و پوشاک، کیف، کفش و اکسسوری', url: 'namshi.com', hasImage: false, fallback: 'NAMSHI' },
-  { id: 'ounass', name: 'Ounass', desc: 'فروشگاه لوکس برندهای جهانی', url: 'ounass.com', hasImage: false, fallback: 'OUNASS' },
-  { id: 'amazon', name: 'Amazon.ae', desc: 'خرید انواع کالا با ارسال سریع به امارات و دبی', url: 'amazon.ae', hasImage: true, img: '/images/logo/amazon.png' },
-  { id: '6thstreet', name: '6thStreet', desc: 'مد و فشن با بهترین برندها', url: '6thstreet.com', hasImage: false, fallback: '6thSTREET' },
-  { id: 'modanisa', name: 'Modanisa', desc: 'فروشگاه آنلاین پوشاک مناسب بانوان', url: 'modanisa.com', hasImage: false, fallback: 'modanisa' }
+  { id: 'noon', name: 'Noon', desc: 'فروشگاه آنلاین چندمنظوره با ارسال سریع در دبی', url: 'https://www.noon.com/uae-en/', hasImage: true, img: '/images/logo/Noon.webp' },
+  { id: 'namshi', name: 'Namshi', desc: 'مد و پوشاک، کیف، کفش و اکسسوری', url: 'https://www.namshi.com/uae-en/', hasImage: false, fallback: 'NAMSHI' },
+  { id: 'ounass', name: 'Ounass', desc: 'فروشگاه لوکس برندهای جهانی', url: 'https://www.ounass.ae', hasImage: false, fallback: 'OUNASS' },
+  { id: 'amazon', name: 'Amazon.ae', desc: 'خرید انواع کالا با ارسال سریع به امارات و دبی', url: 'https://www.amazon.ae', hasImage: true, img: '/images/logo/amazon.png' },
+  { id: '6thstreet', name: '6thStreet', desc: 'مد و فشن با بهترین برندها', url: 'https://www.6thstreet.com/ae/en/', hasImage: false, fallback: '6thSTREET' },
+  { id: 'modanisa', name: 'Modanisa', desc: 'فروشگاه آنلاین پوشاک مناسب بانوان', url: 'https://www.modanisa.com/en/', hasImage: false, fallback: 'modanisa' }
 ];
 
 export default function BrandsPage() {
@@ -51,7 +53,7 @@ export default function BrandsPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredBrands = brandsData.filter(brand => {
-    const matchesCategory = activeCat === 'همه برندها' || brand.cat === activeCat;
+    const matchesCategory = activeCat === 'همه/برندها' || activeCat === 'همه برندها' || brand.cat === activeCat;
     const query = searchQuery.toLowerCase();
     const matchesSearch = 
       brand.name.toLowerCase().includes(query) || 
@@ -69,7 +71,7 @@ export default function BrandsPage() {
       <section className={styles.heroSection}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>دسترسی به بهترین<br/>برندهای دنیا در <span style={{color: '#f87820'}}>دبی</span></h1>
-          <p className={styles.heroSubtitle}>با یک کلیک وارد فروشگاه رسمی برندها شوید و خرید خود را از دبی انجام دهید.</p>
+          <p className={styles.heroSubtitle}>با یک کلیک وارد فروشگاه رسمی امارات شده و خرید خود را به راحتی ثبت کنید.</p>
           
           <div className={styles.heroStats}>
             <div className={styles.statItem}>
@@ -99,13 +101,12 @@ export default function BrandsPage() {
             className={styles.searchBox} 
             onSubmit={(e) => {
               e.preventDefault();
-              // Scroll to grid smoothly
               window.scrollTo({ top: 600, behavior: 'smooth' });
             }}
           >
             <input 
               type="text" 
-              placeholder="جستجو بین برندها..." 
+              placeholder="جستجو بین برندها (فارسی یا انگلیسی)..." 
               className={styles.searchInput} 
               dir="rtl" 
               value={searchQuery}
@@ -181,9 +182,16 @@ export default function BrandsPage() {
                 )}
               </div>
               <h3 className={styles.brandName}>{brand.name}</h3>
+              {/* Display Farsi brand subtitle */}
+              <p className={styles.brandFaName}>{brand.faName}</p>
               <p className={styles.brandCategory}>{brand.cat}</p>
-              <a href="#" className={styles.linkBtn}>
-                ورود به سایت
+              <a 
+                href={brand.url} 
+                className={styles.linkBtn}
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                ورود به سایت رسمی
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </a>
             </div>
@@ -191,7 +199,7 @@ export default function BrandsPage() {
         </div>
 
         {/* ── ONLINE STORES ── */}
-        <h2 className={styles.sectionTitle} style={{textAlign: 'right', fontSize: '1.2rem', marginBottom: '20px'}}>فروشگاه‌های آنلاین دبی</h2>
+        <h2 className={styles.sectionTitle} style={{textAlign: 'right', fontSize: '1.2rem', marginBottom: '20px', marginTop: '50px'}}>فروشگاه‌های آنلاین دبی</h2>
         <div className={styles.grid} style={{marginBottom: '40px'}}>
           {storesData.map(store => (
             <div key={store.id} className={styles.card}>
@@ -204,9 +212,14 @@ export default function BrandsPage() {
               </div>
               <h3 className={styles.brandName}>{store.name}</h3>
               <p className={styles.brandCategory} style={{minHeight: '36px'}}>{store.desc}</p>
-              <p className={styles.brandCategory} style={{color: '#f87820'}}>{store.url}</p>
-              <a href="#" className={styles.linkBtn}>
-                ورود به سایت
+              <p className={styles.brandCategory} style={{color: '#f87820', direction: 'ltr'}}>{store.url.replace('https://', '')}</p>
+              <a 
+                href={store.url} 
+                className={styles.linkBtn}
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                ورود به سایت امارات
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </a>
             </div>

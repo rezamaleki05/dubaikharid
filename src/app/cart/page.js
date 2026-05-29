@@ -18,13 +18,28 @@ export default function CartPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrderData, setModalOrderData] = useState(null);
 
-  // Calculate Subtotal (AED) and convert to Toman
-  const subtotalAed = cartItems.reduce((acc, item) => acc + (item.priceAed * item.quantity), 0);
-  const subtotalToman = subtotalAed * EXCHANGE_RATE;
+  // Calculate original and discounted subtotals
+  const originalSubtotalToman = cartItems.reduce((acc, item) => acc + (item.priceAed * EXCHANGE_RATE * item.quantity), 0);
   
-  // For now, shipping is free/included
-  const shippingToman = 0; 
-  const totalToman = subtotalToman + shippingToman;
+  const discountedSubtotalToman = cartItems.reduce((acc, item) => {
+    const itemOriginalPrice = item.priceAed * EXCHANGE_RATE;
+    const finalPrice = item.discountPercent && item.discountPercent > 0 
+      ? itemOriginalPrice * (1 - item.discountPercent / 100) 
+      : itemOriginalPrice;
+    return acc + (finalPrice * item.quantity);
+  }, 0);
+
+  const savingsToman = originalSubtotalToman - discountedSubtotalToman;
+  
+  const subtotalAed = cartItems.reduce((acc, item) => {
+    const finalPriceAed = item.discountPercent && item.discountPercent > 0
+      ? item.priceAed * (1 - item.discountPercent / 100)
+      : item.priceAed;
+    return acc + (finalPriceAed * item.quantity);
+  }, 0);
+
+  const shippingToman = 0;
+  const totalToman = discountedSubtotalToman + shippingToman;
 
   // Trigger pre-invoice checkout modal for entire cart
   const handleProceedToCheckout = () => {
@@ -92,7 +107,25 @@ export default function CartPage() {
                           </div>
                         )}
 
-                        <div className={styles.itemPrice}>{fmtToman(tomanPrice)} تومان</div>
+                        <div className={styles.itemPrice}>
+                          {item.discountPercent && item.discountPercent > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <span style={{ fontSize: '11px', textDecoration: 'line-through', color: '#8b92a5' }}>
+                                {fmtToman(tomanPrice * item.quantity)} تومان
+                              </span>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <span style={{ color: '#ff3333', fontWeight: 'bold' }}>
+                                  {fmtToman(tomanPrice * (1 - item.discountPercent / 100) * item.quantity)} تومان
+                                </span>
+                                <span style={{ background: '#ff3333', color: '#fff', fontSize: '10px', padding: '1px 4px', borderRadius: '3px' }}>
+                                  {item.discountPercent}%-
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <span>{fmtToman(tomanPrice * item.quantity)} تومان</span>
+                          )}
+                        </div>
                         
                         <div className={styles.itemControls}>
                           <div className={styles.qtyBox}>
@@ -131,8 +164,15 @@ export default function CartPage() {
                 
                 <div className={styles.summaryRow}>
                   <span>مبلغ کالاها ({cartCount}):</span>
-                  <span>{fmtToman(subtotalToman)} تومان</span>
+                  <span style={savingsToman > 0 ? { textDecoration: 'line-through', color: '#8b92a5' } : {}}>{fmtToman(originalSubtotalToman)} تومان</span>
                 </div>
+                
+                {savingsToman > 0 && (
+                  <div className={styles.summaryRow} style={{ color: '#ff3333' }}>
+                    <span>سود شما از خرید (تخفیف):</span>
+                    <span style={{ fontWeight: '600' }}>{fmtToman(savingsToman)} تومان-</span>
+                  </div>
+                )}
                 
                 <div className={styles.summaryRow}>
                   <span>هزینه ارسال:</span>

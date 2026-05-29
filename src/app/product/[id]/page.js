@@ -93,8 +93,13 @@ export default function ProductPage({ params }) {
       <main className={styles.mainContainer}>
         <div className={styles.productGrid}>
           {/* Image Section */}
-          <div className={styles.imageSection}>
+          <div className={styles.imageSection} style={{ position: 'relative' }}>
             <img src={product.image} alt={product.name} className={styles.mainImage} />
+            {product.discountPercent && product.discountPercent > 0 && (
+              <div style={{ position: 'absolute', top: '20px', right: '20px', background: '#ff3333', color: '#fff', fontSize: '14px', fontWeight: '850', padding: '5px 12px', borderRadius: '6px', boxShadow: '0 0 15px #ff3333', zIndex: 5, direction: 'ltr' }}>
+                {product.discountPercent}%-
+              </div>
+            )}
           </div>
 
           {/* Info Section */}
@@ -196,10 +201,27 @@ export default function ProductPage({ params }) {
 
             <div className={styles.priceSection}>
               <div className={styles.priceLabel}>قیمت نهایی با احتساب هزینه‌های ارسال:</div>
-              <div className={styles.priceValue}>
-                {fmtToman(tomanPrice)}
-                <span className={styles.priceUnit}>تومان</span>
-              </div>
+              {product.discountPercent && product.discountPercent > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '18px', textDecoration: 'line-through', color: '#8b92a5' }}>
+                      {fmtToman(tomanPrice)} تومان
+                    </span>
+                    <span style={{ background: '#ff3333', color: '#fff', fontSize: '14px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333' }}>
+                      {product.discountPercent}% تخفیف
+                    </span>
+                  </div>
+                  <div className={styles.priceValue} style={{ color: '#ff3333' }}>
+                    {fmtToman(tomanPrice * (1 - product.discountPercent / 100))}
+                    <span className={styles.priceUnit} style={{ color: '#ff3333' }}>تومان</span>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.priceValue}>
+                  {fmtToman(tomanPrice)}
+                  <span className={styles.priceUnit}>تومان</span>
+                </div>
+              )}
             </div>
 
             <div className={styles.actionSection}>

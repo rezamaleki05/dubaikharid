@@ -329,7 +329,14 @@
 .brandName {
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+.brandFaName {
+  font-size: 0.85rem;
+  color: #f87820;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .brandCategory {

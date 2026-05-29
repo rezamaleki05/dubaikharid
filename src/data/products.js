@@ -24,7 +24,8 @@ export const laptops = [
     store: 'انبار ایران',
     link: 'https://www.noon.com/uae-en/thinkpad-t14-gen-3-lenovo/N53348123A/p/',
     image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&q=85&auto=format&fit=crop',
-    description: 'لپتاپ صنعتی و قدرتمند لنوو سری ThinkPad T14 استوک وارداتی از دبی.'
+    description: 'لپتاپ صنعتی و قدرتمند لنوو سری ThinkPad T14 استوک وارداتی از دبی.',
+    discountPercent: 12
   },
   {
     id: 'lap4', name: 'HP Spectre x360', spec: '16GB / 1TB SSD',
@@ -55,7 +56,8 @@ export const trendingProducts = [
     image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=400&q=85&auto=format&fit=crop',
     description: 'کفش کلاسیک و پرطرفدار نایک ساخت اندونزی.',
     sizes: ['40', '41', '42', '43', '44', '45'],
-    colors: ['سفید', 'مشکی']
+    colors: ['سفید', 'مشکی'],
+    discountPercent: 15
   },
   {
     id: 'p2', name: 'iPhone 15 Pro Max', spec: '256GB / Titanium',
@@ -100,7 +102,8 @@ export const menProducts = [
     image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=450&q=85&auto=format&fit=crop',
     description: 'تی‌شرت ورزشی مردانه نایک با الیاف پیشرفته Dry-Fit فوق‌العاده راحت.',
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    colors: ['مشکی', 'سفید', 'طوسی', 'سرمه‌ای']
+    colors: ['مشکی', 'سفید', 'طوسی', 'سرمه‌ای'],
+    discountPercent: 15
   },
   {
     id: 'm2', name: 'پیراهن کتان زارا Casual', spec: 'دوخت دقیق اسپورت روزمره',
@@ -120,7 +123,8 @@ export const menProducts = [
     image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=450&q=85&auto=format&fit=crop',
     description: 'شلوار جین نمادین لویز ۵۱۱ با کیفیت رنگ عالی و الیاف الاستین انعطاف‌پذیر.',
     sizes: ['30', '32', '34', '36'],
-    colors: ['آبی تیره', 'ذغالی', 'آبی روشن']
+    colors: ['آبی تیره', 'ذغالی', 'آبی روشن'],
+    discountPercent: 20
   },
   {
     id: 'm4', name: 'کفش ورزشی آدیداس Ultraboost Light', spec: 'کفش دویدن و پیاده‌روی فوق سبک',
@@ -128,7 +132,7 @@ export const menProducts = [
     store: 'noon.com',
     link: 'https://www.noon.com/uae-en/ultraboost-light-shoes/N60891234A/p/',
     image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=450&q=85&auto=format&fit=crop',
-    description: 'جدیدترین نسخه کفش‌های الترابوست آدیداس با کپسول‌های برگشت انرژی لایت.',
+    description: 'جدین‌ترین نسخه کفش‌های الترابوست آدیداس با کپسول‌های برگشت انرژی لایت.',
     sizes: ['41', '42', '43', '44', '45'],
     colors: ['مشکی', 'سفید', 'طوسی-نارنجی']
   },
@@ -153,7 +157,8 @@ export const womenProducts = [
     image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=450&q=85&auto=format&fit=crop',
     description: 'پیراهن نخی زنانه بسیار سبک و راحت برند مانگو با طراحی شیک تابستانه.',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    colors: ['صورتی', 'سفید', 'سبز نعنایی', 'خردلی']
+    colors: ['صورتی', 'سفید', 'سبز نعنایی', 'خردلی'],
+    discountPercent: 30
   },
   {
     id: 'w2', name: 'پلیور بافتنی یقه اسکی H&M', spec: 'بافت ظریف پاییزه و زمستانه',
@@ -163,7 +168,8 @@ export const womenProducts = [
     image: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=450&q=85&auto=format&fit=crop',
     description: 'پلیور بافت گرم برند اچ اند ام با یقه اسکی شیک و دوخت متراکم.',
     sizes: ['S', 'M', 'L', 'XL'],
-    colors: ['کرم', 'طوسی ملانژ', 'مشکی']
+    colors: ['کرم', 'طوسی ملانژ', 'مشکی'],
+    discountPercent: 10
   },
   {
     id: 'w3', name: 'شلوار پارچه‌ای فاق بلند زارا', spec: 'شلوار گشاد کلاسیک دمپا',
@@ -176,7 +182,7 @@ export const womenProducts = [
     colors: ['مشکی', 'کرم', 'طوسی تیره']
   },
   {
-    id: 'w4', name: 'کفش ورزشی آدیداس NMD_R1', spec: 'کتانی راحتی پیاده‌روی زنانه',
+    id: 'w4', name: 'کفش ورشس آدیداس NMD_R1', spec: 'کتانی راحتی پیاده‌روی زنانه',
     priceAed: 380, weight: 0.75, category: 'shoes', gender: 'women', brand: 'Adidas',
     store: 'noon.com',
     link: 'https://www.noon.com/uae-en/nmd-r1-shoes-adidas/N60981923A/p/',
@@ -215,8 +221,7 @@ export const kidsProducts = [
     link: 'https://www.noon.com/uae-en/hm-kids-denim-overalls/N51194212A/p/',
     image: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=450&q=85&auto=format&fit=crop',
     description: 'سرهمی جین بچگانه اچ اند ام با قابلیت تنظیم ارتفاع بندها و چرم تزیینی.',
-    sizes: ['2-3 سال', '4-5 سال', '6-7 سال'],
-    colors: ['آبی شسته شده', 'سرمه‌ای تیره']
+    sizes: ['2-3 سال', '4-5 سال', '6-7 سال']
   },
   {
     id: 'k3', name: 'کتانی بچگانه نایک Air Max SC', spec: 'کتانی چسبی ورزشی بچگانه',
@@ -226,7 +231,8 @@ export const kidsProducts = [
     image: 'https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=450&q=85&auto=format&fit=crop',
     description: 'کفش ورزشی بچگانه نایک با لایه محافظ هوا Air Max و بندهای چسبی برای سهولت استفاده.',
     sizes: ['28', '30', '32', '34', '35'],
-    colors: ['سفید-قرمز', 'مشکی-سفید', 'آبی-طوسی']
+    colors: ['سفید-قرمز', 'مشکی-سفید', 'آبی-طوسی'],
+    discountPercent: 25
   }
 ];
 
@@ -256,7 +262,8 @@ export const bagsAndAccessoriesProducts = [
     link: 'https://www.noon.com/uae-en/aviator-classic-sunglasses-gold/N41098124A/p/',
     image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=450&q=85&auto=format&fit=crop',
     description: 'عینک خلبانی کلاسیک ری‌بن فریم فلزی طلایی شیشه ضدخش پولاریزه با فیلتر کامل UV400.',
-    colors: ['طلایی-سبز', 'مشکی', 'نقره‌ای']
+    colors: ['طلایی-سبز', 'مشکی', 'نقره‌ای'],
+    discountPercent: 40
   },
   {
     id: 'ba4', name: 'کیف پول چرم گوچی GG Marmont', spec: 'کیف پول زنانه تاشو چرم اصل',
@@ -265,7 +272,8 @@ export const bagsAndAccessoriesProducts = [
     link: 'https://www.namshi.com/uae-en/gucci-gg-marmont-wallet/',
     image: 'https://images.unsplash.com/photo-1627124357773-413d9413466c?w=450&q=85&auto=format&fit=crop',
     description: 'کیف پول چرمی لوکس گوچی با لوگوی فلزی طلایی برجسته GG، دارای جاکارتی و زیپ مجزا.',
-    colors: ['مشکی', 'کرم', 'قهوه‌ای']
+    colors: ['مشکی', 'کرم', 'قهوه‌ای'],
+    discountPercent: 18
   },
   {
     id: 'ba5', name: 'کیف توت لویی ویتون Neverfull MM', spec: 'کیف خرید کلاسیک طرح مونوگرام',

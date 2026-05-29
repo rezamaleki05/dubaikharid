@@ -129,6 +129,11 @@ function KidsContent() {
                       <div className={styles.imageWrap}>
                         <img src={product.image} alt={product.name} className={styles.productImg} />
                         <span className={styles.storeBadge}>{product.store}</span>
+                        {product.discountPercent && product.discountPercent > 0 && (
+                          <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#ff3333', color: '#fff', fontSize: '11px', fontWeight: '850', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333', zIndex: 5, direction: 'ltr' }}>
+                            {product.discountPercent}%-
+                          </div>
+                        )}
                         
                         {/* Wishlist Button */}
                         <button 
@@ -151,8 +156,20 @@ function KidsContent() {
                         <p className={styles.productSpec}>{product.spec}</p>
                         
                         <div className={styles.priceRow}>
-                          <span className={styles.priceLabel}>تحویل درب منزل:</span>
-                          <span className={styles.priceToman}>{fmtToman(tomanPrice)} تومان</span>
+                          {product.discountPercent && product.discountPercent > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start', width: '100%' }}>
+                              <span style={{ fontSize: '12px', textDecoration: 'line-through', color: '#8b92a5' }}>{fmtToman(tomanPrice)} تومان</span>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                <span className={styles.priceToman} style={{ color: '#ff3333' }}>{fmtToman(tomanPrice * (1 - product.discountPercent / 100))} تومان</span>
+                                <span style={{ fontSize: '11px', color: '#ff3333', fontWeight: '600' }}>تحویل درب منزل</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <span className={styles.priceLabel}>تحویل درب منزل:</span>
+                              <span className={styles.priceToman}>{fmtToman(tomanPrice)} تومان</span>
+                            </>
+                          )}
                         </div>
 
                         <button className={styles.cartBtn}>
