@@ -28,25 +28,38 @@ export function CartProvider({ children }) {
     }
   }, [cartItems]);
 
-  const addToCart = (product) => {
+  const addToCart = (product, size = null, color = null) => {
+    const sizeVal = size || 'none';
+    const colorVal = color || 'none';
+    const cartItemId = `${product.id}-${sizeVal}-${colorVal}`;
+
     setCartItems((prevItems) => {
-      // Check if product already exists
-      const existingItem = prevItems.find((item) => item.id === product.id);
+      // Find item with same unique composite cartItemId
+      const existingItem = prevItems.find((item) => item.cartItemId === cartItemId);
       if (existingItem) {
-        // Increase quantity
+        // Increase quantity of this specific variant
         return prevItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      // Add new item
-      return [...prevItems, { ...product, quantity: 1 }];
+      // Add new variant item to cart
+      return [
+        ...prevItems,
+        {
+          ...product,
+          cartItemId,
+          selectedSize: size,
+          selectedColor: color,
+          quantity: 1
+        }
+      ];
     });
   };
 
-  const decrementQuantity = (productId) => {
+  const decrementQuantity = (cartItemId) => {
     setCartItems((prevItems) => {
       return prevItems.map((item) => {
-        if (item.id === productId) {
+        if (item.cartItemId === cartItemId) {
           return { ...item, quantity: Math.max(1, item.quantity - 1) };
         }
         return item;
@@ -54,8 +67,8 @@ export function CartProvider({ children }) {
     });
   };
 
-  const removeFromCart = (productId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId));
+  const removeFromCart = (cartItemId) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.cartItemId !== cartItemId));
   };
 
   const clearCart = () => {

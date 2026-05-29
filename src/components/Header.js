@@ -108,9 +108,32 @@ export default function Header() {
             <li><a href="/" className={pathname === '/' ? styles.navActive : ''}>صفحه اصلی</a></li>
             <li><a href="/brands" className={pathname === '/brands' ? styles.navActive : ''}>برندها</a></li>
             <li><a href="/stock-laptops" className={pathname === '/stock-laptops' ? styles.navActive : ''}>لپتاپ استوک</a></li>
-            <li><a href="#">مردانه</a></li>
-            <li><a href="#">زنانه</a></li>
-            <li><a href="#">کودک</a></li>
+            <li className={styles.navDropdown}>
+              <a href="/men" className={pathname === '/men' ? styles.navActive : ''}>مردانه</a>
+              <ul className={styles.dropdownMenu}>
+                <li><a href="/men?sub=clothing">لباس مردانه</a></li>
+                <li><a href="/men?sub=pants">شلوار مردانه</a></li>
+                <li><a href="/men?sub=shoes">کفش مردانه</a></li>
+                <li><a href="/men?sub=accessories">اکسسوری مردانه</a></li>
+              </ul>
+            </li>
+            <li className={styles.navDropdown}>
+              <a href="/women" className={pathname === '/women' ? styles.navActive : ''}>زنانه</a>
+              <ul className={styles.dropdownMenu}>
+                <li><a href="/women?sub=clothing">لباس زنانه</a></li>
+                <li><a href="/women?sub=pants">شلوار زنانه</a></li>
+                <li><a href="/women?sub=shoes">کفش زنانه</a></li>
+                <li><a href="/women?sub=accessories">اکسسوری زنانه</a></li>
+              </ul>
+            </li>
+            <li className={styles.navDropdown}>
+              <a href="/kids" className={pathname === '/kids' ? styles.navActive : ''}>کودک</a>
+              <ul className={styles.dropdownMenu}>
+                <li><a href="/kids?sub=clothing">لباس بچگانه</a></li>
+                <li><a href="/kids?sub=pants">شلوار بچگانه</a></li>
+                <li><a href="/kids?sub=shoes">کفش بچگانه</a></li>
+              </ul>
+            </li>
             <li><a href="#">کیف و اکسسوری</a></li>
             <li><a href="#">خانه و آشیزخانه</a></li>
             <li><a href="#">الکترونیک</a></li>

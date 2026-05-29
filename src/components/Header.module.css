@@ -214,8 +214,52 @@
   border-radius: 3px 3px 0 0;
 }
 
-/* Sale item */
-.navSale { color: #f87820 !important; font-weight: 700 !important; }
+/* Dropdowns */
+.navDropdown {
+  position: relative;
+}
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 50%;
+  transform: translateX(50%);
+  background: rgba(17, 17, 17, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 0;
+  min-width: 150px;
+  display: none;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  list-style: none;
+  animation: fadeUp 0.2s ease-out forwards;
+}
+.navDropdown:hover .dropdownMenu {
+  display: block;
+}
+.dropdownMenu li {
+  margin: 0;
+}
+.dropdownMenu li a {
+  display: block !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  color: var(--text-mid) !important;
+  text-align: center !important;
+  transition: all 0.25s ease !important;
+  white-space: nowrap !important;
+  font-weight: 500 !important;
+}
+.dropdownMenu li a::after {
+  display: none !important;
+}
+.dropdownMenu li a:hover {
+  background: rgba(248, 120, 32, 0.1) !important;
+  color: var(--orange) !important;
+}
 
 @media (max-width: 768px) {
   .logoDubi, .logoShop { font-size: 22px; }

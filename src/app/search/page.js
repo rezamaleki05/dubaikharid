@@ -1,12 +1,17 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { getAllProducts } from '@/data/products';
+import { useWishlist } from '@/context/WishlistContext';
 import styles from './Search.module.css';
 
-// Using the same mock data for demonstration
+const EXCHANGE_RATE = 19500;
+const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
+
+// Brands database
 const mockDatabase = [
   { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI' },
   { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV' },
@@ -28,11 +33,15 @@ const mockDatabase = [
 ];
 
 function SearchContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const qLower = query.toLowerCase();
-  const searchResults = query.trim() 
+  const qLower = query.toLowerCase().trim();
+
+  // 1. Search in Brand Catalog
+  const brandResults = qLower
     ? mockDatabase.filter(item => 
         item.name.toLowerCase().includes(qLower) || 
         (item.faName && item.faName.includes(qLower)) ||
@@ -40,40 +49,123 @@ function SearchContent() {
       )
     : [];
 
+  // 2. Search in Products Database (extended)
+  const productResults = qLower
+    ? getAllProducts().filter(product => 
+        product.name.toLowerCase().includes(qLower) ||
+        product.brand.toLowerCase().includes(qLower) ||
+        (product.category && product.category.toLowerCase().includes(qLower)) ||
+        (product.spec && product.spec.toLowerCase().includes(qLower))
+      )
+    : [];
+
+  const totalResultsCount = brandResults.length + productResults.length;
+
   return (
     <div className={styles.pageWrapper}>
       <Header />
 
-      <main className={styles.searchContainer}>
+      <main className={styles.searchContainer} dir="rtl">
         <div className={styles.searchHeader}>
           {query ? (
             <h1 className={styles.searchTitle}>
               نتایج جستجو برای: <span className={styles.searchQuery}>"{query}"</span>
+              <span className={styles.resultsCount}>({totalResultsCount} مورد یافت شد)</span>
             </h1>
           ) : (
             <h1 className={styles.searchTitle}>عبارتی برای جستجو وارد کنید</h1>
           )}
         </div>
 
-        {query && searchResults.length > 0 ? (
-          <div className={styles.grid}>
-            {searchResults.map(item => (
-              <div key={item.id} className={styles.card}>
-                <div className={styles.logoWrap}>
-                  {item.hasImage ? (
-                    <img src={item.img} alt={item.name} className={styles.logoImg} />
-                  ) : (
-                    <div className={styles.logoFallback}>{item.fallback}</div>
-                  )}
+        {query && totalResultsCount > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
+            
+            {/* Section 1: Found Brands */}
+            {brandResults.length > 0 && (
+              <div>
+                <h2 className={styles.sectionTitle}>برندهای یافت شده</h2>
+                <div className={styles.grid}>
+                  {brandResults.map(item => (
+                    <div key={item.id} className={styles.card}>
+                      <div className={styles.logoWrap}>
+                        {item.hasImage ? (
+                          <img src={item.img} alt={item.name} className={styles.logoImg} />
+                        ) : (
+                          <div className={styles.logoFallback}>{item.fallback}</div>
+                        )}
+                      </div>
+                      <h3 className={styles.brandName}>{item.name}</h3>
+                      <p className={styles.brandCategory}>{item.cat}</p>
+                      <a 
+                        href={`/brands?id=${item.id}`} 
+                        className={styles.linkBtn}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          router.push(`/brands`);
+                        }}
+                      >
+                        مشاهده برند
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      </a>
+                    </div>
+                  ))}
                 </div>
-                <h3 className={styles.brandName}>{item.name}</h3>
-                <p className={styles.brandCategory}>{item.cat}</p>
-                <a href="#" className={styles.linkBtn}>
-                  مشاهده برند
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                </a>
               </div>
-            ))}
+            )}
+
+            {/* Section 2: Found Products */}
+            {productResults.length > 0 && (
+              <div>
+                <h2 className={styles.sectionTitle}>محصولات یافت شده</h2>
+                <div className={styles.productsGrid}>
+                  {productResults.map(product => {
+                    const tomanPrice = product.priceAed * EXCHANGE_RATE;
+                    return (
+                      <div 
+                        key={product.id} 
+                        className={styles.productCard}
+                        onClick={() => router.push(`/product/${product.id}`)}
+                      >
+                        <div className={styles.imageWrap}>
+                          <img src={product.image} alt={product.name} className={styles.productImg} />
+                          <span className={styles.storeBadge}>{product.store}</span>
+                          
+                          {/* Wishlist Button */}
+                          <button 
+                            className={`${styles.wishlistBtn} ${isInWishlist(product.id) ? styles.wished : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleWishlist(product);
+                            }}
+                            aria-label="افزودن به علاقه‌مندی‌ها"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill={isInWishlist(product.id) ? "#ff4757" : "none"} stroke={isInWishlist(product.id) ? "#ff4757" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div className={styles.cardBody}>
+                          <span className={styles.brandBadge}>{product.brand}</span>
+                          <h3 className={styles.productCardName}>{product.name}</h3>
+                          <p className={styles.productSpec}>{product.spec}</p>
+                          
+                          <div className={styles.priceRow}>
+                            <span className={styles.priceLabel}>قیمت تحویلی:</span>
+                            <span className={styles.priceToman}>{fmtToman(tomanPrice)} تومان</span>
+                          </div>
+
+                          <div className={styles.cartBtn}>
+                            مشاهده و خرید محصول
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
           </div>
         ) : query ? (
           <div className={styles.noResults}>
