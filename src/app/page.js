@@ -47,8 +47,7 @@ export default function Home() {
     { name: 'کیف و اکسسوری',   icon: '👜', count: '۱۰ مدل پرفروش' },
     { name: 'زیبایی و سلامت',  icon: '🧴', count: '۹ مدل پرفروش' },
     { name: 'پوشاک و لباس',    icon: '👕', count: '۱۴ مدل پرفروش' },
-    { name: 'کودک و سرگرمی',   icon: '🧸', count: '۶ مدل پرفروش' },
-    { name: 'خانه و آشپزخانه', icon: '🏠', count: '۸ مدل پرفروش' },
+    { name: 'کودک و سرگرمی',   icon: '🧸', count: '۶ مدل پرفروش' }
   ];
 
   return (

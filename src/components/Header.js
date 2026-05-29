@@ -135,7 +135,7 @@ export default function Header() {
               </ul>
             </li>
             <li><a href="/bags-accessories" className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</a></li>
-            <li><a href="#">خانه و آشیزخانه</a></li>
+            <li><a href="/best-sellers" className={pathname === '/best-sellers' ? styles.navActive : ''}>پرفروش‌ها</a></li>
             <li><a href="#">الکترونیک</a></li>
             <li><a href="/sale" className={styles.navSale}>تخفیف‌ها</a></li>
           </ul>

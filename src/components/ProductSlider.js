@@ -91,7 +91,7 @@ export default function ProductSlider({ onSelectProduct }) {
               <span className={styles.sectionTitleDot}></span>
               محصولات پرفروش و محبوب
             </h2>
-            <button className={styles.seeAllBtn}>مشاهده همه ←</button>
+            <button className={styles.seeAllBtn} onClick={() => router.push('/best-sellers')}>مشاهده همه ←</button>
           </div>
           <div className={styles.productGrid}>
             {trendingProducts.map(p => <ProductCard key={p.id} product={p} showStore={true} />)}
