@@ -46,13 +46,13 @@ export default function Footer() {
               <div className={styles.linksCol}>
                 <h4>تماس با دبی خرید</h4>
                 <p className={styles.contactItem}>
-                  📍 <strong>دفتر تهران:</strong> تهران، خیابان ولیعصر، نرسیده به میدان ونک، برج نگار، طبقه ۱۵
+                  📍 <strong>دفتر شیراز:</strong> شیراز، شهرک گلستان، خیابان گل آرا
                 </p>
                 <p className={styles.contactItem}>
-                  📍 <strong>دفتر دبی:</strong> امارات، دبی، منطقه دیره، خیابان المکتوم، مجتمع البدور
+                  📍 <strong>دفتر دبی:</strong> امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور
                 </p>
                 <p className={styles.contactItem}>
-                  📞 <strong>تلفن پشتیبانی:</strong> ۰۲۱-۹۱۰۰۰۰۰۰
+                  📞 <strong>تلفن پشتیبانی:</strong> ۰۹۱۷۶۱۶۸۳۸۱
                 </p>
               </div>
             </div>
