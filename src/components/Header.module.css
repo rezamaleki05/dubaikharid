@@ -180,8 +180,7 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: visible;
   justify-content: center;
 }
 .navList::-webkit-scrollbar { display: none; }
@@ -265,5 +264,6 @@
   .logoDubi, .logoShop { font-size: 22px; }
   .searchBox { order: 3; flex-basis: 100%; margin: 10px 0 0; }
   .mainRowInner { flex-wrap: wrap; gap: 10px; }
-  .navList { justify-content: flex-start; }
+  .navList { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+  .navList::-webkit-scrollbar { display: none; }
 }
