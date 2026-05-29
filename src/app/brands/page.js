@@ -35,7 +35,10 @@ const brandsData = [
   { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '', url: 'https://www.apple.com/ae/' },
   { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG', url: 'https://www.samsung.com/ae/' },
   { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA', url: 'https://www.sephora.ae' },
-  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' }
+  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' },
+  { id: 'zara', name: 'Zara', faName: 'زارا', cat: 'مد و پوشاک', hasImage: false, fallback: 'ZARA', url: 'https://www.zara.com/ae/en/' },
+  { id: 'mango', name: 'Mango', faName: 'مانگو', cat: 'مد و پوشاک', hasImage: false, fallback: 'MANGO', url: 'https://shop.mango.com/ae' },
+  { id: 'hm', name: 'H&M', faName: 'اچ اند ام', cat: 'مد و پوشاک', hasImage: false, fallback: 'H&M', url: 'https://ae.hm.com/en/' }
 ];
 
 // Shopping portals database with direct UAE URLs
@@ -54,17 +57,27 @@ export default function BrandsPage() {
   const [sortOption, setSortOption] = useState('');
 
   const filteredBrands = brandsData.filter(brand => {
-    const matchesCategory = activeCat === 'همه/برندها' || activeCat === 'همه برندها' || brand.cat === activeCat;
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = 
-      brand.name.toLowerCase().includes(query) || 
-      brand.faName.includes(query) ||
-      brand.cat.includes(query);
-      
-    return matchesCategory && matchesSearch;
+    const query = searchQuery.toLowerCase().trim();
+    if (query) {
+      return (
+        brand.name.toLowerCase().includes(query) || 
+        brand.faName.includes(query) ||
+        brand.cat.includes(query)
+      );
+    }
+    return activeCat === 'همه/برندها' || activeCat === 'همه برندها' || brand.cat === activeCat;
   });
 
   const sortedBrands = [...filteredBrands].sort((a, b) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const aNameMatch = a.name.toLowerCase().startsWith(q) || a.faName.includes(q);
+      const bNameMatch = b.name.toLowerCase().startsWith(q) || b.faName.includes(q);
+      
+      if (aNameMatch && !bNameMatch) return -1;
+      if (!aNameMatch && bNameMatch) return 1;
+    }
+
     if (sortOption === 'alphabetical') {
       return a.name.localeCompare(b.name);
     }

@@ -54,8 +54,10 @@ function SearchContent() {
     ? getAllProducts().filter(product => 
         product.name.toLowerCase().includes(qLower) ||
         product.brand.toLowerCase().includes(qLower) ||
+        (product.store && product.store.toLowerCase().includes(qLower)) ||
         (product.category && product.category.toLowerCase().includes(qLower)) ||
-        (product.spec && product.spec.toLowerCase().includes(qLower))
+        (product.spec && product.spec.toLowerCase().includes(qLower)) ||
+        (product.description && product.description.toLowerCase().includes(qLower))
       )
     : [];
 
