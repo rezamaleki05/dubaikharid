@@ -78,7 +78,7 @@ export default function Header() {
             {/* Icons — LEFT in RTL */}
             <div className={styles.iconGroup}>
               {/* Wishlist */}
-              <button className={styles.iconBtn} aria-label="علاقه‌مندی‌ها">
+              <button className={styles.iconBtn} aria-label="علاقه‌مندی‌ها" onClick={() => router.push('/wishlist')}>
                 <div className={styles.iconWrap}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
@@ -134,7 +134,7 @@ export default function Header() {
                 <li><a href="/kids?sub=shoes">کفش بچگانه</a></li>
               </ul>
             </li>
-            <li><a href="#">کیف و اکسسوری</a></li>
+            <li><a href="/bags-accessories" className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</a></li>
             <li><a href="#">خانه و آشیزخانه</a></li>
             <li><a href="#">الکترونیک</a></li>
             <li><a href="#" className={styles.navSale}>تخفیف‌ها</a></li>

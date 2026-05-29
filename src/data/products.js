@@ -133,7 +133,7 @@ export const menProducts = [
     colors: ['مشکی', 'سفید', 'طوسی-نارنجی']
   },
   {
-    id: 'm5', name: 'کمربرند چرم طبیعی پیر کاردین', spec: 'چرم گاوی اصل ۱۰۰٪ با سگک فلزی',
+    id: 'm5', name: 'کمربند چرم طبیعی پیر کاردین', spec: 'چرم گاوی اصل ۱۰۰٪ با سگک فلزی',
     priceAed: 85, weight: 0.2, category: 'accessories', gender: 'men', brand: 'Pierre Cardin',
     store: 'namshi.com',
     link: 'https://www.namshi.com/uae-en/pierre-cardin-leather-belt/',
@@ -230,12 +230,61 @@ export const kidsProducts = [
   }
 ];
 
+export const bagsAndAccessoriesProducts = [
+  {
+    id: 'ba1', name: 'کیف دستی شنل Classic Flap', spec: 'کیف زنانه چرمی طرح خاویاری شیک',
+    priceAed: 980, weight: 0.9, category: 'bags', brand: 'Chanel',
+    store: 'noon.com',
+    link: 'https://www.noon.com/uae-en/chanel-classic-flap-bag/N51124578A/p/',
+    image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=450&q=85&auto=format&fit=crop',
+    description: 'کیف رودوشی زنجیردار لوکس شنل چرم خاویاری اعلا دوخت ضربدری با یراق‌آلات طلایی.',
+    colors: ['مشکی', 'کرم', 'قرمز']
+  },
+  {
+    id: 'ba2', name: 'ساعت مچی رولکس Submariner Date', spec: 'ساعت لوکس تمام استیل اتوماتیک',
+    priceAed: 2450, weight: 0.45, category: 'watches_glasses', brand: 'Rolex',
+    store: 'amazon.ae',
+    link: 'https://www.amazon.ae/Rolex-Submariner-Stainless-Steel-Watch/dp/B0B527EE94/',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=450&q=85&auto=format&fit=crop',
+    description: 'ساعت مچی اتوماتیک رولکس سری ساب‌مارینر قاب استیل ضدزنگ موتور کالیبر ۳۲۳۵ با شیشه سافایر.',
+    colors: ['مشکی', 'سبز', 'آبی']
+  },
+  {
+    id: 'ba3', name: 'عینک آفتابی ری‌بن Aviator Classic', spec: 'عینک خلبانی فریم طلایی شیک شیشه سبز',
+    priceAed: 215, weight: 0.15, category: 'watches_glasses', brand: 'Ray-Ban',
+    store: 'noon.com',
+    link: 'https://www.noon.com/uae-en/aviator-classic-sunglasses-gold/N41098124A/p/',
+    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=450&q=85&auto=format&fit=crop',
+    description: 'عینک خلبانی کلاسیک ری‌بن فریم فلزی طلایی شیشه ضدخش پولاریزه با فیلتر کامل UV400.',
+    colors: ['طلایی-سبز', 'مشکی', 'نقره‌ای']
+  },
+  {
+    id: 'ba4', name: 'کیف پول چرم گوچی GG Marmont', spec: 'کیف پول زنانه تاشو چرم اصل',
+    priceAed: 245, weight: 0.2, category: 'wallets_belts', brand: 'Gucci',
+    store: 'namshi.com',
+    link: 'https://www.namshi.com/uae-en/gucci-gg-marmont-wallet/',
+    image: 'https://images.unsplash.com/photo-1627124357773-413d9413466c?w=450&q=85&auto=format&fit=crop',
+    description: 'کیف پول چرمی لوکس گوچی با لوگوی فلزی طلایی برجسته GG، دارای جاکارتی و زیپ مجزا.',
+    colors: ['مشکی', 'کرم', 'قهوه‌ای']
+  },
+  {
+    id: 'ba5', name: 'کیف توت لویی ویتون Neverfull MM', spec: 'کیف خرید کلاسیک طرح مونوگرام',
+    priceAed: 880, weight: 0.85, category: 'bags', brand: 'Louis Vuitton',
+    store: 'noon.com',
+    link: 'https://www.noon.com/uae-en/louis-vuitton-neverfull-mm/N50987345A/p/',
+    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=450&q=85&auto=format&fit=crop',
+    description: 'کیف خرید جادار لویی ویتون طرح نمادین مونوگرام قهوه‌ای، چرم طبیعی مقاوم در برابر خط و خش.',
+    colors: ['قهوه‌ای مونوگرام', 'کرم دامیه']
+  }
+];
+
 export const getAllProducts = () => [
   ...laptops,
   ...trendingProducts,
   ...menProducts,
   ...womenProducts,
-  ...kidsProducts
+  ...kidsProducts,
+  ...bagsAndAccessoriesProducts
 ];
 
 export const getProductById = (id) => getAllProducts().find(p => p.id === id);
