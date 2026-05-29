@@ -6,7 +6,8 @@ export const laptops = [
     store: 'انبار ایران',
     link: 'https://www.noon.com/uae-en/macbook-air-m2-2022-8gb-256gb-ssd-space-grey/N53351982A/p/',
     image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=85&auto=format&fit=crop',
-    description: 'لپتاپ استوک اپل مدل مک‌بوک ایر M2 بسیار تمیز و کم‌کارکرد.'
+    description: 'لپتاپ استوک اپل مدل مک‌بوک ایر M2 بسیار تمیز و کم‌کارکرد.',
+    isBestSeller: true
   },
   {
     id: 'lap2', name: 'Dell XPS 13 9315', spec: '16GB / 512GB SSD',
@@ -43,7 +44,8 @@ export const laptops = [
     store: 'انبار ایران',
     link: 'https://www.noon.com/uae-en/rog-zephyrus-g14/N53289123A/p/',
     image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400&q=85&auto=format&fit=crop',
-    description: 'لپتاپ گیمینگ ایسوس مخصوص بازی و رندرهای سنگین.'
+    description: 'لپتاپ گیمینگ ایسوس مخصوص بازی و رندرهای سنگین.',
+    isBestSeller: true
   }
 ];
 
@@ -124,7 +126,8 @@ export const menProducts = [
     description: 'شلوار جین نمادین لویز ۵۱۱ با کیفیت رنگ عالی و الیاف الاستین انعطاف‌پذیر.',
     sizes: ['30', '32', '34', '36'],
     colors: ['آبی تیره', 'ذغالی', 'آبی روشن'],
-    discountPercent: 20
+    discountPercent: 20,
+    isBestSeller: true
   },
   {
     id: 'm4', name: 'کفش ورزشی آدیداس Ultraboost Light', spec: 'کفش دویدن و پیاده‌روی فوق سبک',
@@ -134,7 +137,8 @@ export const menProducts = [
     image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=450&q=85&auto=format&fit=crop',
     description: 'جدین‌ترین نسخه کفش‌های الترابوست آدیداس با کپسول‌های برگشت انرژی لایت.',
     sizes: ['41', '42', '43', '44', '45'],
-    colors: ['مشکی', 'سفید', 'طوسی-نارنجی']
+    colors: ['مشکی', 'سفید', 'طوسی-نارنجی'],
+    isBestSeller: true
   },
   {
     id: 'm5', name: 'کمربند چرم طبیعی پیر کاردین', spec: 'چرم گاوی اصل ۱۰۰٪ با سگک فلزی',
@@ -158,7 +162,8 @@ export const womenProducts = [
     description: 'پیراهن نخی زنانه بسیار سبک و راحت برند مانگو با طراحی شیک تابستانه.',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     colors: ['صورتی', 'سفید', 'سبز نعنایی', 'خردلی'],
-    discountPercent: 30
+    discountPercent: 30,
+    isBestSeller: true
   },
   {
     id: 'w2', name: 'پلیور بافتنی یقه اسکی H&M', spec: 'بافت ظریف پاییزه و زمستانه',
@@ -189,7 +194,8 @@ export const womenProducts = [
     image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=450&q=85&auto=format&fit=crop',
     description: 'کتانی شیک و لایف‌استایل آدیداس سری NMD با رویه کشسانی تنفس‌پذیر.',
     sizes: ['37', '38', '39', '40'],
-    colors: ['سفید', 'مشکی-طلایی', 'صورتی ملایم']
+    colors: ['سفید', 'مشکی-طلایی', 'صورتی ملایم'],
+    isBestSeller: true
   },
   {
     id: 'w5', name: 'شال گردن و روسری حریر گوچی', spec: 'طرح گل‌دار کلاسیک Gucci',
@@ -232,7 +238,8 @@ export const kidsProducts = [
     description: 'کفش ورزشی بچگانه نایک با لایه محافظ هوا Air Max و بندهای چسبی برای سهولت استفاده.',
     sizes: ['28', '30', '32', '34', '35'],
     colors: ['سفید-قرمز', 'مشکی-سفید', 'آبی-طوسی'],
-    discountPercent: 25
+    discountPercent: 25,
+    isBestSeller: true
   }
 ];
 
@@ -253,7 +260,8 @@ export const bagsAndAccessoriesProducts = [
     link: 'https://www.amazon.ae/Rolex-Submariner-Stainless-Steel-Watch/dp/B0B527EE94/',
     image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=450&q=85&auto=format&fit=crop',
     description: 'ساعت مچی اتوماتیک رولکس سری ساب‌مارینر قاب استیل ضدزنگ موتور کالیبر ۳۲۳۵ با شیشه سافایر.',
-    colors: ['مشکی', 'سبز', 'آبی']
+    colors: ['مشکی', 'سبز', 'آبی'],
+    isBestSeller: true
   },
   {
     id: 'ba3', name: 'عینک آفتابی ری‌بن Aviator Classic', spec: 'عینک خلبانی فریم طلایی شیک شیشه سبز',
@@ -263,7 +271,8 @@ export const bagsAndAccessoriesProducts = [
     image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=450&q=85&auto=format&fit=crop',
     description: 'عینک خلبانی کلاسیک ری‌بن فریم فلزی طلایی شیشه ضدخش پولاریزه با فیلتر کامل UV400.',
     colors: ['طلایی-سبز', 'مشکی', 'نقره‌ای'],
-    discountPercent: 40
+    discountPercent: 40,
+    isBestSeller: true
   },
   {
     id: 'ba4', name: 'کیف پول چرم گوچی GG Marmont', spec: 'کیف پول زنانه تاشو چرم اصل',
@@ -282,7 +291,8 @@ export const bagsAndAccessoriesProducts = [
     link: 'https://www.noon.com/uae-en/louis-vuitton-neverfull-mm/N50987345A/p/',
     image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=450&q=85&auto=format&fit=crop',
     description: 'کیف خرید جادار لویی ویتون طرح نمادین مونوگرام قهوه‌ای، چرم طبیعی مقاوم در برابر خط و خش.',
-    colors: ['قهوه‌ای مونوگرام', 'کرم دامیه']
+    colors: ['قهوه‌ای مونوگرام', 'کرم دامیه'],
+    isBestSeller: true
   }
 ];
 

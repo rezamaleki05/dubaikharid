@@ -260,12 +260,40 @@
   color: var(--orange) !important;
 }
 
-/* Sale item glowing neon */
+/* Best Sellers and Sales with custom border styling */
+.navBestSellers {
+  color: #f87820 !important;
+  font-weight: 700 !important;
+  border: 1.5px solid rgba(248, 120, 32, 0.4) !important;
+  border-radius: 8px;
+  padding: 6px 14px !important;
+  margin: 8px 6px !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(248, 120, 32, 0.1);
+  display: inline-block;
+}
+.navBestSellers:hover {
+  background: rgba(248, 120, 32, 0.1) !important;
+  border-color: #f87820 !important;
+  box-shadow: 0 0 10px rgba(248, 120, 32, 0.4);
+}
+
 .navSale {
   color: #ff3333 !important;
   font-weight: 800 !important;
-  text-shadow: 0 0 4px rgba(255, 51, 51, 0.4), 0 0 10px rgba(255, 51, 51, 0.4);
+  border: 1.5px solid rgba(255, 51, 51, 0.4) !important;
+  border-radius: 8px;
+  padding: 6px 14px !important;
+  margin: 8px 6px !important;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(255, 51, 51, 0.1);
   animation: neonPulse 1.6s ease-in-out infinite alternate;
+  display: inline-block;
+}
+.navSale:hover {
+  background: rgba(255, 51, 51, 0.1) !important;
+  border-color: #ff3333 !important;
+  box-shadow: 0 0 12px rgba(255, 51, 51, 0.6);
 }
 
 @keyframes neonPulse {

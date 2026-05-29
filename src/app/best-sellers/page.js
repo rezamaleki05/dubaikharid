@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { trendingProducts } from '@/data/products';
+import { trendingProducts, getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
 
@@ -18,8 +18,14 @@ function BestSellersContent() {
   // Sorting state
   const [sortOption, setSortOption] = useState('');
 
-  // Extract unique brands present in trending Products
-  const availableBrands = Array.from(new Set(trendingProducts.map(p => p.brand)));
+  // Extract all best selling products
+  const bestSellersList = getAllProducts().filter((p, index, self) => 
+    (p.isBestSeller === true || trendingProducts.some(t => t.id === p.id)) &&
+    self.findIndex(t => t.id === p.id) === index
+  );
+
+  // Extract unique brands present in best sellers list
+  const availableBrands = Array.from(new Set(bestSellersList.map(p => p.brand)));
 
   // Selected brands filter state
   const [selectedBrands, setSelectedBrands] = useState([]);
@@ -32,7 +38,7 @@ function BestSellersContent() {
   };
 
   // Filter products based on selected brands
-  const filteredProducts = trendingProducts.filter(product => {
+  const filteredProducts = bestSellersList.filter(product => {
     return selectedBrands.length === 0 || selectedBrands.includes(product.brand);
   });
 

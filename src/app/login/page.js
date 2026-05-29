@@ -41,12 +41,21 @@ export default function LoginPage() {
   const validateForm = () => {
     const newErrors = {};
     
-    // Phone validation (Iran style e.g. 0912...)
-    const phoneRegex = /^09\d{9}$/;
-    if (!phone) {
+    const toEnglishDigits = (str) => {
+      const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      return str
+        .replace(/[۰-۹]/g, (w) => farsiDigits.indexOf(w))
+        .replace(/[٠-٩]/g, (w) => arabicDigits.indexOf(w));
+    };
+
+    const cleanPhone = toEnglishDigits((phone || '').trim().replace(/\s+/g, ''));
+    
+    // Phone validation
+    if (!cleanPhone) {
       newErrors.phone = 'وارد کردن شماره موبایل الزامی است';
-    } else if (!phoneRegex.test(phone)) {
-      newErrors.phone = 'شماره موبایل نامعتبر است (مثال: 09123456789)';
+    } else if (!/^(?:09|\+989|989|00989)\d{9}$/.test(cleanPhone)) {
+      newErrors.phone = 'شماره موبایل معتبر نیست (مثال: 09123456789 یا +989123456789)';
     }
 
     // Email validation if filled

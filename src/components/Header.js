@@ -8,16 +8,66 @@ import styles from './Header.module.css';
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
 
+  // Database of searchable terms
+  const searchTerms = [
+    { label: 'نایک (Nike)', query: 'nike', type: 'brand' },
+    { label: 'آدیداس (Adidas)', query: 'adidas', type: 'brand' },
+    { label: 'زارا (Zara)', query: 'zara', type: 'brand' },
+    { label: 'گوچی (Gucci)', query: 'gucci', type: 'brand' },
+    { label: 'شنل (Chanel)', query: 'chanel', type: 'brand' },
+    { label: 'اپل (Apple)', query: 'apple', type: 'brand' },
+    { label: 'مک‌بوک (MacBook)', query: 'macbook', type: 'product' },
+    { label: 'آیفون (iPhone)', query: 'iphone', type: 'product' },
+    { label: 'سامسونگ (Samsung)', query: 'samsung', type: 'brand' },
+    { label: 'رولکس (Rolex)', query: 'rolex', type: 'brand' },
+    { label: 'ری‌بن (Ray-Ban)', query: 'ray-ban', type: 'brand' },
+    { label: 'لویی ویتون (Louis Vuitton)', query: 'louis vuitton', type: 'brand' },
+    { label: 'مانگو (Mango)', query: 'mango', type: 'brand' },
+    { label: 'اچ اند ام (H&M)', query: 'h&m', type: 'brand' },
+    { label: 'کفش ورزشی مردانه', query: 'کفش', type: 'category' },
+    { label: 'تی‌شرت ورزشی', query: 'لباس', type: 'category' },
+    { label: 'شلوار لی و کتان', query: 'شلوار', type: 'category' },
+    { label: 'کیف دستی و کوله‌پشتی', query: 'کیف', type: 'category' },
+    { label: 'ساعت مچی لوکس', query: 'ساعت', type: 'category' },
+    { label: 'عینک آفتابی خلبانی', query: 'عینک', type: 'category' },
+    { label: 'لپتاپ استوک', query: 'لپتاپ', type: 'category' }
+  ];
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setShowSuggestions(false);
     }
+  };
+
+  const handleInputChange = (val) => {
+    setSearchQuery(val);
+    if (val.trim()) {
+      const queryLower = val.toLowerCase().trim();
+      const filtered = searchTerms.filter(term => 
+        term.label.toLowerCase().includes(queryLower) ||
+        term.query.includes(queryLower)
+      ).slice(0, 6);
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (term) => {
+    setSearchQuery(term.label);
+    setShowSuggestions(false);
+    router.push(`/search?q=${encodeURIComponent(term.query)}`);
   };
 
   useEffect(() => {
@@ -60,19 +110,75 @@ export default function Header() {
             </a>
 
             {/* Search — CENTER */}
-            <div className={styles.searchBox}>
-              <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
-                <input
-                  type="text"
-                  placeholder="جستجو برای محصولات، برندها و دسته‌ها..."
-                  className={styles.searchInput}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button type="submit" className={styles.searchBtn} aria-label="جستجو">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                </button>
-              </form>
+            <div style={{ position: 'relative', flex: 1, maxWidth: '600px', margin: '0 auto' }}>
+              <div className={styles.searchBox}>
+                <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
+                  <input
+                    type="text"
+                    placeholder="جستجو برای محصولات، برندها و دسته‌ها..."
+                    className={styles.searchInput}
+                    value={searchQuery}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onFocus={() => searchQuery.trim() && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  />
+                  <button type="submit" className={styles.searchBtn} aria-label="جستجو">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </button>
+                </form>
+              </div>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  background: 'rgba(17, 17, 17, 0.98)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  marginTop: '8px',
+                  overflow: 'hidden',
+                  zIndex: 9999,
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.8)',
+                  direction: 'rtl',
+                  textAlign: 'right'
+                }}>
+                  {suggestions.map((term, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleSuggestionClick(term)}
+                      style={{
+                        padding: '12px 16px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        color: '#b2b9ca',
+                        borderBottom: index < suggestions.length - 1 ? '1px solid rgba(255, 255, 255, 0.03)' : 'none',
+                        transition: 'background 0.2s, color 0.2s',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(248, 120, 32, 0.1)';
+                        e.currentTarget.style.color = '#fff';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#b2b9ca';
+                      }}
+                    >
+                      <span>{term.label}</span>
+                      <span style={{ fontSize: '10px', color: '#f87820', background: 'rgba(248, 120, 32, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                        {term.type === 'brand' ? 'برند' : term.type === 'category' ? 'دسته‌بندی' : 'محصول'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Icons — LEFT in RTL */}
@@ -135,9 +241,9 @@ export default function Header() {
               </ul>
             </li>
             <li><a href="/bags-accessories" className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</a></li>
-            <li><a href="/best-sellers" className={pathname === '/best-sellers' ? styles.navActive : ''}>پرفروش‌ها</a></li>
             <li><a href="#">الکترونیک</a></li>
-            <li><a href="/sale" className={styles.navSale}>تخفیف‌ها</a></li>
+            <li><a href="/best-sellers" className={pathname === '/best-sellers' ? `${styles.navActive} ${styles.navBestSellers}` : styles.navBestSellers}>پرفروش‌ها</a></li>
+            <li><a href="/sale" className={pathname === '/sale' ? `${styles.navActive} ${styles.navSale}` : styles.navSale}>تخفیف‌ها</a></li>
           </ul>
         </div>
       </nav>

@@ -37,14 +37,26 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     }
   };
 
+  const toEnglishDigits = (str) => {
+    const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return str
+      .replace(/[۰-۹]/g, (w) => farsiDigits.indexOf(w))
+      .replace(/[٠-٩]/g, (w) => arabicDigits.indexOf(w));
+  };
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'نام و نام خانوادگی الزامی است';
-    if (!formData.phone.trim()) {
+    
+    const cleanPhone = toEnglishDigits(formData.phone.trim().replace(/\s+/g, ''));
+    
+    if (!cleanPhone) {
       newErrors.phone = 'شماره موبایل الزامی است';
-    } else if (!/^09\d{9}$/.test(formData.phone.trim())) {
-      newErrors.phone = 'شماره موبایل وارد شده معتبر نیست (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)';
+    } else if (!/^(?:09|\+989|989|00989)\d{9}$/.test(cleanPhone)) {
+      newErrors.phone = 'شماره موبایل معتبر نیست (نمونه: ۰۹۱۲۳۴۵۶۷۸۹ یا +۹۸۹۱۲۳۴۵۶۷۸۹)';
     }
+    
     if (!formData.address.trim()) newErrors.address = 'آدرس تحویل الزامی است';
     
     setErrors(newErrors);
