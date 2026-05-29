@@ -19,7 +19,7 @@ function SaleContent() {
   const [activeTab, setActiveTab] = useState('all');
   
   // Sort state
-  const [sortOption, setSortOption] = useState('discount'); // 'discount', 'price_asc', 'price_desc'
+  const [sortOption, setSortOption] = useState(''); // '', 'discount', 'price_asc', 'price_desc'
 
   // Extract all items from database that are discounted (discountPercent > 0)
   const discountedProducts = getAllProducts().filter(p => p.discountPercent && p.discountPercent > 0);
@@ -113,7 +113,8 @@ function SaleContent() {
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
             >
-              <option value="discount">مرتب‌سازی: بیشترین تخفیف</option>
+              <option value="" disabled style={{ color: '#8b92a5' }}>مرتب‌سازی بر اساس...</option>
+              <option value="discount">بیشترین تخفیف</option>
               <option value="price_asc">قیمت: از کم به زیاد</option>
               <option value="price_desc">قیمت: از زیاد به کم</option>
             </select>

@@ -51,6 +51,7 @@ const storesData = [
 export default function BrandsPage() {
   const [activeCat, setActiveCat] = useState('همه برندها');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState('');
 
   const filteredBrands = brandsData.filter(brand => {
     const matchesCategory = activeCat === 'همه/برندها' || activeCat === 'همه برندها' || brand.cat === activeCat;
@@ -61,6 +62,16 @@ export default function BrandsPage() {
       brand.cat.includes(query);
       
     return matchesCategory && matchesSearch;
+  });
+
+  const sortedBrands = [...filteredBrands].sort((a, b) => {
+    if (sortOption === 'alphabetical') {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortOption === 'newest') {
+      return b.id.localeCompare(a.id);
+    }
+    return 0;
   });
 
   return (
@@ -163,16 +174,22 @@ export default function BrandsPage() {
       {/* ── BRANDS GRID ── */}
       <section className={styles.mainContainer}>
         <div className={styles.brandsHeader}>
-          <div className={styles.brandsCount}>{activeCat} <span>({filteredBrands.length})</span></div>
-          <select className={styles.sortSelect} dir="rtl">
-            <option>مرتب‌سازی: محبوب‌ترین</option>
-            <option>جدیدترین</option>
-            <option>حروف الفبا</option>
+          <div className={styles.brandsCount}>{activeCat} <span>({sortedBrands.length})</span></div>
+          <select 
+            className={styles.sortSelect} 
+            dir="rtl"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+          >
+            <option value="" disabled style={{ color: '#8b92a5' }}>مرتب‌سازی بر اساس...</option>
+            <option value="popular">محبوب‌ترین</option>
+            <option value="newest">جدیدترین</option>
+            <option value="alphabetical">حروف الفبا</option>
           </select>
         </div>
 
         <div className={styles.grid}>
-          {filteredBrands.map(brand => (
+          {sortedBrands.map(brand => (
             <div key={brand.id} className={styles.card}>
               <div className={styles.logoWrap}>
                 {brand.hasImage ? (

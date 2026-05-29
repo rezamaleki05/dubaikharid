@@ -105,6 +105,30 @@
   flex: 1;
 }
 
+/* ── SORT SELECT ── */
+.sortSelect {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  min-width: 180px;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.sortSelect:focus {
+  border-color: var(--orange);
+}
+
+.sortSelect option {
+  background: #111;
+  color: #fff;
+}
+
 /* ── TABS ── */
 .tabs {
   display: flex;
