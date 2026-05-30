@@ -3,10 +3,11 @@
 import { use, useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getProductById, EXCHANGE_RATE } from '@/data/products';
+import { getProductById } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import styles from './Product.module.css';
 
+const EXCHANGE_RATE = 19500;
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 // Colors to Hex mapping for circular swatches

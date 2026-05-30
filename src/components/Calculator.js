@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { EXCHANGE_RATE } from '@/data/products';
 import styles from './Calculator.module.css';
 
 export default function Calculator({ initialValues, onOrderSubmit }) {
+  // Exchange Rate (1 AED = 19,500 Toman)
+  const EXCHANGE_RATE = 19500;
+
   // State Variables
   const [link, setLink] = useState('');
   const [loading, setLoading] = useState(false);

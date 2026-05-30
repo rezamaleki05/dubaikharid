@@ -7,8 +7,8 @@ import Footer from '@/components/Footer';
 import CheckoutModal from '@/components/CheckoutModal';
 import { useCart } from '@/context/CartContext';
 import styles from './Cart.module.css';
-import { EXCHANGE_RATE } from '@/data/products';
 
+const EXCHANGE_RATE = 19500;
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 export default function CartPage() {

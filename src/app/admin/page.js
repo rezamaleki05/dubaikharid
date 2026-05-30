@@ -1,107 +1,84 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getAllProducts } from '@/data/products';
 import styles from './Admin.module.css';
 
-// ==========================================================================
-// SEEDING DATABASE SCHEMAS (15+ Orders, 10+ Customers, 5+ Laptops, CMS, etc.)
-// ==========================================================================
-
-const MOCK_CUSTOMERS_SEED = [
-  { id: 'c-1', name: 'علیرضا ملکی', phone: '09176168381', email: 'reza.maleki@gmail.com', city: 'شیراز', totalOrders: 5, totalSpending: 76800000, level: 'vip' },
-  { id: 'c-2', name: 'امیرحسین قاسمی', phone: '09121234567', email: 'amir.gh@yahoo.com', city: 'تهران', totalOrders: 2, totalSpending: 12400000, level: 'regular' },
-  { id: 'c-3', name: 'سارا کریمی', phone: '09139876543', email: 'sara.k@gmail.com', city: 'اصفهان', totalOrders: 7, totalSpending: 145000000, level: 'wholesale' },
-  { id: 'c-4', name: 'زهرا مرادی', phone: '09355556677', email: 'zahra.m@gmail.com', city: 'مشهد', totalOrders: 1, totalSpending: 3100000, level: 'new' },
-  { id: 'c-5', name: 'پیمان حسینی', phone: '09144445555', email: 'peyman.h@gmail.com', city: 'تبریز', totalOrders: 4, totalSpending: 52000000, level: 'vip' },
-  { id: 'c-6', name: 'مریم ساداتی', phone: '09117778888', email: 'mary.s@gmail.com', city: 'رشت', totalOrders: 3, totalSpending: 19500000, level: 'regular' },
-  { id: 'c-7', name: 'محمدرضا عباسی', phone: '09159990000', email: 'reza.ab@gmail.com', city: 'یزد', totalOrders: 9, totalSpending: 210000000, level: 'wholesale' },
-  { id: 'c-8', name: 'فاطمه احمدی', phone: '09183332222', email: 'fati.ah@gmail.com', city: 'همدان', totalOrders: 2, totalSpending: 9600000, level: 'regular' },
-  { id: 'c-9', name: 'کامران صادقی', phone: '09192221111', email: 'kamran@gmail.com', city: 'کرج', totalOrders: 1, totalSpending: 1680000, level: 'new' },
-  { id: 'c-10', name: 'سیاوش راد', phone: '09129998888', email: 'rad@vip.com', city: 'تهران', totalOrders: 12, totalSpending: 380000000, level: 'vip' }
-];
-
-const MOCK_ORDERS_SEED = [
+// Default initial orders/leads seed
+const INITIAL_LEADS_SEED = [
   {
-    id: 'DK-9081', customerId: 'c-1', customerName: 'علیرضا ملکی', phone: '09176168381', address: 'شیراز، معالی آباد، کوچه ۳، پلاک ۱۴', notes: 'لطفاً رنگ خاکستری ارسال شود.',
-    productName: 'MacBook Air M2', brand: 'Apple', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=85&auto=format&fit=crop', link: 'https://www.noon.com/uae-en/macbook-air-m2',
-    priceAed: 1680, shippingCost: 280000, serviceFee: 2620800, finalPrice: 35660800, paymentStatus: 'paid', status: 'delivered', trackingNumber: 'TRK-AE-90881', date: '2026-05-28T14:30:00Z', internalNotes: 'هماهنگی کارگو هوایی انجام شد.'
+    id: 'DKHARID-91823',
+    customerName: 'رضا ملکی',
+    phone: '09176168381',
+    address: 'شیراز، معالی آباد، کوچه ۳، پلاک ۱۴',
+    notes: 'لطفاً رنگ مشکی فرستاده شود. تشکر.',
+    productName: 'پیش‌فاکتور سبد خرید دبی',
+    brand: 'دبی خرید',
+    weight: 2.1,
+    totalToman: 45630000,
+    priceAed: 2340,
+    date: '2026-05-28T14:30:00Z',
+    status: 'pending',
+    items: [
+      { name: 'MacBook Air M2', brand: 'Apple', quantity: 1, color: 'مشکی', size: '13.6 inch', priceAed: 1680, discountPercent: 0 },
+      { name: 'Michael Kors Jet Set', brand: 'Michael Kors', quantity: 1, color: 'کرم', size: 'متوسط', priceAed: 456, discountPercent: 0 },
+      { name: 'عینک آفتابی ری‌بن Aviator Classic', brand: 'Ray-Ban', quantity: 1, color: 'طلایی-سبز', size: 'تك سایز', priceAed: 215, discountPercent: 40 }
+    ]
   },
   {
-    id: 'DK-8192', customerId: 'c-2', customerName: 'امیرحسین قاسمی', phone: '09121234567', address: 'تهران، سعادت آباد، خیابان سرو، پلاک ۲۲', notes: 'سایز ۴۳، رنگ سفید',
-    productName: "Nike Air Force 1 '07", brand: 'Nike', image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=400&q=85&auto=format&fit=crop', link: 'https://www.amazon.ae/Nike-Air-Force-07',
-    priceAed: 318, shippingCost: 266000, serviceFee: 496080, finalPrice: 6963080, paymentStatus: 'paid', status: 'shipped_iran', trackingNumber: 'TRK-AE-77182', date: '2026-05-26T11:00:00Z', internalNotes: 'ارسال شده به انبار گمرک امام خمینی.'
+    id: 'DKHARID-43891',
+    customerName: 'مهدی علوی',
+    phone: '09121234567',
+    address: 'تهران، سعادت آباد، خیابان سرو، پلاک ۲۲',
+    notes: 'سایز ۴۳، رنگ سفید',
+    productName: "Nike Air Force 1 '07",
+    brand: 'Nike',
+    weight: 0.95,
+    totalToman: 5270850,
+    priceAed: 318,
+    date: '2026-05-26T11:00:00Z',
+    status: 'contacted',
+    items: [
+      { name: "Nike Air Force 1 '07", brand: 'Nike', quantity: 1, color: 'سفید', size: '43', priceAed: 318, discountPercent: 15 }
+    ]
   },
   {
-    id: 'DK-7711', customerId: 'c-3', customerName: 'سارا کریمی', phone: '09139876543', address: 'اصفهان، خیابان چهارباغ بالا، ساختمان پارس', notes: 'کادوپچ شود.',
-    productName: 'Dior Sauvage EDP 100ml', brand: 'Dior', image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&q=85&auto=format&fit=crop', link: 'https://www.noon.com/uae-en/dior-sauvage',
-    priceAed: 318, shippingCost: 165000, serviceFee: 496080, finalPrice: 6862080, paymentStatus: 'paid', status: 'purchased', trackingNumber: 'TRK-AE-10291', date: '2026-05-25T09:15:00Z', internalNotes: 'خریداری شده از سایت مرجع نون امارات.'
-  },
-  {
-    id: 'DK-6543', customerId: 'c-4', userName: 'زهرا مرادی', customerName: 'زهرا مرادی', phone: '09355556677', address: 'مشهد، بلوار وکیل آباد، کوچه لاله ۳', notes: 'بدون توضیحات.',
-    productName: 'تی‌شرت ورزشی نایک Dry-Fit', brand: 'Nike', image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=450&q=85&auto=format&fit=crop', link: 'https://www.noon.com/uae-en/dry-fit-nike',
-    priceAed: 95, shippingCost: 62500, serviceFee: 148200, finalPrice: 2063200, paymentStatus: 'pending', status: 'price_calculated', trackingNumber: '', date: '2026-05-29T10:00:00Z', internalNotes: 'پیش‌فاکتور صادر گردید، در انتظار تایید مشتری.'
-  },
-  {
-    id: 'DK-5491', customerId: 'c-5', customerName: 'پیمان حسینی', phone: '09144445555', address: 'تبریز، خیابان ولیعصر، برج سپهر', notes: 'لطفا فاکتور خرید امارات هم ضمیمه بار شود.',
-    productName: 'Samsung S24 Ultra', brand: 'Samsung', image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&q=85&auto=format&fit=crop', link: 'https://www.amazon.ae/Samsung-S24-Ultra',
-    priceAed: 2300, shippingCost: 80500, serviceFee: 3588000, finalPrice: 48518500, paymentStatus: 'paid', status: 'uae_warehouse', trackingNumber: 'TRK-AE-00981', date: '2026-05-27T18:00:00Z', internalNotes: 'تحویل دفتر دبی گردید، بسته‌بندی ایمن گرید A.'
-  },
-  {
-    id: 'DK-1209', customerId: 'c-6', customerName: 'مریم ساداتی', phone: '09117778888', address: 'رشت، گلسار، کوچه ۱۱۰', notes: 'سایز M، رنگ کرم',
-    productName: 'پیراهن کتان زارا Casual', brand: 'Zara', image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=450&q=85&auto=format&fit=crop', link: 'https://www.noon.com/uae-en/zara-shirt',
-    priceAed: 135, shippingCost: 87500, serviceFee: 210600, finalPrice: 2930600, paymentStatus: 'pending', status: 'waiting_review', trackingNumber: '', date: '2026-05-30T02:00:00Z', internalNotes: 'در انتظار بررسی وزن دقیق کالا جهت صدور نهایی فاکتور.'
-  },
-  {
-    id: 'DK-0092', customerId: 'c-7', customerName: 'محمدرضا عباسی', phone: '09159990000', address: 'یزد، صفائیه، خیابان ملاصدرا', notes: 'سفارش عمده همکار.',
-    productName: 'ساعت مچی رولکس Submariner Date', brand: 'Rolex', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=450&q=85&auto=format&fit=crop', link: 'https://www.amazon.ae/Rolex-Submariner',
-    priceAed: 2450, shippingCost: 157500, serviceFee: 3822000, finalPrice: 51754500, paymentStatus: 'pending', status: 'new_request', trackingNumber: '', date: '2026-05-30T22:15:00Z', internalNotes: 'لید جدید ثبت شده از فرم اصلی.'
+    id: 'DKHARID-21844',
+    customerName: 'مریم رضایی',
+    phone: '09139876543',
+    address: 'اصفهان، خیابان چهارباغ بالا، ساختمان پارس',
+    notes: 'کادوپیچ شود لطفا.',
+    productName: 'Dior Sauvage EDP 100ml',
+    brand: 'Dior',
+    weight: 0.55,
+    totalToman: 6201000,
+    priceAed: 318,
+    date: '2026-05-25T09:15:00Z',
+    status: 'paid',
+    items: [
+      { name: 'Dior Sauvage EDP 100ml', brand: 'Dior', quantity: 1, color: 'آبی تیره', size: '۱۰۰ میل', priceAed: 318, discountPercent: 0 }
+    ]
   }
 ];
 
-const MOCK_LAPTOPS_SEED = [
-  { id: 'lap-st-1', brand: 'Apple', model: 'MacBook Pro M1 Pro 2021', cpu: 'Apple M1 Pro 8-Core', ram: '16GB Unified', storage: '512GB NVMe SSD', gpu: 'Apple 14-Core', screenSize: '14.2 inch Liquid Retina', purchasePriceAED: 2800, salePriceToman: 64500000, profit: 9900000, condition: 'Excellent', status: 'Available', testedKeyboard: true, testedDisplay: true, testedBattery: true, testedCamera: true, testedUsb: true, testedWifi: true, chargerIncluded: true, boxIncluded: false, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=85' },
-  { id: 'lap-st-2', brand: 'Dell', model: 'Dell XPS 15 9520', cpu: 'Intel Core i7-12700H', ram: '32GB DDR5', storage: '1TB SSD', gpu: 'NVIDIA RTX 3050 Ti', screenSize: '15.6 inch 4K Touch', purchasePriceAED: 3100, salePriceToman: 71000000, profit: 10550000, condition: 'Very Good', status: 'Reserved', testedKeyboard: true, testedDisplay: true, testedBattery: true, testedCamera: true, testedUsb: true, testedWifi: true, chargerIncluded: true, boxIncluded: true, image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400&q=85' },
-  { id: 'lap-st-3', brand: 'Lenovo', model: 'ThinkPad X1 Carbon Gen 9', cpu: 'Intel Core i7-1165G7', ram: '16GB LPDDR4x', storage: '512GB SSD', gpu: 'Intel Iris Xe Graphics', screenSize: '14.0 inch WUXGA IPS', purchasePriceAED: 1950, salePriceToman: 44000000, profit: 5975000, condition: 'Good', status: 'Sold', testedKeyboard: true, testedDisplay: true, testedBattery: false, testedCamera: true, testedUsb: true, testedWifi: true, chargerIncluded: true, boxIncluded: false, image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400&q=85' }
-];
-
-const MOCK_REVIEWS_SEED = [
-  { id: 'rev-101', productId: 'lap1', productName: 'MacBook Air M2', userName: 'علیرضا زارعی', rating: 5, comment: 'لپ‌تاپ فوق‌العاده تمیز بود، تحویل سریع و بموقع دفتر شیراز واقعاً حرفه‌ای بود. ممنون از کارگو دبی خرید.', reply: 'علیرضا عزیز، خرسندیم که از کیفیت لپ‌تاپ و ارسال کارگوی هوایی رضایت داشتید.', status: 'approved', date: '2026-05-24T12:00:00Z' },
-  { id: 'rev-102', productId: 'p1', productName: "Nike Air Force 1 '07", userName: 'امیر قاسمی', rating: 5, comment: 'صد درصد اورجینال، بارکد جعبه رو اسکن کردم کاملا معتبر بود. بهترین روش برای خرید مستقیم از نون امارات.', reply: '', status: 'approved', date: '2026-05-28T09:15:00Z' },
-  { id: 'rev-103', productId: 'w1', productName: 'پیراهن نخی ساحلی مانگو', userName: 'سارا کریمی', rating: 4, comment: 'دوخت و جنس پارچه عالیه، دقیقاً مطابق با عکس سایت مانگو. فقط زمان ارسال به علت ترخیص گمرکی چند روز تاخیر داشت.', reply: 'سارای گرامی، از صبوری شما سپاسگزاریم. تلاش می‌کنیم تا ترخیص گمرکی پروازهای کارگو هوایی را باز هم سریع‌تر کنیم.', status: 'pending', date: '2026-05-29T11:40:00Z' }
-];
-
-const DEFAULT_SETTINGS_SEED = {
-  exchangeRate: 19500,
-  cargoRateLight: 280000,
-  cargoRateMedium: 300000,
-  cargoRateHeavy: 350000,
-  supportPhone: '۰۹۱۷۶۱۶۸۳۸۱',
-  whatsappNumber: '+989176168381',
-  telegramUsername: 'dubaiKharid_support',
-  websiteName: 'دبی خرید | خرید مستقیم از دبی و امارات',
-  commissionRate: 8
-};
-
-const DEFAULT_CONTENT_SEED = {
-  heroTitle: 'خرید مستقیم و بی واسطه از فروشگاه‌های دبی',
-  heroSubtitle: 'لینک محصول دلخواه خود را از آمازون، نون و... کپی کنید و هزینه نهایی را تحویل درب منزل در ایران بپردازید.',
-  banners: [
-    { title: 'ارسال سریع هوایی کارگو', link: '/sale', image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800' },
-    { title: 'ضمانت اصالت ۱۰۰٪ کالاها', link: '/brands', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800' }
-  ],
-  blogPosts: [
-    { id: 'blog-1', title: 'چرا خرید از دبی به صرفه‌تر است؟', author: 'مدیریت', date: '2026-05-28', summary: 'در این مقاله به بررسی مزایای مالی و اصالت کالاهای امارات نسبت به بازارهای داخلی می‌پردازیم.' },
-    { id: 'blog-2', title: 'راهنمای گام به گام خرید از Noon.com', author: 'پشتیبانی', date: '2026-05-25', summary: 'چگونه بهترین تخفیف‌ها را در سایت بزرگ نون امارات پیدا کنیم و سفارش دهیم.' }
-  ]
-};
-
-const DEFAULT_ROLES_PERMISSIONS = {
-  'Super Admin': ['overview', 'orders', 'customers', 'products', 'laptops', 'finance', 'payments', 'shipping', 'reviews', 'content', 'roles', 'settings'],
-  'Admin': ['overview', 'orders', 'customers', 'products', 'laptops', 'payments', 'shipping', 'reviews', 'content', 'settings'],
-  'Sales Manager': ['overview', 'orders', 'customers', 'payments'],
-  'Customer Support': ['overview', 'orders', 'customers', 'reviews'],
-  'Inventory Manager': ['overview', 'products', 'laptops', 'shipping']
+// Color mapping for circular swatches in live preview card
+const COLOR_HEX_MAP = {
+  'مشکی': '#000000',
+  'سفید': '#ffffff',
+  'طوسی': '#808080',
+  'سرمه‌ای': '#0c2340',
+  'کرم': '#e6d7c3',
+  'خردلی': '#e1ad01',
+  'زیتونی': '#556b2f',
+  'آبی تیره': '#000080',
+  'ذغالی': '#36454f',
+  'آبی روشن': '#add8e6',
+  'قهوه‌ای': '#5c4033',
+  'سبز': '#008000',
+  'صورتی': '#ffb6c1',
+  'قرمز': '#ff0000',
+  'نارنجی': '#ff781f'
 };
 
 export default function AdminPanel() {
@@ -111,127 +88,131 @@ export default function AdminPanel() {
   const [loginError, setLoginError] = useState('');
 
   // Active section/tab
-  const [activeTab, setActiveTab] = useState('overview');
-  
-  // App schemas states
-  const [orders, setOrders] = useState([]);
-  const [customers, setCustomers] = useState([]);
-  const [laptops, setLaptops] = useState([]);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'products', 'leads', 'reviews', 'settings'
+
+  // Data lists
+  const [leads, setLeads] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS_SEED);
-  const [content, setContent] = useState(DEFAULT_CONTENT_SEED);
-  const [rolePermissions, setRolePermissions] = useState(DEFAULT_ROLES_PERMISSIONS);
-  const [adminRole, setAdminRole] = useState('Super Admin'); // Active role selection
+  const [uploadedProducts, setUploadedProducts] = useState([]);
+  const [allProductsCount, setAllProductsCount] = useState(0);
 
-  // Shared active UI states (Drawers & Modals)
-  const [activeOrderDetails, setActiveOrderDetails] = useState(null); // Expanded order ID
-  const [selectedOrderForDrawer, setSelectedOrderForDrawer] = useState(null); // Active Drawer Order
-  const [selectedCustomerForDrawer, setSelectedCustomerForDrawer] = useState(null); // Active Drawer Client
-  const [selectedLaptopForDrawer, setSelectedLaptopForDrawer] = useState(null); // Active Drawer Laptop
-  const [selectedReviewForDrawer, setSelectedReviewForDrawer] = useState(null); // Review reply drawer
-  
-  // Notifications state
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  // Expanded lead row ID (Accordion)
+  const [expandedLeadId, setExpandedLeadId] = useState(null);
 
-  // Uploader Form States
-  const [newProdImageInput, setNewProdImageInput] = useState('');
-  const [newLaptopImageInput, setNewLaptopImageInput] = useState('');
-  const [invoiceFileInput, setInvoiceFileInput] = useState(null);
-  const [receiptFileInput, setReceiptFileInput] = useState(null);
-
-  // Search Terms
-  const [orderSearch, setOrderSearch] = useState('');
-  const [customerSearch, setCustomerSearch] = useState('');
-  const [laptopSearch, setLaptopSearch] = useState('');
+  // Search & Filter queries
+  const [leadSearch, setLeadSearch] = useState('');
   const [reviewSearch, setReviewSearch] = useState('');
-  
-  // Financial duration state
-  const [financePeriod, setFinancePeriod] = useState('monthly'); // 'daily', 'weekly', 'monthly', 'yearly'
 
-  // Load persistent DB seeds or initialize
+  // Uploader form state
+  const [prodForm, setProdForm] = useState({
+    name: '',
+    spec: '',
+    brand: '',
+    store: 'amazon.ae',
+    priceAed: '',
+    weight: '',
+    discountPercent: '',
+    category: 'clothing',
+    gender: 'none', // 'men', 'women', 'kids', 'none'
+    image: '',
+    link: '',
+    isBestSeller: false,
+    colors: '',
+    sizes: '',
+    description: ''
+  });
+
+  // Password management
+  const [passForm, setPassForm] = useState({
+    oldPass: '',
+    newPass: '',
+    confirmPass: ''
+  });
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
+  const [passwordChangeError, setPasswordChangeError] = useState('');
+
+  // Password strength gauge
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: 'خیلی ضعیف', color: '#ff4d4d' });
+
+  // Load persistence layers on mount
   useEffect(() => {
     const session = sessionStorage.getItem('dubaiKharidAdminSession');
     if (session === 'active') {
       setIsLoggedIn(true);
     }
 
-    // Orders seeding
-    const savedOrders = localStorage.getItem('dubaiKharidOrders');
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
+    // Leads seed
+    const savedLeads = localStorage.getItem('dubaiKharidLeads');
+    if (savedLeads) {
+      setLeads(JSON.parse(savedLeads));
     } else {
-      localStorage.setItem('dubaiKharidOrders', JSON.stringify(MOCK_ORDERS_SEED));
-      setOrders(MOCK_ORDERS_SEED);
+      localStorage.setItem('dubaiKharidLeads', JSON.stringify(INITIAL_LEADS_SEED));
+      setLeads(INITIAL_LEADS_SEED);
     }
 
-    // Customers seeding
-    const savedCustomers = localStorage.getItem('dubaiKharidCustomers');
-    if (savedCustomers) {
-      setCustomers(JSON.parse(savedCustomers));
-    } else {
-      localStorage.setItem('dubaiKharidCustomers', JSON.stringify(MOCK_CUSTOMERS_SEED));
-      setCustomers(MOCK_CUSTOMERS_SEED);
-    }
-
-    // Laptops seeding
-    const savedLaptops = localStorage.getItem('dubaiKharidLaptops');
-    if (savedLaptops) {
-      setLaptops(JSON.parse(savedLaptops));
-    } else {
-      localStorage.setItem('dubaiKharidLaptops', JSON.stringify(MOCK_LAPTOPS_SEED));
-      setLaptops(MOCK_LAPTOPS_SEED);
-    }
-
-    // Reviews seeding
+    // Reviews seed
     const savedReviews = localStorage.getItem('dubaiKharidReviews');
     if (savedReviews) {
       setReviews(JSON.parse(savedReviews));
     } else {
-      localStorage.setItem('dubaiKharidReviews', JSON.stringify(MOCK_REVIEWS_SEED));
-      setReviews(MOCK_REVIEWS_SEED);
+      const defaultReviews = [
+        { id: 'seed-1', productId: 'lap1', productName: 'MacBook Air M2', userName: 'علیرضا زارعی', rating: 5, comment: 'فوق‌العاده تمیز و در حد نو بود. دسته‌بندی استوک دبی خرید حرف نداره. از خریدم خیلی راضی‌ام.', date: '2026-05-15T12:00:00Z', isVerified: true },
+        { id: 'seed-2', productId: 'lap1', productName: 'MacBook Air M2', userName: 'مریم حسینی', rating: 4, comment: 'سرعت و قدرت دستگاه عالیه، فقط کارتن نداشت که خب برای استوک طبیعیه. بسته‌بندی ارسال دی‌جی‌کالایی و محکم بود.', date: '2026-05-20T08:30:00Z', isVerified: true },
+        { id: 'seed-3', productId: 'p1', productName: "Nike Air Force 1 '07", userName: 'امیر قاسمی', rating: 5, comment: 'نایک ایر فورس اصل، فوق‌العاده راحت. مستقیم از امارات اومد و بارکدش کاملا معتبر بود.', date: '2026-05-24T14:20:00Z', isVerified: true },
+        { id: 'seed-4', productId: 'w1', productName: 'پیراهن نخی ساحلی مانگو', userName: 'سارا کریمی', rating: 5, comment: 'جنس نخی خنک و عالی، دقیقا مثل عکسش در سایت مانگو بود. خیلی خوش‌دوخت و زیباست.', date: '2026-05-18T10:15:00Z', isVerified: true }
+      ];
+      localStorage.setItem('dubaiKharidReviews', JSON.stringify(defaultReviews));
+      setReviews(defaultReviews);
     }
 
-    // Settings seeding
-    const savedSettings = localStorage.getItem('dubaiKharidSettings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    } else {
-      localStorage.setItem('dubaiKharidSettings', JSON.stringify(DEFAULT_SETTINGS_SEED));
-      setSettings(DEFAULT_SETTINGS_SEED);
+    // Uploaded products
+    const savedUploaded = localStorage.getItem('dubaiKharidUploadedProducts');
+    if (savedUploaded) {
+      setUploadedProducts(JSON.parse(savedUploaded));
     }
 
-    // Content seeding
-    const savedContent = localStorage.getItem('dubaiKharidContent');
-    if (savedContent) {
-      setContent(JSON.parse(savedContent));
-    } else {
-      localStorage.setItem('dubaiKharidContent', JSON.stringify(DEFAULT_CONTENT_SEED));
-      setContent(DEFAULT_CONTENT_SEED);
-    }
-
-    // Seed permissions
-    const savedPermissions = localStorage.getItem('dubaiKharidPermissions');
-    if (savedPermissions) {
-      setRolePermissions(JSON.parse(savedPermissions));
-    } else {
-      localStorage.setItem('dubaiKharidPermissions', JSON.stringify(DEFAULT_ROLES_PERMISSIONS));
-    }
-
-    // Seed Real-time notifications
-    const seedNotifications = [
-      { id: 'n1', type: 'order', text: 'سفارش جدید برای ساعت رولکس ثبت شد.', time: '۱۰ دقیقه قبل', read: false },
-      { id: 'n2', type: 'customer', text: 'سیاوش راد به سطح مشتری VIP ارتقا یافت.', time: '۲ ساعت قبل', read: false },
-      { id: 'n3', type: 'review', text: 'یک بازخورد ۵ ستاره برای مک‌بوک M2 ثبت شد.', time: '۵ ساعت قبل', read: true },
-      { id: 'n4', type: 'stock', text: 'هشدار موجودی: لپ‌تاپ‌های استوک به اتمام رسید.', time: '۱ روز قبل', read: true }
-    ];
-    setNotifications(seedNotifications);
+    // Calculate total catalog count
+    const staticProds = getAllProducts();
+    const dynamicCount = savedUploaded ? JSON.parse(savedUploaded).length : 0;
+    setAllProductsCount(staticProds.length + dynamicCount);
   }, [isLoggedIn]);
+
+  // Real-time password strength evaluator
+  useEffect(() => {
+    const pw = passForm.newPass;
+    if (!pw) {
+      setPasswordStrength({ score: 0, label: 'خیلی ضعیف', color: '#ff4d4d' });
+      return;
+    }
+
+    let score = 0;
+    if (pw.length >= 6) score += 1;
+    if (pw.length >= 10) score += 1;
+    if (/[0-9]/.test(pw)) score += 1;
+    if (/[A-Z]/.test(pw)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+
+    let label = 'خیلی ضعیف';
+    let color = '#ff4d4d'; // weak red
+    
+    if (score === 2) {
+      label = 'ضعیف';
+      color = '#f39c12'; // orange
+    } else if (score === 3) {
+      label = 'متوسط';
+      color = '#fdf500'; // yellow
+    } else if (score >= 4) {
+      label = 'قوی و امن';
+      color = '#2ecc71'; // green
+    }
+
+    setPasswordStrength({ score, label, color });
+  }, [passForm.newPass]);
 
   // Handle Log In
   const handleLogin = (e) => {
     e.preventDefault();
-    const storedPassword = localStorage.getItem('dubaiKharidAdminPassword') || '@Reza112233';
+    const storedPassword = localStorage.getItem('dubaiKharidPassword') || '@Reza112233';
     
     if (passwordInput === storedPassword) {
       setIsLoggedIn(true);
@@ -239,7 +220,7 @@ export default function AdminPanel() {
       setLoginError('');
       setPasswordInput('');
     } else {
-      setLoginError('رمز عبور نادرست است. رمز پیش‌فرض ادمین: @Reza112233');
+      setLoginError('رمز عبور اشتباه است. دوباره تلاش کنید.');
     }
   };
 
@@ -249,206 +230,244 @@ export default function AdminPanel() {
     sessionStorage.removeItem('dubaiKharidAdminSession');
   };
 
-  // Check role permission before allowing view
-  const hasPermission = (tabName) => {
-    const permissions = rolePermissions[adminRole] || [];
-    return permissions.includes(tabName);
+  // Toggle lead expanded details accordion
+  const toggleLeadAccordion = (leadId) => {
+    if (expandedLeadId === leadId) {
+      setExpandedLeadId(null);
+    } else {
+      setExpandedLeadId(leadId);
+    }
   };
 
-  // Dynamic Save to LocalStorage helper
-  const syncState = (key, updatedData, stateSetter) => {
-    stateSetter(updatedData);
-    localStorage.setItem(key, JSON.stringify(updatedData));
+  // Handle product upload submission
+  const handleProductUpload = (e) => {
+    e.preventDefault();
+    if (!prodForm.name.trim() || !prodForm.brand.trim() || !prodForm.priceAed) {
+      alert('لطفاً فیلدهای ضروری نام محصول، برند و قیمت درهم را وارد کنید.');
+      return;
+    }
+
+    const priceAEDNum = parseFloat(prodForm.priceAed) || 0;
+    const discountNum = parseFloat(prodForm.discountPercent) || 0;
+    const weightNum = parseFloat(prodForm.weight) || 0.5;
+
+    const newProduct = {
+      id: `uploaded-${Date.now()}`,
+      name: prodForm.name.trim(),
+      spec: prodForm.spec.trim() || `${prodForm.brand} original product`,
+      brand: prodForm.brand.trim(),
+      store: prodForm.store.trim() || 'فروشگاه دبی',
+      priceAed: priceAEDNum,
+      weight: weightNum,
+      discountPercent: discountNum > 0 ? discountNum : undefined,
+      category: prodForm.category,
+      gender: prodForm.gender !== 'none' ? prodForm.gender : undefined,
+      image: prodForm.image.trim() || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=450&q=85&auto=format&fit=crop',
+      link: prodForm.link.trim() || 'https://www.amazon.ae',
+      isBestSeller: prodForm.isBestSeller,
+      colors: prodForm.colors ? prodForm.colors.split(',').map(s => s.trim()) : undefined,
+      sizes: prodForm.sizes ? prodForm.sizes.split(',').map(s => s.trim()) : undefined,
+      description: prodForm.description.trim() || 'این کالا به صورت مستقیم و اختصاصی از دبی خریداری شده و با کارگو هوایی سریع ارسال می‌گردد.'
+    };
+
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      const list = saved ? JSON.parse(saved) : [];
+      list.unshift(newProduct);
+      localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
+      
+      setUploadedProducts(list);
+      setAllProductsCount(prev => prev + 1);
+
+      // Reset form
+      setProdForm({
+        name: '', spec: '', brand: '', store: 'amazon.ae', priceAed: '', weight: '',
+        discountPercent: '', category: 'clothing', gender: 'none', image: '', link: '',
+        isBestSeller: false, colors: '', sizes: '', description: ''
+      });
+      alert('محصول جدید با موفقیت به کاتالوگ فروشگاه افزوده شد!');
+    } catch (err) {
+      console.error('Error saving uploaded product:', err);
+    }
+  };
+
+  // Delete uploaded product
+  const handleDeleteProduct = (prodId) => {
+    if (!confirm('آیا از حذف این محصول آپلود شده مطمئن هستید؟')) return;
+
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      const list = saved ? JSON.parse(saved) : [];
+      const filtered = list.filter(p => p.id !== prodId);
+      localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(filtered));
+      
+      setUploadedProducts(filtered);
+      setAllProductsCount(prev => prev - 1);
+    } catch (e) {
+      console.error('Error deleting product:', e);
+    }
+  };
+
+  // Change lead status
+  const handleStatusChange = (leadId, newStatus) => {
+    const updated = leads.map(l => {
+      if (l.id === leadId) {
+        return { ...l, status: newStatus };
+      }
+      return l;
+    });
+
+    setLeads(updated);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+  };
+
+  // Delete lead
+  const handleDeleteLead = (leadId) => {
+    if (!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
+
+    const filtered = leads.filter(l => l.id !== leadId);
+    setLeads(filtered);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(filtered));
+    if (expandedLeadId === leadId) {
+      setExpandedLeadId(null);
+    }
+  };
+
+  // Delete review
+  const handleDeleteReview = (revId) => {
+    if (!confirm('آیا از حذف این نظر مطمئن هستید؟')) return;
+
+    try {
+      const saved = localStorage.getItem('dubaiKharidReviews');
+      const list = saved ? JSON.parse(saved) : [];
+      const filtered = list.filter(r => r.id !== revId);
+      localStorage.setItem('dubaiKharidReviews', JSON.stringify(filtered));
+      setReviews(filtered);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Handle password change
+  const handlePasswordChange = (e) => {
+    e.preventDefault();
+    const storedPassword = localStorage.getItem('dubaiKharidPassword') || '@Reza112233';
+
+    if (passForm.oldPass !== storedPassword) {
+      setPasswordChangeError('رمز عبور فعلی اشتباه است.');
+      setPasswordChangeSuccess(false);
+      return;
+    }
+
+    if (passForm.newPass.length < 6) {
+      setPasswordChangeError('رمز عبور جدید باید حداقل ۶ کاراکتر باشد.');
+      setPasswordChangeSuccess(false);
+      return;
+    }
+
+    if (passForm.newPass !== passForm.confirmPass) {
+      setPasswordChangeError('تکرار رمز عبور جدید مطابقت ندارد.');
+      setPasswordChangeSuccess(false);
+      return;
+    }
+
+    localStorage.setItem('dubaiKharidPassword', passForm.newPass);
+    setPasswordChangeSuccess(true);
+    setPasswordChangeError('');
+    setPassForm({ oldPass: '', newPass: '', confirmPass: '' });
+  };
+
+  // Restore defaults
+  const handleRestoreDefaults = () => {
+    if (!confirm('توجه: با بازیابی اطلاعات، تمام داده‌های جدید پاک شده و اطلاعات پیش‌فرض آزمایشی در لوکال استوریج بازگردانی می‌شوند. آیا ادامه می‌دهید؟')) return;
+    
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(INITIAL_LEADS_SEED));
+    localStorage.removeItem('dubaiKharidReviews');
+    localStorage.removeItem('dubaiKharidUploadedProducts');
+    localStorage.setItem('dubaiKharidPassword', '@Reza112233');
+
+    setLeads(INITIAL_LEADS_SEED);
+    setReviews([]);
+    setUploadedProducts([]);
+    setAllProductsCount(getAllProducts().length);
+    alert('اطلاعات آزمایشی پیش‌فرض با موفقیت بازیابی شد و رمز عبور به @Reza112233 بازگشت.');
   };
 
   // Formatting utilities
-  const fmtToman = (num) => Math.round(num).toLocaleString('fa-IR');
-  const fmtDate = (iso) => {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString('fa-IR');
+  const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
+  const fmtDate = (isoString) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    return d.toLocaleString('fa-IR');
   };
 
-  // Change Order status and notify
-  const updateOrderStatus = (orderId, newStatus) => {
-    const list = orders.map(o => {
-      if (o.id === orderId) {
-        return { ...o, status: newStatus };
-      }
-      return o;
-    });
-    syncState('dubaiKharidOrders', list, setOrders);
-    
-    // Add real-time notification
-    const newNotif = {
-      id: `n-${Date.now()}`,
-      type: 'order',
-      text: `وضعیت سفارش ${orderId} به «${newStatus}» تغییر یافت.`,
-      time: 'هم‌اکنون',
-      read: false
-    };
-    setNotifications(prev => [newNotif, ...prev]);
-  };
-
-  // Add Internal Notes to Order
-  const addOrderInternalNote = (orderId, notes) => {
-    const list = orders.map(o => {
-      if (o.id === orderId) {
-        return { ...o, internalNotes: notes };
-      }
-      return o;
-    });
-    syncState('dubaiKharidOrders', list, setOrders);
-    alert('یادداشت داخلی ادمین با موفقیت ثبت شد.');
-  };
-
-  // Upload simulated tracking number or invoices
-  const uploadOrderTrackingInvoice = (orderId, tracking, invoiceName) => {
-    const list = orders.map(o => {
-      if (o.id === orderId) {
-        return { ...o, trackingNumber: tracking || o.trackingNumber, invoiceUrl: invoiceName || o.invoiceUrl };
-      }
-      return o;
-    });
-    syncState('dubaiKharidOrders', list, setOrders);
-    alert('فایل فاکتور و کد پیگیری با موفقیت الحاق شد.');
-  };
-
-  // Update customer level
-  const updateCustomerLevel = (custId, newLevel) => {
-    const list = customers.map(c => {
-      if (c.id === custId) {
-        return { ...c, level: newLevel };
-      }
-      return c;
-    });
-    syncState('dubaiKharidCustomers', list, setCustomers);
-  };
-
-  // Upload or update used laptop inventory
-  const handleSaveLaptop = (laptopObj) => {
-    let list = [...laptops];
-    const isNew = !laptopObj.id;
-    
-    const profitVal = (laptopObj.salePriceToman - (laptopObj.purchasePriceAED * settings.exchangeRate));
-
-    const finalLaptop = {
-      ...laptopObj,
-      id: isNew ? `lap-st-${Date.now()}` : laptopObj.id,
-      profit: profitVal
-    };
-
-    if (isNew) {
-      list.unshift(finalLaptop);
-    } else {
-      list = list.map(l => l.id === finalLaptop.id ? finalLaptop : l);
-    }
-
-    syncState('dubaiKharidLaptops', list, setLaptops);
-    setSelectedLaptopForDrawer(null);
-    alert(isNew ? 'لپ‌تاپ استوک جدید اضافه شد.' : 'مشخصات لپ‌تاپ استوک با موفقیت ویرایش شد.');
-  };
-
-  // Toggle review moderation status
-  const moderateReview = (revId, status, replyText) => {
-    const list = reviews.map(r => {
-      if (r.id === revId) {
-        return { ...r, status, reply: replyText || r.reply };
-      }
-      return r;
-    });
-    syncState('dubaiKharidReviews', list, setReviews);
-    setSelectedReviewForDrawer(null);
-    alert(`دیدگاه با وضعیت «${status}» ویرایش شد.`);
-  };
-
-  // Reset entire mock Database seeds
-  const handleResetSystemSeeds = () => {
-    if (!confirm('آیا از بازگردانی کل سامانه به تنظیمات پیش‌فرض کارخانه مطمئن هستید؟ تمامی داده‌ها بازیابی خواهند شد.')) return;
-    
-    localStorage.removeItem('dubaiKharidOrders');
-    localStorage.removeItem('dubaiKharidCustomers');
-    localStorage.removeItem('dubaiKharidLaptops');
-    localStorage.removeItem('dubaiKharidReviews');
-    localStorage.removeItem('dubaiKharidSettings');
-    localStorage.removeItem('dubaiKharidContent');
-    localStorage.removeItem('dubaiKharidPermissions');
-    sessionStorage.removeItem('dubaiKharidAdminSession');
-    
-    setIsLoggedIn(false);
-    alert('دیتابیس ابری لوکال با موفقیت ریست گردید. مجدداً وارد شوید.');
-  };
-
-  // Pre-filled WhatsApp link generator
-  const getWhatsAppLink = (order) => {
-    let cleanPhone = order.phone.replace(/[^0-9]/g, '');
+  // WhatsApp link compilation
+  const getWhatsAppLink = (lead) => {
+    let cleanPhone = lead.phone.replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('09')) {
       cleanPhone = `98${cleanPhone.slice(1)}`;
     }
-    const message = `سلام ${order.customerName} عزیز،\nپیش‌فاکتور خرید شما در سایت «دبی خرید» با موفقیت به‌روزرسانی شد.\n\n📦 سفارش شما: ${order.productName}\n💰 مبلغ نهایی: ${fmtToman(order.finalPrice)} تومان\n📍 وضعیت: ${order.status}\n\nجهت اطلاعات بیشتر و هماهنگی ارسال کارگو هوایی در خدمت شما هستیم.`;
+    
+    const message = `سلام ${lead.customerName} عزیز،\nپیش‌فاکتور خرید شما در سایت «دبی خرید» ثبت گردید.\n\n📦 سفارش شما: ${lead.productName}\n💰 مبلغ کل: ${fmtToman(lead.totalToman)} تومان\n📍 آدرس تحویل: ${lead.address}\n\nجهت هماهنگی نهایی خرید، تأیید رنگ/سایز و صدور فاکتور در خدمت شما هستیم.`;
     return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
   };
 
-  // Stats Counters computations
-  const totalRevenue = orders.reduce((acc, o) => acc + (o.finalPrice || 0), 0);
-  const activeOrdersCount = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length;
-  const deliveredOrdersCount = orders.filter(o => o.status === 'delivered').length;
-  const pendingPaymentsCount = orders.filter(o => o.paymentStatus !== 'paid' && o.status !== 'cancelled').length;
-  const netProfit = orders
-    .filter(o => o.status !== 'cancelled')
-    .reduce((acc, o) => acc + (o.serviceFee || 0), 0);
-
-  // Filters listings
-  const filteredOrders = orders.filter(o => {
-    const q = orderSearch.toLowerCase();
+  // Filtered lists
+  const filteredLeads = leads.filter(lead => {
+    const q = leadSearch.toLowerCase();
     return (
-      o.customerName.toLowerCase().includes(q) ||
-      o.id.toLowerCase().includes(q) ||
-      o.productName.toLowerCase().includes(q) ||
-      o.phone.toLowerCase().includes(q)
+      lead.customerName.toLowerCase().includes(q) ||
+      lead.phone.toLowerCase().includes(q) ||
+      lead.id.toLowerCase().includes(q) ||
+      lead.productName.toLowerCase().includes(q)
     );
   });
 
-  const filteredCustomers = customers.filter(c => {
-    const q = customerSearch.toLowerCase();
-    return (
-      c.name.toLowerCase().includes(q) ||
-      c.phone.toLowerCase().includes(q) ||
-      c.city.toLowerCase().includes(q)
-    );
-  });
-
-  const filteredLaptops = laptops.filter(l => {
-    const q = laptopSearch.toLowerCase();
-    return (
-      l.brand.toLowerCase().includes(q) ||
-      l.model.toLowerCase().includes(q) ||
-      l.cpu.toLowerCase().includes(q)
-    );
-  });
-
-  const filteredReviews = reviews.filter(r => {
+  const filteredReviews = reviews.filter(rev => {
     const q = reviewSearch.toLowerCase();
     return (
-      r.userName.toLowerCase().includes(q) ||
-      r.productName.toLowerCase().includes(q) ||
-      r.comment.toLowerCase().includes(q)
+      rev.userName.toLowerCase().includes(q) ||
+      rev.productName.toLowerCase().includes(q) ||
+      rev.comment.toLowerCase().includes(q)
     );
   });
 
-  // Render Authentication overlay if not logged in
+  // Stats computations
+  const totalRevenue = leads
+    .filter(l => l.status === 'paid' || l.status === 'shipped')
+    .reduce((acc, l) => acc + l.totalToman, 0);
+
+  const pendingLeadsCount = leads.filter(l => l.status === 'pending').length;
+
+  // Live Card Preview Calculations
+  const previewPriceAed = parseFloat(prodForm.priceAed) || 0;
+  const previewDiscount = parseFloat(prodForm.discountPercent) || 0;
+  const baseToman = previewPriceAed * 19500;
+  const finalToman = previewDiscount > 0 ? baseToman * (1 - previewDiscount / 100) : baseToman;
+
+  // Color Swatches parser helper
+  const parsedPreviewColors = prodForm.colors
+    ? prodForm.colors.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  const parsedPreviewSizes = prodForm.sizes
+    ? prodForm.sizes.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+
+  // Render Login Panel
   if (!isLoggedIn) {
     return (
       <div className={styles.pageWrapper}>
         <div className={styles.loginOverlay}>
           <form onSubmit={handleLogin} className={styles.loginCard}>
             <span className={styles.loginLogo}>✈️</span>
-            <h1>پنل ادمین دبی خرید</h1>
-            <p>SaaS-Grade Premium E-commerce Control Room</p>
+            <h1>پنل مدیریت دبی خرید</h1>
+            <p>جهت دسترسی به سفارشات، آپلود محصولات و نظرات کاربران، وارد شوید.</p>
 
             {loginError && <div className={styles.loginError}>{loginError}</div>}
 
             <div className={styles.formGroup}>
-              <label>نام کاربری ادمین:</label>
+              <label>نام کاربری:</label>
               <input 
                 type="text" 
                 value="admin" 
@@ -461,7 +480,7 @@ export default function AdminPanel() {
               <label>رمز عبور:</label>
               <input 
                 type="password" 
-                placeholder="رمز عبور پیش‌فرض: @Reza112233"
+                placeholder="رمز عبور پنل را وارد کنید..."
                 value={passwordInput} 
                 onChange={(e) => setPasswordInput(e.target.value)} 
                 className={styles.loginInput}
@@ -471,12 +490,12 @@ export default function AdminPanel() {
             </div>
 
             <button type="submit" className={styles.loginBtn}>
-              ورود ایمن به کنترل پنل
+              ورود به داشبورد مدیریت
             </button>
             
-            <div style={{ marginTop: '20px', fontSize: '11.5px' }}>
-              <Link href="/" style={{ color: 'var(--accent-amber)', textDecoration: 'none', fontWeight: 'bold' }}>
-                ← بازگشت به سایت اصلی
+            <div style={{ marginTop: '20px', fontSize: '11px', color: '#8b92a5' }}>
+              <Link href="/" style={{ color: '#f87820', textDecoration: 'none', fontWeight: 'bold' }}>
+                بازگشت به صفحه اصلی فروشگاه
               </Link>
             </div>
           </form>
@@ -487,743 +506,774 @@ export default function AdminPanel() {
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Dynamic Glass Top Header */}
-      <header className={styles.adminHeader}>
-        <div className={styles.brandWrapper}>
-          <div className={styles.brandLogo}>✈️</div>
-          <div>
-            <h1 className={styles.brandTitle}>
-              دبی خرید <span className={styles.brandBadge}>SaaS v2.0</span>
-            </h1>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>پلتفرم مدیریت کارگو و خریدهای مستقیم امارات</span>
+      {/* Dynamic SAAS Navigation TopHeader */}
+      <header className={styles.topHeader}>
+        <div className={styles.topHeaderTitleWrap}>
+          <span className={styles.topHeaderLogo}>🛡️</span>
+          <div className={styles.topHeaderMeta}>
+            <h1>پنل ادمین دبی خرید</h1>
+            <span>سامانه مدیریت جامع و پیشرفته کارگو خرید از امارات</span>
           </div>
         </div>
-
-        <div className={styles.headerActions}>
-          {/* Notification hub icon */}
-          <div style={{ position: 'relative' }}>
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)} 
-              className={styles.profileSelector}
-              style={{ fontSize: '16px' }}
-            >
-              🔔 
-              {notifications.filter(n => !n.read).length > 0 && (
-                <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: 'var(--accent-amber)', width: '8px', height: '8px', borderRadius: '50%', boxShadow: '0 0 8px var(--accent-amber)' }}></span>
-              )}
-            </button>
-            {showNotifications && (
-              <div style={{ position: 'absolute', left: 0, top: '48px', width: '320px', background: '#0b0c10', border: '1px solid var(--border-glass-bright)', borderRadius: '16px', padding: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)', backdropFilter: 'blur(20px)', zIndex: 500 }}>
-                <h4 style={{ margin: '0 0 12px 0', borderBottom: '1px solid var(--border-glass)', paddingBottom: '8px', fontSize: '13px', fontWeight: '800' }}>🔔 اعلان‌های سامانه</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {notifications.map(n => (
-                    <div key={n.id} style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <span style={{ fontSize: '12px', color: '#fff', fontWeight: n.read ? 'normal' : 'bold' }}>{n.text}</span>
-                      <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{n.time}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Role Changer Selector */}
-          <div className={styles.profileSelector}>
-            <span>👑 نقش: </span>
-            <select 
-              value={adminRole} 
-              onChange={(e) => setAdminRole(e.target.value)}
-              className={styles.roleSelect}
-            >
-              <option value="Super Admin">مدیر کل (Super Admin)</option>
-              <option value="Admin">ادمین فنی (Admin)</option>
-              <option value="Sales Manager">مدیر فروش (Sales)</option>
-              <option value="Customer Support">پشتیبان مشتریان (Support)</option>
-              <option value="Inventory Manager">انباردار دبی (Inventory)</option>
-            </select>
-          </div>
-        </div>
+        <Link href="/" className={styles.viewStoreBtn}>
+          <span>🛒</span> مشاهده فروشگاه اصلی
+        </Link>
       </header>
 
-      <div className={styles.dashboardGrid}>
-        {/* SIDEBAR NAVIGATION TABS */}
+      <div className={styles.dashboardContainer}>
+        {/* SIDEBAR NAVIGATION PANEL */}
         <aside className={styles.sidebar}>
           <div>
-            <span className={styles.sidebarSectionTitle}>مدیریت کسب و کار</span>
-            <div className={styles.navGroup}>
-              <button onClick={() => setActiveTab('overview')} className={`${styles.sidebarBtn} ${activeTab === 'overview' ? styles.sidebarBtnActive : ''}`}>
-                <span>📊</span> پیشخوان کلی
-              </button>
-              
-              <button onClick={() => setActiveTab('orders')} className={`${styles.sidebarBtn} ${activeTab === 'orders' ? styles.sidebarBtnActive : ''}`}>
-                <span>📥</span> سفارشات مستقیم
-                <span className={styles.sidebarCount}>{orders.filter(o => o.status === 'new_request').length}</span>
-              </button>
-
-              <button onClick={() => setActiveTab('customers')} className={`${styles.sidebarBtn} ${activeTab === 'customers' ? styles.sidebarBtnActive : ''}`}>
-                <span>👥</span> مشتریان و CRM
-              </button>
-              
-              <button onClick={() => setActiveTab('products')} className={`${styles.sidebarBtn} ${activeTab === 'products' ? styles.sidebarBtnActive : ''}`}>
-                <span>🛍️</span> کاتالوگ محصولات
-              </button>
-
-              <button onClick={() => setActiveTab('laptops')} className={`${styles.sidebarBtn} ${activeTab === 'laptops' ? styles.sidebarBtnActive : ''}`}>
-                <span>💻</span> انبار لپ‌تاپ استوک
-                <span className={styles.sidebarCount} style={{ background: 'var(--accent-amber-glow)', color: 'var(--accent-amber)' }}>{laptops.filter(l => l.status === 'Available').length}</span>
-              </button>
+            <div className={styles.adminProfile}>
+              <div className={styles.adminAvatar}>👤</div>
+              <div className={styles.adminInfo}>
+                <h2>مدیر دبی خرید</h2>
+                <span>سطح دسترسی: ادمین کل</span>
+              </div>
             </div>
+
+            <nav className={styles.navMenu}>
+              <button 
+                onClick={() => setActiveTab('overview')} 
+                className={`${styles.navItem} ${activeTab === 'overview' ? styles.navItemActive : ''}`}
+              >
+                <span>📊</span> داشبورد آماری
+              </button>
+              <button 
+                onClick={() => setActiveTab('leads')} 
+                className={`${styles.navItem} ${activeTab === 'leads' ? styles.navItemActive : ''}`}
+              >
+                <span>📥</span> سفارشات و لیدها
+                {pendingLeadsCount > 0 && (
+                  <span style={{ background: '#ff3333', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px', marginRight: 'auto' }}>
+                    {pendingLeadsCount} جدید
+                  </span>
+                )}
+              </button>
+              <button 
+                onClick={() => setActiveTab('products')} 
+                className={`${styles.navItem} ${activeTab === 'products' ? styles.navItemActive : ''}`}
+              >
+                <span>📤</span> آپلود محصول جدید
+              </button>
+              <button 
+                onClick={() => setActiveTab('reviews')} 
+                className={`${styles.navItem} ${activeTab === 'reviews' ? styles.navItemActive : ''}`}
+              >
+                <span>💬</span> نظرات مشتریان
+                {reviews.length > 0 && (
+                  <span style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '9px', padding: '1px 6px', borderRadius: '10px', marginRight: 'auto' }}>
+                    {reviews.length} کل
+                  </span>
+                )}
+              </button>
+              <button 
+                onClick={() => setActiveTab('settings')} 
+                className={`${styles.navItem} ${activeTab === 'settings' ? styles.navItemActive : ''}`}
+              >
+                <span>⚙️</span> تنظیمات امنیتی
+              </button>
+            </nav>
           </div>
 
-          <div>
-            <span className={styles.sidebarSectionTitle}>مالی و لجستیک</span>
-            <div className={styles.navGroup}>
-              <button onClick={() => setActiveTab('finance')} className={`${styles.sidebarBtn} ${activeTab === 'finance' ? styles.sidebarBtnActive : ''}`}>
-                <span>💰</span> امور مالی و سود ناخالص
-              </button>
-              <button onClick={() => setActiveTab('payments')} className={`${styles.sidebarBtn} ${activeTab === 'payments' ? styles.sidebarBtnActive : ''}`}>
-                <span>💳</span> تایید پرداخت‌ها
-              </button>
-              <button onClick={() => setActiveTab('shipping')} className={`${styles.sidebarBtn} ${activeTab === 'shipping' ? styles.sidebarBtnActive : ''}`}>
-                <span>✈️</span> کارگو و ارسال هوایی
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <span className={styles.sidebarSectionTitle}>تنظیمات و محتوا</span>
-            <div className={styles.navGroup}>
-              <button onClick={() => setActiveTab('reviews')} className={`${styles.sidebarBtn} ${activeTab === 'reviews' ? styles.sidebarBtnActive : ''}`}>
-                <span>💬</span> نظرات خریداران
-              </button>
-              <button onClick={() => setActiveTab('content')} className={`${styles.sidebarBtn} ${activeTab === 'content' ? styles.sidebarBtnActive : ''}`}>
-                <span>📝</span> تولید محتوا CMS
-              </button>
-              <button onClick={() => setActiveTab('roles')} className={`${styles.sidebarBtn} ${activeTab === 'roles' ? styles.sidebarBtnActive : ''}`}>
-                <span>🔑</span> سطوح دسترسی
-              </button>
-              <button onClick={() => setActiveTab('settings')} className={`${styles.sidebarBtn} ${activeTab === 'settings' ? styles.sidebarBtnActive : ''}`}>
-                <span>⚙️</span> تنظیمات سیستم
-              </button>
-            </div>
-          </div>
-
-          <button onClick={handleLogout} className={styles.exitBtn}>
-            🚪 خروج ایمن از ادمین
+          <button onClick={handleLogout} className={styles.logoutBtn}>
+            <span>🚪</span> خروج از حساب
           </button>
         </aside>
 
-        {/* MASTER SaaS TAB CONTENT RENDERER */}
-        <main className={styles.mainContainer}>
-          {!hasPermission(activeTab) ? (
-            <div className={styles.roleBlockOverlay}>
-              <div className={styles.roleBlockIcon}>🔒</div>
-              <h3>عدم دسترسی مجاز</h3>
-              <p>نقش فعلی شما (<strong>{adminRole}</strong>) اجازه دسترسی به این بخش مالی یا سیستمی را ندارد. جهت تغییر دسترسی‌ها، نقش خود را در هدر بالا ارتقا دهید.</p>
-            </div>
-          ) : (
-            <>
-              {/* ==========================================================
-                 TAB 1: DASHBOARD OVERVIEW
-                 ========================================================== */}
-              {activeTab === 'overview' && (
+        {/* MAIN DISPLAY VIEW BLOCK */}
+        <main className={styles.mainContent}>
+          
+          {/* TAB 1: DASHBOARD STATS */}
+          {activeTab === 'overview' && (
+            <div>
+              <div className={styles.sectionHeader}>
                 <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>📊 پیشخوان آماری دبی خرید</h2>
-                      <p>وضعیت زنده درآمد، سود خالص، سفارشات و ترخیص کارگوی هوایی</p>
-                    </div>
+                  <h1>📊 داشبورد آمار و ارقام دبی خرید</h1>
+                  <p className={styles.sectionDesc}>خلاصه‌ای از وضعیت فروش، کارگو هوایی و درخواست‌های فعال در سراسر ایران</p>
+                </div>
+              </div>
+
+              {/* Dynamic stats elements */}
+              <div className={styles.statsGrid}>
+                <div className={`${styles.statCard} ${styles.statCardGold}`}>
+                  <div>
+                    <span className={styles.statTitle}>درآمد قطعی (وصول شده)</span>
+                    <div className={styles.statNumber}>{fmtToman(totalRevenue)} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>تومان</span></div>
                   </div>
-
-                  {/* 10 KPI Cards Grid */}
-                  <div className={styles.kpiGrid}>
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>درآمد امروز</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>💵</span>
-                      </div>
-                      <div className={styles.kpiValue}>{fmtToman(totalRevenue / 18)}<small>تومان</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>+۱۴.۲٪ نسبت به دیروز</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>درآمد ماهانه</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>📊</span>
-                      </div>
-                      <div className={styles.kpiValue}>{fmtToman(totalRevenue)}<small>تومان</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>+۸.۶٪ نسبت به ماه قبل</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>سود خالص ناخالص</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>💎</span>
-                      </div>
-                      <div className={styles.kpiValue}>{fmtToman(netProfit)}<small>تومان</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>+۱۲.۴٪ (حق‌العمل ۸٪)</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>سفارشات جدید</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>📥</span>
-                      </div>
-                      <div className={styles.kpiValue}>{orders.filter(o => o.status === 'new_request').length}<small>عدد</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendNeutral}`}>۴ مورد تایید نشده</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>سفارشات فعال</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>⚙️</span>
-                      </div>
-                      <div className={styles.kpiValue}>{activeOrdersCount}<small>سفارش</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>در خط انتقال امارات-ایران</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>سفارشات تحویل شده</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>✓</span>
-                      </div>
-                      <div className={styles.kpiValue}>{deliveredOrdersCount}<small>بسته</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>نرخ موفقیت ۹۸.۵٪</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>پرداخت‌های معلق</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>💳</span>
-                      </div>
-                      <div className={styles.kpiValue}>{pendingPaymentsCount}<small>پیش‌فاکتور</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendDown}`}>نیاز به تماس پشتیبانی</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>کل مشتریان</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>👥</span>
-                      </div>
-                      <div className={styles.kpiValue}>{customers.length}<small>کاربر</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>+۳ عضو جدید امروز</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>تعداد محصولات</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>🛍️</span>
-                      </div>
-                      <div className={styles.kpiValue}>{orders.length + laptops.length}<small>مدل کالا</small></div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>مرجوعی صفر</span>
-                    </div>
-
-                    <div className={styles.kpiCard}>
-                      <div className={styles.kpiHeader}>
-                        <span className={styles.kpiLabel}>نرخ تبدیل لید</span>
-                        <span className={`${styles.kpiIcon} ${styles.kpiIconAmber}`}>⚡</span>
-                      </div>
-                      <div className={styles.kpiValue}>۷۶.۸٪</div>
-                      <span className={`${styles.kpiTrend} ${styles.trendUp}`}>فوق‌العاده عالی</span>
-                    </div>
+                  <div className={`${styles.statIcon} ${styles.statIconGold}`}>💰</div>
+                </div>
+                
+                <div className={`${styles.statCard} ${styles.statCardOrange}`}>
+                  <div>
+                    <span className={styles.statTitle}>سفارشات جدید (لید)</span>
+                    <div className={styles.statNumber}>{pendingLeadsCount} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>عدد</span></div>
                   </div>
+                  <div className={`${styles.statIcon} ${styles.statIconOrange}`}>📥</div>
+                </div>
 
-                  {/* BREATHTAKING SaaS NEON GRAPH GRID */}
-                  <div className={styles.chartsGrid}>
-                    {/* Area SVG Chart for Revenue */}
-                    <div className={styles.chartCard}>
-                      <div className={styles.chartCardHeader}>
-                        <h3>📊 نمودار زنده درآمدهای ثبت شده و کارگو</h3>
-                        <span style={{ fontSize: '11px', color: 'var(--accent-amber)', fontWeight: 'bold' }}>بر اساس Tomans</span>
-                      </div>
-                      <div className={styles.svgChartContainer}>
-                        <svg width="100%" height="100%" viewBox="0 0 600 240" preserveAspectRatio="none">
-                          <defs>
-                            <linearGradient id="amberGlowGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="var(--accent-amber)" />
-                              <stop offset="100%" stopColor="transparent" />
-                            </linearGradient>
-                          </defs>
-                          {/* Grid Lines */}
-                          <g className={styles.chartGridLines}>
-                            <line x1="0" y1="40" x2="600" y2="40" />
-                            <line x1="0" y1="90" x2="600" y2="90" />
-                            <line x1="0" y1="140" x2="600" y2="140" />
-                            <line x1="0" y1="190" x2="600" y2="190" />
-                          </g>
-                          {/* Area path */}
-                          <path d="M 0,240 Q 100,80 200,120 T 400,60 T 600,40 L 600,240 Z" className={styles.chartAreaFill} />
-                          {/* Line path */}
-                          <path d="M 0,240 Q 100,80 200,120 T 400,60 T 600,40" className={styles.chartAreaLine} />
-                          {/* Interactive Hover Dots */}
-                          <circle cx="200" cy="120" r="5" className={styles.chartDot} />
-                          <circle cx="400" cy="60" r="5" className={styles.chartDot} />
-                          <circle cx="600" cy="40" r="5" className={styles.chartDot} />
-                        </svg>
-                      </div>
-                    </div>
+                <div className={`${styles.statCard} ${styles.statCardGreen}`}>
+                  <div>
+                    <span className={styles.statTitle}>کل کالاهای کاتالوگ</span>
+                    <div className={styles.statNumber}>{allProductsCount} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>مدل</span></div>
+                  </div>
+                  <div className={`${styles.statIcon} ${styles.statIconGreen}`}>🛍️</div>
+                </div>
 
-                    {/* Donut Category Chart */}
-                    <div className={styles.chartCard}>
-                      <div className={styles.chartCardHeader}>
-                        <h3>🏢 دسته‌بندی‌های محبوب خرید امارات</h3>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '30px' }}>
-                        <svg width="150" height="150" className={styles.donutSvg}>
-                          <circle cx="75" cy="75" r="55" className={styles.donutTrack} />
-                          {/* Electronics Segment (45%) */}
-                          <circle cx="75" cy="75" r="55" className={styles.donutSegment} stroke="var(--accent-amber)" strokeDasharray={`${(45 * 345.4) / 100} 345.4`} />
-                          {/* Clothing Segment (30%) */}
-                          <circle cx="75" cy="75" r="55" className={styles.donutSegment} stroke="var(--accent-blue)" strokeDasharray={`${(30 * 345.4) / 100} 345.4`} strokeDashoffset={`-${(45 * 345.4) / 100}`} />
-                          {/* Laptops (25%) */}
-                          <circle cx="75" cy="75" r="55" className={styles.donutSegment} stroke="var(--accent-green)" strokeDasharray={`${(25 * 345.4) / 100} 345.4`} strokeDashoffset={`-${((45 + 30) * 345.4) / 100}`} />
-                        </svg>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-amber)' }}></span>
-                            <span>الکترونیک و موبایل (۴۵٪)</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-blue)' }}></span>
-                            <span>پوشاک و زارا (۳۰٪)</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--accent-green)' }}></span>
-                            <span>لپ‌تاپ استوک (۲۵٪)</span>
-                          </div>
+                <div className={`${styles.statCard} ${styles.statCardPurple}`}>
+                  <div>
+                    <span className={styles.statTitle}>نظرات کاربران</span>
+                    <div className={styles.statNumber}>{reviews.length} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>دیدگاه</span></div>
+                  </div>
+                  <div className={`${styles.statIcon} ${styles.statIconPurple}`}>💬</div>
+                </div>
+              </div>
+
+              <div className={styles.dashboardSplit}>
+                {/* Recent Orders List */}
+                <div className={styles.splitCard}>
+                  <h3>📥 آخرین سفارش‌های ثبت شده</h3>
+                  <div className={styles.miniList}>
+                    {leads.slice(0, 4).map(lead => (
+                      <div key={lead.id} className={styles.miniItem}>
+                        <div>
+                          <span className={styles.miniName}>{lead.customerName}</span>
+                          <span className={styles.miniSub}>{lead.productName} ({fmtToman(lead.totalToman)} تومان)</span>
                         </div>
+                        <div>
+                          <span className={`${styles.statusTag} ${
+                            lead.status === 'pending' ? styles.statusPending :
+                            lead.status === 'contacted' ? styles.statusContacted :
+                            lead.status === 'paid' ? styles.statusPaid :
+                            lead.status === 'shipped' ? styles.statusShipped : styles.statusCancelled
+                          }`}>
+                            {lead.status === 'pending' ? 'در انتظار بررسی' :
+                             lead.status === 'contacted' ? 'تماس گرفته شده' :
+                             lead.status === 'paid' ? 'پرداخت شده' :
+                             lead.status === 'shipped' ? 'ارسال شده' : 'لغو شده'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {leads.length === 0 && (
+                      <p style={{ textAlign: 'center', color: '#8b92a5', fontSize: '12px', padding: '20px 0' }}>هیچ سفارشی ثبت نشده است.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Popular Stores Distribution progress indicators */}
+                <div className={styles.splitCard}>
+                  <h3>🏢 توزیع منابع سفارش خرید</h3>
+                  <div className={styles.progressList}>
+                    <div className={styles.progressItem}>
+                      <div className={styles.progressLabelRow}>
+                        <span>noon.com (امارات)</span>
+                        <span className={styles.progressValue}>۴۸٪</span>
+                      </div>
+                      <div className={styles.progressBarTrack}>
+                        <div className={styles.progressBarValue} style={{ width: '48%' }} />
+                      </div>
+                    </div>
+                    
+                    <div className={styles.progressItem}>
+                      <div className={styles.progressLabelRow}>
+                        <span>amazon.ae (آمازون)</span>
+                        <span className={styles.progressValue}>۳۵٪</span>
+                      </div>
+                      <div className={styles.progressBarTrack}>
+                        <div className={styles.progressBarValue} style={{ width: '35%' }} />
+                      </div>
+                    </div>
+
+                    <div className={styles.progressItem}>
+                      <div className={styles.progressLabelRow}>
+                        <span>namshi.com (پوشاک)</span>
+                        <span className={styles.progressValue}>۱۲٪</span>
+                      </div>
+                      <div className={styles.progressBarTrack}>
+                        <div className={styles.progressBarValue} style={{ width: '12%' }} />
+                      </div>
+                    </div>
+
+                    <div className={styles.progressItem}>
+                      <div className={styles.progressLabelRow}>
+                        <span>سایر منابع سفارشی</span>
+                        <span className={styles.progressValue}>۵٪</span>
+                      </div>
+                      <div className={styles.progressBarTrack}>
+                        <div className={styles.progressBarValue} style={{ width: '5%' }} />
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
-              {/* ==========================================================
-                 TAB 2: ORDERS MANAGEMENT
-                 ========================================================== */}
-              {activeTab === 'orders' && (
+          {/* TAB 2: LEADS & ACCORDIONS VIEW */}
+          {activeTab === 'leads' && (
+            <div>
+              <div className={styles.sectionHeader}>
                 <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>📥 مدیریت یکپارچه پیش‌فاکتورها و سفارشات</h2>
-                      <p>تایید نهایی کالاها، ویرایش فاکتور ترخیص، افزودن بارکد و هماهنگی سریع در واتساپ</p>
-                    </div>
-                    
-                    <div className={styles.searchBox}>
-                      <span>🔍</span>
-                      <input 
-                        type="text" 
-                        placeholder="جستجوی خریدار، شماره سفارش، یا محصول..."
-                        value={orderSearch}
-                        onChange={(e) => setOrderSearch(e.target.value)}
-                        className={styles.searchInput}
-                      />
-                    </div>
-                  </div>
+                  <h1>📥 مدیریت لیدها و سفارشات نهایی دبی خرید</h1>
+                  <p className={styles.sectionDesc}>بررسی پیش‌فاکتورها، ویرایش وضعیت پرداخت و هماهنگی سریع در واتساپ خریدار</p>
+                </div>
+                
+                <div className={styles.searchBarWrapper}>
+                  <span>🔍</span>
+                  <input 
+                    type="text" 
+                    placeholder="جستجوی خریدار، شماره یا کالا..."
+                    value={leadSearch}
+                    onChange={(e) => setLeadSearch(e.target.value)}
+                    className={styles.searchBarInput}
+                  />
+                </div>
+              </div>
 
-                  <div className={styles.tableContainer}>
-                    <table className={styles.saasTable}>
-                      <thead>
-                        <tr>
-                          <th>کد سفارش</th>
-                          <th>نام خریدار</th>
-                          <th>محصول سفارش</th>
-                          <th>مبلغ نهایی (تومان)</th>
-                          <th>وضعیت پردازش</th>
-                          <th>پرداخت</th>
-                          <th>تاریخ ثبت</th>
-                          <th>عملیات ادمین</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredOrders.map(order => (
-                          <>
-                            <tr key={order.id} style={{ cursor: 'pointer' }} onClick={() => setActiveOrderDetails(activeOrderDetails === order.id ? null : order.id)}>
-                              <td style={{ fontWeight: '800', color: 'var(--accent-amber)', fontFamily: 'monospace' }}>
-                                {order.id} {activeOrderDetails === order.id ? '▼' : '▶'}
-                              </td>
-                              <td>
-                                <div style={{ fontWeight: '750' }}>{order.customerName}</div>
-                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>تلفن: {order.phone}</span>
-                              </td>
-                              <td>
-                                <div>{order.productName}</div>
-                                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>برند: {order.brand}</span>
-                              </td>
-                              <td style={{ fontWeight: '800' }}>{fmtToman(order.finalPrice)}</td>
-                              <td>
-                                <span className={`${styles.orderStatusBadge} ${styles[`status_${order.status}`]}`}>
-                                  {order.status === 'new_request' ? 'درخواست جدید' :
-                                   order.status === 'waiting_review' ? 'در انتظار بررسی' :
-                                   order.status === 'price_calculated' ? 'قیمت‌گذاری شده' :
-                                   order.status === 'confirmed' ? 'تایید مشتری' :
-                                   order.status === 'purchased' ? 'خریداری شده' :
-                                   order.status === 'uae_warehouse' ? 'دفتر دبی' :
-                                   order.status === 'shipped_iran' ? 'ارسال به ایران' :
-                                   order.status === 'delivered' ? 'تحویل شده' : 'لغو شده'}
-                                </span>
-                              </td>
-                              <td>
-                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: order.paymentStatus === 'paid' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                                  {order.paymentStatus === 'paid' ? '✓ پرداخت شده' : '✗ معلق'}
-                                </span>
-                              </td>
-                              <td style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{fmtDate(order.date)}</td>
-                              <td onClick={(e) => e.stopPropagation()}>
-                                <div className={styles.tableActionBtns}>
-                                  <button onClick={() => setSelectedOrderForDrawer(order)} className={styles.editActionBtn}>✏️ ویرایش</button>
-                                  <a href={getWhatsAppLink(order)} target="_blank" rel="noopener noreferrer" className={styles.whatsappLinkBtn} style={{ padding: '4px 10px' }}>💬 واتساپ</a>
-                                </div>
-                              </td>
-                            </tr>
-                            
-                            {/* Expanded Order details */}
-                            {activeOrderDetails === order.id && (
-                              <tr className={styles.expandedRow}>
-                                <td colSpan="8">
-                                  <div className={styles.orderExpandedDetails}>
-                                    <div className={styles.expandedCol}>
-                                      <h4>💵 جزئیات حسابرسی خرید</h4>
-                                      <div className={styles.expandedSpecs}>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>قیمت درهم دبی:</span>
-                                          <span className={styles.expandedSpecVal}>{order.priceAed} درهم</span>
-                                        </div>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>نرخ تبدیل ارز:</span>
-                                          <span className={styles.expandedSpecVal}>{fmtToman(settings.exchangeRate)} تومان</span>
-                                        </div>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>هزینه کارگو پرواز:</span>
-                                          <span className={styles.expandedSpecVal}>{fmtToman(order.shippingCost)} تومان</span>
-                                        </div>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>کارمزد دبی خرید ({settings.commissionRate}%):</span>
-                                          <span className={styles.expandedSpecVal}>{fmtToman(order.serviceFee)} تومان</span>
-                                        </div>
-                                      </div>
-                                    </div>
+              <div className={styles.tableContainer}>
+                <table className={styles.adminTable}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '40px' }}></th>
+                      <th>کد رهگیری</th>
+                      <th>نام خریدار</th>
+                      <th>شماره موبایل</th>
+                      <th>خلاصه کالای درخواستی</th>
+                      <th>مبلغ کل سفارش</th>
+                      <th>تاریخ ثبت</th>
+                      <th>وضعیت پیش‌فاکتور</th>
+                      <th>عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredLeads.map(lead => {
+                      const isExpanded = expandedLeadId === lead.id;
+                      return (
+                        <>
+                          {/* Accordion Main row trigger */}
+                          <tr 
+                            key={lead.id} 
+                            onClick={() => toggleLeadAccordion(lead.id)} 
+                            className={`${styles.accordionTriggerRow} ${isExpanded ? styles.accordionActiveRow : ''}`}
+                          >
+                            <td>
+                              <span className={`${styles.rotatorArrow} ${isExpanded ? styles.arrowFlipped : ''}`}>
+                                🔽
+                              </span>
+                            </td>
+                            <td style={{ fontWeight: 'bold', fontFamily: 'monospace', color: '#ff9d00', fontSize: '11px' }}>{lead.id}</td>
+                            <td style={{ fontWeight: '750' }}>{lead.customerName}</td>
+                            <td style={{ direction: 'ltr', textAlign: 'right', fontFamily: 'monospace' }}>{lead.phone}</td>
+                            <td>{lead.productName}</td>
+                            <td style={{ fontWeight: '850', color: '#fff' }}>{fmtToman(lead.totalToman)} T</td>
+                            <td style={{ fontSize: '11px', color: '#8b92a5' }}>{fmtDate(lead.date)}</td>
+                            <td>
+                              <span className={`${styles.statusTag} ${
+                                lead.status === 'pending' ? styles.statusPending :
+                                lead.status === 'contacted' ? styles.statusContacted :
+                                lead.status === 'paid' ? styles.statusPaid :
+                                lead.status === 'shipped' ? styles.statusShipped : styles.statusCancelled
+                              }`}>
+                                {lead.status === 'pending' ? 'در انتظار بررسی' :
+                                 lead.status === 'contacted' ? 'تماس گرفته شده' :
+                                 lead.status === 'paid' ? 'پرداخت شده' :
+                                 lead.status === 'shipped' ? 'ارسال شده' : 'لغو شده'}
+                              </span>
+                            </td>
+                            {/* Stop propagation so clicking select or delete doesn't trigger accordion fold */}
+                            <td onClick={(e) => e.stopPropagation()}>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <select 
+                                  value={lead.status} 
+                                  onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                                  className={styles.statusSelect}
+                                >
+                                  <option value="pending">بررسی</option>
+                                  <option value="contacted">تماس</option>
+                                  <option value="paid">پرداخت</option>
+                                  <option value="shipped">ارسال</option>
+                                  <option value="cancelled">لغو</option>
+                                </select>
+                                <button 
+                                  onClick={() => handleDeleteLead(lead.id)} 
+                                  className={styles.deleteActionBtn}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+
+                          {/* Collapsed breakdown Accordion row */}
+                          {isExpanded && (
+                            <tr className={styles.accordionCollapseRow}>
+                              <td colSpan="9">
+                                <div className={styles.accordionContent}>
+                                  <div className={styles.accordionDetailsGrid}>
                                     
-                                    <div className={styles.expandedCol}>
-                                      <h4>📍 آدرس تحویل و رهگیری بارگو</h4>
-                                      <div className={styles.expandedSpecs}>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>آدرس ایران:</span>
-                                          <span className={styles.expandedSpecVal}>{order.address}</span>
+                                    {/* Client information panel */}
+                                    <div className={styles.detailsBlock}>
+                                      <h4>📍 مشخصات و آدرس خریدار</h4>
+                                      <div className={styles.detailsMetaList}>
+                                        <div className={styles.detailsMetaItem}>
+                                          <span>نام تحویل‌گیرنده:</span>
+                                          <span className={styles.detailsMetaVal}>{lead.customerName}</span>
                                         </div>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>شماره رهگیری باربری:</span>
-                                          <span className={styles.expandedSpecVal} style={{ fontFamily: 'monospace', color: 'var(--accent-amber)' }}>{order.trackingNumber || 'ثبت نشده'}</span>
+                                        <div className={styles.detailsMetaItem}>
+                                          <span>تلفن تماس هماهنگی:</span>
+                                          <span className={styles.detailsMetaVal} style={{ direction: 'ltr' }}>{lead.phone}</span>
                                         </div>
-                                        <div className={styles.expandedSpecRow}>
-                                          <span className={styles.expandedSpecLabel}>توضیحات مشتری:</span>
-                                          <span className={styles.expandedSpecVal}>{order.notes || '---'}</span>
+                                        <div className={styles.detailsMetaItem} style={{ flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+                                          <span>آدرس دقیق تحویل در ایران:</span>
+                                          <div style={{ color: '#fff', fontSize: '13px', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '4px' }}>
+                                            {lead.address}
+                                          </div>
                                         </div>
-                                      </div>
-                                    </div>
-
-                                    <div className={styles.expandedCol}>
-                                      <h4>📝 یادداشت‌های ادمین و فاکتور</h4>
-                                      <div className={styles.expandedSpecs}>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.02)', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-glass)' }}>
-                                          {order.internalNotes || 'هیچ یادداشتی ثبت نشده است.'}
-                                        </p>
-                                        {order.invoiceUrl && (
-                                          <div style={{ fontSize: '11px', color: 'var(--accent-green)', fontWeight: 'bold' }}>
-                                            📄 فاکتور خرید امارات ضمیمه شده است.
+                                        {lead.notes && (
+                                          <div className={styles.detailsMetaItem} style={{ flexDirection: 'column', gap: '4px', marginTop: '6px' }}>
+                                            <span>توضیحات مشتری (سایز، رنگ، کد فنی):</span>
+                                            <div style={{ color: '#ff781f', fontSize: '12px', background: 'rgba(248,120,32,0.04)', padding: '8px', borderRadius: '8px', border: '1px dashed rgba(248,120,32,0.2)', marginTop: '4px' }}>
+                                              📝 {lead.notes}
+                                            </div>
                                           </div>
                                         )}
                                       </div>
                                     </div>
+
+                                    {/* Cart detailed items panel */}
+                                    <div className={styles.detailsBlock}>
+                                      <h4>🛍️ جزئیات پیش‌فاکتور سفارش دبی</h4>
+                                      
+                                      {lead.items && lead.items.length > 0 ? (
+                                        <table className={styles.nestedCartTable}>
+                                          <thead>
+                                            <tr>
+                                              <th>نام محصول</th>
+                                              <th>مشخصات خرید</th>
+                                              <th>تعداد</th>
+                                              <th>قیمت واحد</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {lead.items.map((item, idx) => (
+                                              <tr key={idx}>
+                                                <td style={{ fontWeight: '750', color: '#fff' }}>{item.name}</td>
+                                                <td>
+                                                  {(item.color || item.size) ? (
+                                                    <span style={{ fontSize: '11px', color: '#ff781f' }}>
+                                                      {item.color && `رنگ: ${item.color}`} {item.size && ` | سایز: ${item.size}`}
+                                                    </span>
+                                                  ) : (
+                                                    <span style={{ color: '#8b92a5' }}>دیفالت</span>
+                                                  )}
+                                                </td>
+                                                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{item.quantity} عدد</td>
+                                                <td>
+                                                  {item.discountPercent > 0 ? (
+                                                    <div>
+                                                      <span style={{ textDecoration: 'line-through', color: '#8b92a5', fontSize: '10px', marginLeft: '6px' }}>{item.priceAed} AED</span>
+                                                      <span style={{ color: '#ff3333', fontWeight: 'bold' }}>{Math.round(item.priceAed * (1 - item.discountPercent / 100))} AED</span>
+                                                    </div>
+                                                  ) : (
+                                                    <span>{item.priceAed} AED</span>
+                                                  )}
+                                                </td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      ) : (
+                                        <div className={styles.detailsMetaList}>
+                                          <div className={styles.detailsMetaItem}>
+                                            <span>نام کالا:</span>
+                                            <span className={styles.detailsMetaVal}>{lead.productName}</span>
+                                          </div>
+                                          <div className={styles.detailsMetaItem}>
+                                            <span>برند مبدا:</span>
+                                            <span className={styles.detailsMetaVal}>{lead.brand}</span>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ fontSize: '11px', color: '#8b92a5' }}>
+                                          سایت مبدا: {lead.brand === 'دبی خرید' ? 'خرید گروهی سبد خرید' : 'noon.com'} | وزن: {lead.weight}kg
+                                        </div>
+                                        
+                                        <a 
+                                          href={getWhatsAppLink(lead)} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className={styles.whatsappLinkBtn}
+                                        >
+                                          💬 ارسال فاکتور هماهنگی واتساپ
+                                        </a>
+                                      </div>
+                                    </div>
+
                                   </div>
-                                </td>
-                              </tr>
-                            )}
-                          </>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </>
+                      );
+                    })}
+                    {filteredLeads.length === 0 && (
+                      <tr>
+                        <td colSpan="9" style={{ textAlign: 'center', color: '#8b92a5', padding: '40px 0' }}>هیچ موردی یافت نشد.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-              {/* ==========================================================
-                 TAB 3: CUSTOMERS CRM
-                 ========================================================== */}
-              {activeTab === 'customers' && (
+          {/* TAB 3: PRODUCT UPLOADER WITH LIVE CARD PREVIEW */}
+          {activeTab === 'products' && (
+            <div>
+              <div className={styles.sectionHeader}>
                 <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>👥 پنل ارتباط با مشتریان و CRM</h2>
-                      <p>دسته‌بندی خودکار اعضا، پیگیری فاکتورهای پرداختی و نمایش تاریخچه خرید اختصاصی</p>
-                    </div>
+                  <h1>📤 آپلود و درج محصول جدید در دبی خرید</h1>
+                  <p className={styles.sectionDesc}>درج مشخصات کالا جهت آپلود مستقیم در کاتالوگ فروشگاه با فیلترها و پیش‌نمایش زنده</p>
+                </div>
+              </div>
 
-                    <div className={styles.searchBox}>
-                      <span>🔍</span>
+              {/* Advanced Uploader Layout Grid */}
+              <div className={styles.uploaderLayout}>
+                
+                {/* Right Form Card */}
+                <form onSubmit={handleProductUpload} className={styles.uploadForm}>
+                  
+                  {/* Part 1: Core Details */}
+                  <div className={styles.formCardSection}>
+                    <h3 className={styles.formSectionHeader}>🛍️ مشخصات اصلی کالا</h3>
+                    <div className={styles.formInputGrid}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>نام کالا (فارسی) *</label>
+                        <input 
+                          type="text" 
+                          value={prodForm.name} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="مثال: کتانی اورجینال نایک مدل Air Max" 
+                          className={styles.inputField} 
+                          required 
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>نام برند (انگلیسی) *</label>
+                        <input 
+                          type="text" 
+                          value={prodForm.brand} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, brand: e.target.value }))}
+                          placeholder="مثال: Nike" 
+                          className={styles.inputField} 
+                          required 
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>سایت مرجع امارات (دبی)</label>
+                        <input 
+                          type="text" 
+                          value={prodForm.store} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, store: e.target.value }))}
+                          placeholder="مثال: noon.com" 
+                          className={styles.inputField} 
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>قیمت خرید کالا در دبی (درهم) *</label>
+                        <input 
+                          type="number" 
+                          value={prodForm.priceAed} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, priceAed: e.target.value }))}
+                          placeholder="مثال: 599" 
+                          className={styles.inputField} 
+                          required 
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>درصد تخفیف (در صورت وجود)</label>
+                        <input 
+                          type="number" 
+                          value={prodForm.discountPercent} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, discountPercent: e.target.value }))}
+                          placeholder="مثال: 20" 
+                          className={styles.inputField} 
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>وزن تقریبی کالا (کیلوگرم)</label>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          value={prodForm.weight} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, weight: e.target.value }))}
+                          placeholder="مثال: 0.95" 
+                          className={styles.inputField} 
+                        />
+                      </div>
+                      <div className={styles.checkboxWrap} style={{ gridColumn: 'span 2' }}>
+                        <input 
+                          type="checkbox" 
+                          id="isBestSeller"
+                          checked={prodForm.isBestSeller} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, isBestSeller: e.target.checked }))}
+                          className={styles.checkboxInput} 
+                        />
+                        <label htmlFor="isBestSeller" className={styles.checkboxLabel}>کالا به عنوان پرفروش علامت‌گذاری شود</label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Part 2: Appearance & Categorization */}
+                  <div className={styles.formCardSection}>
+                    <h3 className={styles.formSectionHeader}>⚙️ مشخصات فنی و فیلترها</h3>
+                    <div className={styles.formInputGrid}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>دسته‌بندی اصلی</label>
+                        <select 
+                          value={prodForm.category} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, category: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="clothing">پوشاک و لباس</option>
+                          <option value="pants">شلوار</option>
+                          <option value="shoes">کفش و کتانی</option>
+                          <option value="bags">کیف و اکسسوری</option>
+                          <option value="electronics">لپ‌تاپ و الکترونیک</option>
+                          <option value="beauty">زیبایی و سلامت</option>
+                          <option value="others">سایر کالاها</option>
+                        </select>
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>منوی جنسیت هدف</label>
+                        <select 
+                          value={prodForm.gender} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, gender: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="none">غیر وابسته به جنسیت (عمومی)</option>
+                          <option value="men">مردانه (Men)</option>
+                          <option value="women">زنانه (Women)</option>
+                          <option value="kids">بچه‌گانه (Kids)</option>
+                        </select>
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>رنگ‌های موجود (جدا شده با کامای فارسی)</label>
+                        <input 
+                          type="text" 
+                          value={prodForm.colors} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, colors: e.target.value }))}
+                          placeholder="مثال: مشکی, سفید, طوسی, کرم" 
+                          className={styles.inputField} 
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>سایزهای موجود (جدا شده با کامای فارسی)</label>
+                        <input 
+                          type="text" 
+                          value={prodForm.sizes} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, sizes: e.target.value }))}
+                          placeholder="مثال: 40, 41, 42, L, XL" 
+                          className={styles.inputField} 
+                        />
+                      </div>
+                      <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                        <label className={styles.formLabel}>مشخصات فرعی / خلاصه مشخصات فنی کوتاه</label>
+                        <input 
+                          type="text" 
+                          value={prodForm.spec} 
+                          onChange={(e) => setProdForm(prev => ({ ...prev, spec: e.target.value }))}
+                          placeholder="مثال: پردازنده Intel i7 / چرم طبیعی گاو" 
+                          className={styles.inputField} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Part 3: Image & Description */}
+                  <div className={styles.formCardSection}>
+                    <h3 className={styles.formSectionHeader}>🖼️ تصویر و توضیحات</h3>
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label className={styles.formLabel}>آدرس اینترنتی تصویر کالا (URL)</label>
                       <input 
                         type="text" 
-                        placeholder="جستجوی خریدار بر اساس نام، تلفن یا شهر..."
-                        value={customerSearch}
-                        onChange={(e) => setCustomerSearch(e.target.value)}
-                        className={styles.searchInput}
+                        value={prodForm.image} 
+                        onChange={(e) => setProdForm(prev => ({ ...prev, image: e.target.value }))}
+                        placeholder="https://images.unsplash.com/photo-..." 
+                        className={styles.inputField} 
+                      />
+                    </div>
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label className={styles.formLabel}>لینک کالا در فروشگاه اصلی امارات</label>
+                      <input 
+                        type="text" 
+                        value={prodForm.link} 
+                        onChange={(e) => setProdForm(prev => ({ ...prev, link: e.target.value }))}
+                        placeholder="https://www.amazon.ae/gp/product/..." 
+                        className={styles.inputField} 
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>توضیحات کامل محصول</label>
+                      <textarea 
+                        rows="3"
+                        value={prodForm.description} 
+                        onChange={(e) => setProdForm(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="توضیحات کامل فیزیکی، نحوه سفارش، اصالت و..."
+                        className={styles.textareaField}
                       />
                     </div>
                   </div>
 
-                  <div className={styles.tableContainer}>
-                    <table className={styles.saasTable}>
-                      <thead>
-                        <tr>
-                          <th>نام خریدار</th>
-                          <th>شماره موبایل</th>
-                          <th>پست الکترونیکی</th>
-                          <th>شهر سکونت</th>
-                          <th>کل فاکتورها</th>
-                          <th>مجموع خرید (تومان)</th>
-                          <th>سطح کاربری خریدار</th>
-                          <th>عملیات ادمین</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredCustomers.map(cust => (
-                          <tr key={cust.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedCustomerForDrawer(selectedCustomerForDrawer?.id === cust.id ? null : cust)}>
-                            <td style={{ fontWeight: '800' }}>{cust.name}</td>
-                            <td style={{ fontFamily: 'monospace' }}>{cust.phone}</td>
-                            <td>{cust.email}</td>
-                            <td>{cust.city}</td>
-                            <td style={{ fontWeight: 'bold' }}>{cust.totalOrders} بار</td>
-                            <td style={{ color: '#fff', fontWeight: '800' }}>{fmtToman(cust.totalSpending)}</td>
-                            <td>
-                              <span className={`${styles.customerLevelBadge} ${styles[`level_${cust.level}`]}`}>
-                                {cust.level === 'new' ? 'عضو جدید' :
-                                 cust.level === 'regular' ? 'مشتری عادی' :
-                                 cust.level === 'vip' ? 'مشتری VIP' : 'خرید عمده'}
-                              </span>
-                            </td>
-                            <td onClick={(e) => e.stopPropagation()}>
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <select 
-                                  value={cust.level} 
-                                  onChange={(e) => updateCustomerLevel(cust.id, e.target.value)}
-                                  className={styles.statusSelect}
-                                >
-                                  <option value="new">عضو جدید</option>
-                                  <option value="regular">مشتری عادی</option>
-                                  <option value="vip">مشتری VIP</option>
-                                  <option value="wholesale">خرید عمده</option>
-                                </select>
-                                <a href={`https://api.whatsapp.com/send?phone=98${cust.phone.slice(1)}`} target="_blank" rel="noopener noreferrer" className={styles.whatsappLinkBtn} style={{ padding: '4px 10px' }}>💬 واتساپ</a>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Expandable Order history logs of Selected Customer */}
-                  {selectedCustomerForDrawer && (
-                    <div className={styles.profileHistoryCard}>
-                      <h3>📥 تاریخچه سفارش‌های اختصاصی خریدار: {selectedCustomerForDrawer.name}</h3>
-                      <div className={styles.tableContainer} style={{ background: '#060709' }}>
-                        <table className={styles.saasTable}>
-                          <thead>
-                            <tr>
-                              <th>کد پیش‌فاکتور</th>
-                              <th>کالای سفارش</th>
-                              <th>برند</th>
-                              <th>مبلغ خرید</th>
-                              <th>وضعیت</th>
-                              <th>تاریخ</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {orders.filter(o => o.phone === selectedCustomerForDrawer.phone).map(order => (
-                              <tr key={order.id}>
-                                <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{order.id}</td>
-                                <td>{order.productName}</td>
-                                <td>{order.brand}</td>
-                                <td style={{ fontWeight: '750' }}>{fmtToman(order.finalPrice)} تومان</td>
-                                <td>
-                                  <span className={`${styles.orderStatusBadge} ${styles[`status_${order.status}`]}`}>
-                                    {order.status}
-                                  </span>
-                                </td>
-                                <td style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{fmtDate(order.date)}</td>
-                              </tr>
-                            ))}
-                            {orders.filter(o => o.phone === selectedCustomerForDrawer.phone).length === 0 && (
-                              <tr>
-                                <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0' }}>سفارشی ثبت نشده است.</td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 4: PRODUCT CATALOG
-                 ========================================================== */}
-              {activeTab === 'products' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>🛍️ مدیریت کاتالوگ و گالری محصولات سایت</h2>
-                      <p>آپلود تصاویر کالا، ویرایش زنده قیمت درهم، موجودی و فعال/غیرفعال‌سازی سریع کالاها</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.5fr', gap: '30px' }}>
-                    {/* Add Product Form Widget */}
-                    <div className={styles.chartCard} style={{ height: 'fit-content' }}>
-                      <h3 style={{ borderRightColor: 'var(--accent-amber)', fontSize: '14.5px', marginBottom: '20px' }}>📤 آپلود محصول جدید</h3>
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        alert('محصول جدید با موفقیت درج گردید.');
-                      }} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div className={styles.formGroup}>
-                          <label>نام کالا (فارسی):</label>
-                          <input type="text" placeholder="مثال: ساعت مچی گوچی" className={styles.reviewInput} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label>برند کالا:</label>
-                          <input type="text" placeholder="مثال: Gucci" className={styles.reviewInput} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label>قیمت کالا (درهم):</label>
-                          <input type="number" placeholder="مثال: 450" className={styles.reviewInput} required />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label>آدرس تصویر کالا (Image URL):</label>
-                          <input 
-                            type="text" 
-                            placeholder="https://images.unsplash.com/..." 
-                            value={newProdImageInput}
-                            onChange={e => setNewProdImageInput(e.target.value)}
-                            className={styles.reviewInput} 
-                          />
-                        </div>
-                        <div className={styles.fileUploadWrap} onClick={() => alert('شبیه‌ساز تصویر: آدرس تصویر را در فیلد بالا کپی کنید!')}>
-                          <span className={styles.fileUploadIcon}>📸</span>
-                          <span className={styles.fileUploadLabel}>انتخاب تصویر از گالری</span>
-                        </div>
-                        <button type="submit" className={styles.btnSolid}>انتشار در ویترین فروشگاه</button>
-                      </form>
-                    </div>
-
-                    {/* Catalog List */}
-                    <div className={styles.tableContainer}>
-                      <table className={styles.saasTable}>
-                        <thead>
-                          <tr>
-                            <th>تصویر کالا</th>
-                            <th>نام کالا</th>
-                            <th>برند</th>
-                            <th>قیمت خرید دبی</th>
-                            <th>قیمت تومانی</th>
-                            <th>موجودی</th>
-                            <th>ویترین فعال</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {orders.slice(0, 5).map(p => (
-                            <tr key={p.id}>
-                              <td>
-                                <img src={p.image} alt={p.productName} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} />
-                              </td>
-                              <td style={{ fontWeight: '800' }}>{p.productName}</td>
-                              <td>{p.brand}</td>
-                              <td>{p.priceAed} درهم</td>
-                              <td>{fmtToman(p.priceAed * settings.exchangeRate)} تومان</td>
-                              <td>
-                                <span style={{ fontWeight: 'bold', color: 'var(--accent-green)' }}>✓ موجود در انبار</span>
-                              </td>
-                              <td>
-                                <button className={styles.editActionBtn} style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', borderColor: 'rgba(16,185,129,0.2)' }}>
-                                  ✓ فعال
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 5: USED LAPTOP INVENTORY
-                 ========================================================== */}
-              {activeTab === 'laptops' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>💻 کنترل پنل انبار لپ‌تاپ‌های استوک وارداتی دبی</h2>
-                      <p>ثبت مشخصات فنی ریز، چک‌لیست و فاکتور تست سلامت سخت‌افزاری، محاسبه خودکار حاشیه سود</p>
-                    </div>
-                    
-                    <button onClick={() => setSelectedLaptopForDrawer({ brand: '', model: '', cpu: '', ram: '', storage: '', gpu: '', screenSize: '', purchasePriceAED: '', salePriceToman: '', condition: 'Excellent', status: 'Available', testedKeyboard: true, testedDisplay: true, testedBattery: true, testedCamera: true, testedUsb: true, testedWifi: true, chargerIncluded: true, boxIncluded: false, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400' })} className={styles.btnSolid}>
-                      ➕ افزودن لپ‌تاپ استوک جدید
+                  {/* Form Submission */}
+                  <div className={styles.formActions}>
+                    <button type="submit" className={styles.loginBtn} style={{ margin: 0, width: 'auto', padding: '14px 40px' }}>
+                      📤 آپلود محصول در وب‌سایت
                     </button>
                   </div>
 
+                </form>
+
+                {/* Left Sticky Live Preview card Column */}
+                <div className={styles.previewStickyCol}>
+                  <span className={styles.previewTitle}>👁️ پیش‌نمایش زنده کارت کاتالوگ</span>
+                  
+                  <div className={styles.mockCatalogCard}>
+                    
+                    {/* Image box */}
+                    <div className={styles.mockImgBox}>
+                      {prodForm.image ? (
+                        <img src={prodForm.image} alt="Preview thumbnail" className={styles.mockImg} onError={(e) => { e.target.src = ''; }} />
+                      ) : (
+                        <div className={styles.mockImgFallback}>
+                          <span style={{ fontSize: '32px' }}>📷</span>
+                          <span>آدرس تصویر کالا</span>
+                        </div>
+                      )}
+                      
+                      {previewDiscount > 0 && (
+                        <div className={styles.mockSaleBadge}>
+                          {previewDiscount}%-
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Content block */}
+                    <div className={styles.mockCardContent}>
+                      
+                      {/* Brand Row */}
+                      <div className={styles.mockBrandRow}>
+                        <span>{prodForm.brand || 'برند کالا'}</span>
+                        <span className={styles.mockStoreLabel}>{prodForm.store || 'amazon.ae'}</span>
+                      </div>
+
+                      {/* Title & Specs */}
+                      <div className={styles.mockTitle}>{prodForm.name || 'نام فارسی محصول جدید'}</div>
+                      <div className={styles.mockSpecs}>{prodForm.spec || 'خلاصه مشخصات فنی'}</div>
+
+                      {/* Interactive Colors render */}
+                      {parsedPreviewColors.length > 0 && (
+                        <div className={styles.mockPreviewSwatches}>
+                          {parsedPreviewColors.map((color, idx) => {
+                            const hex = COLOR_HEX_MAP[color] || '#808080';
+                            return (
+                              <div 
+                                key={idx} 
+                                className={styles.mockColorDot} 
+                                style={{ background: hex }} 
+                                title={color}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Dynamic Sizes render */}
+                      {parsedPreviewSizes.length > 0 && (
+                        <div className={styles.mockPreviewSizes}>
+                          {parsedPreviewSizes.slice(0, 4).map((size, idx) => (
+                            <span key={idx} className={styles.mockSizeTag}>
+                              {size}
+                            </span>
+                          ))}
+                          {parsedPreviewSizes.length > 4 && (
+                            <span className={styles.mockSizeTag}>+</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Pricing toman calculator */}
+                      <div className={styles.mockPriceRow}>
+                        <span className={styles.mockPriceLabel}>قیمت نهایی با هزینه ارسال:</span>
+                        
+                        {previewDiscount > 0 ? (
+                          <div>
+                            <span style={{ fontSize: '11px', textDecoration: 'line-through', color: '#8b92a5' }}>
+                              {fmtToman(baseToman)}
+                            </span>
+                            <div className={styles.mockPriceVal} style={{ color: '#ff3333' }}>
+                              {fmtToman(finalToman)} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>تومان</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={styles.mockPriceVal}>
+                            {previewPriceAed > 0 ? fmtToman(baseToman) : '۰'} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>تومان</span>
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Uploaded products checklist */}
+              {uploadedProducts.length > 0 && (
+                <div style={{ marginTop: '50px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '22px', borderRight: '3px solid #f87820', paddingRight: '10px' }}>
+                    🛍️ محصولات آپلود شده توسط شما ({uploadedProducts.length})
+                  </h3>
                   <div className={styles.tableContainer}>
-                    <table className={styles.saasTable}>
+                    <table className={styles.adminTable}>
                       <thead>
                         <tr>
                           <th>تصویر</th>
-                          <th>برند و مدل لپ‌تاپ استوک</th>
-                          <th>مشخصات فنی کوتاه (CPU / RAM)</th>
+                          <th>نام کالا</th>
+                          <th>برند</th>
                           <th>قیمت خرید دبی</th>
-                          <th>قیمت فروش ایران</th>
-                          <th>سود خالص ناخالص</th>
-                          <th>وضعیت قطعات</th>
-                          <th>وضعیت انبار</th>
-                          <th>عملیات ادمین</th>
+                          <th>دسته‌بندی / منو</th>
+                          <th>وضعیت پرفروش</th>
+                          <th>عملیات</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredLaptops.map(lap => (
-                          <tr key={lap.id}>
+                        {uploadedProducts.map(p => (
+                          <tr key={p.id}>
                             <td>
-                              <img src={lap.image} alt={lap.model} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-glass)' }} />
+                              <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} />
                             </td>
                             <td>
-                              <div style={{ fontWeight: '800' }}>{lap.model}</div>
-                              <span className={`${styles.gradeBadge} ${styles[`grade_${lap.condition}`]}`}>گرید {lap.condition}</span>
+                              <div style={{ fontWeight: '750' }}>{p.name}</div>
+                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>شناسه: {p.id}</span>
                             </td>
+                            <td>{p.brand}</td>
+                            <td>{p.priceAed} AED</td>
                             <td>
-                              <div>{lap.cpu} | {lap.ram}</div>
-                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>حافظه: {lap.storage} | اندازه: {lap.screenSize}</span>
-                            </td>
-                            <td>{lap.purchasePriceAED} AED</td>
-                            <td style={{ fontWeight: '800' }}>{fmtToman(lap.salePriceToman)} تومان</td>
-                            <td style={{ fontWeight: '800', color: 'var(--accent-green)' }}>
-                              {fmtToman(lap.profit)} تومان+
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', maxWidth: '140px' }}>
-                                {lap.testedKeyboard && <span style={{ fontSize: '9px', background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', padding: '2px 5px', borderRadius: '4px' }}>⌨️ کیبورد</span>}
-                                {lap.testedDisplay && <span style={{ fontSize: '9px', background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', padding: '2px 5px', borderRadius: '4px' }}>🖥️ مانیتور</span>}
-                                {lap.testedBattery && <span style={{ fontSize: '9px', background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', padding: '2px 5px', borderRadius: '4px' }}>🔋 باتری</span>}
-                                {lap.testedWifi && <span style={{ fontSize: '9px', background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', padding: '2px 5px', borderRadius: '4px' }}>📶 وایفای</span>}
-                              </div>
-                            </td>
-                            <td>
-                              <span className={`${styles.laptopStatusTag} ${styles[`status_${lap.status.toLowerCase()}`]}`}>
-                                {lap.status === 'Available' ? '✓ موجود در انبار' :
-                                 lap.status === 'Reserved' ? 'رزرو شده' : '✗ فروخته شده'}
+                              <div>{p.category}</div>
+                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>
+                                منو: {p.gender === 'men' ? 'مردانه' : p.gender === 'women' ? 'زنانه' : p.gender === 'kids' ? 'کودک' : 'عمومی'}
                               </span>
                             </td>
+                            <td>{p.isBestSeller ? '🔥 پرفروش' : 'عادی'}</td>
                             <td>
-                              <div className={styles.tableActionBtns}>
-                                <button onClick={() => setSelectedLaptopForDrawer(lap)} className={styles.editActionBtn}>✏️ تست سخت‌افزار / ویرایش</button>
-                              </div>
+                              <button onClick={() => handleDeleteProduct(p.id)} className={styles.deleteActionBtn} style={{ width: 'auto', padding: '6px 14px' }}>
+                                حذف کالا
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -1232,721 +1282,183 @@ export default function AdminPanel() {
                   </div>
                 </div>
               )}
-
-              {/* ==========================================================
-                 TAB 6: FINANCIAL MANAGEMENT
-                 ========================================================== */}
-              {activeTab === 'finance' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>💰 مدیریت مالی و ترازنامه سود ناخالص</h2>
-                      <p>نمودار یکپارچه حسابرسی روزانه، هفتگی، ماهانه و سالانه کارگو هوایی و سرویس حق‌العمل</p>
-                    </div>
-
-                    <div className={styles.chartFilterWrap}>
-                      <button onClick={() => setFinancePeriod('daily')} className={`${styles.chartFilterBtn} ${financePeriod === 'daily' ? styles.chartFilterBtnActive : ''}`}>روزانه</button>
-                      <button onClick={() => setFinancePeriod('weekly')} className={`${styles.chartFilterBtn} ${financePeriod === 'weekly' ? styles.chartFilterBtnActive : ''}`}>هفتگی</button>
-                      <button onClick={() => setFinancePeriod('monthly')} className={`${styles.chartFilterBtn} ${financePeriod === 'monthly' ? styles.chartFilterBtnActive : ''}`}>ماهانه</button>
-                      <button onClick={() => setFinancePeriod('yearly')} className={`${styles.chartFilterBtn} ${financePeriod === 'yearly' ? styles.chartFilterBtnActive : ''}`}>سالانه</button>
-                    </div>
-                  </div>
-
-                  <div className={styles.chartsGrid}>
-                    {/* SVG Financial Area Chart */}
-                    <div className={styles.chartCard}>
-                      <div className={styles.chartCardHeader}>
-                        <h3>📊 تراز سود خالص بر اساس فیلتر {financePeriod}</h3>
-                      </div>
-                      <div className={styles.svgChartContainer}>
-                        <svg width="100%" height="100%" viewBox="0 0 600 240" preserveAspectRatio="none">
-                          <g className={styles.chartGridLines}>
-                            <line x1="0" y1="40" x2="600" y2="40" />
-                            <line x1="0" y1="90" x2="600" y2="90" />
-                            <line x1="0" y1="140" x2="600" y2="140" />
-                            <line x1="0" y1="190" x2="600" y2="190" />
-                          </g>
-                          {/* Financial curves based on duration */}
-                          {financePeriod === 'monthly' && (
-                            <>
-                              <path d="M 0,220 Q 150,140 300,90 T 600,60 L 600,240 L 0,240 Z" className={styles.chartAreaFill} />
-                              <path d="M 0,220 Q 150,140 300,90 T 600,60" className={styles.chartAreaLine} />
-                            </>
-                          )}
-                          {financePeriod === 'yearly' && (
-                            <>
-                              <path d="M 0,230 Q 150,180 300,100 T 600,40 L 600,240 L 0,240 Z" className={styles.chartAreaFill} />
-                              <path d="M 0,230 Q 150,180 300,100 T 600,40" className={styles.chartAreaLine} />
-                            </>
-                          )}
-                          {financePeriod !== 'monthly' && financePeriod !== 'yearly' && (
-                            <>
-                              <path d="M 0,200 Q 150,90 300,160 T 600,80 L 600,240 L 0,240 Z" className={styles.chartAreaFill} />
-                              <path d="M 0,200 Q 150,90 300,160 T 600,80" className={styles.chartAreaLine} />
-                            </>
-                          )}
-                        </svg>
-                      </div>
-                    </div>
-
-                    {/* Gauges of Financial items */}
-                    <div className={styles.chartCard}>
-                      <div className={styles.chartCardHeader}>
-                        <h3>📊 تفکیک اجزای مالی ترازنامه</h3>
-                      </div>
-                      <div className={styles.financialGauges}>
-                        <div className={styles.gaugeItem}>
-                          <div className={styles.gaugeHeader}>
-                            <span className={styles.gaugeLabel}>مجموع درآمدهای ناخالص (Revenue):</span>
-                            <span className={styles.gaugeValue}>{fmtToman(totalRevenue)} تومان</span>
-                          </div>
-                          <div className={styles.gaugeTrack}>
-                            <div className={styles.gaugeFill} style={{ width: '100%', background: 'var(--accent-blue)' }} />
-                          </div>
-                        </div>
-
-                        <div className={styles.gaugeItem}>
-                          <div className={styles.gaugeHeader}>
-                            <span className={styles.gaugeLabel}>سرویس حق‌العمل ({settings.commissionRate}%):</span>
-                            <span className={styles.gaugeValue}>{fmtToman(netProfit)} تومان</span>
-                          </div>
-                          <div className={styles.gaugeTrack}>
-                            <div className={styles.gaugeFill} style={{ width: `${(netProfit/totalRevenue)*100}%`, background: 'var(--accent-amber)' }} />
-                          </div>
-                        </div>
-
-                        <div className={styles.gaugeItem}>
-                          <div className={styles.gaugeHeader}>
-                            <span className={styles.gaugeLabel}>هزینه‌های باربری هوایی کارگو:</span>
-                            <span className={styles.gaugeValue}>{fmtToman(orders.reduce((acc, o) => acc + (o.shippingCost || 0), 0))} تومان</span>
-                          </div>
-                          <div className={styles.gaugeTrack}>
-                            <div className={styles.gaugeFill} style={{ width: `${(orders.reduce((acc, o) => acc + (o.shippingCost || 0), 0)/totalRevenue)*100}%`, background: 'var(--accent-yellow)' }} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 7: PAYMENTS
-                 ========================================================== */}
-              {activeTab === 'payments' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>💳 مدیریت تراکنش‌ها و تأیید پرداخت پیش‌فاکتورها</h2>
-                      <p>بررسی رسیدهای بانکی آپلود شده مشتریان شتاب، تایید مبالغ دریافتی و صدور تاییدیه خرید امارات</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.tableContainer}>
-                    <table className={styles.saasTable}>
-                      <thead>
-                        <tr>
-                          <th>کد پیش‌فاکتور</th>
-                          <th>مشتری خریدار</th>
-                          <th>مبلغ پرداخت نهایی</th>
-                          <th>وضعیت تسویه فاکتور</th>
-                          <th>سند بانکی ضمیمه شده</th>
-                          <th>عملیات ادمین</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {orders.map(order => (
-                          <tr key={order.id}>
-                            <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{order.id}</td>
-                            <td>{order.customerName}</td>
-                            <td style={{ fontWeight: '800' }}>{fmtToman(order.finalPrice)} تومان</td>
-                            <td>
-                              <span style={{ fontWeight: 'bold', color: order.paymentStatus === 'paid' ? 'var(--accent-green)' : 'var(--accent-red)' }}>
-                                {order.paymentStatus === 'paid' ? '✓ تسویه نهایی شده' : '✗ در انتظار پرداخت'}
-                              </span>
-                            </td>
-                            <td>
-                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>📄 رسید بانکی تصویری ضمیمه است</span>
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                {order.paymentStatus !== 'paid' ? (
-                                  <button onClick={() => {
-                                    const list = orders.map(o => o.id === order.id ? { ...o, paymentStatus: 'paid' } : o);
-                                    syncState('dubaiKharidOrders', list, setOrders);
-                                    alert('تراکنش مالی با موفقیت تایید و تسویه گردید.');
-                                  }} className={styles.editActionBtn} style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', borderColor: 'rgba(16,185,129,0.2)' }}>
-                                    ✓ تایید نهایی و تسویه
-                                  </button>
-                                ) : (
-                                  <button onClick={() => {
-                                    const list = orders.map(o => o.id === order.id ? { ...o, paymentStatus: 'pending' } : o);
-                                    syncState('dubaiKharidOrders', list, setOrders);
-                                  }} className={styles.deleteActionBtn}>
-                                    ✗ لغو تایید
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 8: SHIPPING MANAGEMENT
-                 ========================================================== */}
-              {activeTab === 'shipping' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>✈️ مدیریت لجستیک، پروازهای کارگو و رهگیری مرسولات</h2>
-                      <p>ویرایش خطوط هوایی، بارکد گمرک و به‌روزرسانی نوار وضعیت مکانی مرسوله‌های خریداران</p>
-                    </div>
-                  </div>
-
-                  {orders.filter(o => o.trackingNumber).map(order => (
-                    <div key={order.id} className={styles.chartCard} style={{ marginBottom: '25px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-glass)', paddingBottom: '12px', marginBottom: '16px' }}>
-                        <div>
-                          <span style={{ fontWeight: '800', color: 'var(--accent-amber)', fontSize: '15px' }}>📦 مرسوله {order.id}</span>
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginRight: '15px' }}>خریدار: {order.customerName} | کالا: {order.productName}</span>
-                        </div>
-                        <div style={{ fontSize: '12.5px', fontFamily: 'monospace', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--border-glass)' }}>
-                          📟 کد رهگیری کارگو: {order.trackingNumber}
-                        </div>
-                      </div>
-
-                      {/* Timeline Pipeline */}
-                      <div className={styles.shippingTracker}>
-                        <div className={`${styles.trackerStep} ${styles.trackerStepActive} ${styles.trackerStepDone}`}>
-                          <div className={styles.trackerDot}>✓</div>
-                          <span className={styles.trackerLabel}>تحویل دفتر دبی</span>
-                        </div>
-                        <div className={`${styles.trackerStep} ${
-                          (order.status === 'shipped_iran' || order.status === 'delivered') ? `${styles.trackerStepActive} ${styles.trackerStepDone}` : ''
-                        }`}>
-                          <div className={styles.trackerDot}>✈️</div>
-                          <span className={styles.trackerLabel}>پرواز کارگو هوایی</span>
-                        </div>
-                        <div className={`${styles.trackerStep} ${
-                          order.status === 'delivered' ? `${styles.trackerStepActive} ${styles.trackerStepDone}` : ''
-                        }`}>
-                          <div className={styles.trackerDot}>📦</div>
-                          <span className={styles.trackerLabel}>تحویل گمرک ایران</span>
-                        </div>
-                        <div className={`${styles.trackerStep} ${
-                          order.status === 'delivered' ? `${styles.trackerStepActive}` : ''
-                        }`}>
-                          <div className={styles.trackerDot}>🏠</div>
-                          <span className={styles.trackerLabel}>تحویل درب منزل</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 9: CUSTOMER REVIEWS
-                 ========================================================== */}
-              {activeTab === 'reviews' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>💬 مدیریت نظرات و دیدگاه‌های خریداران</h2>
-                      <p>بازبینی نظرات مشتریان، درج پاسخ ادمین و تایید نهایی نمایش در صفحات محصولات اصلی</p>
-                    </div>
-                    
-                    <div className={styles.searchBox}>
-                      <span>🔍</span>
-                      <input 
-                        type="text" 
-                        placeholder="جستجو در نظرات کاربران..."
-                        value={reviewSearch}
-                        onChange={(e) => setReviewSearch(e.target.value)}
-                        className={styles.searchInput}
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.tableContainer}>
-                    <table className={styles.saasTable}>
-                      <thead>
-                        <tr>
-                          <th>نام خریدار</th>
-                          <th>محصول مرجع</th>
-                          <th>ستاره</th>
-                          <th>متن نظر خریدار</th>
-                          <th>پاسخ ادمین</th>
-                          <th>وضعیت انتشار</th>
-                          <th>عملیات ادمین</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredReviews.map(rev => (
-                          <tr key={rev.id}>
-                            <td style={{ fontWeight: '800' }}>{rev.userName}</td>
-                            <td>{rev.productName}</td>
-                            <td style={{ color: '#ff9d00', letterSpacing: '1px', fontWeight: 'bold' }}>
-                              {'★'.repeat(rev.rating)}
-                              {'☆'.repeat(5 - rev.rating)}
-                            </td>
-                            <td style={{ maxWidth: '280px', whiteSpace: 'normal', lineHeight: '1.5' }}>{rev.comment}</td>
-                            <td style={{ maxWidth: '200px', whiteSpace: 'normal', color: 'var(--accent-amber)', fontSize: '12px' }}>
-                              {rev.reply ? `💬 ${rev.reply}` : 'بدون پاسخ'}
-                            </td>
-                            <td>
-                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: rev.status === 'approved' ? 'var(--accent-green)' : 'var(--accent-yellow)' }}>
-                                {rev.status === 'approved' ? '✓ منتشر شده' : '⌛ معلق'}
-                              </span>
-                            </td>
-                            <td>
-                              <div className={styles.tableActionBtns}>
-                                <button onClick={() => setSelectedReviewForDrawer(rev)} className={styles.editActionBtn}>✏️ پاسخ / مدیریت</button>
-                                <button onClick={() => moderateReview(rev.id, 'approved')} className={styles.editActionBtn} style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--accent-green)', borderColor: 'rgba(16,185,129,0.2)' }}>تایید</button>
-                                <button onClick={() => moderateReview(rev.id, 'rejected')} className={styles.deleteActionBtn}>حذف</button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 10: CONTENT MANAGEMENT
-                 ========================================================== */}
-              {activeTab === 'content' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>📝 سیستم مدیریت محتوا و وبلاگ (CMS)</h2>
-                      <p>ویرایش متون صفحه اصلی، مدیریت بنرهای تبلیغاتی فعال و مقالات بلاگ دبی خرید</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
-                    {/* Banners & Hero CMS */}
-                    <div className={styles.chartCard}>
-                      <h3 style={{ borderRightColor: 'var(--accent-amber)', fontSize: '14.5px', marginBottom: '20px' }}>🏠 ویرایش متون و بنرهای ویترین صفحه اصلی</h3>
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        localStorage.setItem('dubaiKharidContent', JSON.stringify(content));
-                        alert('تغییرات محتوایی صفحه اصلی ذخیره شد.');
-                      }} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div className={styles.formGroup}>
-                          <label>عنوان اصلی هیرو (Hero Title):</label>
-                          <input 
-                            type="text" 
-                            value={content.heroTitle} 
-                            onChange={e => setContent(prev => ({ ...prev, heroTitle: e.target.value }))}
-                            className={styles.reviewInput} 
-                            required 
-                          />
-                        </div>
-                        <div className={styles.formGroup}>
-                          <label>زیرعنوان اصلی هیرو (Hero Subtitle):</label>
-                          <textarea 
-                            rows="2"
-                            value={content.heroSubtitle} 
-                            onChange={e => setContent(prev => ({ ...prev, heroSubtitle: e.target.value }))}
-                            className={styles.reviewInput} 
-                            required 
-                          />
-                        </div>
-                        <button type="submit" className={styles.btnSolid}>ذخیره تغییرات هیرو</button>
-                      </form>
-                    </div>
-
-                    {/* Blog Posts CMS */}
-                    <div className={styles.chartCard}>
-                      <h3 style={{ borderRightColor: 'var(--accent-purple)', fontSize: '14.5px', marginBottom: '20px' }}>📝 مقالات فعال وبلاگ دبی خرید</h3>
-                      <div className={styles.miniList}>
-                        {content.blogPosts.map(post => (
-                          <div key={post.id} className={styles.miniItem} style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '14px' }}>
-                            <div>
-                              <span className={styles.miniName} style={{ fontSize: '14px', fontWeight: 'bold' }}>{post.title}</span>
-                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>نویسنده: {post.author} | تاریخ: {post.date}</span>
-                              <p style={{ fontSize: '11.5px', color: 'var(--text-light)', marginTop: '4px' }}>{post.summary}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 11: PERMISSIONS & ROLES
-                 ========================================================== */}
-              {activeTab === 'roles' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>🔑 مدیریت سطوح دسترسی و نقش‌های پرسنل</h2>
-                      <p>پیکربندی حریم خصوصی و مشخص کردن امکان دسترسی هر نقش به ماژول‌های حسابداری، سیستمی و مدیریت سفارشات</p>
-                    </div>
-                  </div>
-
-                  <div className={styles.tableContainer}>
-                    <table className={styles.saasTable}>
-                      <thead>
-                        <tr>
-                          <th>نقش پرسنل</th>
-                          <th>پیشخوان کلی</th>
-                          <th>سفارشات</th>
-                          <th>مشتریان CRM</th>
-                          <th>کاتالوگ</th>
-                          <th>انبار لپ‌تاپ</th>
-                          <th>حسابداری مالی</th>
-                          <th>پرداخت‌ها</th>
-                          <th>تنظیمات سیستم</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Object.keys(rolePermissions).map(role => (
-                          <tr key={role}>
-                            <td style={{ fontWeight: '800', color: 'var(--accent-amber)' }}>{role}</td>
-                            <td>{rolePermissions[role].includes('overview') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('orders') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('customers') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('products') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('laptops') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('finance') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('payments') ? '✓ مجاز' : '✗ مسدود'}</td>
-                            <td>{rolePermissions[role].includes('settings') ? '✓ مجاز' : '✗ مسدود'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* ==========================================================
-                 TAB 12: SYSTEM SETTINGS
-                 ========================================================== */}
-              {activeTab === 'settings' && (
-                <div>
-                  <div className={styles.moduleHeader}>
-                    <div className={styles.titleArea}>
-                      <h2>⚙️ تنظیمات عمومی و متغیرهای اصلی سیستم</h2>
-                      <p>به‌روزرسانی زنده نرخ تبدیل ارز امارات (درهم به تومان)، کارمزد حق‌العمل و بازگردانی دیتابیس کارخانه</p>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
-                    {/* Settings Form */}
-                    <div className={styles.chartCard}>
-                      <h3 style={{ borderRightColor: 'var(--accent-amber)', fontSize: '14.5px', marginBottom: '20px' }}>⚙️ ویرایش پارامترهای سیستمی و نرخ ارز</h3>
-                      <form onSubmit={(e) => {
-                        e.preventDefault();
-                        localStorage.setItem('dubaiKharidSettings', JSON.stringify(settings));
-                        alert('تنظیمات سیستمی و نرخ تسویه درهم با موفقیت به‌روزرسانی شد.');
-                      }} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div className={styles.formGroup} style={{ maxWidth: '300px' }}>
-                          <label>نرخ تبدیل ارز (درهم به تومان) *</label>
-                          <input 
-                            type="number" 
-                            value={settings.exchangeRate} 
-                            onChange={e => setSettings(prev => ({ ...prev, exchangeRate: parseFloat(e.target.value) || 0 }))}
-                            className={styles.reviewInput} 
-                            required 
-                          />
-                        </div>
-
-                        <div className={styles.formGroup} style={{ maxWidth: '300px' }}>
-                          <label>کارمزد پیش‌فرض دبی خرید (درصد) *</label>
-                          <input 
-                            type="number" 
-                            value={settings.commissionRate} 
-                            onChange={e => setSettings(prev => ({ ...prev, commissionRate: parseFloat(e.target.value) || 0 }))}
-                            className={styles.reviewInput} 
-                            required 
-                          />
-                        </div>
-
-                        <div className={styles.formGroup}>
-                          <label>تلفن پشتیبانی واتساپ:</label>
-                          <input 
-                            type="text" 
-                            value={settings.supportPhone} 
-                            onChange={e => setSettings(prev => ({ ...prev, supportPhone: e.target.value }))}
-                            className={styles.reviewInput} 
-                          />
-                        </div>
-
-                        <button type="submit" className={styles.btnSolid} style={{ width: 'fit-content' }}>✓ به‌روزرسانی متغیرهای سیستمی</button>
-                      </form>
-                    </div>
-
-                    {/* Reset settings box */}
-                    <div className={styles.chartCard} style={{ border: '1px solid rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.015)' }}>
-                      <h3 style={{ borderRightColor: 'var(--accent-red)', color: 'var(--accent-red)', fontSize: '14.5px', marginBottom: '20px' }}>🚨 بخش ویژه بازیابی کارخانه</h3>
-                      <p style={{ fontSize: '12.5px', lineHeight: '1.6', color: 'var(--text-light)', marginBottom: '25px' }}>
-                        توجه: با بازگردانی اطلاعات، تمامی اطلاعات لیدهای معلق، انبار لپ‌تاپ‌های تست شده استوک، فاکتورهای ضمیمه و تراز مالی شبیه‌سازی شده حذف شده و رمز عبور پیش‌فرض پنل مدیریت (<strong>@Reza112233</strong>) در حافظه محلی ریست خواهد شد.
-                      </p>
-                      <button onClick={handleResetSystemSeeds} className={styles.exitBtn} style={{ width: 'fit-content' }}>
-                        🗑️ پاک کردن دیتابیس لوکال و ریست کامل داده‌ها
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
+            </div>
           )}
+
+          {/* TAB 4: REVIEWS MODERATION */}
+          {activeTab === 'reviews' && (
+            <div>
+              <div className={styles.sectionHeader}>
+                <div>
+                  <h1>💬 مدیریت نظرات و دیدگاه‌های خریداران دبی خرید</h1>
+                  <p className={styles.sectionDesc}>بررسی بازخوردهای ارسالی کاربران، تایید اصالت خرید و جلوگیری از هرزنامه‌ها</p>
+                </div>
+
+                <div className={styles.searchBarWrapper}>
+                  <span>🔍</span>
+                  <input 
+                    type="text" 
+                    placeholder="جستجو در نظرات، خریداران یا کالاها..."
+                    value={reviewSearch}
+                    onChange={(e) => setReviewSearch(e.target.value)}
+                    className={styles.searchBarInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.tableContainer}>
+                <table className={styles.adminTable}>
+                  <thead>
+                    <tr>
+                      <th>نام کاربر</th>
+                      <th>محصول درخواستی</th>
+                      <th>امتیاز</th>
+                      <th>متن دیدگاه خریدار</th>
+                      <th>تاریخ ارسال</th>
+                      <th>وضعیت اصالت</th>
+                      <th>عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredReviews.map(rev => (
+                      <tr key={rev.id}>
+                        <td style={{ fontWeight: '750' }}>{rev.userName}</td>
+                        <td>{rev.productName}</td>
+                        <td style={{ color: '#ff9d00', letterSpacing: '1px', fontWeight: 'bold' }}>
+                          {'★'.repeat(rev.rating)}
+                          {'☆'.repeat(5 - rev.rating)}
+                        </td>
+                        <td style={{ maxWidth: '300px', whiteSpace: 'normal', lineHeight: '1.5' }}>
+                          {rev.comment}
+                        </td>
+                        <td style={{ fontSize: '11px', color: '#8b92a5' }}>{fmtDate(rev.date)}</td>
+                        <td>
+                          <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '6px', background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)' }}>
+                            ✓ تایید شده
+                          </span>
+                        </td>
+                        <td>
+                          <button onClick={() => handleDeleteReview(rev.id)} className={styles.deleteActionBtn} style={{ width: 'auto', padding: '6px 14px' }}>
+                            حذف نظر
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {filteredReviews.length === 0 && (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', color: '#8b92a5', padding: '40px 0' }}>دیدگاهی ثبت نشده است.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: SECURITY SETTINGS & PASSWORD COMPLEXITY GAUGE */}
+          {activeTab === 'settings' && (
+            <div>
+              <div className={styles.sectionHeader}>
+                <div>
+                  <h1>⚙️ تنظیمات امنیتی پنل دبی خرید</h1>
+                  <p className={styles.sectionDesc}>تغییر رمز عبور ادمین و ریست کردن دیتابیس لوکال فروشگاه کارگو</p>
+                </div>
+              </div>
+
+              {/* Password change form */}
+              <div className={styles.securityCard}>
+                <h3>🔑 تغییر رمز عبور ورود ادمین</h3>
+                
+                {passwordChangeSuccess && (
+                  <div className={styles.successNote}>رمز عبور پنل مدیریت با موفقیت تغییر یافت.</div>
+                )}
+                {passwordChangeError && (
+                  <div className={styles.loginError} style={{ margin: '0 0 20px' }}>{passwordChangeError}</div>
+                )}
+
+                <form onSubmit={handlePasswordChange}>
+                  <div className={styles.formGroup} style={{ maxWidth: '350px' }}>
+                    <label>رمز عبور فعلی ادمین:</label>
+                    <input 
+                      type="password" 
+                      value={passForm.oldPass} 
+                      onChange={e => setPassForm(prev => ({ ...prev, oldPass: e.target.value }))}
+                      placeholder="وارد کردن رمز عبور قدیمی..." 
+                      className={styles.inputField} 
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup} style={{ maxWidth: '350px' }}>
+                    <label>رمز عبور جدید:</label>
+                    <input 
+                      type="password" 
+                      value={passForm.newPass} 
+                      onChange={e => setPassForm(prev => ({ ...prev, newPass: e.target.value }))}
+                      placeholder="رمز عبور جدید (حداقل ۶ کاراکتر)..." 
+                      className={styles.inputField} 
+                      required
+                    />
+                    
+                    {/* Interactive password complexity strength indicator */}
+                    {passForm.newPass && (
+                      <div className={styles.strengthMeter}>
+                        <div className={styles.strengthMeterLabelRow}>
+                          <span style={{ color: '#8b92a5' }}>پیچیدگی رمز عبور:</span>
+                          <span style={{ fontWeight: '750', color: passwordStrength.color }}>
+                            {passwordStrength.label}
+                          </span>
+                        </div>
+                        <div className={styles.strengthMeterTrack}>
+                          <div 
+                            className={styles.strengthMeterFill} 
+                            style={{ 
+                              width: `${(passwordStrength.score / 5) * 100}%`,
+                              backgroundColor: passwordStrength.color
+                            }} 
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.formGroup} style={{ maxWidth: '350px' }}>
+                    <label>تکرار رمز عبور جدید:</label>
+                    <input 
+                      type="password" 
+                      value={passForm.confirmPass} 
+                      onChange={e => setPassForm(prev => ({ ...prev, confirmPass: e.target.value }))}
+                      placeholder="تکرار رمز عبور جدید..." 
+                      className={styles.inputField} 
+                      required
+                    />
+                  </div>
+
+                  <button type="submit" className={styles.loginBtn} style={{ width: 'auto', padding: '10px 30px', margin: '15px 0 0' }}>
+                    تغییر رمز عبور ورود
+                  </button>
+                </form>
+              </div>
+
+              {/* Restore Defaults */}
+              <div className={styles.securityCard} style={{ border: '1px solid rgba(255, 77, 77, 0.2)', background: 'rgba(255, 77, 77, 0.01)' }}>
+                <h3 style={{ borderRightColor: '#ff4d4d', color: '#ff4d4d' }}>🚨 بازیابی داده‌های اولیه و ریست کامل</h3>
+                <p style={{ fontSize: '13px', color: '#c4c8d4', lineHeight: '1.6', marginBottom: '20px' }}>
+                  توجه: این عمل تمامی اطلاعات لیدها، محصولات آپلودی جدید و پیام‌ها را حذف کرده و داده‌های آزمایشی اولیه و رمز عبور پیش‌فرض پنل مدیریت (<strong>@Reza112233</strong>) را در لوکال استوریج بازیابی می‌کند.
+                </p>
+                <button 
+                  onClick={handleRestoreDefaults} 
+                  className={styles.logoutBtn} 
+                  style={{ width: 'auto', padding: '12px 30px', margin: 0 }}
+                >
+                  حذف داده‌های ثبت شده و بازگشت به تنظیمات کارخانه
+                </button>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
-
-      {/* ==========================================================
-         MODERATION & EDIT DRAWERS (Orders, Laptops, Reviews)
-         ========================================================== */}
-      
-      {/* 1. Order editor drawer */}
-      {selectedOrderForDrawer && (
-        <div className={styles.drawerOverlay} onClick={() => setSelectedOrderForDrawer(null)}>
-          <div className={styles.drawerContainer} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.drawerHeader}>
-              <h3>✏️ مدیریت سفارش: {selectedOrderForDrawer.id}</h3>
-              <button onClick={() => setSelectedOrderForDrawer(null)} className={styles.closeDrawerBtn}>✕</button>
-            </div>
-            
-            <div className={styles.drawerBody}>
-              {/* Customer WhatsApp contact */}
-              <a href={getWhatsAppLink(selectedOrderForDrawer)} target="_blank" rel="noopener noreferrer" className={styles.whatsappCtaBtn}>
-                💬 ارسال فاکتور هماهنگی در واتساپ خریدار
-              </a>
-
-              {/* Status workflow dropdown */}
-              <div className={styles.formGroup}>
-                <label>تغییر وضعیت پیشرفت سفارش:</label>
-                <select 
-                  value={selectedOrderForDrawer.status} 
-                  onChange={(e) => updateOrderStatus(selectedOrderForDrawer.id, e.target.value)}
-                  className={styles.inputField}
-                >
-                  <option value="new_request">New Request (درخواست جدید)</option>
-                  <option value="waiting_review">Waiting For Review (در انتظار بررسی ادمین)</option>
-                  <option value="price_calculated">Price Calculated (فاکتور صادر شد)</option>
-                  <option value="confirmed">Customer Confirmed (تایید مشتری)</option>
-                  <option value="purchased">Purchased (خریداری شده از امارات)</option>
-                  <option value="uae_warehouse">In UAE Warehouse (تحویل انبار دبی)</option>
-                  <option value="shipped_iran">Shipped To Iran (ارسال شده با کارگو هوایی)</option>
-                  <option value="delivered">Delivered (تحویل شده نهایی در ایران)</option>
-                  <option value="cancelled">Cancelled (لغو شده)</option>
-                </select>
-              </div>
-
-              {/* Internal Notes input */}
-              <div className={styles.formGroup}>
-                <label>یادداشت‌های داخلی ادمین (غیر قابل مشاهده برای مشتری):</label>
-                <textarea 
-                  rows="3"
-                  defaultValue={selectedOrderForDrawer.internalNotes}
-                  onBlur={(e) => addOrderInternalNote(selectedOrderForDrawer.id, e.target.value)}
-                  placeholder="نکات هماهنگی وزن، گمرک، هماهنگی تلفنی و..."
-                  className={styles.textareaField}
-                />
-              </div>
-
-              {/* Upload simulation panel */}
-              <div className={styles.formGroup}>
-                <label>کد پیگیری مرسوله باربری کارگو:</label>
-                <input 
-                  type="text" 
-                  defaultValue={selectedOrderForDrawer.trackingNumber} 
-                  onBlur={(e) => uploadOrderTrackingInvoice(selectedOrderForDrawer.id, e.target.value, null)}
-                  placeholder="مثال: TRK-AE-19827" 
-                  className={styles.inputField} 
-                />
-              </div>
-
-              {/* Invoices asset file input mock */}
-              <div className={styles.formGroup}>
-                <label>آپلود فاکتور رسمی امارات (PDF / Image):</label>
-                <div className={styles.fileUploadWrap} onClick={() => {
-                  uploadOrderTrackingInvoice(selectedOrderForDrawer.id, null, 'invoice-file-attached.pdf');
-                }}>
-                  <span className={styles.fileUploadIcon}>📄</span>
-                  <span className={styles.fileUploadLabel}>{selectedOrderForDrawer.invoiceUrl ? 'فاکتور ضمیمه شده است (کلیک برای ویرایش)' : 'آپلود سند فاکتور خرید'}</span>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setSelectedOrderForDrawer(null)} className={styles.btnSolid}>بستن و ذخیره تغییرات</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 2. Laptop editor drawer */}
-      {selectedLaptopForDrawer && (
-        <div className={styles.drawerOverlay} onClick={() => setSelectedLaptopForDrawer(null)}>
-          <div className={styles.drawerContainer} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.drawerHeader}>
-              <h3>💻 مشخصات فنی و تاییدیه قطعات لپ‌تاپ</h3>
-              <button onClick={() => setSelectedLaptopForDrawer(null)} className={styles.closeDrawerBtn}>✕</button>
-            </div>
-
-            <div className={styles.drawerBody}>
-              <div className={styles.formGrid}>
-                <div className={styles.formGroup}>
-                  <label>برند دستگاه: *</label>
-                  <input type="text" value={selectedLaptopForDrawer.brand} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, brand: e.target.value })} className={styles.reviewInput} required />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>مدل دقیق لپ‌تاپ: *</label>
-                  <input type="text" value={selectedLaptopForDrawer.model} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, model: e.target.value })} className={styles.reviewInput} required />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>پردازنده (CPU):</label>
-                  <input type="text" value={selectedLaptopForDrawer.cpu} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, cpu: e.target.value })} className={styles.reviewInput} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>رم (RAM):</label>
-                  <input type="text" value={selectedLaptopForDrawer.ram} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, ram: e.target.value })} className={styles.reviewInput} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>حافظه ذخیره‌سازی:</label>
-                  <input type="text" value={selectedLaptopForDrawer.storage} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, storage: e.target.value })} className={styles.reviewInput} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>گرافیگ (GPU):</label>
-                  <input type="text" value={selectedLaptopForDrawer.gpu} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, gpu: e.target.value })} className={styles.reviewInput} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>اندازه صفحه نمایش:</label>
-                  <input type="text" value={selectedLaptopForDrawer.screenSize} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, screenSize: e.target.value })} className={styles.reviewInput} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>گرید ظاهری دستگاه:</label>
-                  <select value={selectedLaptopForDrawer.condition} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, condition: e.target.value })} className={styles.selectField}>
-                    <option value="Excellent">Excellent (در حد نو)</option>
-                    <option value="Very Good">Very Good (خیلی تمیز)</option>
-                    <option value="Good">Good (عادی تمیز)</option>
-                    <option value="Fair">Fair (کارکرده)</option>
-                  </select>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>قیمت خرید دبی (AED): *</label>
-                  <input type="number" value={selectedLaptopForDrawer.purchasePriceAED} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, purchasePriceAED: parseFloat(e.target.value) || 0 })} className={styles.reviewInput} required />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>قیمت فروش ایران (تومان): *</label>
-                  <input type="number" value={selectedLaptopForDrawer.salePriceToman} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, salePriceToman: parseFloat(e.target.value) || 0 })} className={styles.reviewInput} required />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>وضعیت انبار:</label>
-                  <select value={selectedLaptopForDrawer.status} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, status: e.target.value })} className={styles.selectField}>
-                    <option value="Available">Available (موجود)</option>
-                    <option value="Reserved">Reserved (رزرو شده)</option>
-                    <option value="Sold">Sold (فروخته شده)</option>
-                  </select>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>آدرس تصویر کالا:</label>
-                  <input type="text" value={selectedLaptopForDrawer.image} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, image: e.target.value })} className={styles.reviewInput} />
-                </div>
-              </div>
-
-              {/* Hardware Test Checklist Checkboxes */}
-              <div className={styles.formGroupFull} style={{ marginTop: '10px' }}>
-                <label className={styles.formLabel}>📋 تاییدیه سلامت قطعات فنی سخت‌افزار (فاکتور تست):</label>
-                <div className={styles.checklistGrid}>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.testedKeyboard} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, testedKeyboard: e.target.checked })} />
-                    <span className={styles.checkItemText}>⌨️ تست صحت کیبورد</span>
-                  </label>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.testedDisplay} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, testedDisplay: e.target.checked })} />
-                    <span className={styles.checkItemText}>🖥️ تست سلامت نمایشگر</span>
-                  </label>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.testedBattery} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, testedBattery: e.target.checked })} />
-                    <span className={styles.checkItemText}>🔋 تست توان باتری</span>
-                  </label>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.testedCamera} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, testedCamera: e.target.checked })} />
-                    <span className={styles.checkItemText}>📷 تست صحت وبکم</span>
-                  </label>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.testedUsb} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, testedUsb: e.target.checked })} />
-                    <span className={styles.checkItemText}>🔌 تست درگاه‌های USB</span>
-                  </label>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.testedWifi} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, testedWifi: e.target.checked })} />
-                    <span className={styles.checkItemText}>📶 تست شبکه WiFi</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Accessories checklist checkboxes */}
-              <div className={styles.formGroupFull}>
-                <label className={styles.formLabel}>📦 لوازم جانبی به همراه کالا:</label>
-                <div style={{ display: 'flex', gap: '30px', padding: '10px 0' }}>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.chargerIncluded} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, chargerIncluded: e.target.checked })} />
-                    <span className={styles.checkItemText}>🔋 شارژر فابریک کالا</span>
-                  </label>
-                  <label className={styles.checkItem}>
-                    <input type="checkbox" checked={selectedLaptopForDrawer.boxIncluded} onChange={e => setSelectedLaptopForDrawer({ ...selectedLaptopForDrawer, boxIncluded: e.target.checked })} />
-                    <span className={styles.checkItemText}>📦 جعبه فابریک مرجع</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '15px' }}>
-              <button onClick={() => setSelectedLaptopForDrawer(null)} className={styles.cancelReviewBtn}>انصراف</button>
-              <button onClick={() => handleSaveLaptop(selectedLaptopForDrawer)} className={styles.btnSolid}>✓ ثبت و تایید سلامت لپ‌تاپ</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. Review replying moderator drawer */}
-      {selectedReviewForDrawer && (
-        <div className={styles.drawerOverlay} onClick={() => setSelectedReviewForDrawer(null)}>
-          <div className={styles.drawerContainer} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <div className={styles.drawerHeader}>
-              <h3>✏️ پاسخ ادمین به نظر کاربران</h3>
-              <button onClick={() => setSelectedReviewForDrawer(null)} className={styles.closeDrawerBtn}>✕</button>
-            </div>
-
-            <div className={styles.drawerBody}>
-              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
-                <strong style={{ display: 'block', fontSize: '13px', marginBottom: '8px' }}>👤 خریدار: {selectedReviewForDrawer.userName}</strong>
-                <p style={{ fontSize: '12.5px', color: 'var(--text-light)', lineHeight: '1.5' }}>{selectedReviewForDrawer.comment}</p>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>پاسخ ادمین دبی خرید (نمایش عمومی):</label>
-                <textarea 
-                  rows="4" 
-                  value={selectedReviewForDrawer.reply} 
-                  onChange={e => setSelectedReviewForDrawer({ ...selectedReviewForDrawer, reply: e.target.value })}
-                  placeholder="پاسخ مدیریت را جهت نمایش در صفحه جزئیات کالا بنویسید..." 
-                  className={styles.textareaField} 
-                />
-              </div>
-            </div>
-
-            <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-              <button onClick={() => setSelectedReviewForDrawer(null)} className={styles.cancelReviewBtn}>انصراف</button>
-              <button onClick={() => moderateReview(selectedReviewForDrawer.id, 'approved', selectedReviewForDrawer.reply)} className={styles.btnSolid}>تایید و ذخیره پاسخ</button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

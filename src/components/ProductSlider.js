@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { laptops, trendingProducts, EXCHANGE_RATE } from '@/data/products';
+import { laptops, trendingProducts } from '@/data/products';
 import styles from './ProductSlider.module.css';
 
 export default function ProductSlider({ onSelectProduct }) {
@@ -12,6 +12,8 @@ export default function ProductSlider({ onSelectProduct }) {
   const router = useRouter();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+
+  const EXCHANGE_RATE = 19500;
 
   const handleSelect = (product) => {
     router.push(`/product/${product.id}`);
