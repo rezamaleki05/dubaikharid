@@ -310,9 +310,21 @@ export const getAllProducts = () => {
 
 export const getProductById = (id) => getAllProducts().find(p => p.id === id);
 
+export let EXCHANGE_RATE = 19500;
+
 // Self-executing localStorage dynamic product injector
 if (typeof window !== 'undefined') {
   try {
+    // 1. Sync dynamic exchange rate settings
+    const savedSettings = localStorage.getItem('dubaiKharidSettings');
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      if (parsed && parsed.exchangeRate) {
+        EXCHANGE_RATE = parsed.exchangeRate;
+      }
+    }
+
+    // 2. Sync uploaded products catalog
     const saved = localStorage.getItem('dubaiKharidUploadedProducts');
     if (saved) {
       const uploaded = JSON.parse(saved);
@@ -347,7 +359,8 @@ if (typeof window !== 'undefined') {
       });
     }
   } catch (e) {
-    console.error('Error loading dynamic uploaded products:', e);
+    console.error('Error loading dynamic settings and products:', e);
   }
 }
+
 
