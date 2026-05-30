@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -15,6 +16,26 @@ export default function StockLaptopsPage() {
   const router = useRouter();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const [allLaptops, setAllLaptops] = useState([]);
+
+  useEffect(() => {
+    let merged = [...laptops];
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      if (saved) {
+        const uploaded = JSON.parse(saved);
+        const uploadedLaptops = uploaded.filter(p => p.category === 'electronics');
+        uploadedLaptops.forEach(p => {
+          if (!merged.some(m => m.id === p.id)) {
+            merged.unshift(p);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error loading uploaded laptops:', e);
+    }
+    setAllLaptops(merged);
+  }, []);
 
   const handleSelect = (product) => {
     router.push(`/product/${product.id}`);
@@ -77,7 +98,7 @@ export default function StockLaptopsPage() {
         </div>
 
         <div className={styles.grid}>
-          {laptops.map(laptop => (
+          {allLaptops.map(laptop => (
             <ProductCard key={laptop.id} product={laptop} />
           ))}
         </div>

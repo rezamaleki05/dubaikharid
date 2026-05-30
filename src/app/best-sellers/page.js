@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -17,12 +17,30 @@ function BestSellersContent() {
 
   // Sorting state
   const [sortOption, setSortOption] = useState('');
+  const [bestSellersList, setBestSellersList] = useState([]);
 
-  // Extract all best selling products
-  const bestSellersList = getAllProducts().filter((p, index, self) => 
-    (p.isBestSeller === true || trendingProducts.some(t => t.id === p.id)) &&
-    self.findIndex(t => t.id === p.id) === index
-  );
+  useEffect(() => {
+    let merged = getAllProducts();
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      if (saved) {
+        const uploaded = JSON.parse(saved);
+        uploaded.forEach(p => {
+          if (!merged.some(m => m.id === p.id)) {
+            merged.unshift(p);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging uploaded products for best sellers:', e);
+    }
+
+    const filteredBest = merged.filter((p, index, self) => 
+      (p.isBestSeller === true || trendingProducts.some(t => t.id === p.id)) &&
+      self.findIndex(t => t.id === p.id) === index
+    );
+    setBestSellersList(filteredBest);
+  }, []);
 
   // Extract unique brands present in best sellers list
   const availableBrands = Array.from(new Set(bestSellersList.map(p => p.brand)));

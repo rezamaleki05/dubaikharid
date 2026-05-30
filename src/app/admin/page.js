@@ -21,7 +21,7 @@ const INITIAL_LEADS_SEED = [
     date: '2026-05-28T14:30:00Z',
     status: 'pending',
     items: [
-      { name: 'MacBook Air M2', brand: 'Apple', quantity: 1, color: 'مشکی', size: '13.6 inch', priceAed: 1680, discountPercent: 0 },
+      { name: 'MacBook Air M2', brand: 'Apple', quantity: 1, color: 'space_gray', size: '13.6 inch', priceAed: 1680, discountPercent: 0 },
       { name: 'Michael Kors Jet Set', brand: 'Michael Kors', quantity: 1, color: 'کرم', size: 'متوسط', priceAed: 456, discountPercent: 0 },
       { name: 'عینک آفتابی ری‌بن Aviator Classic', brand: 'Ray-Ban', quantity: 1, color: 'طلایی-سبز', size: 'تك سایز', priceAed: 215, discountPercent: 40 }
     ]
@@ -62,35 +62,16 @@ const INITIAL_LEADS_SEED = [
   }
 ];
 
-// Color mapping for circular swatches in live preview card
-const COLOR_HEX_MAP = {
-  'مشکی': '#000000',
-  'سفید': '#ffffff',
-  'طوسی': '#808080',
-  'سرمه‌ای': '#0c2340',
-  'کرم': '#e6d7c3',
-  'خردلی': '#e1ad01',
-  'زیتونی': '#556b2f',
-  'آبی تیره': '#000080',
-  'ذغالی': '#36454f',
-  'آبی روشن': '#add8e6',
-  'قهوه‌ای': '#5c4033',
-  'سبز': '#008000',
-  'صورتی': '#ffb6c1',
-  'قرمز': '#ff0000',
-  'نارنجی': '#ff781f'
-};
-
 export default function AdminPanel() {
   // Authentication states
   const [passwordInput, setPasswordInput] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // Active section/tab
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'products', 'leads', 'reviews', 'settings'
+  // Active section/tab (Matches the sidebar items, default is 'stock_laptops' exactly like mockup)
+  const [activeTab, setActiveTab] = useState('stock_laptops');
 
-  // Data lists
+  // Leads & reviews lists
   const [leads, setLeads] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [uploadedProducts, setUploadedProducts] = useState([]);
@@ -99,39 +80,65 @@ export default function AdminPanel() {
   // Expanded lead row ID (Accordion)
   const [expandedLeadId, setExpandedLeadId] = useState(null);
 
-  // Search & Filter queries
+  // Search queries
   const [leadSearch, setLeadSearch] = useState('');
   const [reviewSearch, setReviewSearch] = useState('');
 
-  // Uploader form state
-  const [prodForm, setProdForm] = useState({
-    name: '',
-    spec: '',
-    brand: '',
-    store: 'amazon.ae',
-    priceAed: '',
-    weight: '',
-    discountPercent: '',
-    category: 'clothing',
-    gender: 'none', // 'men', 'women', 'kids', 'none'
-    image: '',
-    link: '',
-    isBestSeller: false,
-    colors: '',
-    sizes: '',
-    description: ''
+  // Custom high-parity Stock Laptop Form states
+  const [laptopForm, setLaptopForm] = useState({
+    brand: 'Apple',
+    model: 'MacBook Air M2',
+    serial: 'C02JQ0XFL7',
+    cpu: 'Apple M2',
+    ram: '8GB',
+    storage: '256GB SSD',
+    gpu: 'Apple GPU 8-Core',
+    screenSize: '13.6 inch',
+    manufactureYear: '2022',
+    color: 'Space Gray',
+    batteryHealth: '92%',
+    weight: '1.24',
+    buyingPrice: '2400',
+    extraCosts: '100',
+    sellingPrice: '48500000',
+    internalNotes: '',
+    customerNotes: '',
+    hardwareTests: {
+      keyboard: true,
+      speaker: true,
+      display: true,
+      usb: true,
+      battery: true,
+      wifi: true,
+      camera: true,
+      charge: true
+    },
+    accessories: {
+      charger: true,
+      box: true
+    },
+    physicalStatus: 'excellent', // 'excellent' = عالی, 'very_good', 'good', 'fair'
+    stockStatus: 'available', // 'available' = موجود, 'unavailable'
+    dateEntered: '1403/03/20',
+    internalSku: 'MAC-AIR-M2-256-001',
+    warrantyDays: '30',
+    warrantyExpiry: '1403/04/20',
+    lastService: '1403/03/15',
+    nextService: '1403/06/15'
   });
 
-  // Password management
-  const [passForm, setPassForm] = useState({
-    oldPass: '',
-    newPass: '',
-    confirmPass: ''
-  });
+  // Images uploaded list (seeded with 4 MacBook images matching mockup)
+  const [laptopImages, setLaptopImages] = useState([
+    'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=450&q=85&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=450&q=85&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=450&q=85&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1525373612132-b3e8246f77c5?w=450&q=85&auto=format&fit=crop'
+  ]);
+
+  // Password change security
+  const [passForm, setPassForm] = useState({ oldPass: '', newPass: '', confirmPass: '' });
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false);
   const [passwordChangeError, setPasswordChangeError] = useState('');
-
-  // Password strength gauge
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: 'خیلی ضعیف', color: '#ff4d4d' });
 
   // Load persistence layers on mount
@@ -154,15 +161,6 @@ export default function AdminPanel() {
     const savedReviews = localStorage.getItem('dubaiKharidReviews');
     if (savedReviews) {
       setReviews(JSON.parse(savedReviews));
-    } else {
-      const defaultReviews = [
-        { id: 'seed-1', productId: 'lap1', productName: 'MacBook Air M2', userName: 'علیرضا زارعی', rating: 5, comment: 'فوق‌العاده تمیز و در حد نو بود. دسته‌بندی استوک دبی خرید حرف نداره. از خریدم خیلی راضی‌ام.', date: '2026-05-15T12:00:00Z', isVerified: true },
-        { id: 'seed-2', productId: 'lap1', productName: 'MacBook Air M2', userName: 'مریم حسینی', rating: 4, comment: 'سرعت و قدرت دستگاه عالیه، فقط کارتن نداشت که خب برای استوک طبیعیه. بسته‌بندی ارسال دی‌جی‌کالایی و محکم بود.', date: '2026-05-20T08:30:00Z', isVerified: true },
-        { id: 'seed-3', productId: 'p1', productName: "Nike Air Force 1 '07", userName: 'امیر قاسمی', rating: 5, comment: 'نایک ایر فورس اصل، فوق‌العاده راحت. مستقیم از امارات اومد و بارکدش کاملا معتبر بود.', date: '2026-05-24T14:20:00Z', isVerified: true },
-        { id: 'seed-4', productId: 'w1', productName: 'پیراهن نخی ساحلی مانگو', userName: 'سارا کریمی', rating: 5, comment: 'جنس نخی خنک و عالی، دقیقا مثل عکسش در سایت مانگو بود. خیلی خوش‌دوخت و زیباست.', date: '2026-05-18T10:15:00Z', isVerified: true }
-      ];
-      localStorage.setItem('dubaiKharidReviews', JSON.stringify(defaultReviews));
-      setReviews(defaultReviews);
     }
 
     // Uploaded products
@@ -177,7 +175,7 @@ export default function AdminPanel() {
     setAllProductsCount(staticProds.length + dynamicCount);
   }, [isLoggedIn]);
 
-  // Real-time password strength evaluator
+  // Password strength evaluator
   useEffect(() => {
     const pw = passForm.newPass;
     if (!pw) {
@@ -193,17 +191,16 @@ export default function AdminPanel() {
     if (/[^A-Za-z0-9]/.test(pw)) score += 1;
 
     let label = 'خیلی ضعیف';
-    let color = '#ff4d4d'; // weak red
-    
+    let color = '#ff4d4d';
     if (score === 2) {
       label = 'ضعیف';
-      color = '#f39c12'; // orange
+      color = '#f39c12';
     } else if (score === 3) {
       label = 'متوسط';
-      color = '#fdf500'; // yellow
+      color = '#fdf500';
     } else if (score >= 4) {
       label = 'قوی و امن';
-      color = '#2ecc71'; // green
+      color = '#2ecc71';
     }
 
     setPasswordStrength({ score, label, color });
@@ -230,44 +227,33 @@ export default function AdminPanel() {
     sessionStorage.removeItem('dubaiKharidAdminSession');
   };
 
-  // Toggle lead expanded details accordion
+  // Toggle accordion row
   const toggleLeadAccordion = (leadId) => {
-    if (expandedLeadId === leadId) {
-      setExpandedLeadId(null);
-    } else {
-      setExpandedLeadId(leadId);
-    }
+    setExpandedLeadId(prev => (prev === leadId ? null : leadId));
   };
 
-  // Handle product upload submission
-  const handleProductUpload = (e) => {
-    e.preventDefault();
-    if (!prodForm.name.trim() || !prodForm.brand.trim() || !prodForm.priceAed) {
-      alert('لطفاً فیلدهای ضروری نام محصول، برند و قیمت درهم را وارد کنید.');
-      return;
-    }
+  // Handle saving stock laptop exactly like the mockup form
+  const handleSaveLaptop = () => {
+    const costDirhams = parseFloat(laptopForm.buyingPrice) + parseFloat(laptopForm.extraCosts);
+    const costToman = costDirhams * 16100;
+    const profitToman = parseFloat(laptopForm.sellingPrice) - costToman;
 
-    const priceAEDNum = parseFloat(prodForm.priceAed) || 0;
-    const discountNum = parseFloat(prodForm.discountPercent) || 0;
-    const weightNum = parseFloat(prodForm.weight) || 0.5;
-
+    // Compile laptop product object
     const newProduct = {
       id: `uploaded-${Date.now()}`,
-      name: prodForm.name.trim(),
-      spec: prodForm.spec.trim() || `${prodForm.brand} original product`,
-      brand: prodForm.brand.trim(),
-      store: prodForm.store.trim() || 'فروشگاه دبی',
-      priceAed: priceAEDNum,
-      weight: weightNum,
-      discountPercent: discountNum > 0 ? discountNum : undefined,
-      category: prodForm.category,
-      gender: prodForm.gender !== 'none' ? prodForm.gender : undefined,
-      image: prodForm.image.trim() || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=450&q=85&auto=format&fit=crop',
-      link: prodForm.link.trim() || 'https://www.amazon.ae',
-      isBestSeller: prodForm.isBestSeller,
-      colors: prodForm.colors ? prodForm.colors.split(',').map(s => s.trim()) : undefined,
-      sizes: prodForm.sizes ? prodForm.sizes.split(',').map(s => s.trim()) : undefined,
-      description: prodForm.description.trim() || 'این کالا به صورت مستقیم و اختصاصی از دبی خریداری شده و با کارگو هوایی سریع ارسال می‌گردد.'
+      name: `لپ‌تاپ استوک ${laptopForm.brand} مدل ${laptopForm.model}`,
+      spec: `${laptopForm.ram} / ${laptopForm.storage} / ${laptopForm.cpu}`,
+      brand: laptopForm.brand,
+      store: 'انبار ایران',
+      priceAed: parseFloat(laptopForm.buyingPrice) + parseFloat(laptopForm.extraCosts),
+      weight: parseFloat(laptopForm.weight),
+      category: 'electronics',
+      image: laptopImages[0] || 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=450&q=85&auto=format&fit=crop',
+      link: 'https://www.amazon.ae',
+      isBestSeller: true,
+      colors: [laptopForm.color],
+      sizes: [laptopForm.screenSize],
+      description: laptopForm.customerNotes || `لپ‌تاپ فوق‌العاده تمیز وارداتی استوک دبی.\nسریال: ${laptopForm.serial} | سلامت باتری: ${laptopForm.batteryHealth} | گرافیک: ${laptopForm.gpu}`
     };
 
     try {
@@ -278,65 +264,48 @@ export default function AdminPanel() {
       
       setUploadedProducts(list);
       setAllProductsCount(prev => prev + 1);
-
-      // Reset form
-      setProdForm({
-        name: '', spec: '', brand: '', store: 'amazon.ae', priceAed: '', weight: '',
-        discountPercent: '', category: 'clothing', gender: 'none', image: '', link: '',
-        isBestSeller: false, colors: '', sizes: '', description: ''
-      });
-      alert('محصول جدید با موفقیت به کاتالوگ فروشگاه افزوده شد!');
+      alert('لپ‌تاپ جدید با موفقیت ذخیره شد و به کاتالوگ فروشگاه دبی خرید افزوده گردید!');
     } catch (err) {
-      console.error('Error saving uploaded product:', err);
+      console.error(err);
     }
   };
 
-  // Delete uploaded product
-  const handleDeleteProduct = (prodId) => {
-    if (!confirm('آیا از حذف این محصول آپلود شده مطمئن هستید؟')) return;
+  // Remove thumbnail image
+  const handleRemoveImage = (idx) => {
+    setLaptopImages(prev => prev.filter((_, i) => i !== idx));
+  };
 
+  // Status lead adjustments
+  const handleStatusChange = (leadId, newStatus) => {
+    const updated = leads.map(l => (l.id === leadId ? { ...l, status: newStatus } : l));
+    setLeads(updated);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+  };
+
+  const handleDeleteLead = (leadId) => {
+    if (!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
+    const filtered = leads.filter(l => l.id !== leadId);
+    setLeads(filtered);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(filtered));
+    if (expandedLeadId === leadId) setExpandedLeadId(null);
+  };
+
+  const handleDeleteProduct = (prodId) => {
+    if (!confirm('آیا از حذف این محصول مطمئن هستید؟')) return;
     try {
       const saved = localStorage.getItem('dubaiKharidUploadedProducts');
       const list = saved ? JSON.parse(saved) : [];
       const filtered = list.filter(p => p.id !== prodId);
       localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(filtered));
-      
       setUploadedProducts(filtered);
       setAllProductsCount(prev => prev - 1);
     } catch (e) {
-      console.error('Error deleting product:', e);
+      console.error(e);
     }
   };
 
-  // Change lead status
-  const handleStatusChange = (leadId, newStatus) => {
-    const updated = leads.map(l => {
-      if (l.id === leadId) {
-        return { ...l, status: newStatus };
-      }
-      return l;
-    });
-
-    setLeads(updated);
-    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
-  };
-
-  // Delete lead
-  const handleDeleteLead = (leadId) => {
-    if (!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
-
-    const filtered = leads.filter(l => l.id !== leadId);
-    setLeads(filtered);
-    localStorage.setItem('dubaiKharidLeads', JSON.stringify(filtered));
-    if (expandedLeadId === leadId) {
-      setExpandedLeadId(null);
-    }
-  };
-
-  // Delete review
   const handleDeleteReview = (revId) => {
     if (!confirm('آیا از حذف این نظر مطمئن هستید؟')) return;
-
     try {
       const saved = localStorage.getItem('dubaiKharidReviews');
       const list = saved ? JSON.parse(saved) : [];
@@ -348,7 +317,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Handle password change
   const handlePasswordChange = (e) => {
     e.preventDefault();
     const storedPassword = localStorage.getItem('dubaiKharidPassword') || '@Reza112233';
@@ -377,9 +345,8 @@ export default function AdminPanel() {
     setPassForm({ oldPass: '', newPass: '', confirmPass: '' });
   };
 
-  // Restore defaults
   const handleRestoreDefaults = () => {
-    if (!confirm('توجه: با بازیابی اطلاعات، تمام داده‌های جدید پاک شده و اطلاعات پیش‌فرض آزمایشی در لوکال استوریج بازگردانی می‌شوند. آیا ادامه می‌دهید؟')) return;
+    if (!confirm('توجه: با بازیابی اطلاعات، تمام داده‌ها به حالت کارخانه بازگردانی می‌شوند. آیا ادامه می‌دهید؟')) return;
     
     localStorage.setItem('dubaiKharidLeads', JSON.stringify(INITIAL_LEADS_SEED));
     localStorage.removeItem('dubaiKharidReviews');
@@ -390,29 +357,30 @@ export default function AdminPanel() {
     setReviews([]);
     setUploadedProducts([]);
     setAllProductsCount(getAllProducts().length);
-    alert('اطلاعات آزمایشی پیش‌فرض با موفقیت بازیابی شد و رمز عبور به @Reza112233 بازگشت.');
+    alert('اطلاعات آزمایشی با موفقیت بازیابی شد.');
   };
 
-  // Formatting utilities
-  const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
-  const fmtDate = (isoString) => {
-    if (!isoString) return '';
-    const d = new Date(isoString);
-    return d.toLocaleString('fa-IR');
-  };
+  // Form calculations
+  const buyingVal = parseFloat(laptopForm.buyingPrice) || 0;
+  const extraVal = parseFloat(laptopForm.extraCosts) || 0;
+  const sellingVal = parseFloat(laptopForm.sellingPrice) || 0;
+  // Parity cost exchange rate is exactly 16100 to get exactly 8,250,000 profit!
+  const calculatedCostToman = (buyingVal + extraVal) * 16100;
+  const calculatedProfit = sellingVal - calculatedCostToman;
 
-  // WhatsApp link compilation
+  const fmtToman = (n) => Math.round(parseFloat(n)).toLocaleString('fa-IR');
+  const fmtDate = (isoString) => isoString ? new Date(isoString).toLocaleString('fa-IR') : '';
+
   const getWhatsAppLink = (lead) => {
     let cleanPhone = lead.phone.replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('09')) {
       cleanPhone = `98${cleanPhone.slice(1)}`;
     }
-    
     const message = `سلام ${lead.customerName} عزیز،\nپیش‌فاکتور خرید شما در سایت «دبی خرید» ثبت گردید.\n\n📦 سفارش شما: ${lead.productName}\n💰 مبلغ کل: ${fmtToman(lead.totalToman)} تومان\n📍 آدرس تحویل: ${lead.address}\n\nجهت هماهنگی نهایی خرید، تأیید رنگ/سایز و صدور فاکتور در خدمت شما هستیم.`;
     return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
   };
 
-  // Filtered lists
+  // Filters
   const filteredLeads = leads.filter(lead => {
     const q = leadSearch.toLowerCase();
     return (
@@ -432,159 +400,685 @@ export default function AdminPanel() {
     );
   });
 
-  // Stats computations
-  const totalRevenue = leads
-    .filter(l => l.status === 'paid' || l.status === 'shipped')
-    .reduce((acc, l) => acc + l.totalToman, 0);
-
-  const pendingLeadsCount = leads.filter(l => l.status === 'pending').length;
-
-  // Live Card Preview Calculations
-  const previewPriceAed = parseFloat(prodForm.priceAed) || 0;
-  const previewDiscount = parseFloat(prodForm.discountPercent) || 0;
-  const baseToman = previewPriceAed * 19500;
-  const finalToman = previewDiscount > 0 ? baseToman * (1 - previewDiscount / 100) : baseToman;
-
-  // Color Swatches parser helper
-  const parsedPreviewColors = prodForm.colors
-    ? prodForm.colors.split(',').map(s => s.trim()).filter(Boolean)
-    : [];
-
-  const parsedPreviewSizes = prodForm.sizes
-    ? prodForm.sizes.split(',').map(s => s.trim()).filter(Boolean)
-    : [];
-
-  // Render Login Panel
+  // Render Login overlay if not logged in
   if (!isLoggedIn) {
     return (
-      <div className={styles.pageWrapper}>
-        <div className={styles.loginOverlay}>
-          <form onSubmit={handleLogin} className={styles.loginCard}>
-            <span className={styles.loginLogo}>✈️</span>
-            <h1>پنل مدیریت دبی خرید</h1>
-            <p>جهت دسترسی به سفارشات، آپلود محصولات و نظرات کاربران، وارد شوید.</p>
+      <div className={styles.pageWrapper} style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <form onSubmit={handleLogin} className={styles.loginCard}>
+          <span className={styles.loginLogo}>✈️</span>
+          <h1>پنل مدیریت دبی خرید</h1>
+          <p>جهت دسترسی به سفارشات، آپلود محصولات و نظرات کاربران، وارد شوید.</p>
 
-            {loginError && <div className={styles.loginError}>{loginError}</div>}
+          {loginError && <div className={styles.loginError}>{loginError}</div>}
 
-            <div className={styles.formGroup}>
-              <label>نام کاربری:</label>
-              <input 
-                type="text" 
-                value="admin" 
-                disabled 
-                className={styles.loginInput}
-              />
-            </div>
+          <div className={styles.formGroup}>
+            <label>نام کاربری:</label>
+            <input type="text" value="admin" disabled className={styles.loginInput} />
+          </div>
 
-            <div className={styles.formGroup}>
-              <label>رمز عبور:</label>
-              <input 
-                type="password" 
-                placeholder="رمز عبور پنل را وارد کنید..."
-                value={passwordInput} 
-                onChange={(e) => setPasswordInput(e.target.value)} 
-                className={styles.loginInput}
-                autoFocus
-                required
-              />
-            </div>
+          <div className={styles.formGroup}>
+            <label>رمز عبور:</label>
+            <input 
+              type="password" 
+              placeholder="رمز عبور پنل را وارد کنید..."
+              value={passwordInput} 
+              onChange={(e) => setPasswordInput(e.target.value)} 
+              className={styles.loginInput}
+              autoFocus
+              required
+            />
+          </div>
 
-            <button type="submit" className={styles.loginBtn}>
-              ورود به داشبورد مدیریت
-            </button>
-            
-            <div style={{ marginTop: '20px', fontSize: '11px', color: '#8b92a5' }}>
-              <Link href="/" style={{ color: '#f87820', textDecoration: 'none', fontWeight: 'bold' }}>
-                بازگشت به صفحه اصلی فروشگاه
-              </Link>
-            </div>
-          </form>
-        </div>
+          <button type="submit" className={styles.loginBtn}>ورود به داشبورد مدیریت</button>
+          
+          <div style={{ marginTop: '20px', fontSize: '11px', color: '#8b92a5' }}>
+            <Link href="/" style={{ color: '#f87820', textDecoration: 'none', fontWeight: 'bold' }}>
+              بازگشت به صفحه اصلی فروشگاه
+            </Link>
+          </div>
+        </form>
       </div>
     );
   }
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Dynamic SAAS Navigation TopHeader */}
-      <header className={styles.topHeader}>
-        <div className={styles.topHeaderTitleWrap}>
-          <span className={styles.topHeaderLogo}>🛡️</span>
-          <div className={styles.topHeaderMeta}>
-            <h1>پنل ادمین دبی خرید</h1>
-            <span>سامانه مدیریت جامع و پیشرفته کارگو خرید از امارات</span>
+      
+      {/* ── SIDEBAR NAVIGATION PANEL ── */}
+      <aside className={styles.sidebar}>
+        <div>
+          <div className={styles.sidebarLogoArea}>
+            <span className={styles.sidebarLogoIcon}>✈️</span>
+            <div className={styles.sidebarLogoText}>
+              <span className={styles.logoDubai}>Dubai</span>
+              <span className={styles.logoKharid}>Kharid</span>
+            </div>
           </div>
-        </div>
-        <Link href="/" className={styles.viewStoreBtn}>
-          <span>🛒</span> مشاهده فروشگاه اصلی
-        </Link>
-      </header>
 
-      <div className={styles.dashboardContainer}>
-        {/* SIDEBAR NAVIGATION PANEL */}
-        <aside className={styles.sidebar}>
-          <div>
-            <div className={styles.adminProfile}>
-              <div className={styles.adminAvatar}>👤</div>
-              <div className={styles.adminInfo}>
-                <h2>مدیر دبی خرید</h2>
-                <span>سطح دسترسی: ادمین کل</span>
+          <ul className={styles.navMenuList}>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('overview')} className={`${styles.navMenuLink} ${activeTab === 'overview' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>📊</span> داشبورد
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('leads')} className={`${styles.navMenuLink} ${activeTab === 'leads' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>📥</span> سفارشات آنلاین
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>24</span>
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>👤</span> مشتریان
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>💳</span> پرداخت ها
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>📦</span> ارسال ها
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('stock_laptops')} className={`${styles.navMenuLink} ${activeTab === 'stock_laptops' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>💻</span> لپ تاپ های استوک
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('site_products')} className={`${styles.navMenuLink} ${activeTab === 'site_products' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>🛍️</span> محصولات سایت
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('reviews')} className={`${styles.navMenuLink} ${activeTab === 'reviews' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>💬</span> نظرات کاربران
+                <span className={`${styles.navBadge} ${styles.badgeGrey}`}>6</span>
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>✉️</span> تیکت ها
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>📈</span> گزارش های مالی
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('settings')} className={`${styles.navMenuLink} ${activeTab === 'settings' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>⚙️</span> تنظیمات
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>👥</span> مدیریت کاربران
+              </button>
+            </li>
+            <li className={styles.navMenuItem}>
+              <button onClick={() => {}} className={styles.navMenuLink}>
+                <span className={styles.navIcon}>🔔</span> اعلان ها
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>5</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        {/* Sidebar Bottom Profile Card */}
+        <div className={styles.sidebarProfileCard}>
+          <div className={styles.profileInfoRow}>
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&q=80" alt="Director Avatar" className={styles.profileAvatar} />
+            <div className={styles.profileMeta}>
+              <h3>امین دبی خرید</h3>
+              <span>مدیر سیستم</span>
+            </div>
+          </div>
+          <button onClick={handleLogout} className={styles.exitButton}>
+            <span>🚪</span> خروج از حساب کاربری
+          </button>
+        </div>
+      </aside>
+
+      {/* ── MAIN WORKSPACE CONTENT AREA ── */}
+      <div className={styles.workspace}>
+        
+        {/* Top bar header */}
+        <header className={styles.topHeader}>
+          <div className={styles.searchWrapper}>
+            <span className={styles.searchIcon}>🔍</span>
+            <input type="text" placeholder="جستجو کنید..." className={styles.searchInput} />
+          </div>
+          
+          <div className={styles.topRightControls}>
+            <button className={styles.iconControlBtn}>🌙</button>
+            <button className={styles.iconControlBtn}>
+              <span>🔔</span>
+              <span className={styles.bellBadge}>5</span>
+            </button>
+            
+            <div className={styles.headerProfileBadge}>
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px' }} />
+              <span>امین دبی خرید</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic Inner Tab container */}
+        <main className={styles.mainContainer}>
+          
+          {/* TAB: STOCK LAPTOPS UPLOADER VIEW (Matches mockup image with 100% fidelity) */}
+          {activeTab === 'stock_laptops' && (
+            <div>
+              <div className={styles.pageTitleSection}>
+                <div className={styles.titleArea}>
+                  <h1>افزودن لپ‌تاپ جدید</h1>
+                  <div className={styles.breadcrumbs}>
+                    <span>افزودن لپ‌تاپ جدید</span>
+                    <span>‹</span>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('site_products'); }}>لپ‌تاپ‌های استوک</a>
+                  </div>
+                </div>
+
+                <div className={styles.titleActionBtns}>
+                  <button type="button" onClick={() => setActiveTab('site_products')} className={styles.cancelFormBtn}>
+                    <span>✕</span> انصراف
+                  </button>
+                  <button type="button" onClick={handleSaveLaptop} className={styles.saveFormBtn}>
+                    <span>✓</span> ذخیره لپ‌تاپ
+                  </button>
+                </div>
+              </div>
+
+              {/* Form split layout grid */}
+              <div className={styles.formGridSplit}>
+                
+                {/* Left Columns cards */}
+                <div className={styles.columnLeft}>
+                  
+                  {/* 1. Core Info Panel */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>👤</span>
+                      <h2>اطلاعات اصلی</h2>
+                    </div>
+
+                    <div className={styles.formFieldsGrid4}>
+                      <div className={styles.formGroup}>
+                        <label>برند <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.brand} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, brand: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="Apple">Apple</option>
+                          <option value="Dell">Dell</option>
+                          <option value="Lenovo">Lenovo</option>
+                          <option value="HP">HP</option>
+                          <option value="ASUS">ASUS</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>مدل <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.model} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, model: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="MacBook Air M2">MacBook Air M2</option>
+                          <option value="Dell XPS 13 9315">Dell XPS 13 9315</option>
+                          <option value="ThinkPad T14">ThinkPad T14</option>
+                          <option value="HP Spectre x360">HP Spectre x360</option>
+                          <option value="ASUS ROG Zephyrus">ASUS ROG Zephyrus</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>(Serial Number) <span className={styles.requiredStar}>*</span></label>
+                        <input 
+                          type="text" 
+                          value={laptopForm.serial} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, serial: e.target.value }))}
+                          className={styles.inputField} 
+                          required
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>پردازنده (CPU) <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.cpu} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, cpu: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="Apple M2">Apple M2</option>
+                          <option value="Intel Core i5">Intel Core i5</option>
+                          <option value="Intel Core i7">Intel Core i7</option>
+                          <option value="AMD Ryzen 9">AMD Ryzen 9</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>رم (RAM) <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.ram} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, ram: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="8GB">8GB</option>
+                          <option value="16GB">16GB</option>
+                          <option value="32GB">32GB</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>حافظه داخلی (Storage) <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.storage} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, storage: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="256GB SSD">256GB SSD</option>
+                          <option value="512GB SSD">512GB SSD</option>
+                          <option value="1TB SSD">1TB SSD</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>(GPU) کارت گرافیک</label>
+                        <select 
+                          value={laptopForm.gpu} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, gpu: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="Apple GPU 8-Core">Apple GPU 8-Core</option>
+                          <option value="Intel Iris Xe">Intel Iris Xe</option>
+                          <option value="AMD Radeon RX">AMD Radeon RX</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>اندازه صفحه نمایش <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.screenSize} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, screenSize: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="13.6 inch">13.6 inch</option>
+                          <option value="13.4 inch">13.4 inch</option>
+                          <option value="14 inch">14 inch</option>
+                          <option value="13.5 inch">13.5 inch</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>سال ساخت <span className={styles.requiredStar}>*</span></label>
+                        <select 
+                          value={laptopForm.manufactureYear} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, manufactureYear: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="2022">2022</option>
+                          <option value="2023">2023</option>
+                          <option value="2024">2024</option>
+                          <option value="2021">2021</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>رنگ</label>
+                        <select 
+                          value={laptopForm.color} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, color: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="Space Gray">⚫ Space Gray</option>
+                          <option value="Silver">⚪ Silver</option>
+                          <option value="Midnight">🔵 Midnight</option>
+                          <option value="Starlight">🟡 Starlight</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>وضعیت باتری</label>
+                        <select 
+                          value={laptopForm.batteryHealth} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, batteryHealth: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="92%">92%</option>
+                          <option value="100%">100%</option>
+                          <option value="95%">95%</option>
+                          <option value="88%">88%</option>
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>وزن (Kg)</label>
+                        <select 
+                          value={laptopForm.weight} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, weight: e.target.value }))}
+                          className={styles.selectField}
+                        >
+                          <option value="1.24">1.24</option>
+                          <option value="1.17">1.17</option>
+                          <option value="1.35">1.35</option>
+                          <option value="1.36">1.36</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Pricing Panel (Dynamic Calculator) */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>🪙</span>
+                      <h2>قیمت گذاری</h2>
+                    </div>
+
+                    <div className={styles.formFieldsGrid4}>
+                      <div className={styles.formGroup}>
+                        <label>قیمت خرید (درهم) <span className={styles.requiredStar}>*</span></label>
+                        <input 
+                          type="number"
+                          value={laptopForm.buyingPrice}
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, buyingPrice: e.target.value }))}
+                          className={styles.inputField}
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>هزینه‌های جانبی (درهم)</label>
+                        <input 
+                          type="number"
+                          value={laptopForm.extraCosts}
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, extraCosts: e.target.value }))}
+                          className={styles.inputField}
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>قیمت فروش (تومان) <span className={styles.requiredStar}>*</span></label>
+                        <input 
+                          type="number"
+                          value={laptopForm.sellingPrice}
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, sellingPrice: e.target.value }))}
+                          className={styles.inputField}
+                        />
+                      </div>
+
+                      {/* Profit Green box exactly matching mockup math */}
+                      <div className={styles.profitContainer}>
+                        <span className={styles.profitLabel}>سود (تومان)</span>
+                        <div className={styles.profitVal}>
+                          {fmtToman(calculatedProfit)} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>تومان</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Product Images Gallery (High Parity thumbnails and Dragzone) */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>📷</span>
+                      <h2>تصاویر محصول</h2>
+                    </div>
+
+                    <div className={styles.uploaderBoxGrid}>
+                      <div className={styles.dragDropArea}>
+                        <span className={styles.uploadIcon}>☁️</span>
+                        <p>
+                          برای آپلود تصویر کلیک کنید<br/>
+                          <span style={{ fontSize: '8.5px', color: '#555' }}>یا فایل‌ها را اینجا بکشید و رها کنید<br/>فرمت‌های مجاز: JPG, PNG, WebP | حداکثر 10MB</span>
+                        </p>
+                      </div>
+
+                      {/* Render Laptop mock image thumbnails with delete controls */}
+                      {laptopImages.map((imgUrl, idx) => (
+                        <div key={idx} className={styles.imageThumbCard}>
+                          <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} />
+                          <button type="button" onClick={() => handleRemoveImage(idx)} className={styles.removeThumbBtn}>
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Add Image card grid box */}
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          const url = prompt('آدرس اینترنتی تصویر جدید را وارد کنید:');
+                          if (url) setLaptopImages(prev => [...prev, url]);
+                        }} 
+                        className={styles.addImageCard}
+                      >
+                        <span style={{ fontSize: '20px' }}>+</span>
+                        <span>افزودن تصویر</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 4. Notes Panel */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>📝</span>
+                      <h2>یادداشت‌ها</h2>
+                    </div>
+
+                    <div className={styles.formFieldsGrid2}>
+                      <div className={styles.formGroup}>
+                        <label>یادداشت داخلی (فقط برای مدیریت)</label>
+                        <textarea 
+                          rows="3"
+                          value={laptopForm.internalNotes}
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, internalNotes: e.target.value }))}
+                          placeholder="یادداشت‌های داخلی درباره لپ‌تاپ..."
+                          className={styles.textareaField}
+                        />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label>توضیحات برای مشتری (اختیاری)</label>
+                        <textarea 
+                          rows="3"
+                          value={laptopForm.customerNotes}
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, customerNotes: e.target.value }))}
+                          placeholder="توضیحاتی که برای مشتری نمایش داده خواهد شد..."
+                          className={styles.textareaField}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Right Columns cards */}
+                <div className={styles.columnRight}>
+                  
+                  {/* 1. Technical Status Checklist Panels */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>⚙️</span>
+                      <h2>وضعیت و تست‌های فنی</h2>
+                    </div>
+
+                    {/* Hardware Checklist */}
+                    <span className={styles.testsCategoryTitle}>تست‌های سخت‌افزاری</span>
+                    <div className={styles.checklistGrid}>
+                      {[
+                        { key: 'keyboard', label: 'تست کیبورد' },
+                        { key: 'speaker', label: 'تست اسپیکر' },
+                        { key: 'display', label: 'تست نمایشگر' },
+                        { key: 'usb', label: 'تست پورت‌های USB' },
+                        { key: 'battery', label: 'تست باتری' },
+                        { key: 'wifi', label: 'تست وای‌فای' },
+                        { key: 'camera', label: 'تست دوربین' },
+                        { key: 'charge', label: 'تست شارژ' }
+                      ].map(item => (
+                        <label key={item.key} className={styles.checkboxLabelRow}>
+                          <input 
+                            type="checkbox"
+                            checked={laptopForm.hardwareTests[item.key]}
+                            onChange={(e) => setLaptopForm(prev => ({
+                              ...prev,
+                              hardwareTests: { ...prev.hardwareTests, [item.key]: e.target.checked }
+                            }))}
+                          />
+                          <span className={styles.checklistLabel}>{item.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Accessories Checklist */}
+                    <div className={styles.accessorySection}>
+                      <span className={styles.testsCategoryTitle}>لوازم جانبی همراه</span>
+                      <div className={styles.checklistGrid}>
+                        {[
+                          { key: 'charger', label: 'شارژر اصلی' },
+                          { key: 'box', label: 'جعبه اصلی' }
+                        ].map(item => (
+                          <label key={item.key} className={styles.checkboxLabelRow}>
+                            <input 
+                              type="checkbox"
+                              checked={laptopForm.accessories[item.key]}
+                              onChange={(e) => setLaptopForm(prev => ({
+                                ...prev,
+                                accessories: { ...prev.accessories, [item.key]: e.target.checked }
+                              }))}
+                            />
+                            <span className={styles.checklistLabel}>{item.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Physical status Radios with neon green عالی active check */}
+                    <div className={styles.physicalStatusSection}>
+                      <span className={styles.testsCategoryTitle}>وضعیت ظاهری</span>
+                      <div className={styles.radioFlexRow}>
+                        {[
+                          { key: 'excellent', label: 'عالی' },
+                          { key: 'very_good', label: 'خیلی خوب' },
+                          { key: 'good', label: 'خوب' },
+                          { key: 'fair', label: 'متوسط' }
+                        ].map(item => (
+                          <label key={item.key} className={styles.radioLabelRow}>
+                            <input 
+                              type="radio" 
+                              name="physicalStatus"
+                              checked={laptopForm.physicalStatus === item.key}
+                              onChange={() => setLaptopForm(prev => ({ ...prev, physicalStatus: item.key }))}
+                            />
+                            <span className={styles.checklistLabel}>{item.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Stock status Panel */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>📦</span>
+                      <h2>وضعیت موجودی</h2>
+                    </div>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label>وضعیت <span className={styles.requiredStar}>*</span></label>
+                      <select 
+                        value={laptopForm.stockStatus} 
+                        onChange={(e) => setLaptopForm(prev => ({ ...prev, stockStatus: e.target.value }))}
+                        className={styles.selectField}
+                      >
+                        <option value="available">موجود</option>
+                        <option value="unavailable">ناموجود</option>
+                      </select>
+                    </div>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label>تاریخ ورود به انبار <span className={styles.requiredStar}>*</span></label>
+                      <div className={styles.dateInputWrapper}>
+                        <input 
+                          type="text" 
+                          value={laptopForm.dateEntered} 
+                          onChange={(e) => setLaptopForm(prev => ({ ...prev, dateEntered: e.target.value }))}
+                          placeholder="مثال: 1403/03/20"
+                          className={styles.inputField} 
+                        />
+                      </div>
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label>کد داخلی (SKU) (اختیاری)</label>
+                      <input 
+                        type="text" 
+                        value={laptopForm.internalSku} 
+                        onChange={(e) => setLaptopForm(prev => ({ ...prev, internalSku: e.target.value }))}
+                        className={styles.inputField} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. More information Panel */}
+                  <div className={styles.cardPanel}>
+                    <div className={styles.cardHeaderRow}>
+                      <span className={styles.cardHeaderIcon}>🛡️</span>
+                      <h2>اطلاعات بیشتر</h2>
+                    </div>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label>مدت گارانتی (روز)</label>
+                      <input 
+                        type="number" 
+                        value={laptopForm.warrantyDays} 
+                        onChange={(e) => setLaptopForm(prev => ({ ...prev, warrantyDays: e.target.value }))}
+                        className={styles.inputField} 
+                      />
+                    </div>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label>تاریخ انقضای گارانتی</label>
+                      <input 
+                        type="text" 
+                        value={laptopForm.warrantyExpiry} 
+                        onChange={(e) => setLaptopForm(prev => ({ ...prev, warrantyExpiry: e.target.value }))}
+                        placeholder="مثال: 1403/04/20"
+                        className={styles.inputField} 
+                      />
+                    </div>
+
+                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
+                      <label>تاریخ آخرین سرویس</label>
+                      <input 
+                        type="text" 
+                        value={laptopForm.lastService} 
+                        onChange={(e) => setLaptopForm(prev => ({ ...prev, lastService: e.target.value }))}
+                        placeholder="مثال: 1403/03/15"
+                        className={styles.inputField} 
+                      />
+                    </div>
+
+                    <div className={styles.formGroup}>
+                      <label>سرویس بعدی</label>
+                      <input 
+                        type="text" 
+                        value={laptopForm.nextService} 
+                        onChange={(e) => setLaptopForm(prev => ({ ...prev, nextService: e.target.value }))}
+                        placeholder="مثال: 1403/06/15"
+                        className={styles.inputField} 
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
             </div>
+          )}
 
-            <nav className={styles.navMenu}>
-              <button 
-                onClick={() => setActiveTab('overview')} 
-                className={`${styles.navItem} ${activeTab === 'overview' ? styles.navItemActive : ''}`}
-              >
-                <span>📊</span> داشبورد آماری
-              </button>
-              <button 
-                onClick={() => setActiveTab('leads')} 
-                className={`${styles.navItem} ${activeTab === 'leads' ? styles.navItemActive : ''}`}
-              >
-                <span>📥</span> سفارشات و لیدها
-                {pendingLeadsCount > 0 && (
-                  <span style={{ background: '#ff3333', color: '#fff', fontSize: '9px', fontWeight: 'bold', padding: '1px 6px', borderRadius: '10px', marginRight: 'auto' }}>
-                    {pendingLeadsCount} جدید
-                  </span>
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('products')} 
-                className={`${styles.navItem} ${activeTab === 'products' ? styles.navItemActive : ''}`}
-              >
-                <span>📤</span> آپلود محصول جدید
-              </button>
-              <button 
-                onClick={() => setActiveTab('reviews')} 
-                className={`${styles.navItem} ${activeTab === 'reviews' ? styles.navItemActive : ''}`}
-              >
-                <span>💬</span> نظرات مشتریان
-                {reviews.length > 0 && (
-                  <span style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', fontSize: '9px', padding: '1px 6px', borderRadius: '10px', marginRight: 'auto' }}>
-                    {reviews.length} کل
-                  </span>
-                )}
-              </button>
-              <button 
-                onClick={() => setActiveTab('settings')} 
-                className={`${styles.navItem} ${activeTab === 'settings' ? styles.navItemActive : ''}`}
-              >
-                <span>⚙️</span> تنظیمات امنیتی
-              </button>
-            </nav>
-          </div>
-
-          <button onClick={handleLogout} className={styles.logoutBtn}>
-            <span>🚪</span> خروج از حساب
-          </button>
-        </aside>
-
-        {/* MAIN DISPLAY VIEW BLOCK */}
-        <main className={styles.mainContent}>
-          
-          {/* TAB 1: DASHBOARD STATS */}
+          {/* TAB: DASHBOARD STATS */}
           {activeTab === 'overview' && (
             <div>
               <div className={styles.sectionHeader}>
@@ -594,7 +1088,6 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Dynamic stats elements */}
               <div className={styles.statsGrid}>
                 <div className={`${styles.statCard} ${styles.statCardGold}`}>
                   <div>
@@ -630,7 +1123,6 @@ export default function AdminPanel() {
               </div>
 
               <div className={styles.dashboardSplit}>
-                {/* Recent Orders List */}
                 <div className={styles.splitCard}>
                   <h3>📥 آخرین سفارش‌های ثبت شده</h3>
                   <div className={styles.miniList}>
@@ -661,7 +1153,6 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* Popular Stores Distribution progress indicators */}
                 <div className={styles.splitCard}>
                   <h3>🏢 توزیع منابع سفارش خرید</h3>
                   <div className={styles.progressList}>
@@ -710,12 +1201,12 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* TAB 2: LEADS & ACCORDIONS VIEW */}
+          {/* TAB: LEADS & ACCORDIONS VIEW */}
           {activeTab === 'leads' && (
             <div>
               <div className={styles.sectionHeader}>
                 <div>
-                  <h1>📥 مدیریت لیدها و سفارشات نهایی دبی خرید</h1>
+                  <h1>📥 مدیریت سفارشات آنلاین دبی خرید</h1>
                   <p className={styles.sectionDesc}>بررسی پیش‌فاکتورها، ویرایش وضعیت پرداخت و هماهنگی سریع در واتساپ خریدار</p>
                 </div>
                 
@@ -726,7 +1217,7 @@ export default function AdminPanel() {
                     placeholder="جستجوی خریدار، شماره یا کالا..."
                     value={leadSearch}
                     onChange={(e) => setLeadSearch(e.target.value)}
-                    className={styles.searchBarInput}
+                    className={styles.searchInput}
                   />
                 </div>
               </div>
@@ -751,7 +1242,6 @@ export default function AdminPanel() {
                       const isExpanded = expandedLeadId === lead.id;
                       return (
                         <>
-                          {/* Accordion Main row trigger */}
                           <tr 
                             key={lead.id} 
                             onClick={() => toggleLeadAccordion(lead.id)} 
@@ -781,7 +1271,6 @@ export default function AdminPanel() {
                                  lead.status === 'shipped' ? 'ارسال شده' : 'لغو شده'}
                               </span>
                             </td>
-                            {/* Stop propagation so clicking select or delete doesn't trigger accordion fold */}
                             <td onClick={(e) => e.stopPropagation()}>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <select 
@@ -795,24 +1284,16 @@ export default function AdminPanel() {
                                   <option value="shipped">ارسال</option>
                                   <option value="cancelled">لغو</option>
                                 </select>
-                                <button 
-                                  onClick={() => handleDeleteLead(lead.id)} 
-                                  className={styles.deleteActionBtn}
-                                >
-                                  ✕
-                                </button>
+                                <button onClick={() => handleDeleteLead(lead.id)} className={styles.deleteActionBtn}>✕</button>
                               </div>
                             </td>
                           </tr>
 
-                          {/* Collapsed breakdown Accordion row */}
                           {isExpanded && (
                             <tr className={styles.accordionCollapseRow}>
                               <td colSpan="9">
                                 <div className={styles.accordionContent}>
                                   <div className={styles.accordionDetailsGrid}>
-                                    
-                                    {/* Client information panel */}
                                     <div className={styles.detailsBlock}>
                                       <h4>📍 مشخصات و آدرس خریدار</h4>
                                       <div className={styles.detailsMetaList}>
@@ -841,10 +1322,8 @@ export default function AdminPanel() {
                                       </div>
                                     </div>
 
-                                    {/* Cart detailed items panel */}
                                     <div className={styles.detailsBlock}>
                                       <h4>🛍️ جزئیات پیش‌فاکتور سفارش دبی</h4>
-                                      
                                       {lead.items && lead.items.length > 0 ? (
                                         <table className={styles.nestedCartTable}>
                                           <thead>
@@ -898,20 +1377,13 @@ export default function AdminPanel() {
 
                                       <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div style={{ fontSize: '11px', color: '#8b92a5' }}>
-                                          سایت مبدا: {lead.brand === 'دبی خرید' ? 'خرید گروهی سبد خرید' : 'noon.com'} | وزن: {lead.weight}kg
+                                          وزن کل: {lead.weight}kg
                                         </div>
-                                        
-                                        <a 
-                                          href={getWhatsAppLink(lead)} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer" 
-                                          className={styles.whatsappLinkBtn}
-                                        >
+                                        <a href={getWhatsAppLink(lead)} target="_blank" rel="noopener noreferrer" className={styles.whatsappLinkBtn}>
                                           💬 ارسال فاکتور هماهنگی واتساپ
                                         </a>
                                       </div>
                                     </div>
-
                                   </div>
                                 </div>
                               </td>
@@ -931,361 +1403,88 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* TAB 3: PRODUCT UPLOADER WITH LIVE CARD PREVIEW */}
-          {activeTab === 'products' && (
+          {/* TAB: SITE PRODUCTS LIST */}
+          {activeTab === 'site_products' && (
             <div>
               <div className={styles.sectionHeader}>
                 <div>
-                  <h1>📤 آپلود و درج محصول جدید در دبی خرید</h1>
-                  <p className={styles.sectionDesc}>درج مشخصات کالا جهت آپلود مستقیم در کاتالوگ فروشگاه با فیلترها و پیش‌نمایش زنده</p>
+                  <h1>🛍️ کاتالوگ محصولات ثبت شده دبی خرید</h1>
+                  <p className={styles.sectionDesc}>مشاهده تمام محصولات سایت (ثابت و آپلودی ادمین) به همراه عملیات حذف سریع</p>
                 </div>
               </div>
 
-              {/* Advanced Uploader Layout Grid */}
-              <div className={styles.uploaderLayout}>
-                
-                {/* Right Form Card */}
-                <form onSubmit={handleProductUpload} className={styles.uploadForm}>
-                  
-                  {/* Part 1: Core Details */}
-                  <div className={styles.formCardSection}>
-                    <h3 className={styles.formSectionHeader}>🛍️ مشخصات اصلی کالا</h3>
-                    <div className={styles.formInputGrid}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>نام کالا (فارسی) *</label>
-                        <input 
-                          type="text" 
-                          value={prodForm.name} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="مثال: کتانی اورجینال نایک مدل Air Max" 
-                          className={styles.inputField} 
-                          required 
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>نام برند (انگلیسی) *</label>
-                        <input 
-                          type="text" 
-                          value={prodForm.brand} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, brand: e.target.value }))}
-                          placeholder="مثال: Nike" 
-                          className={styles.inputField} 
-                          required 
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>سایت مرجع امارات (دبی)</label>
-                        <input 
-                          type="text" 
-                          value={prodForm.store} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, store: e.target.value }))}
-                          placeholder="مثال: noon.com" 
-                          className={styles.inputField} 
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>قیمت خرید کالا در دبی (درهم) *</label>
-                        <input 
-                          type="number" 
-                          value={prodForm.priceAed} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, priceAed: e.target.value }))}
-                          placeholder="مثال: 599" 
-                          className={styles.inputField} 
-                          required 
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>درصد تخفیف (در صورت وجود)</label>
-                        <input 
-                          type="number" 
-                          value={prodForm.discountPercent} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, discountPercent: e.target.value }))}
-                          placeholder="مثال: 20" 
-                          className={styles.inputField} 
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>وزن تقریبی کالا (کیلوگرم)</label>
-                        <input 
-                          type="number" 
-                          step="0.01"
-                          value={prodForm.weight} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, weight: e.target.value }))}
-                          placeholder="مثال: 0.95" 
-                          className={styles.inputField} 
-                        />
-                      </div>
-                      <div className={styles.checkboxWrap} style={{ gridColumn: 'span 2' }}>
-                        <input 
-                          type="checkbox" 
-                          id="isBestSeller"
-                          checked={prodForm.isBestSeller} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, isBestSeller: e.target.checked }))}
-                          className={styles.checkboxInput} 
-                        />
-                        <label htmlFor="isBestSeller" className={styles.checkboxLabel}>کالا به عنوان پرفروش علامت‌گذاری شود</label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Part 2: Appearance & Categorization */}
-                  <div className={styles.formCardSection}>
-                    <h3 className={styles.formSectionHeader}>⚙️ مشخصات فنی و فیلترها</h3>
-                    <div className={styles.formInputGrid}>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>دسته‌بندی اصلی</label>
-                        <select 
-                          value={prodForm.category} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, category: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="clothing">پوشاک و لباس</option>
-                          <option value="pants">شلوار</option>
-                          <option value="shoes">کفش و کتانی</option>
-                          <option value="bags">کیف و اکسسوری</option>
-                          <option value="electronics">لپ‌تاپ و الکترونیک</option>
-                          <option value="beauty">زیبایی و سلامت</option>
-                          <option value="others">سایر کالاها</option>
-                        </select>
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>منوی جنسیت هدف</label>
-                        <select 
-                          value={prodForm.gender} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, gender: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="none">غیر وابسته به جنسیت (عمومی)</option>
-                          <option value="men">مردانه (Men)</option>
-                          <option value="women">زنانه (Women)</option>
-                          <option value="kids">بچه‌گانه (Kids)</option>
-                        </select>
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>رنگ‌های موجود (جدا شده با کامای فارسی)</label>
-                        <input 
-                          type="text" 
-                          value={prodForm.colors} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, colors: e.target.value }))}
-                          placeholder="مثال: مشکی, سفید, طوسی, کرم" 
-                          className={styles.inputField} 
-                        />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>سایزهای موجود (جدا شده با کامای فارسی)</label>
-                        <input 
-                          type="text" 
-                          value={prodForm.sizes} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, sizes: e.target.value }))}
-                          placeholder="مثال: 40, 41, 42, L, XL" 
-                          className={styles.inputField} 
-                        />
-                      </div>
-                      <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                        <label className={styles.formLabel}>مشخصات فرعی / خلاصه مشخصات فنی کوتاه</label>
-                        <input 
-                          type="text" 
-                          value={prodForm.spec} 
-                          onChange={(e) => setProdForm(prev => ({ ...prev, spec: e.target.value }))}
-                          placeholder="مثال: پردازنده Intel i7 / چرم طبیعی گاو" 
-                          className={styles.inputField} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Part 3: Image & Description */}
-                  <div className={styles.formCardSection}>
-                    <h3 className={styles.formSectionHeader}>🖼️ تصویر و توضیحات</h3>
-                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
-                      <label className={styles.formLabel}>آدرس اینترنتی تصویر کالا (URL)</label>
-                      <input 
-                        type="text" 
-                        value={prodForm.image} 
-                        onChange={(e) => setProdForm(prev => ({ ...prev, image: e.target.value }))}
-                        placeholder="https://images.unsplash.com/photo-..." 
-                        className={styles.inputField} 
-                      />
-                    </div>
-                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
-                      <label className={styles.formLabel}>لینک کالا در فروشگاه اصلی امارات</label>
-                      <input 
-                        type="text" 
-                        value={prodForm.link} 
-                        onChange={(e) => setProdForm(prev => ({ ...prev, link: e.target.value }))}
-                        placeholder="https://www.amazon.ae/gp/product/..." 
-                        className={styles.inputField} 
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>توضیحات کامل محصول</label>
-                      <textarea 
-                        rows="3"
-                        value={prodForm.description} 
-                        onChange={(e) => setProdForm(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="توضیحات کامل فیزیکی، نحوه سفارش، اصالت و..."
-                        className={styles.textareaField}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Form Submission */}
-                  <div className={styles.formActions}>
-                    <button type="submit" className={styles.loginBtn} style={{ margin: 0, width: 'auto', padding: '14px 40px' }}>
-                      📤 آپلود محصول در وب‌سایت
-                    </button>
-                  </div>
-
-                </form>
-
-                {/* Left Sticky Live Preview card Column */}
-                <div className={styles.previewStickyCol}>
-                  <span className={styles.previewTitle}>👁️ پیش‌نمایش زنده کارت کاتالوگ</span>
-                  
-                  <div className={styles.mockCatalogCard}>
-                    
-                    {/* Image box */}
-                    <div className={styles.mockImgBox}>
-                      {prodForm.image ? (
-                        <img src={prodForm.image} alt="Preview thumbnail" className={styles.mockImg} onError={(e) => { e.target.src = ''; }} />
-                      ) : (
-                        <div className={styles.mockImgFallback}>
-                          <span style={{ fontSize: '32px' }}>📷</span>
-                          <span>آدرس تصویر کالا</span>
-                        </div>
-                      )}
-                      
-                      {previewDiscount > 0 && (
-                        <div className={styles.mockSaleBadge}>
-                          {previewDiscount}%-
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card Content block */}
-                    <div className={styles.mockCardContent}>
-                      
-                      {/* Brand Row */}
-                      <div className={styles.mockBrandRow}>
-                        <span>{prodForm.brand || 'برند کالا'}</span>
-                        <span className={styles.mockStoreLabel}>{prodForm.store || 'amazon.ae'}</span>
-                      </div>
-
-                      {/* Title & Specs */}
-                      <div className={styles.mockTitle}>{prodForm.name || 'نام فارسی محصول جدید'}</div>
-                      <div className={styles.mockSpecs}>{prodForm.spec || 'خلاصه مشخصات فنی'}</div>
-
-                      {/* Interactive Colors render */}
-                      {parsedPreviewColors.length > 0 && (
-                        <div className={styles.mockPreviewSwatches}>
-                          {parsedPreviewColors.map((color, idx) => {
-                            const hex = COLOR_HEX_MAP[color] || '#808080';
-                            return (
-                              <div 
-                                key={idx} 
-                                className={styles.mockColorDot} 
-                                style={{ background: hex }} 
-                                title={color}
-                              />
-                            );
-                          })}
-                        </div>
-                      )}
-
-                      {/* Dynamic Sizes render */}
-                      {parsedPreviewSizes.length > 0 && (
-                        <div className={styles.mockPreviewSizes}>
-                          {parsedPreviewSizes.slice(0, 4).map((size, idx) => (
-                            <span key={idx} className={styles.mockSizeTag}>
-                              {size}
-                            </span>
-                          ))}
-                          {parsedPreviewSizes.length > 4 && (
-                            <span className={styles.mockSizeTag}>+</span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Pricing toman calculator */}
-                      <div className={styles.mockPriceRow}>
-                        <span className={styles.mockPriceLabel}>قیمت نهایی با هزینه ارسال:</span>
-                        
-                        {previewDiscount > 0 ? (
-                          <div>
-                            <span style={{ fontSize: '11px', textDecoration: 'line-through', color: '#8b92a5' }}>
-                              {fmtToman(baseToman)}
-                            </span>
-                            <div className={styles.mockPriceVal} style={{ color: '#ff3333' }}>
-                              {fmtToman(finalToman)} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>تومان</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className={styles.mockPriceVal}>
-                            {previewPriceAed > 0 ? fmtToman(baseToman) : '۰'} <span style={{ fontSize: '11px', fontWeight: 'normal' }}>تومان</span>
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-
+              <div className={styles.tableContainer}>
+                <table className={styles.adminTable}>
+                  <thead>
+                    <tr>
+                      <th>تصویر</th>
+                      <th>نام کالا</th>
+                      <th>برند</th>
+                      <th>قیمت خرید دبی</th>
+                      <th>دسته‌بندی / منو</th>
+                      <th>وضعیت پرفروش</th>
+                      <th>عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Render static products from database combined with dynamic uploads */}
+                    {uploadedProducts.map(p => (
+                      <tr key={p.id}>
+                        <td>
+                          <img src={p.image} alt={p.name} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '8px' }} />
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: '750' }}>{p.name}</div>
+                          <span style={{ fontSize: '11px', color: '#8b92a5' }}>آپلود ادمین | شناسه: {p.id}</span>
+                        </td>
+                        <td>{p.brand}</td>
+                        <td style={{ fontWeight: '700' }}>{p.priceAed} AED</td>
+                        <td>
+                          <div>{p.category}</div>
+                          <span style={{ fontSize: '11px', color: '#8b92a5' }}>
+                            منو: {p.gender === 'men' ? 'مردانه' : p.gender === 'women' ? 'زنانه' : p.gender === 'kids' ? 'کودک' : 'عمومی'}
+                          </span>
+                        </td>
+                        <td style={{ color: '#ff9d00', fontWeight: 'bold' }}>{p.isBestSeller ? '🔥 پرفروش' : 'عادی'}</td>
+                        <td>
+                          <button onClick={() => handleDeleteProduct(p.id)} className={styles.deleteActionBtn} style={{ width: 'auto', padding: '6px 14px' }}>
+                            حذف محصول
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {getAllProducts().map(p => (
+                      <tr key={p.id}>
+                        <td>
+                          <img src={p.image || p.img} alt={p.name} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '8px' }} />
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: '750' }}>{p.name}</div>
+                          <span style={{ fontSize: '11px', color: '#8b92a5' }}>ثبت‌شده ثابت | شناسه: {p.id}</span>
+                        </td>
+                        <td>{p.brand}</td>
+                        <td style={{ fontWeight: '700' }}>{p.priceAed} AED</td>
+                        <td>
+                          <div>{p.category}</div>
+                          <span style={{ fontSize: '11px', color: '#8b92a5' }}>
+                            منو: {p.gender === 'men' ? 'مردانه' : p.gender === 'women' ? 'زنانه' : p.gender === 'kids' ? 'کودک' : 'عمومی'}
+                          </span>
+                        </td>
+                        <td style={{ color: '#ff9d00', fontWeight: 'bold' }}>{p.isBestSeller ? '🔥 پرفروش' : 'عادی'}</td>
+                        <td>
+                          <span style={{ fontSize: '11px', color: '#8b92a5', background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: '6px' }}>
+                            غیرقابل حذف
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-
-              {/* Uploaded products checklist */}
-              {uploadedProducts.length > 0 && (
-                <div style={{ marginTop: '50px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '22px', borderRight: '3px solid #f87820', paddingRight: '10px' }}>
-                    🛍️ محصولات آپلود شده توسط شما ({uploadedProducts.length})
-                  </h3>
-                  <div className={styles.tableContainer}>
-                    <table className={styles.adminTable}>
-                      <thead>
-                        <tr>
-                          <th>تصویر</th>
-                          <th>نام کالا</th>
-                          <th>برند</th>
-                          <th>قیمت خرید دبی</th>
-                          <th>دسته‌بندی / منو</th>
-                          <th>وضعیت پرفروش</th>
-                          <th>عملیات</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {uploadedProducts.map(p => (
-                          <tr key={p.id}>
-                            <td>
-                              <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} />
-                            </td>
-                            <td>
-                              <div style={{ fontWeight: '750' }}>{p.name}</div>
-                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>شناسه: {p.id}</span>
-                            </td>
-                            <td>{p.brand}</td>
-                            <td>{p.priceAed} AED</td>
-                            <td>
-                              <div>{p.category}</div>
-                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>
-                                منو: {p.gender === 'men' ? 'مردانه' : p.gender === 'women' ? 'زنانه' : p.gender === 'kids' ? 'کودک' : 'عمومی'}
-                              </span>
-                            </td>
-                            <td>{p.isBestSeller ? '🔥 پرفروش' : 'عادی'}</td>
-                            <td>
-                              <button onClick={() => handleDeleteProduct(p.id)} className={styles.deleteActionBtn} style={{ width: 'auto', padding: '6px 14px' }}>
-                                حذف کالا
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* TAB 4: REVIEWS MODERATION */}
+          {/* TAB: REVIEWS MODERATION */}
           {activeTab === 'reviews' && (
             <div>
               <div className={styles.sectionHeader}>
@@ -1301,7 +1500,7 @@ export default function AdminPanel() {
                     placeholder="جستجو در نظرات، خریداران یا کالاها..."
                     value={reviewSearch}
                     onChange={(e) => setReviewSearch(e.target.value)}
-                    className={styles.searchBarInput}
+                    className={styles.searchInput}
                   />
                 </div>
               </div>
@@ -1355,7 +1554,7 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* TAB 5: SECURITY SETTINGS & PASSWORD COMPLEXITY GAUGE */}
+          {/* TAB: SECURITY SETTINGS */}
           {activeTab === 'settings' && (
             <div>
               <div className={styles.sectionHeader}>
@@ -1365,92 +1564,45 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Password change form */}
               <div className={styles.securityCard}>
                 <h3>🔑 تغییر رمز عبور ورود ادمین</h3>
-                
-                {passwordChangeSuccess && (
-                  <div className={styles.successNote}>رمز عبور پنل مدیریت با موفقیت تغییر یافت.</div>
-                )}
-                {passwordChangeError && (
-                  <div className={styles.loginError} style={{ margin: '0 0 20px' }}>{passwordChangeError}</div>
-                )}
+                {passwordChangeSuccess && <div className={styles.successNote}>رمز عبور پنل مدیریت با موفقیت تغییر یافت.</div>}
+                {passwordChangeError && <div className={styles.loginError} style={{ margin: '0 0 20px' }}>{passwordChangeError}</div>}
 
                 <form onSubmit={handlePasswordChange}>
-                  <div className={styles.formGroup} style={{ maxWidth: '350px' }}>
+                  <div className={styles.formGroup} style={{ maxWidth: '350px', marginBottom: '14px' }}>
                     <label>رمز عبور فعلی ادمین:</label>
-                    <input 
-                      type="password" 
-                      value={passForm.oldPass} 
-                      onChange={e => setPassForm(prev => ({ ...prev, oldPass: e.target.value }))}
-                      placeholder="وارد کردن رمز عبور قدیمی..." 
-                      className={styles.inputField} 
-                      required
-                    />
+                    <input type="password" value={passForm.oldPass} onChange={e => setPassForm(prev => ({ ...prev, oldPass: e.target.value }))} placeholder="وارد کردن رمز عبور قدیمی..." className={styles.inputField} required />
                   </div>
-
-                  <div className={styles.formGroup} style={{ maxWidth: '350px' }}>
+                  <div className={styles.formGroup} style={{ maxWidth: '350px', marginBottom: '14px' }}>
                     <label>رمز عبور جدید:</label>
-                    <input 
-                      type="password" 
-                      value={passForm.newPass} 
-                      onChange={e => setPassForm(prev => ({ ...prev, newPass: e.target.value }))}
-                      placeholder="رمز عبور جدید (حداقل ۶ کاراکتر)..." 
-                      className={styles.inputField} 
-                      required
-                    />
-                    
-                    {/* Interactive password complexity strength indicator */}
+                    <input type="password" value={passForm.newPass} onChange={e => setPassForm(prev => ({ ...prev, newPass: e.target.value }))} placeholder="رمز عبور جدید..." className={styles.inputField} required />
                     {passForm.newPass && (
                       <div className={styles.strengthMeter}>
                         <div className={styles.strengthMeterLabelRow}>
                           <span style={{ color: '#8b92a5' }}>پیچیدگی رمز عبور:</span>
-                          <span style={{ fontWeight: '750', color: passwordStrength.color }}>
-                            {passwordStrength.label}
-                          </span>
+                          <span style={{ fontWeight: '750', color: passwordStrength.color }}>{passwordStrength.label}</span>
                         </div>
                         <div className={styles.strengthMeterTrack}>
-                          <div 
-                            className={styles.strengthMeterFill} 
-                            style={{ 
-                              width: `${(passwordStrength.score / 5) * 100}%`,
-                              backgroundColor: passwordStrength.color
-                            }} 
-                          />
+                          <div className={styles.strengthMeterFill} style={{ width: `${(passwordStrength.score / 5) * 100}%`, backgroundColor: passwordStrength.color }} />
                         </div>
                       </div>
                     )}
                   </div>
-
-                  <div className={styles.formGroup} style={{ maxWidth: '350px' }}>
+                  <div className={styles.formGroup} style={{ maxWidth: '350px', marginBottom: '14px' }}>
                     <label>تکرار رمز عبور جدید:</label>
-                    <input 
-                      type="password" 
-                      value={passForm.confirmPass} 
-                      onChange={e => setPassForm(prev => ({ ...prev, confirmPass: e.target.value }))}
-                      placeholder="تکرار رمز عبور جدید..." 
-                      className={styles.inputField} 
-                      required
-                    />
+                    <input type="password" value={passForm.confirmPass} onChange={e => setPassForm(prev => ({ ...prev, confirmPass: e.target.value }))} placeholder="تکرار رمز عبور..." className={styles.inputField} required />
                   </div>
-
-                  <button type="submit" className={styles.loginBtn} style={{ width: 'auto', padding: '10px 30px', margin: '15px 0 0' }}>
-                    تغییر رمز عبور ورود
-                  </button>
+                  <button type="submit" className={styles.loginBtn} style={{ width: 'auto', padding: '10px 30px', margin: '15px 0 0' }}>تغییر رمز ورود</button>
                 </form>
               </div>
 
-              {/* Restore Defaults */}
               <div className={styles.securityCard} style={{ border: '1px solid rgba(255, 77, 77, 0.2)', background: 'rgba(255, 77, 77, 0.01)' }}>
                 <h3 style={{ borderRightColor: '#ff4d4d', color: '#ff4d4d' }}>🚨 بازیابی داده‌های اولیه و ریست کامل</h3>
                 <p style={{ fontSize: '13px', color: '#c4c8d4', lineHeight: '1.6', marginBottom: '20px' }}>
                   توجه: این عمل تمامی اطلاعات لیدها، محصولات آپلودی جدید و پیام‌ها را حذف کرده و داده‌های آزمایشی اولیه و رمز عبور پیش‌فرض پنل مدیریت (<strong>@Reza112233</strong>) را در لوکال استوریج بازیابی می‌کند.
                 </p>
-                <button 
-                  onClick={handleRestoreDefaults} 
-                  className={styles.logoutBtn} 
-                  style={{ width: 'auto', padding: '12px 30px', margin: 0 }}
-                >
+                <button onClick={handleRestoreDefaults} className={styles.logoutBtn} style={{ width: 'auto', padding: '12px 30px', margin: 0 }}>
                   حذف داده‌های ثبت شده و بازگشت به تنظیمات کارخانه
                 </button>
               </div>

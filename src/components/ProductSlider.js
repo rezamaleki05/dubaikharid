@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -12,6 +12,35 @@ export default function ProductSlider({ onSelectProduct }) {
   const router = useRouter();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+
+  const [allLaptops, setAllLaptops] = useState([]);
+  const [allTrending, setAllTrending] = useState([]);
+
+  useEffect(() => {
+    let mergedLaptops = [...laptops];
+    let mergedTrending = [...trendingProducts];
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      if (saved) {
+        const uploaded = JSON.parse(saved);
+        uploaded.forEach(p => {
+          if (p.category === 'electronics') {
+            if (!mergedLaptops.some(m => m.id === p.id)) {
+              mergedLaptops.unshift(p);
+            }
+          } else {
+            if (!mergedTrending.some(m => m.id === p.id)) {
+              mergedTrending.unshift(p);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging uploaded products for ProductSlider:', e);
+    }
+    setAllLaptops(mergedLaptops);
+    setAllTrending(mergedTrending);
+  }, []);
 
   const EXCHANGE_RATE = 19500;
 
@@ -78,7 +107,7 @@ export default function ProductSlider({ onSelectProduct }) {
             <button className={styles.seeAllBtn} onClick={() => router.push('/stock-laptops')}>مشاهده همه ←</button>
           </div>
           <div className={styles.productGrid}>
-            {laptops.map(p => <ProductCard key={p.id} product={p} showStore={true} />)}
+            {allLaptops.map(p => <ProductCard key={p.id} product={p} showStore={true} />)}
           </div>
         </div>
       </section>
@@ -94,7 +123,7 @@ export default function ProductSlider({ onSelectProduct }) {
             <button className={styles.seeAllBtn} onClick={() => router.push('/best-sellers')}>مشاهده همه ←</button>
           </div>
           <div className={styles.productGrid}>
-            {trendingProducts.map(p => <ProductCard key={p.id} product={p} showStore={true} />)}
+            {allTrending.map(p => <ProductCard key={p.id} product={p} showStore={true} />)}
           </div>
         </div>
       </section>

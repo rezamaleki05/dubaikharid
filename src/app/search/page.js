@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -39,6 +39,25 @@ function SearchContent() {
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const qLower = query.toLowerCase().trim();
+  const [allProducts, setAllProducts] = useState([]);
+
+  useEffect(() => {
+    let merged = getAllProducts();
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      if (saved) {
+        const uploaded = JSON.parse(saved);
+        uploaded.forEach(p => {
+          if (!merged.some(m => m.id === p.id)) {
+            merged.unshift(p);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging products for search:', e);
+    }
+    setAllProducts(merged);
+  }, []);
 
   // 1. Search in Brand Catalog
   const brandResults = qLower
@@ -51,7 +70,7 @@ function SearchContent() {
 
   // 2. Search in Products Database (extended)
   const productResults = qLower
-    ? getAllProducts().filter(product => 
+    ? allProducts.filter(product => 
         product.name.toLowerCase().includes(qLower) ||
         product.brand.toLowerCase().includes(qLower) ||
         (product.store && product.store.toLowerCase().includes(qLower)) ||

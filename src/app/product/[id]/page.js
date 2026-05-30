@@ -44,7 +44,8 @@ export default function ProductPage({ params }) {
   const { id } = unwrappedParams;
   const { addToCart } = useCart();
   
-  const product = getProductById(id);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Selector states
   const [selectedColor, setSelectedColor] = useState(null);
@@ -53,6 +54,33 @@ export default function ProductPage({ params }) {
   // Validation state
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
+
+  useEffect(() => {
+    let found = getProductById(id);
+    if (!found && typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+        if (saved) {
+          const list = JSON.parse(saved);
+          found = list.find(p => p.id === id);
+        }
+      } catch (e) {
+        console.error('Error fetching dynamic product by id:', e);
+      }
+    }
+    setProduct(found || null);
+    setLoading(false);
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className={styles.pageWrapper}>
+        <Header />
+        <div className={styles.notFound} style={{ color: '#8b92a5', padding: '100px', textAlign: 'center' }}>در حال بارگذاری مشخصات محصول...</div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!product) {
     return (

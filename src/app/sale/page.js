@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -21,8 +21,26 @@ function SaleContent() {
   // Sort state
   const [sortOption, setSortOption] = useState(''); // '', 'discount', 'price_asc', 'price_desc'
 
-  // Extract all items from database that are discounted (discountPercent > 0)
-  const discountedProducts = getAllProducts().filter(p => p.discountPercent && p.discountPercent > 0);
+  const [discountedProducts, setDiscountedProducts] = useState([]);
+
+  useEffect(() => {
+    let merged = getAllProducts();
+    try {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      if (saved) {
+        const uploaded = JSON.parse(saved);
+        uploaded.forEach(p => {
+          if (!merged.some(m => m.id === p.id)) {
+            merged.unshift(p);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging products for SaleContent:', e);
+    }
+    const filteredDiscounted = merged.filter(p => p.discountPercent && p.discountPercent > 0);
+    setDiscountedProducts(filteredDiscounted);
+  }, []);
 
   // Filter products based on active tab
   const filteredProducts = discountedProducts.filter(product => {
