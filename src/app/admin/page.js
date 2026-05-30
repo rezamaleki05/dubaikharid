@@ -127,13 +127,16 @@ export default function AdminPanel() {
     model: 'MacBook Air M2',
     serial: 'C02JQ0XFL7',
     cpu: 'Apple M2',
-    ram: '8GB',
-    storage: '256GB SSD',
+    ram: '8',
+    storageSize: '256',
+    storageType: 'GB SSD',
+    storage2Size: '0',
+    storage2Type: 'none',
     gpu: 'Apple GPU 8-Core',
-    screenSize: '13.6 inch',
+    screenSize: '13.6',
     manufactureYear: '2022',
     color: 'Space Gray',
-    batteryHealth: '92%',
+    batteryHealth: '92',
     weight: '1.24',
     buyingPrice: '2400',
     extraCosts: '100',
@@ -275,11 +278,18 @@ export default function AdminPanel() {
     const costToman = costDirhams * 16100;
     const profitToman = parseFloat(laptopForm.sellingPrice) - costToman;
 
+    // Formatting RAM and split Storage specifications nicely
+    const ramString = `${laptopForm.ram}GB`;
+    let storageString = `${laptopForm.storageSize}${laptopForm.storageType}`;
+    if (laptopForm.storage2Type !== 'none' && parseFloat(laptopForm.storage2Size) > 0) {
+      storageString += ` + ${laptopForm.storage2Size}${laptopForm.storage2Type}`;
+    }
+
     // Compile laptop product object
     const newProduct = {
       id: `uploaded-${Date.now()}`,
       name: `لپ‌تاپ استوک ${laptopForm.brand} مدل ${laptopForm.model}`,
-      spec: `${laptopForm.ram} / ${laptopForm.storage} / ${laptopForm.cpu}`,
+      spec: `${ramString} / ${storageString} / ${laptopForm.cpu}`,
       brand: laptopForm.brand,
       store: 'انبار ایران',
       priceAed: parseFloat(laptopForm.buyingPrice) + parseFloat(laptopForm.extraCosts),
@@ -289,8 +299,8 @@ export default function AdminPanel() {
       link: 'https://www.amazon.ae',
       isBestSeller: true,
       colors: [laptopForm.color],
-      sizes: [laptopForm.screenSize],
-      description: laptopForm.customerNotes || `لپ‌تاپ فوق‌العاده تمیز وارداتی استوک دبی.\nسریال: ${laptopForm.serial} | سلامت باتری: ${laptopForm.batteryHealth} | گرافیک: ${laptopForm.gpu}`
+      sizes: [`${laptopForm.screenSize} inch`],
+      description: laptopForm.customerNotes || `لپ‌تاپ فوق‌العاده تمیز وارداتی استوک دبی.\nسریال: ${laptopForm.serial ? laptopForm.serial : 'نامشخص'} | سلامت باتری: ${laptopForm.batteryHealth}% | گرافیک: ${laptopForm.gpu}`
     };
 
     try {
@@ -772,27 +782,76 @@ export default function AdminPanel() {
                       </div>
 
                       <div className={styles.formGroup}>
-                        <label>رم (RAM) <span className={styles.requiredStar}>*</span></label>
-                        <input 
-                          type="text" 
-                          value={laptopForm.ram} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, ram: e.target.value }))}
-                          placeholder="مثال: 16GB"
-                          className={styles.inputField}
-                          required
-                        />
+                        <label>رم (RAM) - GB <span className={styles.requiredStar}>*</span></label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input 
+                            type="number" 
+                            value={laptopForm.ram} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, ram: e.target.value }))}
+                            min="2"
+                            max="256"
+                            step="2"
+                            className={styles.inputField}
+                            required
+                          />
+                          <span style={{ fontSize: '13px', color: '#8b92a5', fontWeight: 'bold' }}>GB</span>
+                        </div>
                       </div>
 
-                      <div className={styles.formGroup}>
-                        <label>حافظه داخلی (Storage) <span className={styles.requiredStar}>*</span></label>
-                        <input 
-                          type="text" 
-                          value={laptopForm.storage} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, storage: e.target.value }))}
-                          placeholder="مثال: 512GB SSD"
-                          className={styles.inputField}
-                          required
-                        />
+                      <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                        <label>حافظه داخلی اصلی <span className={styles.requiredStar}>*</span></label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="number" 
+                            value={laptopForm.storageSize} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, storageSize: e.target.value }))}
+                            min="1"
+                            max="8192"
+                            placeholder="مقدار عددی..."
+                            className={styles.inputField}
+                            style={{ flex: 1 }}
+                            required
+                          />
+                          <select 
+                            value={laptopForm.storageType} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, storageType: e.target.value }))}
+                            className={styles.selectField}
+                            style={{ flex: 1 }}
+                          >
+                            <option value="GB SSD">GB SSD</option>
+                            <option value="TB SSD">TB SSD</option>
+                            <option value="GB HDD">GB HDD</option>
+                            <option value="TB HDD">TB HDD</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+                        <label>حافظه داخلی دوم (اختیاری)</label>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <input 
+                            type="number" 
+                            value={laptopForm.storage2Size} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, storage2Size: e.target.value }))}
+                            min="0"
+                            max="8192"
+                            placeholder="مقدار عددی..."
+                            className={styles.inputField}
+                            style={{ flex: 1 }}
+                          />
+                          <select 
+                            value={laptopForm.storage2Type} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, storage2Type: e.target.value }))}
+                            className={styles.selectField}
+                            style={{ flex: 1 }}
+                          >
+                            <option value="none">بدون حافظه دوم</option>
+                            <option value="GB SSD">GB SSD</option>
+                            <option value="TB SSD">TB SSD</option>
+                            <option value="GB HDD">GB HDD</option>
+                            <option value="TB HDD">TB HDD</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div className={styles.formGroup}>
@@ -845,21 +904,25 @@ export default function AdminPanel() {
                       </div>
 
                       <div className={styles.formGroup}>
-                        <label>اندازه صفحه نمایش <span className={styles.requiredStar}>*</span></label>
-                        <input 
-                          type="text" 
-                          value={laptopForm.screenSize} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, screenSize: e.target.value }))}
-                          placeholder="مثال: 13.6 inch"
-                          className={styles.inputField}
-                          required
-                        />
+                        <label>اندازه صفحه نمایش - اینچ <span className={styles.requiredStar}>*</span></label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input 
+                            type="number" 
+                            step="0.1"
+                            value={laptopForm.screenSize} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, screenSize: e.target.value }))}
+                            placeholder="مثال: 13.6"
+                            className={styles.inputField}
+                            required
+                          />
+                          <span style={{ fontSize: '13px', color: '#8b92a5' }}>اینچ</span>
+                        </div>
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>سال ساخت <span className={styles.requiredStar}>*</span></label>
                         <input 
-                          type="text" 
+                          type="number" 
                           value={laptopForm.manufactureYear} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, manufactureYear: e.target.value }))}
                           placeholder="مثال: 2022"
@@ -883,14 +946,19 @@ export default function AdminPanel() {
                       </div>
 
                       <div className={styles.formGroup}>
-                        <label>وضعیت باتری</label>
-                        <input 
-                          type="text" 
-                          value={laptopForm.batteryHealth} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, batteryHealth: e.target.value }))}
-                          placeholder="مثال: 92%"
-                          className={styles.inputField}
-                        />
+                        <label>سلامت باتری - ٪</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <input 
+                            type="number" 
+                            min="1"
+                            max="100"
+                            value={laptopForm.batteryHealth} 
+                            onChange={(e) => setLaptopForm(prev => ({ ...prev, batteryHealth: e.target.value }))}
+                            placeholder="مثال: 92"
+                            className={styles.inputField}
+                          />
+                          <span style={{ fontSize: '13px', color: '#8b92a5', fontWeight: 'bold' }}>٪</span>
+                        </div>
                       </div>
 
                       <div className={styles.formGroup}>
