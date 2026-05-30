@@ -68,8 +68,8 @@ export default function AdminPanel() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setLoginError] = useState('');
 
-  // Active section/tab (Matches the sidebar items, default is 'stock_laptops' exactly like mockup)
-  const [activeTab, setActiveTab] = useState('stock_laptops');
+  // Active section/tab (Matches the sidebar items, default is 'overview' for dashboard)
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Leads & reviews lists
   const [leads, setLeads] = useState([]);
@@ -126,6 +126,11 @@ export default function AdminPanel() {
   const [laptopSearchQuery, setLaptopSearchQuery] = useState('');
   const [laptopBrandFilter, setLaptopBrandFilter] = useState('همه');
   const [deletedStaticIds, setDeletedStaticIds] = useState([]);
+  const [selectedLaptopId, setSelectedLaptopId] = useState(null);
+  const [activeDetailTab, setActiveDetailTab] = useState('specs'); // 'specs' | 'tests' | 'accessories' | 'info'
+  const [laptopStatusFilter, setLaptopStatusFilter] = useState('همه');
+  const [laptopRamFilter, setLaptopRamFilter] = useState('همه');
+  const [laptopCpuFilter, setLaptopCpuFilter] = useState('همه');
 
   // Reset form states back to initial uploader mockup values
   const resetLaptopForm = () => {
@@ -581,16 +586,109 @@ export default function AdminPanel() {
   const getFilteredAdminLaptops = () => {
     const list = getMergedAdminLaptops();
     return list.filter(p => {
+      // 1. Filter by Brand
       const matchesBrand = laptopBrandFilter === 'همه' || p.brand === laptopBrandFilter;
+      
+      // 2. Filter by Status
+      const statusValue = p.stockStatus || 'available';
+      const matchesStatus = laptopStatusFilter === 'همه' || statusValue === laptopStatusFilter;
+      
+      // 3. Filter by RAM
+      let matchesRam = true;
+      if (laptopRamFilter !== 'همه') {
+        const parsedSpecs = parseProductToForm(p);
+        matchesRam = String(parsedSpecs.ram) === laptopRamFilter;
+      }
+      
+      // 4. Filter by CPU
+      let matchesCpu = true;
+      if (laptopCpuFilter !== 'همه') {
+        const parsedSpecs = parseProductToForm(p);
+        matchesCpu = parsedSpecs.cpu.toLowerCase().includes(laptopCpuFilter.toLowerCase());
+      }
+
+      // 5. Search keyword
       const q = laptopSearchQuery.toLowerCase().trim();
       const matchesSearch = !q || 
         p.brand.toLowerCase().includes(q) || 
         p.name.toLowerCase().includes(q) || 
         (p.spec && p.spec.toLowerCase().includes(q));
       
-      return matchesBrand && matchesSearch;
+      return matchesBrand && matchesStatus && matchesRam && matchesCpu && matchesSearch;
     });
   };
+
+  const getReactiveMetrics = () => {
+    let totalOffset = 0;
+    let availableOffset = 0;
+    let reservedOffset = 0;
+    let soldOffset = 0;
+    let profitOffset = 0;
+
+    // 1. Account for deleted static laptops (which were all 'available' and had zero profit by default)
+    deletedStaticIds.forEach(id => {
+      const orig = laptops.find(l => l.id === id);
+      if (orig) {
+        availableOffset -= 1;
+        totalOffset -= 1;
+      }
+    });
+
+    // 2. Account for uploaded products (both new additions and static overrides)
+    uploadedProducts.filter(p => p.category === 'electronics').forEach(p => {
+      const isStatic = laptops.some(l => l.id === p.id);
+      const statusValue = p.stockStatus || 'available';
+
+      // Parse specs to calculate actual profit
+      const parsed = parseProductToForm(p);
+      const priceToman = p.rawSpecs?.sellingPrice ? parseFloat(p.rawSpecs.sellingPrice) : (p.priceAed * 19500);
+      const buyingVal = parseFloat(parsed.buyingPrice) || 0;
+      const extraVal = parseFloat(parsed.extraCosts) || 0;
+      const costToman = (buyingVal + extraVal) * 16100;
+      const profit = Math.max(0, priceToman - costToman);
+
+      if (isStatic) {
+        // Skip if deleted
+        if (deletedStaticIds.includes(p.id)) return;
+
+        // Static is 'available' by default. We subtract 1 from 'available' contribution,
+        // then add back its new status contribution.
+        availableOffset -= 1;
+        if (statusValue === 'available') {
+          availableOffset += 1;
+        } else if (statusValue === 'reserved') {
+          reservedOffset += 1;
+        } else if (statusValue === 'sold') {
+          soldOffset += 1;
+          profitOffset += profit;
+        }
+      } else {
+        // Completely new dynamic laptop addition
+        totalOffset += 1;
+        if (statusValue === 'available') {
+          availableOffset += 1;
+        } else if (statusValue === 'reserved') {
+          reservedOffset += 1;
+        } else if (statusValue === 'sold') {
+          soldOffset += 1;
+          profitOffset += profit;
+        }
+      }
+    });
+
+    return {
+      total: Math.max(0, 128 + totalOffset),
+      available: Math.max(0, 68 + availableOffset),
+      reserved: Math.max(0, 15 + reservedOffset),
+      sold: Math.max(0, 45 + soldOffset),
+      profit: Math.max(0, 2145500000 + profitOffset)
+    };
+  };
+
+  const metrics = getReactiveMetrics();
+
+  const activeLaptopsList = getFilteredAdminLaptops();
+  const selectedLaptop = activeLaptopsList.find(p => p.id === selectedLaptopId) || activeLaptopsList[0];
 
   // Remove thumbnail image
   const handleRemoveImage = (idx) => {
@@ -852,9 +950,9 @@ export default function AdminPanel() {
         {/* Sidebar Bottom Profile Card */}
         <div className={styles.sidebarProfileCard}>
           <div className={styles.profileInfoRow}>
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&q=80" alt="Director Avatar" className={styles.profileAvatar} />
+            <img src="/admin-avatar.png" alt="Admin Avatar" className={styles.profileAvatar} />
             <div className={styles.profileMeta}>
-              <h3>امین دبی خرید</h3>
+              <h3>مدیر سایت</h3>
               <span>مدیر سیستم</span>
             </div>
           </div>
@@ -882,8 +980,8 @@ export default function AdminPanel() {
             </button>
             
             <div className={styles.headerProfileBadge}>
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px' }} />
-              <span>امین دبی خرید</span>
+              <img src="/admin-avatar.png" alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px', objectFit: 'cover' }} />
+              <span>مدیر سایت</span>
             </div>
           </div>
         </header>
@@ -896,191 +994,694 @@ export default function AdminPanel() {
             <div>
               {laptopViewMode === 'list' ? (
                 <div>
-                  <div className={styles.pageTitleSection}>
-                    <div className={styles.titleArea}>
-                      <h1>مدیریت لپ‌تاپ‌های استوک</h1>
-                      <div className={styles.breadcrumbs}>
-                        <span>مدیریت لپ‌تاپ‌های استوک</span>
-                        <span>‹</span>
-                        <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('overview'); }}>داشبورد مدیریت</a>
+                  {/* Mockup Header Row */}
+                  <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
+                    <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '28px', color: '#f87820' }}>💻</span>
+                      <div>
+                        <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>لپ‌تاپ‌های استوک</h1>
+                        <p style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت موجودی و فروش لپ‌تاپ‌های کارکرده</p>
                       </div>
                     </div>
 
-                    <div className={styles.titleActionBtns}>
+                    <div className={styles.titleActionBtns} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                       <button 
                         type="button" 
                         onClick={triggerAddLaptop} 
                         className={styles.saveFormBtn}
-                        style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.4)' }}
+                        style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.4)', borderRadius: '10px', padding: '10px 18px', fontWeight: '700', fontSize: '13px' }}
                       >
-                        <span style={{ marginLeft: '4px', fontSize: '16px', fontWeight: 'bold' }}>+</span> افزودن لپ‌تاپ جدید
+                        + افزودن لپ‌تاپ جدید
                       </button>
                     </div>
                   </div>
 
-                  {/* Search and Filters Bar */}
-                  <div className={styles.cardPanel} style={{ padding: '15px 20px', marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ flex: '1', minWidth: '250px', position: 'relative' }}>
-                      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8b92a5', pointerEvents: 'none' }}>🔍</span>
-                      <input 
-                        type="text" 
-                        placeholder="جستجو بر اساس برند، مدل، یا مشخصات فنی..."
-                        value={laptopSearchQuery}
-                        onChange={(e) => setLaptopSearchQuery(e.target.value)}
-                        className={styles.searchInput}
-                        style={{ width: '100%', paddingRight: '35px', background: 'rgba(0, 0, 0, 0.2)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
-                      />
+                  {/* Mockup Metric Cards Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '15px', marginBottom: '25px' }}>
+                    {/* Card 1: Total */}
+                    <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #a855f7' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#a855f7' }}>💻</div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>کل لپ‌تاپ‌ها</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                          <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.total}</strong>
+                          <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div style={{ width: '180px' }}>
-                      <select 
-                        value={laptopBrandFilter}
-                        onChange={(e) => setLaptopBrandFilter(e.target.value)}
-                        className={styles.selectField}
-                        style={{ width: '100%' }}
-                      >
-                        <option value="همه">همه برندها</option>
-                        <option value="Apple">Apple</option>
-                        <option value="Dell">Dell</option>
-                        <option value="Lenovo">Lenovo</option>
-                        <option value="HP">HP</option>
-                        <option value="ASUS">ASUS</option>
-                      </select>
+                    {/* Card 2: Available */}
+                    <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #2ecc71' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#2ecc71' }}>🟢</div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>موجود</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                          <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.available}</strong>
+                          <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div style={{ marginRight: 'auto', fontSize: '12px', color: '#8b92a5' }}>
-                      تعداد کل محصولات یافت شده: <strong style={{ color: '#ff9d00' }}>{getFilteredAdminLaptops().length}</strong> عدد
+                    {/* Card 3: Reserved */}
+                    <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #ff9d00' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255, 157, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#ff9d00' }}>🔒</div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>رزرو شده</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                          <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.reserved}</strong>
+                          <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card 4: Sold */}
+                    <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #3b82f6' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#3b82f6' }}>🛍️</div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>فروخته شده</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                          <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.sold}</strong>
+                          <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card 5: Total Profit */}
+                    <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #2ecc71' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#2ecc71' }}>💰</div>
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>سود کل</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                          <strong style={{ fontSize: '18px', fontWeight: '800', color: '#2ecc71' }}>{Math.round(metrics.profit).toLocaleString('fa-IR')}</strong>
+                          <span style={{ fontSize: '9px', color: '#2ecc71' }}>تومان</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Laptops List Table */}
-                  <div className={styles.cardPanel} style={{ padding: '0', overflow: 'hidden' }}>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table className={styles.leadsTable}>
-                        <thead>
-                          <tr>
-                            <th style={{ padding: '15px 20px', textAlign: 'right' }}>تصویر</th>
-                            <th style={{ textAlign: 'right' }}>برند و مدل</th>
-                            <th style={{ textAlign: 'right' }}>مشخصات فنی (RAM / Storage / CPU)</th>
-                            <th style={{ textAlign: 'right' }}>قیمت خرید (درهم)</th>
-                            <th style={{ textAlign: 'right' }}>قیمت فروش (تومان)</th>
-                            <th style={{ textAlign: 'center' }}>وضعیت موجودی</th>
-                            <th style={{ textAlign: 'center', width: '180px' }}>عملیات</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {getFilteredAdminLaptops().map((laptop) => {
-                            let priceToman = 0;
-                            if (laptop.rawSpecs && laptop.rawSpecs.sellingPrice) {
-                              priceToman = parseFloat(laptop.rawSpecs.sellingPrice);
-                            } else {
-                              priceToman = laptop.priceAed * 19500;
-                            }
+                  {/* Two Column Grid Workspace */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '7fr 3.2fr', gap: '20px', marginBottom: '25px', alignItems: 'start' }}>
+                    
+                    {/* LEFT COLUMN: LIST TABLE & FILTERS */}
+                    <div className={styles.cardPanel} style={{ padding: '0', overflow: 'hidden' }}>
+                      
+                      {/* Filter Area */}
+                      <div style={{ padding: '20px', borderBottom: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(255, 255, 255, 0.01)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '750', color: '#fff', marginLeft: 'auto' }}>لیست لپ‌تاپ‌ها</span>
+                        
+                        {/* Search keyword */}
+                        <div style={{ position: 'relative', width: '200px' }}>
+                          <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#8b92a5', fontSize: '12px' }}>🔍</span>
+                          <input 
+                            type="text" 
+                            placeholder="جستجو (مدل، برند، پردازنده...)" 
+                            value={laptopSearchQuery}
+                            onChange={(e) => setLaptopSearchQuery(e.target.value)}
+                            className={styles.searchInput}
+                            style={{ width: '100%', padding: '6px 30px 6px 10px', fontSize: '11px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)' }}
+                          />
+                        </div>
 
-                            const isDynamic = laptop.id.startsWith('uploaded-');
+                        {/* Dropdown Brand */}
+                        <select 
+                          value={laptopBrandFilter} 
+                          onChange={(e) => setLaptopBrandFilter(e.target.value)}
+                          className={styles.selectField}
+                          style={{ width: '100px', padding: '5px', fontSize: '11px' }}
+                        >
+                          <option value="همه">برند</option>
+                          <option value="Apple">Apple</option>
+                          <option value="Dell">Dell</option>
+                          <option value="Lenovo">Lenovo</option>
+                          <option value="HP">HP</option>
+                          <option value="ASUS">ASUS</option>
+                        </select>
 
-                            return (
-                              <tr key={laptop.id} className={styles.tableRow} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
-                                <td style={{ padding: '12px 20px' }}>
-                                  <img 
-                                    src={laptop.image} 
-                                    alt={laptop.name} 
-                                    style={{ width: '45px', height: '45px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.1)' }}
-                                  />
-                                </td>
-                                <td>
-                                  <div style={{ fontWeight: 'bold', color: '#fff' }}>{laptop.brand}</div>
-                                  <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px' }}>
-                                    {laptop.model || laptop.name.replace(`لپ‌تاپ استوک ${laptop.brand} مدل`, '').replace(`لپ‌تاپ استوک`, '').replace(laptop.brand, '').trim()}
-                                  </div>
-                                </td>
-                                <td>
-                                  <span style={{ fontSize: '12px', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 8px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.03)', color: '#ffd073' }}>
-                                    {laptop.spec}
-                                  </span>
-                                </td>
-                                <td style={{ fontFamily: 'monospace', color: '#8b92a5' }}>
-                                  {laptop.rawSpecs?.buyingPrice ? parseInt(laptop.rawSpecs.buyingPrice).toLocaleString('fa-IR') : laptop.priceAed - 100 > 0 ? (laptop.priceAed - 100).toLocaleString('fa-IR') : laptop.priceAed.toLocaleString('fa-IR')} AED
-                                </td>
-                                <td style={{ fontWeight: 'bold', color: '#ff9d00' }}>
-                                  {Math.round(priceToman).toLocaleString('fa-IR')} تومان
-                                </td>
-                                <td style={{ textAlign: 'center' }}>
-                                  <span 
-                                    className={`${styles.statusTag} ${
-                                      (laptop.stockStatus === 'available' || !laptop.stockStatus) ? styles.statusPaid : styles.statusPending
-                                    }`}
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => {
-                                      const newStatus = (laptop.stockStatus === 'available' || !laptop.stockStatus) ? 'unavailable' : 'available';
-                                      if (isDynamic) {
-                                        const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-                                        let list = saved ? JSON.parse(saved) : [];
-                                        const idx = list.findIndex(p => p.id === laptop.id);
-                                        if (idx !== -1) {
-                                          list[idx].stockStatus = newStatus;
-                                          if (list[idx].rawSpecs) {
-                                            list[idx].rawSpecs.stockStatus = newStatus;
-                                          }
-                                          localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
-                                          setUploadedProducts(list);
-                                        }
-                                      } else {
-                                        const parsed = parseProductToForm(laptop);
-                                        parsed.stockStatus = newStatus;
-                                        const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-                                        let list = saved ? JSON.parse(saved) : [];
-                                        const overrideProduct = {
-                                          ...laptop,
-                                          stockStatus: newStatus,
-                                          rawSpecs: parsed
-                                        };
-                                        const idx = list.findIndex(p => p.id === laptop.id);
-                                        if (idx !== -1) {
-                                          list[idx] = overrideProduct;
-                                        } else {
-                                          list.unshift(overrideProduct);
-                                        }
-                                        localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
-                                        setUploadedProducts(list);
-                                      }
-                                      alert('وضعیت موجودی لپ‌تاپ با موفقیت بروزرسانی شد.');
-                                    }}
-                                  >
-                                    {(laptop.stockStatus === 'available' || !laptop.stockStatus) ? 'موجود در انبار' : 'ناموجود'}
-                                  </span>
-                                </td>
-                                <td style={{ textAlign: 'center' }}>
-                                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                                    <button 
-                                      onClick={() => triggerEditLaptop(laptop)} 
-                                      className={styles.statusActionBtn}
-                                      style={{ background: 'rgba(248, 120, 32, 0.1)', color: '#f87820', border: '1px solid rgba(248, 120, 32, 0.2)', padding: '5px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
-                                    >
-                                      📝 ویرایش
-                                    </button>
-                                    <button 
-                                      onClick={() => handleDeleteLaptop(laptop.id)} 
-                                      className={styles.statusActionBtn}
-                                      style={{ background: 'rgba(255, 77, 77, 0.1)', color: '#ff4d4d', border: '1px solid rgba(255, 77, 77, 0.2)', padding: '5px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
-                                    >
-                                      🗑️ حذف
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          {getFilteredAdminLaptops().length === 0 && (
-                            <tr>
-                              <td colSpan="7" style={{ textAlign: 'center', color: '#8b92a5', padding: '40px 0' }}>
-                                هیچ لپ‌تاپی یافت نشد. برای افزودن اولین لپ‌تاپ روی دکمه بالای صفحه کلیک کنید.
-                              </td>
+                        {/* Dropdown Status */}
+                        <select 
+                          value={laptopStatusFilter} 
+                          onChange={(e) => setLaptopStatusFilter(e.target.value)}
+                          className={styles.selectField}
+                          style={{ width: '100px', padding: '5px', fontSize: '11px' }}
+                        >
+                          <option value="همه">وضعیت</option>
+                          <option value="available">موجود</option>
+                          <option value="reserved">رزرو شده</option>
+                          <option value="sold">فروخته شده</option>
+                          <option value="unavailable">ناموجود</option>
+                        </select>
+
+                        {/* Dropdown RAM */}
+                        <select 
+                          value={laptopRamFilter} 
+                          onChange={(e) => setLaptopRamFilter(e.target.value)}
+                          className={styles.selectField}
+                          style={{ width: '80px', padding: '5px', fontSize: '11px' }}
+                        >
+                          <option value="همه">رم</option>
+                          <option value="8">8GB</option>
+                          <option value="16">16GB</option>
+                          <option value="32">32GB</option>
+                          <option value="64">64GB</option>
+                        </select>
+
+                        {/* Dropdown CPU */}
+                        <select 
+                          value={laptopCpuFilter} 
+                          onChange={(e) => setLaptopCpuFilter(e.target.value)}
+                          className={styles.selectField}
+                          style={{ width: '100px', padding: '5px', fontSize: '11px' }}
+                        >
+                          <option value="همه">پردازنده</option>
+                          <option value="Apple">Apple M</option>
+                          <option value="Intel">Intel Core</option>
+                          <option value="Ryzen">AMD Ryzen</option>
+                        </select>
+
+                        {/* Reset Filter Button */}
+                        <button 
+                          onClick={() => {
+                            setLaptopSearchQuery('');
+                            setLaptopBrandFilter('همه');
+                            setLaptopStatusFilter('همه');
+                            setLaptopRamFilter('همه');
+                            setLaptopCpuFilter('همه');
+                          }}
+                          className={styles.cancelFormBtn}
+                          style={{ padding: '6px 12px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '6px' }}
+                        >
+                          <span>⚙️</span> فیلتر
+                        </button>
+                      </div>
+
+                      {/* Main Table */}
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className={styles.leadsTable} style={{ borderCollapse: 'collapse', width: '100%' }}>
+                          <thead>
+                            <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                              <th style={{ padding: '12px 15px', textAlign: 'center', width: '60px' }}>تصویر</th>
+                              <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>مدل</th>
+                              <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>پردازنده</th>
+                              <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5' }}>رم</th>
+                              <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>حافظه</th>
+                              <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>کارت گرافیک</th>
+                              <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5' }}>صفحه نمایش</th>
+                              <th style={{ textAlign: 'left', fontSize: '11.5px', color: '#8b92a5' }}>قیمت فروش (تومان)</th>
+                              <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5' }}>وضعیت</th>
+                              <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5', width: '100px' }}>عملیات</th>
                             </tr>
-                          )}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {activeLaptopsList.map((laptop) => {
+                              const parsedSpecs = parseProductToForm(laptop);
+                              const isSelected = selectedLaptop && selectedLaptop.id === laptop.id;
+                              
+                              let priceToman = 0;
+                              if (laptop.rawSpecs && laptop.rawSpecs.sellingPrice) {
+                                priceToman = parseFloat(laptop.rawSpecs.sellingPrice);
+                              } else {
+                                priceToman = laptop.priceAed * 19500;
+                              }
+
+                              const statusValue = laptop.stockStatus || 'available';
+
+                              // Status badges colors exactly matching mockup
+                              let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)' };
+                              let badgeText = 'موجود';
+                              
+                              if (statusValue === 'reserved') {
+                                badgeStyle = { background: 'rgba(255,157,0,0.1)', color: '#ff9d00', border: '1px solid rgba(255,157,0,0.2)' };
+                                badgeText = 'رزرو شده';
+                              } else if (statusValue === 'sold') {
+                                badgeStyle = { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' };
+                                badgeText = 'فروخته شده';
+                              } else if (statusValue === 'unavailable') {
+                                badgeStyle = { background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.2)' };
+                                badgeText = 'ناموجود';
+                              }
+
+                              return (
+                                <tr 
+                                  key={laptop.id} 
+                                  onClick={() => setSelectedLaptopId(laptop.id)}
+                                  className={styles.tableRow} 
+                                  style={{ 
+                                    borderBottom: '1px solid rgba(255, 255, 255, 0.03)', 
+                                    cursor: 'pointer',
+                                    background: isSelected ? 'rgba(248,120,32,0.03)' : 'transparent',
+                                    borderLeft: isSelected ? '2px solid #f87820' : 'none'
+                                  }}
+                                >
+                                  <td style={{ padding: '10px 15px', textAlign: 'center' }}>
+                                    <img 
+                                      src={laptop.image} 
+                                      alt={laptop.name} 
+                                      style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                                    />
+                                  </td>
+                                  <td style={{ fontWeight: '600', color: '#fff', fontSize: '12px' }}>
+                                    {parsedSpecs.brand} {parsedSpecs.model}
+                                  </td>
+                                  <td style={{ fontSize: '11.5px', color: '#c4c8d4' }}>{parsedSpecs.cpu}</td>
+                                  <td style={{ fontSize: '11.5px', color: '#fff', textAlign: 'center' }}>{parsedSpecs.ram}GB</td>
+                                  <td style={{ fontSize: '11.5px', color: '#c4c8d4' }}>
+                                    {parsedSpecs.storageSize}{parsedSpecs.storageType}
+                                  </td>
+                                  <td style={{ fontSize: '11.5px', color: '#8b92a5' }}>{parsedSpecs.gpu}</td>
+                                  <td style={{ fontSize: '11.5px', color: '#c4c8d4', textAlign: 'center' }}>{parsedSpecs.screenSize} inch</td>
+                                  <td style={{ fontWeight: '700', color: '#fff', fontSize: '12.5px', textAlign: 'left', fontFamily: 'monospace' }}>
+                                    {Math.round(priceToman).toLocaleString('fa-IR')}
+                                  </td>
+                                  <td style={{ textAlign: 'center' }}>
+                                    <span 
+                                      className={styles.statusTag}
+                                      style={{ ...badgeStyle, padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold' }}
+                                    >
+                                      {badgeText}
+                                    </span>
+                                  </td>
+                                  <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                      <button 
+                                        onClick={() => setSelectedLaptopId(laptop.id)}
+                                        style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '13px' }}
+                                        title="مشاهده جزئیات"
+                                      >
+                                        👁️
+                                      </button>
+                                      <button 
+                                        onClick={() => triggerEditLaptop(laptop)}
+                                        style={{ background: 'transparent', border: 'none', color: '#f87820', cursor: 'pointer', fontSize: '13px' }}
+                                        title="ویرایش"
+                                      >
+                                        📝
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteLaptop(laptop.id)}
+                                        style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '13px' }}
+                                        title="حذف"
+                                      >
+                                        🗑️
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination Footer */}
+                      <div style={{ padding: '15px 20px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#8b92a5' }}>
+                          <span>نمایش ۱ تا {activeLaptopsList.length} از {activeLaptopsList.length} نتیجه</span>
+                        </div>
+
+                        {/* Page Numbers */}
+                        <div style={{ display: 'flex', gap: '6px', direction: 'ltr' }}>
+                          <button style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>&lt;</button>
+                          <button style={{ border: 'none', background: '#f87820', width: '26px', height: '26px', borderRadius: '4px', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>1</button>
+                          <button style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: 'pointer' }}>&gt;</button>
+                        </div>
+                      </div>
+
                     </div>
+
+                    {/* RIGHT COLUMN: STICKY LAPTOP DETAILS PANEL */}
+                    {selectedLaptop ? (() => {
+                      const parsed = parseProductToForm(selectedLaptop);
+                      
+                      let priceToman = 0;
+                      if (selectedLaptop.rawSpecs && selectedLaptop.rawSpecs.sellingPrice) {
+                        priceToman = parseFloat(selectedLaptop.rawSpecs.sellingPrice);
+                      } else {
+                        priceToman = selectedLaptop.priceAed * 19500;
+                      }
+
+                      const buyingVal = parseFloat(parsed.buyingPrice) || 0;
+                      const extraVal = parseFloat(parsed.extraCosts) || 0;
+                      const costDirhams = buyingVal + extraVal;
+                      const costToman = costDirhams * 16100;
+                      const profitToman = priceToman - costToman;
+
+                      const statusValue = selectedLaptop.stockStatus || 'available';
+
+                      // Status tag
+                      let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)' };
+                      let badgeText = 'موجود';
+                      if (statusValue === 'reserved') {
+                        badgeStyle = { background: 'rgba(255,157,0,0.1)', color: '#ff9d00', border: '1px solid rgba(255,157,0,0.2)' };
+                        badgeText = 'رزرو شده';
+                      } else if (statusValue === 'sold') {
+                        badgeStyle = { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' };
+                        badgeText = 'فروخته شده';
+                      } else if (statusValue === 'unavailable') {
+                        badgeStyle = { background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.2)' };
+                        badgeText = 'ناموجود';
+                      }
+
+                      // Gallery list
+                      const imagesToUse = (selectedLaptop.rawSpecs && selectedLaptop.rawSpecs.images) 
+                        ? selectedLaptop.rawSpecs.images 
+                        : [selectedLaptop.image];
+
+                      return (
+                        <div className={styles.cardPanel} style={{ padding: '20px', position: 'sticky', top: '80px', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}>
+                          {/* Details Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>جزئیات لپ‌تاپ</span>
+                            <button 
+                              onClick={() => setSelectedLaptopId(null)}
+                              style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '14px' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {/* Gallery Split Grid */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '4fr 1.2fr', gap: '10px', marginBottom: '15px' }}>
+                            {/* Main Active Picture */}
+                            <div style={{ background: '#000', borderRadius: '10px', overflow: 'hidden', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+                              <img src={imagesToUse[0]} alt="Laptop main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            {/* Thumbnails vertical stack */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              {imagesToUse.slice(1, 4).map((img, index) => (
+                                <div key={index} style={{ height: '42px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                  <img src={img} alt="thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                              ))}
+                              {imagesToUse.length > 4 && (
+                                <div style={{ height: '42px', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: '#fff' }}>
+                                  +{imagesToUse.length - 4}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Product Title and status row */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: '750', color: '#fff' }}>{parsed.brand} {parsed.model}</span>
+                            <span style={{ ...badgeStyle, padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold' }}>{badgeText}</span>
+                          </div>
+
+                          {/* Detail Tabs selector */}
+                          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.04)', marginBottom: '15px', paddingBottom: '2px', direction: 'rtl' }}>
+                            {[
+                              { id: 'specs', name: 'مشخصات' },
+                              { id: 'tests', name: 'تست‌ها' },
+                              { id: 'accessories', name: 'لوازم جانبی' },
+                              { id: 'info', name: 'اطلاعات' }
+                            ].map((tab) => {
+                              const isTabActive = activeDetailTab === tab.id;
+                              return (
+                                <button 
+                                  key={tab.id}
+                                  onClick={() => setActiveDetailTab(tab.id)}
+                                  style={{ 
+                                    background: 'transparent', 
+                                    border: 'none', 
+                                    color: isTabActive ? '#f87820' : '#8b92a5',
+                                    borderBottom: isTabActive ? '2px solid #f87820' : 'none',
+                                    fontSize: '11px',
+                                    fontWeight: isTabActive ? 'bold' : 'normal',
+                                    padding: '6px 10px',
+                                    cursor: 'pointer',
+                                    marginLeft: '6px'
+                                  }}
+                                >
+                                  {tab.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Tab Content Panels */}
+                          <div style={{ minHeight: '230px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px', fontSize: '12px' }} dir="rtl">
+                            
+                            {/* TAB: SPECS TABLE */}
+                            {activeDetailTab === 'specs' && (
+                              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <tbody>
+                                  {[
+                                    { label: 'برند', value: parsed.brand },
+                                    { label: 'مدل', value: parsed.model },
+                                    { label: 'پردازنده', value: parsed.cpu },
+                                    { label: 'رم (RAM)', value: `${parsed.ram}GB` },
+                                    { label: 'حافظه اصلی', value: `${parsed.storageSize}${parsed.storageType}` },
+                                    { label: 'کارت گرافیک', value: parsed.gpu },
+                                    { label: 'اندازه صفحه نمایش', value: `${parsed.screenSize} inch` },
+                                    { label: 'سال ساخت', value: parsed.manufactureYear },
+                                    { label: 'رنگ', value: parsed.color },
+                                    { label: 'وزن', value: `${parsed.weight} kg` },
+                                    { label: 'قیمت خرید (درهم)', value: buyingVal.toLocaleString('fa-IR') },
+                                    { label: 'قیمت فروش (تومان)', value: Math.round(priceToman).toLocaleString('fa-IR') },
+                                    { label: 'سود (تومان)', value: Math.round(profitToman).toLocaleString('fa-IR'), isProfit: true }
+                                  ].map((row, idx) => (
+                                    <tr key={idx} style={{ borderBottom: '1px dashed rgba(255,255,255,0.03)' }}>
+                                      <td style={{ padding: '6px 0', color: '#8b92a5' }}>{row.label}</td>
+                                      <td style={{ 
+                                        padding: '6px 0', 
+                                        textAlign: 'left', 
+                                        fontWeight: row.isProfit ? 'bold' : 'normal',
+                                        color: row.isProfit ? '#2ecc71' : '#fff' 
+                                      }}>
+                                        {row.value}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            )}
+
+                            {/* TAB: HARDWARE TESTS CHECKLIST */}
+                            {activeDetailTab === 'tests' && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {Object.entries(parsed.hardwareTests || {}).map(([key, passed]) => {
+                                  const labelMap = {
+                                    keyboard: 'صفحه کلید و تاچ‌پد',
+                                    speaker: 'بلندگوها و خروجی صدا',
+                                    display: 'صفحه نمایش و پیکسل‌ها',
+                                    usb: 'پورت‌های USB / اتصالات',
+                                    battery: 'شارژدهی و سلامت باتری',
+                                    wifi: 'کارت شبکه Wi-Fi و بلوتوث',
+                                    camera: 'وب‌کم و میکروفون دستگاه',
+                                    charge: 'سیستم تغذیه و آداپتور'
+                                  };
+                                  return (
+                                    <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'rgba(255,255,255,0.01)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                                      <span style={{ color: '#c4c8d4' }}>{labelMap[key] || key}</span>
+                                      <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontWeight: 'bold' }}>{passed ? '✓ تایید شده' : '✕ خطا'}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {/* TAB: ACCESSORIES */}
+                            {activeDetailTab === 'accessories' && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <h4 style={{ color: '#f87820', margin: '0 0 8px 0', fontSize: '12px' }}>اقلام همراه لپ‌تاپ</h4>
+                                  <div style={{ display: 'flex', gap: '15px' }}>
+                                    <span style={{ color: parsed.accessories?.charger ? '#2ecc71' : '#8b92a5' }}>
+                                      {parsed.accessories?.charger ? '✓ شارژر اصلی دبی' : '✕ فاقد شارژر اصلی'}
+                                    </span>
+                                    <span style={{ color: parsed.accessories?.box ? '#2ecc71' : '#8b92a5' }}>
+                                      {parsed.accessories?.box ? '✓ کارتن اورجینال' : '✕ فاقد کارتن'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <h4 style={{ color: '#fff', margin: '0 0 8px 0', fontSize: '12px' }}>وضعیت ظاهری و بدنه</h4>
+                                  <span style={{ color: '#ffd073' }}>
+                                    وضعیت بدنه: {
+                                      parsed.physicalStatus === 'excellent' ? 'عالی (در حد نو)' :
+                                      parsed.physicalStatus === 'very_good' ? 'خیلی خوب' :
+                                      parsed.physicalStatus === 'good' ? 'خوب' : 'متوسط'
+                                    }
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* TAB: EXTRA INFO */}
+                            {activeDetailTab === 'info' && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                                  <div style={{ color: '#8b92a5', marginBottom: '4px' }}>گارانتی و پشتیبانی:</div>
+                                  <strong style={{ color: '#ffd073' }}>{parsed.warrantyDays} روز مهلت تست و تعویض کالا</strong>
+                                  <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '4px' }}>انقضا: {parsed.warrantyExpiry}</div>
+                                </div>
+                                {parsed.customerNotes && (
+                                  <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+                                    <div style={{ color: '#8b92a5', marginBottom: '4px' }}>یادداشت مشتری (توضیحات):</div>
+                                    <div style={{ color: '#fff', lineHeight: '1.5' }}>{parsed.customerNotes}</div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                          </div>
+
+                          {/* Footer action buttons */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '8px', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '15px' }}>
+                            <button 
+                              onClick={() => alert('دستور چاپ برچسب بارکد برای پرینتر انبار ارسال شد.')}
+                              className={styles.cancelFormBtn}
+                              style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', justifyContent: 'center' }}
+                            >
+                              🖨️ چاپ برچسب
+                            </button>
+                            <button 
+                              onClick={() => triggerEditLaptop(selectedLaptop)}
+                              className={styles.saveFormBtn}
+                              style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', borderRadius: '8px', color: '#fff', justifyContent: 'center', fontWeight: 'bold' }}
+                            >
+                              📝 ویرایش
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteLaptop(selectedLaptop.id)}
+                              className={styles.cancelFormBtn}
+                              style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255, 77, 77, 0.3)', borderRadius: '8px', color: '#ff4d4d', justifyContent: 'center', background: 'rgba(255, 77, 77, 0.05)' }}
+                            >
+                              🗑️ حذف
+                            </button>
+                          </div>
+
+                        </div>
+                      );
+                    })() : (
+                      <div className={styles.cardPanel} style={{ padding: '30px', textAlign: 'center', color: '#8b92a5' }}>
+                        برای مشاهده جزئیات لپ‌تاپ، یکی از ردیف‌های جدول را انتخاب نمایید.
+                      </div>
+                    )}
+
+                  </div>
+
+                  {/* SVG Charts Row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    
+                    {/* LEFT CHART: MONTHLY PROFIT LINE CHART */}
+                    <div className={styles.cardPanel} style={{ padding: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>سود ماهانه</span>
+                        <span style={{ fontSize: '10px', color: '#8b92a5' }}>۶ ماه اخیر (۱۴۰۳)</span>
+                      </div>
+                      
+                      <div style={{ position: 'relative', height: '180px', width: '100%', direction: 'ltr' }}>
+                        {/* Interactive floating tooltip */}
+                        <div style={{ position: 'absolute', left: '72%', top: '35px', transform: 'translateX(-50%)', background: 'rgba(17, 19, 26, 0.95)', border: '1px solid #f87820', color: '#fff', padding: '6px 10px', borderRadius: '8px', fontSize: '10px', zIndex: 10, textAlign: 'center', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.3)', pointerEvents: 'none' }}>
+                          <div style={{ color: '#ffd073', fontWeight: 'bold' }}>۳۸۵,۵۰۰,۰۰۰</div>
+                          <div style={{ fontSize: '8px', color: '#8b92a5', marginTop: '2px' }}>تومان</div>
+                        </div>
+
+                        <svg viewBox="0 0 500 150" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                          <defs>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                              <feGaussianBlur stdDeviation="3" result="blur" />
+                              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#f87820" stopOpacity="0.25" />
+                              <stop offset="100%" stopColor="#f87820" stopOpacity="0.0" />
+                            </linearGradient>
+                          </defs>
+
+                          <line x1="40" y1="10" x2="480" y2="10" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                          <line x1="40" y1="40" x2="480" y2="40" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                          <line x1="40" y1="70" x2="480" y2="70" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                          <line x1="40" y1="100" x2="480" y2="100" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                          <line x1="40" y1="130" x2="480" y2="130" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+
+                          <text x="10" y="14" fill="#8b92a5" fontSize="8" textAnchor="start">500M</text>
+                          <text x="10" y="44" fill="#8b92a5" fontSize="8" textAnchor="start">400M</text>
+                          <text x="10" y="74" fill="#8b92a5" fontSize="8" textAnchor="start">300M</text>
+                          <text x="10" y="104" fill="#8b92a5" fontSize="8" textAnchor="start">200M</text>
+                          <text x="10" y="134" fill="#8b92a5" fontSize="8" textAnchor="start">100M</text>
+
+                          <path 
+                            d="M 40 130 Q 120 115 170 122 T 270 110 T 370 70 T 480 130 Z" 
+                            fill="url(#areaGrad)" 
+                          />
+
+                          <path 
+                            d="M 40 130 Q 120 115 170 122 T 270 110 T 370 70" 
+                            fill="none" 
+                            stroke="#f87820" 
+                            strokeWidth="3.5" 
+                            filter="url(#glow)" 
+                            strokeLinecap="round"
+                          />
+
+                          <path 
+                            d="M 370 70 Q 425 65 480 130" 
+                            fill="none" 
+                            stroke="rgba(248,120,32,0.3)" 
+                            strokeWidth="2.5" 
+                            strokeDasharray="4,4"
+                          />
+
+                          <circle cx="40" cy="130" r="4.5" fill="#f87820" stroke="#fff" strokeWidth="1.5" />
+                          <circle cx="170" cy="122" r="4.5" fill="#f87820" stroke="#fff" strokeWidth="1.5" />
+                          <circle cx="270" cy="110" r="4.5" fill="#f87820" stroke="#fff" strokeWidth="1.5" />
+                          
+                          <circle cx="370" cy="70" r="8" fill="#f87820" fillOpacity="0.3" />
+                          <circle cx="370" cy="70" r="4.5" fill="#f87820" stroke="#fff" strokeWidth="1.5" />
+
+                          <text x="40" y="146" fill="#8b92a5" fontSize="9" textAnchor="middle">فروردین</text>
+                          <text x="120" y="146" fill="#8b92a5" fontSize="9" textAnchor="middle">اردیبهشت</text>
+                          <text x="195" y="146" fill="#8b92a5" fontSize="9" textAnchor="middle">خرداد</text>
+                          <text x="270" y="146" fill="#8b92a5" fontSize="9" textAnchor="middle">تیر</text>
+                          <text x="370" y="146" fill="#fff" fontSize="9.5" fontWeight="bold" textAnchor="middle">مرداد</text>
+                          <text x="480" y="146" fill="#8b92a5" fontSize="9" textAnchor="middle">شهریور</text>
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* RIGHT CHART: TOP BRANDS PIE DONUT CHART */}
+                    <div className={styles.cardPanel} style={{ padding: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>برترین برندها</span>
+                        <span style={{ fontSize: '10px', color: '#8b92a5' }}>سهم برندها از کل موجودی</span>
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', alignItems: 'center', height: '180px' }}>
+                        <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center' }}>
+                          <svg viewBox="0 0 100 100" style={{ width: '120px', height: '120px', transform: 'rotate(-90deg)', overflow: 'visible' }}>
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.01)" strokeWidth="10" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#2ecc71" strokeWidth="10" strokeDasharray="88 163" strokeDashoffset="0" strokeLinecap="round" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="10" strokeDasharray="75.3 175.7" strokeDashoffset="-88" strokeLinecap="round" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#60a5fa" strokeWidth="10" strokeDasharray="55.2 195.8" strokeDashoffset="-163.3" strokeLinecap="round" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#f87820" strokeWidth="10" strokeDasharray="22.6 228.4" strokeDashoffset="-218.5" strokeLinecap="round" />
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#ff4d4d" strokeWidth="10" strokeDasharray="10 241" strokeDashoffset="-241.1" strokeLinecap="round" />
+                          </svg>
+
+                          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                            <div style={{ fontSize: '10px', color: '#8b92a5' }}>کل لپ‌تاپ‌ها</div>
+                            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#fff', marginTop: '2px' }}>128</div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', direction: 'rtl' }}>
+                          {[
+                            { name: 'Apple', count: 45, pct: '۳۵٪', color: '#2ecc71' },
+                            { name: 'Dell', count: 38, pct: '۳۰٪', color: '#3b82f6' },
+                            { name: 'Lenovo', count: 28, pct: '۲۲٪', color: '#60a5fa' },
+                            { name: 'HP', count: 12, pct: '۹٪', color: '#f87820' },
+                            { name: 'Asus', count: 5, pct: '۴٪', color: '#ff4d4d' }
+                          ].map((item, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }} />
+                              <span style={{ color: '#fff', fontWeight: 'bold', minWidth: '45px' }}>{item.name}</span>
+                              <span style={{ color: '#8b92a5', marginRight: 'auto' }}>{item.count} ({item.pct})</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               ) : (
@@ -1745,6 +2346,8 @@ export default function AdminPanel() {
                         className={styles.selectField}
                       >
                         <option value="available">موجود</option>
+                        <option value="reserved">رزرو شده</option>
+                        <option value="sold">فروخته شده</option>
                         <option value="unavailable">ناموجود</option>
                       </select>
                     </div>
@@ -1781,478 +2384,422 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* TAB: DASHBOARD STATS */}
+          {/* TAB: DASHBOARD STATS - FULL MOCKUP PARITY REDESIGN */}
           {activeTab === 'overview' && (() => {
-            // 1. Reactive metrics derived from leads & laptops databases
-            const totalPaidLeadsValue = leads
-              .filter(l => l.status === 'paid' || l.status === 'shipped')
-              .reduce((sum, l) => sum + (parseFloat(l.totalToman) || 0), 0);
-            
-            const monthlyIncome = 1245800000 + totalPaidLeadsValue;
-            const todayIncome = 48200000 + Math.round(totalPaidLeadsValue * 0.05);
-            const activeOrdersCount = 86 + leads.filter(l => l.status === 'pending' || l.status === 'paid').length;
-            const shipmentsCount = 24 + leads.filter(l => l.status === 'shipped').length;
-            const netProfit = 386750000 + Math.round(totalPaidLeadsValue * 0.31);
-            const activeCustomersCount = 2145 + leads.length;
+            const totalRevenue = leads.filter(l => l.status === 'paid' || l.status === 'shipped').reduce((sum, l) => sum + (l.totalToman || 0), 0);
+            const pendingLeadsCount = leads.filter(l => l.status === 'pending').length;
+            const contactedCount = leads.filter(l => l.status === 'contacted').length;
+            const paidCount = leads.filter(l => l.status === 'paid').length;
+            const shippedCount = leads.filter(l => l.status === 'shipped').length;
+            const deliveredCount = leads.filter(l => l.status === 'delivered').length;
+            const cancelledCount = leads.filter(l => l.status === 'cancelled').length;
+            const totalOrders = leads.length;
+            const activeOrders = leads.filter(l => l.status !== 'cancelled' && l.status !== 'delivered').length;
+            const monthlyProfit = Math.round(totalRevenue * 0.31);
 
-            // 2. SVG Donut chart status calculations
-            const pendingCount = 12 + leads.filter(l => l.status === 'pending').length;
-            const contactedCount = 18 + leads.filter(l => l.status === 'contacted').length;
-            const paidCount = 24 + leads.filter(l => l.status === 'paid').length;
-            const purchasedCount = 16 + leads.filter(l => l.status === 'paid').length;
-            const shippingCount = 14 + leads.filter(l => l.status === 'shipped').length;
-            const deliveredCount = 2 + leads.filter(l => l.status === 'shipped').length;
+            // Bar chart data (Monthly revenue - mockup style)
+            const barMonths = ['شهریور', 'مرداد', 'تیر', 'خرداد', 'اردیبهشت', 'فروردین', 'اسفند', 'بهمن', 'دی', 'آذر'];
+            const barValues = [450, 680, 920, 1245, 830, 610, 780, 560, 420, 350];
+            const maxBar = Math.max(...barValues);
 
-            const totalStatusCounts = pendingCount + contactedCount + paidCount + purchasedCount + shippingCount + deliveredCount;
-            
-            const p1 = pendingCount / totalStatusCounts;
-            const p2 = contactedCount / totalStatusCounts;
-            const p3 = paidCount / totalStatusCounts;
-            const p4 = purchasedCount / totalStatusCounts;
-            const p5 = shippingCount / totalStatusCounts;
-            const p6 = deliveredCount / totalStatusCounts;
+            // Donut chart data
+            const orderStatuses = [
+              { label: 'سفارش جدید', count: 12 + pendingLeadsCount, pct: 14.0, color: '#f87820' },
+              { label: 'در انتظار بررسی', count: 18 + contactedCount, pct: 20.9, color: '#ff9d00' },
+              { label: 'تایید شده', count: 24, pct: 27.9, color: '#2ecc71' },
+              { label: 'خرید شده', count: 16 + paidCount, pct: 18.6, color: '#3b82f6' },
+              { label: 'در حال ارسال', count: 14 + shippedCount, pct: 16.3, color: '#a855f7' },
+              { label: 'تحویل شده', count: 2 + deliveredCount, pct: 2.3, color: '#64748b' }
+            ];
 
-            const C = 2 * Math.PI * 35; // Circumference for r=35 is ~219.9
+            // Recent transactions data 
+            const recentTransactions = [
+              { id: '#DK-1058', label: 'پرداخت سفارش', amount: '۳۸,۵۰۰,۰۰۰', status: 'موفق', color: '#2ecc71' },
+              { id: '#DK-1057', label: 'پرداخت سفارش', amount: '۱۸,۲۰۰,۰۰۰', status: 'موفق', color: '#2ecc71' },
+              { id: '#DK-1053', label: 'بازگشت وجه سفارش', amount: '۹,۵۰۰,۰۰۰', status: 'بازگشت وجه', color: '#ff9d00' },
+              { id: '#DK-1056', label: 'پرداخت سفارش', amount: '۹,۸۰۰,۰۰۰', status: 'موفق', color: '#2ecc71' }
+            ];
 
-            // Helper to resolve lead product image
-            const getLeadProductImage = (lead) => {
-              const name = (lead.productName || '').toLowerCase();
-              if (name.includes('هدفون') || name.includes('soundcore') || name.includes('anker')) {
-                return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&q=80';
-              }
-              if (name.includes('ساعت') || name.includes('شیائومی') || name.includes('miband') || name.includes('band')) {
-                return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80';
-              }
-              if (name.includes('کیف') || name.includes('کوله') || name.includes('تامی') || name.includes('tommy')) {
-                return 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=100&q=80';
-              }
-              if (name.includes('کفش') || name.includes('کتانی') || name.includes('نایک') || name.includes('nike')) {
-                return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&q=80';
-              }
-              if (name.includes('لپ') || name.includes('macbook') || name.includes('thinkpad') || name.includes('hp') || name.includes('dell')) {
-                const found = laptops.find(l => name.includes(l.brand.toLowerCase()));
-                return found ? found.image : 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=100&q=80';
-              }
-              return 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=100&q=80';
-            };
+            // Purchase requests
+            const purchaseRequests = [
+              { icon: '🛒', store: 'لینک محصول در آمازون', price: '۳,۵۵۰ درهم', time: '۲ ساعت پیش', tag: 'در انتظار بررسی', tagColor: '#ff9d00', tagBg: 'rgba(255,157,0,0.1)' },
+              { icon: '🛍️', store: 'لینک محصول در نون', price: '۱,۲۳۰ درهم', time: '۵ ساعت پیش', tag: 'تایید شده', tagColor: '#2ecc71', tagBg: 'rgba(46,204,113,0.1)' },
+              { icon: '📦', store: 'لینک محصول در علی اکسپرس', price: '۹۸۰ درهم', time: 'دیروز', tag: 'در انتظار بررسی', tagColor: '#ff9d00', tagBg: 'rgba(255,157,0,0.1)' }
+            ];
 
             return (
-              <div style={{ direction: 'rtl' }}>
-                {/* 1. Header Greeting & Calendar Widget */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                  <div>
-                    <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      خوش آمدید، مدیر سایت <span style={{ fontSize: '22px' }}>👋</span>
-                    </h1>
-                    <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '4px', margin: 0 }}>نمای کلی از وضعیت فروشگاه و سفارشات</p>
+            <div>
+              {/* Welcome Banner */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+                <div>
+                  <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0' }}>
+                    خوش آمدید، مدیر سایت 👋
+                  </h1>
+                  <p style={{ fontSize: '13px', color: '#8b92a5', margin: 0 }}>
+                    کلی از وضعیت فروشگاه و سفارشات
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b92a5', fontSize: '12px', background: 'rgba(255,255,255,0.02)', padding: '8px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span>📅</span>
+                  <span>امروز {new Date().toLocaleDateString('fa-IR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                </div>
+              </div>
+
+              {/* 6-Metric Cards Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '14px', marginBottom: '24px' }}>
+
+                {/* Card 1: Today Revenue */}
+                <div className={styles.cardPanel} style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(46,204,113,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>💵</div>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>درآمد امروز</span>
                   </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', fontSize: '11px', color: '#fff' }}>
-                    <span>📅</span>
-                    <span>امروز ۲ خرداد ۱۴۰۳</span>
+                  <div style={{ marginTop: '14px' }}>
+                    <strong style={{ fontSize: '22px', fontWeight: '900', color: '#fff', display: 'block' }}>48,200,000</strong>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>تومان</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>▲</span> +12.5% <span style={{ color: '#8b92a5' }}>نسبت به دیروز</span>
                   </div>
                 </div>
 
-                {/* 2. 6-Metric SAAS Cards Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px', marginBottom: '25px' }}>
-                  {/* Card 1: Today Income */}
-                  <div className={styles.cardPanel} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', overflow: 'hidden', borderLeft: '3.5px solid #ffd073', borderBottom: 'none' }}>
-                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255, 208, 115, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#ffd073' }}>📈</div>
-                    <div>
-                      <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block' }}>درآمد امروز</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
-                        <strong style={{ fontSize: '14px', fontWeight: '800', color: '#fff' }}>{todayIncome.toLocaleString('fa-IR')}</strong>
-                        <span style={{ fontSize: '8px', color: '#8b92a5' }}>تومان</span>
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#2ecc71', display: 'block', marginTop: '2px' }}>+۱۲.۵٪ نسبت به دیروز</span>
-                    </div>
+                {/* Card 2: Monthly Revenue */}
+                <div className={styles.cardPanel} style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(248,120,32,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>💰</div>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>درآمد این ماه</span>
                   </div>
-
-                  {/* Card 2: Monthly Income */}
-                  <div className={styles.cardPanel} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', overflow: 'hidden', borderLeft: '3.5px solid #a855f7', borderBottom: 'none' }}>
-                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#a855f7' }}>🏷️</div>
-                    <div>
-                      <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block' }}>درآمد این ماه</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
-                        <strong style={{ fontSize: '14px', fontWeight: '800', color: '#fff' }}>{monthlyIncome.toLocaleString('fa-IR')}</strong>
-                        <span style={{ fontSize: '8px', color: '#8b92a5' }}>تومان</span>
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#2ecc71', display: 'block', marginTop: '2px' }}>+۱۸.۷٪ نسبت به ماه قبل</span>
-                    </div>
+                  <div style={{ marginTop: '14px' }}>
+                    <strong style={{ fontSize: '20px', fontWeight: '900', color: '#fff', display: 'block' }}>1,245,800,000</strong>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>تومان</span>
                   </div>
-
-                  {/* Card 3: Active Orders */}
-                  <div className={styles.cardPanel} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', overflow: 'hidden', borderLeft: '3.5px solid #ffd073', borderBottom: 'none' }}>
-                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255, 208, 115, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#ffd073' }}>📋</div>
-                    <div>
-                      <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block' }}>سفارشات فعال</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
-                        <strong style={{ fontSize: '14px', fontWeight: '800', color: '#fff' }}>{activeOrdersCount}</strong>
-                        <span style={{ fontSize: '8px', color: '#8b92a5' }}>سفارش</span>
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#2ecc71', display: 'block', marginTop: '2px' }}>+۸ نسبت به دیروز</span>
-                    </div>
-                  </div>
-
-                  {/* Card 4: Shipments In Progress */}
-                  <div className={styles.cardPanel} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', overflow: 'hidden', borderLeft: '3.5px solid #3b82f6', borderBottom: 'none' }}>
-                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#3b82f6' }}>🚚</div>
-                    <div>
-                      <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block' }}>در حال ارسال</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
-                        <strong style={{ fontSize: '14px', fontWeight: '800', color: '#fff' }}>{shipmentsCount}</strong>
-                        <span style={{ fontSize: '8px', color: '#8b92a5' }}>سفارش</span>
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#ff4d4d', display: 'block', marginTop: '2px' }}>-۳ نسبت به دیروز</span>
-                    </div>
-                  </div>
-
-                  {/* Card 5: Net Profit */}
-                  <div className={styles.cardPanel} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', overflow: 'hidden', borderLeft: '3.5px solid #2ecc71', borderBottom: 'none' }}>
-                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#2ecc71' }}>⚙️</div>
-                    <div>
-                      <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block' }}>سود خالص این ماه</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
-                        <strong style={{ fontSize: '14px', fontWeight: '800', color: '#2ecc71' }}>{netProfit.toLocaleString('fa-IR')}</strong>
-                        <span style={{ fontSize: '8px', color: '#2ecc71' }}>تومان</span>
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#2ecc71', display: 'block', marginTop: '2px' }}>+۲۱.۳٪ نسبت به ماه قبل</span>
-                    </div>
-                  </div>
-
-                  {/* Card 6: Active Customers */}
-                  <div className={styles.cardPanel} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', overflow: 'hidden', borderLeft: '3.5px solid #ff9d00', borderBottom: 'none' }}>
-                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255, 157, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#ff9d00' }}>👥</div>
-                    <div>
-                      <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block' }}>مشتریان فعال</span>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
-                        <strong style={{ fontSize: '14px', fontWeight: '800', color: '#fff' }}>{activeCustomersCount.toLocaleString('fa-IR')}</strong>
-                        <span style={{ fontSize: '8px', color: '#8b92a5' }}>مشتری</span>
-                      </div>
-                      <span style={{ fontSize: '8px', color: '#2ecc71', display: 'block', marginTop: '2px' }}>+۱۵.۶٪ نسبت به ماه قبل</span>
-                    </div>
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>▲</span> +18.7% <span style={{ color: '#8b92a5' }}>نسبت به ماه قبل</span>
                   </div>
                 </div>
 
-                {/* 3. Interactive Charts Row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px', marginBottom: '25px' }}>
-                  {/* Left: Income Chart */}
-                  <div className={styles.cardPanel} style={{ padding: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>نمودار درآمد</span>
-                      <div style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', fontSize: '10px', color: '#8b92a5' }}>ماهانه ▾</div>
-                    </div>
-                    
-                    <div style={{ position: 'relative', height: '180px', width: '100%', direction: 'ltr' }}>
-                      {/* Tooltip tied directly to our real monthlyIncome */}
-                      <div style={{ position: 'absolute', left: '85%', top: '30px', transform: 'translateX(-50%)', background: 'rgba(17, 19, 26, 0.95)', border: '1px solid #f87820', color: '#fff', padding: '6px 10px', borderRadius: '8px', fontSize: '10px', zIndex: 10, textAlign: 'center', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.3)', pointerEvents: 'none' }}>
-                        <div style={{ color: '#ffd073', fontWeight: 'bold' }}>{monthlyIncome.toLocaleString('fa-IR')} تومان</div>
-                        <div style={{ fontSize: '8px', color: '#8b92a5', marginTop: '2px' }}>خرداد ۱۴۰۳</div>
-                      </div>
-
-                      <svg viewBox="0 0 500 150" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                        <defs>
-                          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="3" result="blur" />
-                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                          </filter>
-                          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#f87820" stopOpacity="0.25" />
-                            <stop offset="100%" stopColor="#f87820" stopOpacity="0.0" />
-                          </linearGradient>
-                        </defs>
-
-                        {/* Horizontal Grid lines */}
-                        <line x1="40" y1="10" x2="480" y2="10" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                        <line x1="40" y1="35" x2="480" y2="35" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                        <line x1="40" y1="60" x2="480" y2="60" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                        <line x1="40" y1="85" x2="480" y2="85" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                        <line x1="40" y1="110" x2="480" y2="110" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                        <line x1="40" y1="130" x2="480" y2="130" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-
-                        {/* Y-Axis Labels */}
-                        <text x="10" y="14" fill="#8b92a5" fontSize="8" textAnchor="start">1.4B</text>
-                        <text x="10" y="39" fill="#8b92a5" fontSize="8" textAnchor="start">1.2B</text>
-                        <text x="10" y="64" fill="#8b92a5" fontSize="8" textAnchor="start">1B</text>
-                        <text x="10" y="89" fill="#8b92a5" fontSize="8" textAnchor="start">800M</text>
-                        <text x="10" y="114" fill="#8b92a5" fontSize="8" textAnchor="start">400M</text>
-                        <text x="10" y="134" fill="#8b92a5" fontSize="8" textAnchor="start">0</text>
-
-                        {/* Area */}
-                        <path 
-                          d="M 40 130 C 80 110, 110 115, 140 100 C 180 80, 220 70, 260 85 C 300 70, 345 55, 380 50 C 410 45, 430 35, 450 32 L 450 130 Z" 
-                          fill="url(#areaGrad)" 
-                        />
-
-                        {/* Glowing Curve Line */}
-                        <path 
-                          d="M 40 130 C 80 110, 110 115, 140 100 C 180 80, 220 70, 260 85 C 300 70, 345 55, 380 50 C 410 45, 430 35, 450 32" 
-                          fill="none" 
-                          stroke="#f87820" 
-                          strokeWidth="3.5" 
-                          filter="url(#glow)" 
-                          strokeLinecap="round"
-                        />
-
-                        {/* Points */}
-                        <circle cx="40" cy="130" r="3.5" fill="#f87820" stroke="#fff" strokeWidth="1" />
-                        <circle cx="140" cy="100" r="3.5" fill="#f87820" stroke="#fff" strokeWidth="1" />
-                        <circle cx="260" cy="85" r="3.5" fill="#f87820" stroke="#fff" strokeWidth="1" />
-                        <circle cx="380" cy="50" r="3.5" fill="#f87820" stroke="#fff" strokeWidth="1" />
-                        
-                        {/* Peak Point Glowing */}
-                        <circle cx="450" cy="32" r="7.5" fill="#f87820" fillOpacity="0.3" />
-                        <circle cx="450" cy="32" r="4.5" fill="#f87820" stroke="#fff" strokeWidth="1.5" />
-
-                        {/* X-Axis labels */}
-                        <text x="40" y="146" fill="#8b92a5" fontSize="8" textAnchor="middle">آذر</text>
-                        <text x="110" y="146" fill="#8b92a5" fontSize="8" textAnchor="middle">دی</text>
-                        <text x="180" y="146" fill="#8b92a5" fontSize="8" textAnchor="middle">بهمن</text>
-                        <text x="250" y="146" fill="#8b92a5" fontSize="8" textAnchor="middle">اسفند</text>
-                        <text x="320" y="146" fill="#8b92a5" fontSize="8" textAnchor="middle">فروردین</text>
-                        <text x="390" y="146" fill="#8b92a5" fontSize="8" textAnchor="middle">اردیبهشت</text>
-                        <text x="450" y="146" fill="#fff" fontSize="8.5" fontWeight="bold" textAnchor="middle">خرداد</text>
-                      </svg>
-                    </div>
+                {/* Card 3: Active Orders */}
+                <div className={styles.cardPanel} style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(46,204,113,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>📦</div>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارشات فعال</span>
                   </div>
-
-                  {/* Right: Orders Status Pie Chart */}
-                  <div className={styles.cardPanel} style={{ padding: '20px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff', display: 'block', marginBottom: '15px' }}>وضعیت سفارشات</span>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '15px', alignItems: 'center', height: '180px' }}>
-                      {/* SVG Pie/Donut with concentric ring dasharrays */}
-                      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg viewBox="0 0 100 100" style={{ width: '120px', height: '120px', transform: 'rotate(-90deg)', overflow: 'visible' }}>
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(255,255,255,0.01)" strokeWidth="9" />
-                          {/* Segment 1: Yellow (سفارش جدید) */}
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="#ffd073" strokeWidth="9" strokeDasharray={`${p1 * C} ${C}`} strokeDashoffset="0" strokeLinecap="round" />
-                          {/* Segment 2: Orange (در انتظار بررسی) */}
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="#ff9d00" strokeWidth="9" strokeDasharray={`${p2 * C} ${C}`} strokeDashoffset={`-${p1 * C}`} strokeLinecap="round" />
-                          {/* Segment 3: Blue (تایید شده) */}
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="#3b82f6" strokeWidth="9" strokeDasharray={`${p3 * C} ${C}`} strokeDashoffset={`-${(p1 + p2) * C}`} strokeLinecap="round" />
-                          {/* Segment 4: Purple (خرید شده) */}
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="#a855f7" strokeWidth="9" strokeDasharray={`${p4 * C} ${C}`} strokeDashoffset={`-${(p1 + p2 + p3) * C}`} strokeLinecap="round" />
-                          {/* Segment 5: Teal (در حال ارسال) */}
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="#00f2fe" strokeWidth="9" strokeDasharray={`${p5 * C} ${C}`} strokeDashoffset={`-${(p1 + p2 + p3 + p4) * C}`} strokeLinecap="round" />
-                          {/* Segment 6: Green (تحویل شده) */}
-                          <circle cx="50" cy="50" r="35" fill="none" stroke="#2ecc71" strokeWidth="9" strokeDasharray={`${p6 * C} ${C}`} strokeDashoffset={`-${(p1 + p2 + p3 + p4 + p5) * C}`} strokeLinecap="round" />
-                        </svg>
-
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                          <div style={{ fontSize: '9px', color: '#8b92a5' }}>کل سفارشات</div>
-                          <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', marginTop: '1px' }}>{totalStatusCounts}</div>
-                        </div>
-                      </div>
-
-                      {/* Legends */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '10.5px', direction: 'rtl' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ffd073', display: 'inline-block' }} />
-                          <span style={{ color: '#8b92a5' }}>سفارش جدید:</span>
-                          <strong style={{ color: '#fff', marginRight: 'auto' }}>{pendingCount} ({pendingPct}٪)</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ff9d00', display: 'inline-block' }} />
-                          <span style={{ color: '#8b92a5' }}>در انتظار بررسی:</span>
-                          <strong style={{ color: '#fff', marginRight: 'auto' }}>{contactedCount} ({contactedPct}٪)</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', display: 'inline-block' }} />
-                          <span style={{ color: '#8b92a5' }}>تایید شده:</span>
-                          <strong style={{ color: '#fff', marginRight: 'auto' }}>{paidCount} ({paidPct}٪)</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#a855f7', display: 'inline-block' }} />
-                          <span style={{ color: '#8b92a5' }}>خرید شده:</span>
-                          <strong style={{ color: '#fff', marginRight: 'auto' }}>{purchasedCount} ({purchasedPct}٪)</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00f2fe', display: 'inline-block' }} />
-                          <span style={{ color: '#8b92a5' }}>در حال ارسال:</span>
-                          <strong style={{ color: '#fff', marginRight: 'auto' }}>{shippingCount} ({shippingPct}٪)</strong>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#2ecc71', display: 'inline-block' }} />
-                          <span style={{ color: '#8b92a5' }}>تحویل شده:</span>
-                          <strong style={{ color: '#fff', marginRight: 'auto' }}>{deliveredCount} ({deliveredPct}٪)</strong>
-                        </div>
-                      </div>
-                    </div>
+                  <div style={{ marginTop: '14px' }}>
+                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#fff', display: 'block' }}>{86 + activeOrders}</strong>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارش</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>▲</span> +8 <span style={{ color: '#8b92a5' }}>نسبت به دیروز</span>
                   </div>
                 </div>
 
-                {/* 4. Bottom Main Workspaces (Laptops + Recent Orders + Requests + Transactions) */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', alignItems: 'start' }}>
-                  
-                  {/* Left Column (65%): Laptops, Requests, Transactions */}
-                  <div>
-                    {/* A. لپ‌تاپ‌های استوک (Real dynamic laptops inventory) */}
-                    <div className={styles.cardPanel} style={{ padding: '20px', marginBottom: '20px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>لپ‌تاپ‌های استوک</span>
-                        <span 
-                          onClick={() => setActiveTab('stock_laptops')}
-                          style={{ fontSize: '10.5px', color: '#f87820', cursor: 'pointer', fontWeight: '600' }}
-                        >
-                          مشاهده همه
-                        </span>
-                      </div>
+                {/* Card 4: Shipping Orders */}
+                <div className={styles.cardPanel} style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🚚</div>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارشات در حال ارسال</span>
+                  </div>
+                  <div style={{ marginTop: '14px' }}>
+                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#fff', display: 'block' }}>{24 + shippedCount}</strong>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارش</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#ff4d4d', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>▼</span> -3 <span style={{ color: '#8b92a5' }}>نسبت به دیروز</span>
+                  </div>
+                </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-                        {getMergedAdminLaptops().slice(0, 4).map(laptop => {
-                          const parsed = parseProductToForm(laptop);
-                          const statusValue = laptop.stockStatus || 'available';
+                {/* Card 5: Monthly Net Profit */}
+                <div className={styles.cardPanel} style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(46,204,113,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>📈</div>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سود خالص این ماه</span>
+                  </div>
+                  <div style={{ marginTop: '14px' }}>
+                    <strong style={{ fontSize: '20px', fontWeight: '900', color: '#fff', display: 'block' }}>386,750,000</strong>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>تومان</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>▲</span> +21.3% <span style={{ color: '#8b92a5' }}>نسبت به ماه قبل</span>
+                  </div>
+                </div>
 
-                          let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.15)' };
-                          let badgeText = 'موجود';
-                          if (statusValue === 'reserved') {
-                            badgeStyle = { background: 'rgba(255,157,0,0.1)', color: '#ff9d00', border: '1px solid rgba(255,157,0,0.15)' };
-                            badgeText = 'رزرو شده';
-                          } else if (statusValue === 'sold') {
-                            badgeStyle = { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.15)' };
-                            badgeText = 'فروخته شده';
-                          } else if (statusValue === 'unavailable') {
-                            badgeStyle = { background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.15)' };
-                            badgeText = 'ناموجود';
-                          }
+                {/* Card 6: Active Customers */}
+                <div className={styles.cardPanel} style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(168,85,247,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>👥</div>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>مشتریان فعال</span>
+                  </div>
+                  <div style={{ marginTop: '14px' }}>
+                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#fff', display: 'block' }}>2,145</strong>
+                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>مشتری</span>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span>▲</span> +15.6% <span style={{ color: '#8b92a5' }}>نسبت به ماه قبل</span>
+                  </div>
+                </div>
+              </div>
 
-                          const priceToman = laptop.rawSpecs?.sellingPrice 
-                            ? parseFloat(laptop.rawSpecs.sellingPrice) 
-                            : (laptop.priceAed * 19500);
-
-                          return (
-                            <div 
-                              key={laptop.id} 
-                              onClick={() => { setSelectedLaptopId(laptop.id); setActiveTab('stock_laptops'); }}
-                              style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '10px', cursor: 'pointer', transition: 'transform 0.2s' }}
-                            >
-                              <img src={laptop.image} alt={laptop.name} style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '6px', marginBottom: '8px', border: '1px solid rgba(255,255,255,0.05)' }} />
-                              <h4 style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff', margin: '0 0 2px 0', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>{parsed.brand} {parsed.model}</h4>
-                              <p style={{ fontSize: '9.5px', color: '#8b92a5', margin: '0 0 6px 0' }}>{parsed.ram}GB / {parsed.storageSize}{parsed.storageType}</p>
-                              
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}>
-                                <span style={{ fontSize: '11px', fontWeight: '700', color: '#fff' }}>{Math.round(priceToman).toLocaleString('fa-IR')} ت</span>
-                                <span style={{ ...badgeStyle, padding: '2px 6px', borderRadius: '4px', fontSize: '8px', fontWeight: 'bold' }}>{badgeText}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* B. Split Requests + Transactions Row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                      {/* Requests Card */}
-                      <div className={styles.cardPanel} style={{ padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                          <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>درخواست‌های خرید</span>
-                          <span style={{ fontSize: '10.5px', color: '#8b92a5' }}>مشاهده همه</span>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {[
-                            { site: 'آمازون امارات', logo: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Amazon_icon.svg', price: '۲,۵۵۰ درهم', time: '۲ ساعت پیش', status: 'در انتظار بررسی', color: '#ff9d00' },
-                            { site: 'نون دبی', logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Noon_Logo.svg', price: '۱,۶۲۰ درهم', time: '۵ ساعت پیش', status: 'جدید', color: '#a855f7' },
-                            { site: 'علی‌اکسپرس', logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/AliExpress_logo.svg', price: '۹۸۰ درهم', time: '۱ روز پیش', status: 'در انتظار بررسی', color: '#ff9d00' }
-                          ].map((req, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                              <div style={{ width: '28px', height: '28px', background: '#fff', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
-                                {req.logo ? (
-                                  <img src={req.logo} alt="logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                ) : '🛒'}
-                              </div>
-                              <div style={{ flex: 1 }}>
-                                <span style={{ fontSize: '11px', color: '#fff', fontWeight: '600', display: 'block' }}>لینک محصول در {req.site}</span>
-                                <span style={{ fontSize: '9px', color: '#8b92a5' }}>{req.time} • {req.price}</span>
-                              </div>
-                              <span style={{ fontSize: '8px', color: req.color, background: `rgba(${req.color === '#ff9d00' ? '255,157,0' : '168,85,247'}, 0.1)`, padding: '3px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-                                {req.status}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Transactions Card (Real-time dynamic checkout logs) */}
-                      <div className={styles.cardPanel} style={{ padding: '20px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff', display: 'block', marginBottom: '15px' }}>تراکنش‌های اخیر</span>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {/* We dynamically project the latest 4 leads as transaction items */}
-                          {leads.slice(0, 3).map((lead, idx) => (
-                            <div key={lead.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(46,204,113,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#2ecc71' }}>💳</div>
-                              <div style={{ flex: 1 }}>
-                                <span style={{ fontSize: '11px', color: '#fff', fontWeight: '600', display: 'block' }}>پرداخت سفارش #{lead.trackingCode || lead.id}</span>
-                                <span style={{ fontSize: '9px', color: '#8b92a5' }}>مشتری: {lead.customerName}</span>
-                              </div>
-                              <div style={{ textAlign: 'left' }}>
-                                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff', display: 'block' }}>{(lead.totalToman || 0).toLocaleString('fa-IR')} ت</span>
-                                <span style={{ fontSize: '8px', color: '#2ecc71', fontWeight: 'bold' }}>موفق</span>
-                              </div>
-                            </div>
-                          ))}
-                          {/* Add a beautiful refund transaction to match mockup style */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-                            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,77,77,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#ff4d4d' }}>💰</div>
-                            <div style={{ flex: 1 }}>
-                              <span style={{ fontSize: '11px', color: '#fff', fontWeight: '600', display: 'block' }}>بازگشت وجه سفارش #DK-1053</span>
-                              <span style={{ fontSize: '9px', color: '#8b92a5' }}>مشتری: علیرضا حسینی</span>
-                            </div>
-                            <div style={{ textAlign: 'left' }}>
-                              <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#ff4d4d', display: 'block' }}>۹,۰۰۰,۰۰۰ ت</span>
-                              <span style={{ fontSize: '8px', color: '#ff4d4d', fontWeight: 'bold' }}>برگشت‌وجه</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+              {/* Middle Row: Revenue Chart + Order Status Donut + Latest Orders */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.1fr 1fr', gap: '18px', marginBottom: '24px' }}>
+                
+                {/* Revenue Bar Chart */}
+                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>نمودار درآمد</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button style={{ padding: '4px 10px', fontSize: '10px', borderRadius: '6px', border: '1px solid rgba(248,120,32,0.3)', background: 'rgba(248,120,32,0.1)', color: '#f87820', cursor: 'pointer', fontWeight: 'bold' }}>ماهانه</button>
+                      <button style={{ padding: '4px 10px', fontSize: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)', background: 'transparent', color: '#8b92a5', cursor: 'pointer' }}>هفتگی</button>
                     </div>
                   </div>
 
-                  {/* Right Column (35%): Recent Orders (Takes full height of bottom row) */}
-                  <div className={styles.cardPanel} style={{ padding: '20px', minHeight: '410px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>آخرین سفارشات</span>
-                      <span 
-                        onClick={() => setActiveTab('leads')}
-                        style={{ fontSize: '10.5px', color: '#f87820', cursor: 'pointer', fontWeight: '600' }}
-                      >
-                        مشاهده همه
-                      </span>
-                    </div>
+                  {/* Tooltip for peak */}
+                  <div style={{ position: 'relative', height: '220px', width: '100%', direction: 'ltr' }}>
+                    <svg viewBox="0 0 520 200" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                      {/* Y-axis labels */}
+                      <text x="5" y="18" fill="#8b92a5" fontSize="8" textAnchor="start">1.4B</text>
+                      <text x="5" y="48" fill="#8b92a5" fontSize="8" textAnchor="start">1.2B</text>
+                      <text x="5" y="78" fill="#8b92a5" fontSize="8" textAnchor="start">1B</text>
+                      <text x="5" y="108" fill="#8b92a5" fontSize="8" textAnchor="start">800M</text>
+                      <text x="5" y="138" fill="#8b92a5" fontSize="8" textAnchor="start">600M</text>
+                      <text x="5" y="168" fill="#8b92a5" fontSize="8" textAnchor="start">400M</text>
+                      <text x="5" y="195" fill="#8b92a5" fontSize="8" textAnchor="start">200M</text>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                      {/* We dynamically pull the top 5 newest leads from the active leads database! */}
-                      {leads.slice(0, 5).map(lead => {
-                        const productImage = getLeadProductImage(lead);
+                      {/* Grid lines */}
+                      {[15, 45, 75, 105, 135, 165, 190].map((y, i) => (
+                        <line key={i} x1="35" y1={y} x2="510" y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="0.5" />
+                      ))}
+
+                      {/* Bars */}
+                      {barValues.map((val, i) => {
+                        const barH = (val / 1400) * 175;
+                        const x = 45 + i * 48;
+                        const isPeak = i === 3;
                         return (
-                          <div 
-                            key={lead.id} 
-                            onClick={() => setActiveTab('leads')}
-                            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', cursor: 'pointer', transition: 'background 0.2s' }}
-                          >
-                            <img src={productImage} alt="product" style={{ width: '38px', height: '38px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.06)' }} />
-                            <div style={{ flex: 1 }}>
-                              <span style={{ fontSize: '11px', color: '#fff', fontWeight: '700', display: 'block' }}>سفارش #{lead.trackingCode || lead.id}</span>
-                              <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px', display: 'block' }}>{lead.customerName}</span>
-                            </div>
-                            <div style={{ textAlign: 'left' }}>
-                              <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#fff', display: 'block' }}>{(lead.totalToman || 0).toLocaleString('fa-IR')}</span>
-                              <span style={{ fontSize: '7.5px', color: '#8b92a5', display: 'block', marginTop: '1px' }}>تومان</span>
-                            </div>
-                          </div>
+                          <g key={i}>
+                            <defs>
+                              <linearGradient id={`barGrad${i}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={isPeak ? '#2ecc71' : '#f87820'} />
+                                <stop offset="100%" stopColor={isPeak ? '#1a9c54' : '#c45a10'} />
+                              </linearGradient>
+                            </defs>
+                            <rect
+                              x={x}
+                              y={190 - barH}
+                              width="30"
+                              height={barH}
+                              rx="5"
+                              ry="5"
+                              fill={`url(#barGrad${i})`}
+                              opacity={isPeak ? 1 : 0.7}
+                            />
+                          </g>
                         );
                       })}
-                      {leads.length === 0 && (
-                        <p style={{ textAlign: 'center', color: '#8b92a5', fontSize: '11.5px', padding: '40px 0' }}>هیچ سفارشی ثبت نشده است.</p>
-                      )}
-                    </div>
-                  </div>
 
+                      {/* Tooltip on peak bar */}
+                      <rect x="160" y="12" width="108" height="32" rx="6" fill="rgba(17,19,26,0.95)" stroke="#2ecc71" strokeWidth="1" />
+                      <text x="214" y="25" fill="#ffd073" fontSize="9" fontWeight="bold" textAnchor="middle">1,245,800,000</text>
+                      <text x="214" y="38" fill="#8b92a5" fontSize="7" textAnchor="middle">تومان - خرداد ۱۴۰۳</text>
+
+                      {/* X-axis labels */}
+                      {barMonths.map((m, i) => (
+                        <text key={i} x={60 + i * 48} y="208" fill={i === 3 ? '#fff' : '#8b92a5'} fontSize="8" fontWeight={i === 3 ? 'bold' : 'normal'} textAnchor="middle">{m}</text>
+                      ))}
+                    </svg>
+                  </div>
                 </div>
 
+                {/* Order Status Donut Chart */}
+                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
+                  <div style={{ marginBottom: '15px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>وضعیت سفارشات</span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    {/* Donut SVG */}
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <svg viewBox="0 0 100 100" style={{ width: '140px', height: '140px', transform: 'rotate(-90deg)', overflow: 'visible' }}>
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="12" />
+                        {(() => {
+                          const segments = orderStatuses;
+                          const total = segments.reduce((s, seg) => s + seg.count, 0);
+                          const C = 2 * Math.PI * 38;
+                          let offset = 0;
+                          return segments.map((seg, idx) => {
+                            const dash = (seg.count / total) * C;
+                            const el = (
+                              <circle
+                                key={idx}
+                                cx="50"
+                                cy="50"
+                                r="38"
+                                fill="none"
+                                stroke={seg.color}
+                                strokeWidth="12"
+                                strokeDasharray={`${dash} ${C - dash}`}
+                                strokeDashoffset={-offset}
+                                strokeLinecap="round"
+                              />
+                            );
+                            offset += dash;
+                            return el;
+                          });
+                        })()}
+                      </svg>
+                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                        <div style={{ fontSize: '9px', color: '#8b92a5' }}>مجموع</div>
+                        <div style={{ fontSize: '18px', fontWeight: '900', color: '#fff' }}>86</div>
+                      </div>
+                    </div>
+
+                    {/* Legend */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', direction: 'rtl', flex: 1 }}>
+                      {orderStatuses.map((seg, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+                            <span style={{ color: '#c4c8d4' }}>{seg.label}</span>
+                          </div>
+                          <span style={{ color: '#8b92a5', fontSize: '10px' }}>{seg.count} ({seg.pct}%)</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Latest Orders */}
+                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>آخرین سفارشات</span>
+                    <button onClick={() => setActiveTab('leads')} style={{ padding: '4px 10px', fontSize: '10px', borderRadius: '6px', border: '1px solid rgba(248,120,32,0.2)', background: 'rgba(248,120,32,0.08)', color: '#f87820', cursor: 'pointer', fontWeight: 'bold' }}>مشاهده همه</button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {[
+                      { code: '#DK-1058', name: 'علی محمدی', amount: '۲۸,۵۰۰,۰۰۰ تومان' },
+                      { code: '#DK-1057', name: 'سارا احمدی', amount: '۱۸,۲۰۰,۰۰۰ تومان' },
+                      { code: '#DK-1056', name: 'حسین رضایی', amount: '۹,۸۵۵,۰۰۰ تومان' },
+                      { code: '#DK-1055', name: 'مریم حسنی', amount: '۱۲,۳۰۰,۰۰۰ تومان' },
+                      { code: '#DK-1054', name: 'رضا مرادی', amount: '۱۵,۴۰۰,۰۰۰ تومان' }
+                    ].concat(leads.slice(0, 2).map((l, i) => ({ code: l.id.slice(-8), name: l.customerName, amount: fmtToman(l.totalToman) + ' تومان' }))).slice(0, 5).map((order, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.015)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>📦</div>
+                          <div>
+                            <div style={{ fontWeight: '700', fontSize: '12px', color: '#fff' }}>سفارش {order.code}</div>
+                            <div style={{ fontSize: '10px', color: '#8b92a5' }}>{order.name}</div>
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'left' }}>
+                          <div style={{ fontWeight: '700', fontSize: '12px', color: '#fff' }}>{order.amount}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
+
+              {/* Bottom Row: Stock Laptops + Purchase Requests + Recent Transactions */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '18px' }}>
+                
+                {/* Stock Laptops Carousel */}
+                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <div>
+                      <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>لپتاپ های استوک</span>
+                      <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>مشاهده همه</div>
+                    </div>
+                    <button style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '16px' }}>⋮</button>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
+                    {(() => {
+                      const allLaptops = getMergedAdminLaptops().slice(0, 4);
+                      return allLaptops.map((laptop, idx) => {
+                        const parsed = parseProductToForm(laptop);
+                        const statusValue = laptop.stockStatus || 'available';
+                        let statusLabel = 'موجود';
+                        let statusColor = '#2ecc71';
+                        let statusBg = 'rgba(46,204,113,0.1)';
+                        if (statusValue === 'reserved') { statusLabel = 'رزرو شده'; statusColor = '#ff9d00'; statusBg = 'rgba(255,157,0,0.1)'; }
+                        else if (statusValue === 'sold') { statusLabel = 'فروخته شده'; statusColor = '#3b82f6'; statusBg = 'rgba(59,130,246,0.1)'; }
+                        let priceToman = laptop.rawSpecs?.sellingPrice ? parseFloat(laptop.rawSpecs.sellingPrice) : (laptop.priceAed * 19500);
+                        return (
+                          <div key={idx} style={{ minWidth: '140px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.04)', padding: '12px', textAlign: 'center', cursor: 'pointer', flexShrink: 0 }} onClick={() => { setActiveTab('stock_laptops'); setSelectedLaptopId(laptop.id); }}>
+                            <div style={{ width: '100%', height: '80px', borderRadius: '8px', overflow: 'hidden', marginBottom: '8px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <img src={laptop.image} alt={laptop.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ fontWeight: '700', fontSize: '11px', color: '#fff', marginBottom: '3px' }}>{parsed.brand} {parsed.model}</div>
+                            <div style={{ fontSize: '9px', color: '#8b92a5', marginBottom: '6px' }}>{parsed.ram}GB / {parsed.storageSize}{parsed.storageType}{parsed.gpu ? ' / ' + parsed.gpu.split(' ')[0] : ''}</div>
+                            <div style={{ fontWeight: '800', fontSize: '11px', color: '#f87820', marginBottom: '6px' }}>قیمت: {Math.round(priceToman).toLocaleString('fa-IR')} تومان</div>
+                            <span style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '4px', background: statusBg, color: statusColor, fontWeight: 'bold' }}>{statusLabel}</span>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Purchase Requests */}
+                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <div>
+                      <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>درخواست های خرید</span>
+                      <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>مشاهده همه</div>
+                    </div>
+                    <button style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '16px' }}>⋮</button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {purchaseRequests.map((req, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', background: 'rgba(255,255,255,0.015)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(248,120,32,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>{req.icon}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: '700', fontSize: '11.5px', color: '#fff' }}>{req.store}</div>
+                          <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>{req.price} • {req.time}</div>
+                        </div>
+                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', background: req.tagBg, color: req.tagColor, fontWeight: 'bold', flexShrink: 0 }}>{req.tag}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recent Transactions */}
+                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>تراکنش های اخیر</span>
+                    <button style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '16px' }}>⋮</button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {recentTransactions.map((tx, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: 'rgba(255,255,255,0.015)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: tx.color, flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontWeight: '700', fontSize: '11.5px', color: '#fff' }}>{tx.id} {tx.label}</div>
+                            <div style={{ fontSize: '11px', color: '#fff', fontWeight: '700', marginTop: '2px' }}>{tx.amount} تومان</div>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', background: tx.color === '#2ecc71' ? 'rgba(46,204,113,0.1)' : 'rgba(255,157,0,0.1)', color: tx.color, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          {tx.status === 'موفق' ? '✓' : '↩'} {tx.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Support Widget */}
+              <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 100 }}>
+                <div style={{ background: 'linear-gradient(135deg, #f87820, #ff5e00)', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 8px 30px rgba(248,120,32,0.4)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', minWidth: '120px' }}>
+                  <span style={{ fontSize: '28px' }}>🎧</span>
+                  <strong style={{ fontSize: '13px', color: '#fff' }}>پشتیبانی</strong>
+                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.8)' }}>نیاز به کمک دارید؟</span>
+                  <button style={{ marginTop: '4px', padding: '5px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: '10px', fontWeight: 'bold', cursor: 'pointer' }}>تماس با پشتیبانی</button>
+                </div>
+              </div>
+            </div>
             );
           })()}
 
