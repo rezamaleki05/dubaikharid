@@ -846,3 +846,69 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Unified storage input and select merged styles */
+.unifiedStorageGroup {
+  display: flex;
+  align-items: center;
+  background-color: var(--admin-input-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
+}
+
+.unifiedStorageGroup:focus-within {
+  border-color: rgba(248, 120, 32, 0.4);
+  background-color: #1b1e28;
+  box-shadow: 0 0 10px rgba(248, 120, 32, 0.1);
+}
+
+.unifiedStorageInput {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--admin-white) !important;
+  padding: 11px 14px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  flex: 1.2 !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  width: auto !important;
+  font-family: inherit;
+}
+
+.unifiedStorageSeparator {
+  width: 1px;
+  height: 24px;
+  background-color: var(--admin-border);
+  align-self: center;
+}
+
+.unifiedStorageSelect {
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: var(--admin-white) !important;
+  padding: 11px 32px 11px 12px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  width: auto !important;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b92a5' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+}
+
+.unifiedStorageSelect option {
+  background: var(--admin-card-bg);
+  color: var(--admin-white);
+}

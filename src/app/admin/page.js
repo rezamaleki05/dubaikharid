@@ -800,23 +800,22 @@ export default function AdminPanel() {
 
                       <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
                         <label>حافظه داخلی اصلی <span className={styles.requiredStar}>*</span></label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className={styles.unifiedStorageGroup}>
                           <input 
                             type="number" 
                             value={laptopForm.storageSize} 
                             onChange={(e) => setLaptopForm(prev => ({ ...prev, storageSize: e.target.value }))}
                             min="1"
                             max="8192"
-                            placeholder="مقدار عددی..."
-                            className={styles.inputField}
-                            style={{ flex: 1 }}
+                            placeholder="مثال: 256"
+                            className={styles.unifiedStorageInput}
                             required
                           />
+                          <div className={styles.unifiedStorageSeparator}></div>
                           <select 
                             value={laptopForm.storageType} 
                             onChange={(e) => setLaptopForm(prev => ({ ...prev, storageType: e.target.value }))}
-                            className={styles.selectField}
-                            style={{ flex: 1 }}
+                            className={styles.unifiedStorageSelect}
                           >
                             <option value="GB SSD">GB SSD</option>
                             <option value="TB SSD">TB SSD</option>
@@ -828,22 +827,21 @@ export default function AdminPanel() {
 
                       <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
                         <label>حافظه داخلی دوم (اختیاری)</label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className={styles.unifiedStorageGroup}>
                           <input 
                             type="number" 
                             value={laptopForm.storage2Size} 
                             onChange={(e) => setLaptopForm(prev => ({ ...prev, storage2Size: e.target.value }))}
                             min="0"
                             max="8192"
-                            placeholder="مقدار عددی..."
-                            className={styles.inputField}
-                            style={{ flex: 1 }}
+                            placeholder="مثال: 1"
+                            className={styles.unifiedStorageInput}
                           />
+                          <div className={styles.unifiedStorageSeparator}></div>
                           <select 
                             value={laptopForm.storage2Type} 
                             onChange={(e) => setLaptopForm(prev => ({ ...prev, storage2Type: e.target.value }))}
-                            className={styles.selectField}
-                            style={{ flex: 1 }}
+                            className={styles.unifiedStorageSelect}
                           >
                             <option value="none">بدون حافظه دوم</option>
                             <option value="GB SSD">GB SSD</option>
