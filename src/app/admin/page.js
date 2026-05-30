@@ -103,6 +103,12 @@ export default function AdminPanel() {
   const [customGpu, setCustomGpu] = useState('');
   const [showCustomGpuInput, setShowCustomGpuInput] = useState(false);
 
+  const [colorOptions, setColorOptions] = useState([
+    'Space Gray', 'Silver', 'Midnight', 'Starlight', 'مشکی', 'سفید', 'طوسی', 'کرم'
+  ]);
+  const [customColor, setCustomColor] = useState('');
+  const [showCustomColorInput, setShowCustomColorInput] = useState(false);
+
   const handleBrandChange = (newBrand) => {
     setShowCustomModelInput(false);
     setCustomModel('');
@@ -932,15 +938,50 @@ export default function AdminPanel() {
                       <div className={styles.formGroup}>
                         <label>رنگ</label>
                         <select 
-                          value={laptopForm.color} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, color: e.target.value }))}
+                          value={showCustomColorInput ? "+custom" : laptopForm.color} 
+                          onChange={(e) => {
+                            if (e.target.value === "+custom") {
+                              setShowCustomColorInput(true);
+                              setLaptopForm(prev => ({ ...prev, color: '' }));
+                            } else {
+                              setShowCustomColorInput(false);
+                              setLaptopForm(prev => ({ ...prev, color: e.target.value }));
+                            }
+                          }}
                           className={styles.selectField}
                         >
-                          <option value="Space Gray">⚫ Space Gray</option>
-                          <option value="Silver">⚪ Silver</option>
-                          <option value="Midnight">🔵 Midnight</option>
-                          <option value="Starlight">🟡 Starlight</option>
+                          {colorOptions.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                          <option value="+custom">+ افزودن رنگ جدید...</option>
                         </select>
+                        {showCustomColorInput && (
+                          <input 
+                            type="text" 
+                            value={customColor}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomColor(val);
+                              setLaptopForm(prev => ({ ...prev, color: val }));
+                            }}
+                            onBlur={() => {
+                              if (customColor.trim()) {
+                                const trimmed = customColor.trim();
+                                setColorOptions(prev => {
+                                  if (!prev.includes(trimmed)) {
+                                    return [...prev, trimmed];
+                                  }
+                                  return prev;
+                                });
+                              }
+                            }}
+                            placeholder="تایپ رنگ جدید..."
+                            className={styles.inputField}
+                            style={{ marginTop: '8px' }}
+                            autoFocus
+                            required
+                          />
+                        )}
                       </div>
 
                       <div className={styles.formGroup}>
