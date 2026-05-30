@@ -55,6 +55,59 @@ export default function ProductPage({ params }) {
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
 
+  // Extract uploader or static technical specs
+  const getLaptopSpecs = (prod) => {
+    if (!prod) return null;
+    if (prod.rawSpecs) {
+      const rs = prod.rawSpecs;
+      let storageCombined = `${rs.storageSize}${rs.storageType}`;
+      if (rs.storage2Type !== 'none' && parseFloat(rs.storage2Size) > 0) {
+        storageCombined += ` + ${rs.storage2Size}${rs.storage2Type}`;
+      }
+      return {
+        model: rs.model,
+        cpu: rs.cpu,
+        ram: `${rs.ram}GB`,
+        storage: storageCombined,
+        gpu: rs.gpu,
+        screenSize: `${rs.screenSize} اینچ`,
+        batteryHealth: rs.batteryHealth ? `${rs.batteryHealth}%` : null,
+        physicalStatus: rs.physicalStatus === 'excellent' ? 'عالی (در حد نو)' :
+                        rs.physicalStatus === 'very_good' ? 'خیلی خوب' :
+                        rs.physicalStatus === 'good' ? 'خوب' : 'متوسط',
+        serial: rs.serial && rs.serial !== 'نامشخص' ? rs.serial : null,
+        warranty: rs.warrantyDays ? `${rs.warrantyDays} روز مهلت تست و گارانتی` : null,
+        accessories: rs.accessories ? Object.entries(rs.accessories)
+          .filter(([_, checked]) => checked)
+          .map(([key]) => key === 'charger' ? 'شارژر اصلی' : 'کارتن اصلی')
+          .join(' + ') : null,
+        tests: rs.hardwareTests ? rs.hardwareTests : null
+      };
+    }
+    
+    // Fallback for static laptops
+    if (prod.model || prod.id.startsWith('lap') || prod.category === 'electronics') {
+      return {
+        model: prod.model || 'M2 2022',
+        cpu: prod.cpu || 'Apple M2',
+        ram: prod.ram || '8GB',
+        storage: prod.storage || '256GB SSD',
+        gpu: prod.gpu || 'Apple GPU 8-Core',
+        screenSize: prod.screenSize || '13.6 اینچ',
+        batteryHealth: '92%',
+        physicalStatus: 'عالی (در حد نو)',
+        serial: null,
+        warranty: '30 روز مهلت تست و تعویض',
+        accessories: 'شارژر اصلی دبی',
+        tests: { keyboard: true, speaker: true, display: true, usb: true, battery: true, wifi: true, camera: true, charge: true }
+      };
+    }
+
+    return null;
+  };
+
+  const laptopSpecs = (product && (product.category === 'electronics' || product.id.startsWith('lap') || product.id.startsWith('uploaded'))) ? getLaptopSpecs(product) : null;
+
   useEffect(() => {
     let found = null;
     
@@ -161,31 +214,31 @@ export default function ProductPage({ params }) {
             <h1 className={styles.productName}>{product.name}</h1>
             
             {/* dynamic Specs */}
-            {product.model ? (
+            {laptopSpecs ? (
               <div className={styles.specsGrid}>
                 <div className={styles.specItem}>
                   <span className={styles.specLabel}>مدل:</span>
-                  <span className={styles.specValue}>{product.model}</span>
+                  <span className={styles.specValue}>{laptopSpecs.model}</span>
                 </div>
                 <div className={styles.specItem}>
                   <span className={styles.specLabel}>پردازنده (CPU):</span>
-                  <span className={styles.specValue}>{product.cpu}</span>
+                  <span className={styles.specValue}>{laptopSpecs.cpu}</span>
                 </div>
                 <div className={styles.specItem}>
                   <span className={styles.specLabel}>رم (RAM):</span>
-                  <span className={styles.specValue}>{product.ram}</span>
+                  <span className={styles.specValue}>{laptopSpecs.ram}</span>
                 </div>
                 <div className={styles.specItem}>
-                  <span className={styles.specLabel}>حافظه:</span>
-                  <span className={styles.specValue}>{product.storage}</span>
+                  <span className={styles.specLabel}>حافظه داخلی:</span>
+                  <span className={styles.specValue}>{laptopSpecs.storage}</span>
                 </div>
                 <div className={styles.specItem}>
-                  <span className={styles.specLabel}>گرافیک (GPU):</span>
-                  <span className={styles.specValue}>{product.gpu}</span>
+                  <span className={styles.specLabel}>کارت گرافیک (GPU):</span>
+                  <span className={styles.specValue}>{laptopSpecs.gpu}</span>
                 </div>
                 <div className={styles.specItem}>
                   <span className={styles.specLabel}>اندازه صفحه:</span>
-                  <span className={styles.specValue}>{product.screenSize}</span>
+                  <span className={styles.specValue}>{laptopSpecs.screenSize}</span>
                 </div>
               </div>
             ) : (
@@ -294,6 +347,81 @@ export default function ProductPage({ params }) {
             </div>
           </div>
         </div>
+
+        {/* Structured Specifications & Tests Dashboard */}
+        {laptopSpecs && (
+          <div className={styles.technicalPanel} dir="rtl" style={{ marginBottom: '30px' }}>
+            <h2 className={styles.technicalTitle}>📋 وضعیت سلامت فیزیکی و تست‌های سخت‌افزاری</h2>
+            
+            <div className={styles.technicalGrid}>
+              
+              {/* Left Column: Health and Warranty Stats */}
+              <div className={styles.techCard}>
+                <h3>⚙️ اصالت و سلامت فنی دستگاه</h3>
+                <ul className={styles.techList}>
+                  <li>
+                    <span>سلامت باتری:</span>
+                    <strong style={{ color: '#2ecc71' }}>{laptopSpecs.batteryHealth || 'نامشخص'}</strong>
+                  </li>
+                  <li>
+                    <span>وضعیت ظاهری:</span>
+                    <strong style={{ color: '#ff9d00' }}>{laptopSpecs.physicalStatus || 'عالی'}</strong>
+                  </li>
+                  {laptopSpecs.warranty && (
+                    <li>
+                      <span>ضمانت و گارانتی:</span>
+                      <strong style={{ color: '#ffd073' }}>{laptopSpecs.warranty}</strong>
+                    </li>
+                  )}
+                  {laptopSpecs.accessories && (
+                    <li>
+                      <span>اقلام همراه لپ‌تاپ:</span>
+                      <strong style={{ color: '#fff' }}>{laptopSpecs.accessories}</strong>
+                    </li>
+                  )}
+                  {laptopSpecs.serial && (
+                    <li>
+                      <span>شماره سریال (S/N):</span>
+                      <span style={{ fontFamily: 'monospace', color: '#8b92a5', fontSize: '12px' }}>{laptopSpecs.serial}</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              {/* Right Column: Hardware Checklist Tests */}
+              {laptopSpecs.tests && (
+                <div className={styles.techCard}>
+                  <h3>🔍 چک‌لیست تست‌های سخت‌افزاری (پاس شده)</h3>
+                  <div className={styles.checklistGrid}>
+                    {Object.entries(laptopSpecs.tests).map(([testKey, passed]) => {
+                      const testLabels = {
+                        keyboard: 'تست کیبورد و تاچ‌پد',
+                        speaker: 'تست اسپیکر و خروجی صدا',
+                        display: 'تست صفحه نمایش و پیکسل',
+                        usb: 'تست پورت‌های USB/Type-C',
+                        battery: 'تست شارژدهی باتری',
+                        wifi: 'تست اتصال Wi-Fi و بلوتوث',
+                        camera: 'تست وب‌کم و میکروفون',
+                        charge: 'تست اتصال شارژر و آداپتور'
+                      };
+                      return (
+                        <div key={testKey} className={styles.checkItem}>
+                          <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontSize: '16px', marginLeft: '6px' }}>
+                            {passed ? '✓' : '✕'}
+                          </span>
+                          <span style={{ color: passed ? '#fff' : '#8b92a5', fontSize: '13px' }}>
+                            {testLabels[testKey] || testKey}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
 
         {/* Customer Reviews Section */}
         <ReviewsSection productId={product.id} productName={product.name} />
