@@ -21,13 +21,29 @@ function BestSellersContent() {
 
   useEffect(() => {
     let merged = getAllProducts();
+    
+    // 1. Filter out deleted static laptops
+    try {
+      const deletedSaved = localStorage.getItem('dubaiKharidDeletedStaticLaptops');
+      if (deletedSaved) {
+        const deletedIds = JSON.parse(deletedSaved);
+        merged = merged.filter(p => !deletedIds.includes(p.id));
+      }
+    } catch (e) {
+      console.error('Error loading deleted static laptops:', e);
+    }
+
+    // 2. Load dynamic uploads & apply overrides
     try {
       const saved = localStorage.getItem('dubaiKharidUploadedProducts');
       if (saved) {
         const uploaded = JSON.parse(saved);
         uploaded.forEach(p => {
-          if (!merged.some(m => m.id === p.id)) {
-            merged.unshift(p);
+          const index = merged.findIndex(m => m.id === p.id);
+          if (index !== -1) {
+            merged[index] = p; // Apply edit override
+          } else {
+            merged.unshift(p); // Prepend new upload
           }
         });
       }

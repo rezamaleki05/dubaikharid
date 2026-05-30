@@ -56,8 +56,27 @@ export default function ProductPage({ params }) {
   const [warningMessage, setWarningMessage] = useState('');
 
   useEffect(() => {
-    let found = getProductById(id);
-    if (!found && typeof window !== 'undefined') {
+    let found = null;
+    
+    // Check deleted static items first
+    if (typeof window !== 'undefined') {
+      try {
+        const deletedSaved = localStorage.getItem('dubaiKharidDeletedStaticLaptops');
+        if (deletedSaved) {
+          const deletedIds = JSON.parse(deletedSaved);
+          if (deletedIds.includes(id)) {
+            setProduct(null);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Check localStorage overrides next
+    if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('dubaiKharidUploadedProducts');
         if (saved) {
@@ -65,9 +84,15 @@ export default function ProductPage({ params }) {
           found = list.find(p => p.id === id);
         }
       } catch (e) {
-        console.error('Error fetching dynamic product by id:', e);
+        console.error('Error fetching dynamic product override:', e);
       }
     }
+
+    // Fallback to static lists
+    if (!found) {
+      found = getProductById(id);
+    }
+
     setProduct(found || null);
     setLoading(false);
   }, [id]);

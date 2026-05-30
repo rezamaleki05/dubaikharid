@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getAllProducts } from '@/data/products';
+import { getAllProducts, laptops } from '@/data/products';
 import styles from './Admin.module.css';
 
 // Default initial orders/leads seed
@@ -120,6 +120,157 @@ export default function AdminPanel() {
     }));
   };
 
+  // Laptop Dashboard Management States
+  const [laptopViewMode, setLaptopViewMode] = useState('list'); // 'list' | 'add' | 'edit'
+  const [editingLaptopId, setEditingLaptopId] = useState(null);
+  const [laptopSearchQuery, setLaptopSearchQuery] = useState('');
+  const [laptopBrandFilter, setLaptopBrandFilter] = useState('همه');
+  const [deletedStaticIds, setDeletedStaticIds] = useState([]);
+
+  // Reset form states back to initial uploader mockup values
+  const resetLaptopForm = () => {
+    setLaptopForm({
+      brand: 'Apple',
+      model: 'MacBook Air M2',
+      serial: 'C02JQ0XFL7',
+      cpu: 'Apple M2',
+      ram: '8',
+      storageSize: '256',
+      storageType: 'GB SSD',
+      storage2Size: '0',
+      storage2Type: 'none',
+      gpu: 'Apple GPU 8-Core',
+      screenSize: '13.6',
+      manufactureYear: '2022',
+      color: 'Space Gray',
+      batteryHealth: '92',
+      weight: '1.24',
+      buyingPrice: '2400',
+      extraCosts: '100',
+      sellingPrice: '48500000',
+      internalNotes: '',
+      customerNotes: '',
+      hardwareTests: {
+        keyboard: true,
+        speaker: true,
+        display: true,
+        usb: true,
+        battery: true,
+        wifi: true,
+        camera: true,
+        charge: true
+      },
+      accessories: {
+        charger: true,
+        box: true
+      },
+      physicalStatus: 'excellent',
+      stockStatus: 'available',
+      dateEntered: '1403/03/20',
+      internalSku: 'MAC-AIR-M2-256-001',
+      warrantyDays: '30',
+      warrantyExpiry: '1403/04/20',
+      lastService: '1403/03/15',
+      nextService: '1403/06/15'
+    });
+    setLaptopImages([
+      'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=450&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=450&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=450&q=85&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1525373612132-b3e8246f77c5?w=450&q=85&auto=format&fit=crop'
+    ]);
+    setShowCustomModelInput(false);
+    setShowCustomCpuInput(false);
+    setShowCustomGpuInput(false);
+    setShowCustomColorInput(false);
+    setCustomModel('');
+    setCustomCpu('');
+    setCustomGpu('');
+    setCustomColor('');
+  };
+
+  // Dynamically parses any static or dynamic product back into a laptopForm schema
+  const parseProductToForm = (product) => {
+    if (product.rawSpecs) {
+      return { ...product.rawSpecs };
+    }
+    
+    let ramVal = '8';
+    let storageSizeVal = '256';
+    let storageTypeVal = 'GB SSD';
+    let cpuVal = product.cpu || 'Intel Core i5';
+    
+    if (product.spec) {
+      const parts = product.spec.split('/');
+      if (parts[0]) {
+        ramVal = parts[0].replace(/[^0-9]/g, '').trim();
+      }
+      if (parts[1]) {
+        const s = parts[1].trim();
+        storageSizeVal = s.replace(/[^0-9]/g, '').trim();
+        if (s.includes('TB')) {
+          storageTypeVal = s.includes('HDD') ? 'TB HDD' : 'TB SSD';
+        } else {
+          storageTypeVal = s.includes('HDD') ? 'GB HDD' : 'GB SSD';
+        }
+      }
+      if (parts[2]) {
+        cpuVal = parts[2].trim();
+      }
+    }
+
+    const cleanScreenSize = product.screenSize || (product.sizes?.[0] ? product.sizes[0].replace(/[^0-9.]/g, '').trim() : '13.6');
+    const cleanWeight = product.weight ? String(product.weight) : '1.24';
+    
+    const cleanBuying = String(product.priceAed - 100 > 0 ? product.priceAed - 100 : product.priceAed);
+    const cleanSelling = String(product.priceAed * 19500);
+
+    return {
+      brand: product.brand || 'Apple',
+      model: product.model || product.name.replace(`لپ‌تاپ استوک ${product.brand} مدل`, '').replace(`لپ‌تاپ استوک`, '').replace(product.brand, '').trim(),
+      serial: product.serial || 'نامشخص',
+      cpu: cpuVal,
+      ram: ramVal || '8',
+      storageSize: storageSizeVal || '256',
+      storageType: storageTypeVal || 'GB SSD',
+      storage2Size: '0',
+      storage2Type: 'none',
+      gpu: product.gpu || 'Intel Iris Xe',
+      screenSize: cleanScreenSize || '13.6',
+      manufactureYear: product.manufactureYear || '2022',
+      color: product.colors?.[0] || (product.color ? product.color : 'Space Gray'),
+      batteryHealth: product.batteryHealth || '92',
+      weight: cleanWeight,
+      buyingPrice: cleanBuying,
+      extraCosts: '100',
+      sellingPrice: cleanSelling,
+      internalNotes: '',
+      customerNotes: product.description || '',
+      hardwareTests: {
+        keyboard: true,
+        speaker: true,
+        display: true,
+        usb: true,
+        battery: true,
+        wifi: true,
+        camera: true,
+        charge: true
+      },
+      accessories: {
+        charger: true,
+        box: true
+      },
+      physicalStatus: 'excellent',
+      stockStatus: product.stockStatus || 'available',
+      dateEntered: '1403/03/20',
+      internalSku: `LAP-${(product.brand || 'GEN').toUpperCase()}-${Date.now().toString().slice(-4)}`,
+      warrantyDays: '30',
+      warrantyExpiry: '1403/04/20',
+      lastService: '1403/03/15',
+      nextService: '1403/06/15'
+    };
+  };
+
   // Expanded lead row ID (Accordion)
   const [expandedLeadId, setExpandedLeadId] = useState(null);
 
@@ -215,10 +366,19 @@ export default function AdminPanel() {
       setUploadedProducts(JSON.parse(savedUploaded));
     }
 
+    // Load deleted static laptop IDs
+    let deletedCount = 0;
+    const savedDeletedStatic = localStorage.getItem('dubaiKharidDeletedStaticLaptops');
+    if (savedDeletedStatic) {
+      const parsedDeleted = JSON.parse(savedDeletedStatic);
+      setDeletedStaticIds(parsedDeleted);
+      deletedCount = parsedDeleted.length;
+    }
+
     // Calculate total catalog count
     const staticProds = getAllProducts();
     const dynamicCount = savedUploaded ? JSON.parse(savedUploaded).length : 0;
-    setAllProductsCount(staticProds.length + dynamicCount);
+    setAllProductsCount(staticProds.length + dynamicCount - deletedCount);
   }, [isLoggedIn]);
 
   // Password strength evaluator
@@ -291,9 +451,11 @@ export default function AdminPanel() {
       storageString += ` + ${laptopForm.storage2Size}${laptopForm.storage2Type}`;
     }
 
+    const idToUse = editingLaptopId || `uploaded-${Date.now()}`;
+
     // Compile laptop product object
     const newProduct = {
-      id: `uploaded-${Date.now()}`,
+      id: idToUse,
       name: `لپ‌تاپ استوک ${laptopForm.brand} مدل ${laptopForm.model}`,
       spec: `${ramString} / ${storageString} / ${laptopForm.cpu}`,
       brand: laptopForm.brand,
@@ -306,21 +468,128 @@ export default function AdminPanel() {
       isBestSeller: true,
       colors: [laptopForm.color],
       sizes: [`${laptopForm.screenSize} inch`],
-      description: laptopForm.customerNotes || `لپ‌تاپ فوق‌العاده تمیز وارداتی استوک دبی.\nسریال: ${laptopForm.serial ? laptopForm.serial : 'نامشخص'} | سلامت باتری: ${laptopForm.batteryHealth}% | گرافیک: ${laptopForm.gpu}`
+      description: laptopForm.customerNotes || `لپ‌تاپ فوق‌العاده تمیز وارداتی استوک دبی.\nسریال: ${laptopForm.serial ? laptopForm.serial : 'نامشخص'} | سلامت باتری: ${laptopForm.batteryHealth}% | گرافیک: ${laptopForm.gpu}`,
+      rawSpecs: { ...laptopForm, images: laptopImages }, // Store raw specs for absolute editing precision
+      stockStatus: laptopForm.stockStatus || 'available'
     };
 
     try {
       const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      const list = saved ? JSON.parse(saved) : [];
-      list.unshift(newProduct);
-      localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
+      let list = saved ? JSON.parse(saved) : [];
       
+      if (editingLaptopId) {
+        const index = list.findIndex(p => p.id === editingLaptopId);
+        if (index !== -1) {
+          list[index] = newProduct;
+        } else {
+          // If it was a static laptop, prepend to list as override
+          list.unshift(newProduct);
+        }
+        alert('تغییرات لپ‌تاپ با موفقیت ذخیره شد!');
+      } else {
+        list.unshift(newProduct);
+        alert('لپ‌تاپ جدید با موفقیت ذخیره شد و به کاتالوگ فروشگاه دبی خرید افزوده گردید!');
+      }
+
+      localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
       setUploadedProducts(list);
-      setAllProductsCount(prev => prev + 1);
-      alert('لپ‌تاپ جدید با موفقیت ذخیره شد و به کاتالوگ فروشگاه دبی خرید افزوده گردید!');
+      
+      if (!editingLaptopId) {
+        setAllProductsCount(prev => prev + 1);
+      }
+
+      // Reset and go back to list
+      setLaptopViewMode('list');
+      setEditingLaptopId(null);
+      resetLaptopForm();
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Handles deleting dynamically uploaded laptops or overrides/hides static laptops
+  const handleDeleteLaptop = (laptopId) => {
+    if (!confirm('آیا از حذف این لپ‌تاپ مطمئن هستید؟')) return;
+
+    if (laptopId.startsWith('uploaded-') || uploadedProducts.some(p => p.id === laptopId)) {
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      const list = saved ? JSON.parse(saved) : [];
+      const filtered = list.filter(p => p.id !== laptopId);
+      localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(filtered));
+      setUploadedProducts(filtered);
+      setAllProductsCount(prev => prev - 1);
+    } else {
+      const updatedDeleted = [...deletedStaticIds, laptopId];
+      setDeletedStaticIds(updatedDeleted);
+      localStorage.setItem('dubaiKharidDeletedStaticLaptops', JSON.stringify(updatedDeleted));
+      
+      // Also remove any existing localStorage overrides for this static laptop if they exist
+      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+      if (saved) {
+        const list = JSON.parse(saved);
+        const filtered = list.filter(p => p.id !== laptopId);
+        localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(filtered));
+        setUploadedProducts(filtered);
+      }
+      setAllProductsCount(prev => prev - 1);
+    }
+    alert('لپ‌تاپ با موفقیت حذف گردید.');
+  };
+
+  // Triggers editing view with pre-filled state parsed from the laptop object
+  const triggerEditLaptop = (laptop) => {
+    const parsedForm = parseProductToForm(laptop);
+    setLaptopForm(parsedForm);
+    if (laptop.rawSpecs && laptop.rawSpecs.images) {
+      setLaptopImages(laptop.rawSpecs.images);
+    } else {
+      setLaptopImages([laptop.image]);
+    }
+    setEditingLaptopId(laptop.id);
+    setLaptopViewMode('edit');
+  };
+
+  // Triggers adding a fresh new laptop uploader form
+  const triggerAddLaptop = () => {
+    resetLaptopForm();
+    setEditingLaptopId(null);
+    setLaptopViewMode('add');
+  };
+
+  // Compile full catalog of static and dynamic stock laptops reactively
+  const getMergedAdminLaptops = () => {
+    let merged = [...laptops];
+    
+    // Filter out deleted static laptops
+    merged = merged.filter(p => !deletedStaticIds.includes(p.id));
+
+    // Merge dynamic uploads & apply overrides
+    const uploadedLaptops = uploadedProducts.filter(p => p.category === 'electronics');
+    uploadedLaptops.forEach(p => {
+      const index = merged.findIndex(m => m.id === p.id);
+      if (index !== -1) {
+        merged[index] = p; // Apply edit override
+      } else {
+        merged.unshift(p); // Prepend new upload
+      }
+    });
+
+    return merged;
+  };
+
+  // Filters stock laptops by search terms and brand selection
+  const getFilteredAdminLaptops = () => {
+    const list = getMergedAdminLaptops();
+    return list.filter(p => {
+      const matchesBrand = laptopBrandFilter === 'همه' || p.brand === laptopBrandFilter;
+      const q = laptopSearchQuery.toLowerCase().trim();
+      const matchesSearch = !q || 
+        p.brand.toLowerCase().includes(q) || 
+        p.name.toLowerCase().includes(q) || 
+        (p.spec && p.spec.toLowerCase().includes(q));
+      
+      return matchesBrand && matchesSearch;
+    });
   };
 
   // Remove thumbnail image
@@ -625,28 +894,223 @@ export default function AdminPanel() {
           {/* TAB: STOCK LAPTOPS UPLOADER VIEW (Matches mockup image with 100% fidelity) */}
           {activeTab === 'stock_laptops' && (
             <div>
-              <div className={styles.pageTitleSection}>
-                <div className={styles.titleArea}>
-                  <h1>افزودن لپ‌تاپ جدید</h1>
-                  <div className={styles.breadcrumbs}>
-                    <span>افزودن لپ‌تاپ جدید</span>
-                    <span>‹</span>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('site_products'); }}>لپ‌تاپ‌های استوک</a>
+              {laptopViewMode === 'list' ? (
+                <div>
+                  <div className={styles.pageTitleSection}>
+                    <div className={styles.titleArea}>
+                      <h1>مدیریت لپ‌تاپ‌های استوک</h1>
+                      <div className={styles.breadcrumbs}>
+                        <span>مدیریت لپ‌تاپ‌های استوک</span>
+                        <span>‹</span>
+                        <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('overview'); }}>داشبورد مدیریت</a>
+                      </div>
+                    </div>
+
+                    <div className={styles.titleActionBtns}>
+                      <button 
+                        type="button" 
+                        onClick={triggerAddLaptop} 
+                        className={styles.saveFormBtn}
+                        style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.4)' }}
+                      >
+                        <span style={{ marginLeft: '4px', fontSize: '16px', fontWeight: 'bold' }}>+</span> افزودن لپ‌تاپ جدید
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Search and Filters Bar */}
+                  <div className={styles.cardPanel} style={{ padding: '15px 20px', marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1', minWidth: '250px', position: 'relative' }}>
+                      <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#8b92a5', pointerEvents: 'none' }}>🔍</span>
+                      <input 
+                        type="text" 
+                        placeholder="جستجو بر اساس برند، مدل، یا مشخصات فنی..."
+                        value={laptopSearchQuery}
+                        onChange={(e) => setLaptopSearchQuery(e.target.value)}
+                        className={styles.searchInput}
+                        style={{ width: '100%', paddingRight: '35px', background: 'rgba(0, 0, 0, 0.2)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+                      />
+                    </div>
+
+                    <div style={{ width: '180px' }}>
+                      <select 
+                        value={laptopBrandFilter}
+                        onChange={(e) => setLaptopBrandFilter(e.target.value)}
+                        className={styles.selectField}
+                        style={{ width: '100%' }}
+                      >
+                        <option value="همه">همه برندها</option>
+                        <option value="Apple">Apple</option>
+                        <option value="Dell">Dell</option>
+                        <option value="Lenovo">Lenovo</option>
+                        <option value="HP">HP</option>
+                        <option value="ASUS">ASUS</option>
+                      </select>
+                    </div>
+
+                    <div style={{ marginRight: 'auto', fontSize: '12px', color: '#8b92a5' }}>
+                      تعداد کل محصولات یافت شده: <strong style={{ color: '#ff9d00' }}>{getFilteredAdminLaptops().length}</strong> عدد
+                    </div>
+                  </div>
+
+                  {/* Laptops List Table */}
+                  <div className={styles.cardPanel} style={{ padding: '0', overflow: 'hidden' }}>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className={styles.leadsTable}>
+                        <thead>
+                          <tr>
+                            <th style={{ padding: '15px 20px', textAlign: 'right' }}>تصویر</th>
+                            <th style={{ textAlign: 'right' }}>برند و مدل</th>
+                            <th style={{ textAlign: 'right' }}>مشخصات فنی (RAM / Storage / CPU)</th>
+                            <th style={{ textAlign: 'right' }}>قیمت خرید (درهم)</th>
+                            <th style={{ textAlign: 'right' }}>قیمت فروش (تومان)</th>
+                            <th style={{ textAlign: 'center' }}>وضعیت موجودی</th>
+                            <th style={{ textAlign: 'center', width: '180px' }}>عملیات</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {getFilteredAdminLaptops().map((laptop) => {
+                            let priceToman = 0;
+                            if (laptop.rawSpecs && laptop.rawSpecs.sellingPrice) {
+                              priceToman = parseFloat(laptop.rawSpecs.sellingPrice);
+                            } else {
+                              priceToman = laptop.priceAed * 19500;
+                            }
+
+                            const isDynamic = laptop.id.startsWith('uploaded-');
+
+                            return (
+                              <tr key={laptop.id} className={styles.tableRow} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.03)' }}>
+                                <td style={{ padding: '12px 20px' }}>
+                                  <img 
+                                    src={laptop.image} 
+                                    alt={laptop.name} 
+                                    style={{ width: '45px', height: '45px', borderRadius: '8px', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                                  />
+                                </td>
+                                <td>
+                                  <div style={{ fontWeight: 'bold', color: '#fff' }}>{laptop.brand}</div>
+                                  <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px' }}>
+                                    {laptop.model || laptop.name.replace(`لپ‌تاپ استوک ${laptop.brand} مدل`, '').replace(`لپ‌تاپ استوک`, '').replace(laptop.brand, '').trim()}
+                                  </div>
+                                </td>
+                                <td>
+                                  <span style={{ fontSize: '12px', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 8px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.03)', color: '#ffd073' }}>
+                                    {laptop.spec}
+                                  </span>
+                                </td>
+                                <td style={{ fontFamily: 'monospace', color: '#8b92a5' }}>
+                                  {laptop.rawSpecs?.buyingPrice ? parseInt(laptop.rawSpecs.buyingPrice).toLocaleString('fa-IR') : laptop.priceAed - 100 > 0 ? (laptop.priceAed - 100).toLocaleString('fa-IR') : laptop.priceAed.toLocaleString('fa-IR')} AED
+                                </td>
+                                <td style={{ fontWeight: 'bold', color: '#ff9d00' }}>
+                                  {Math.round(priceToman).toLocaleString('fa-IR')} تومان
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  <span 
+                                    className={`${styles.statusTag} ${
+                                      (laptop.stockStatus === 'available' || !laptop.stockStatus) ? styles.statusPaid : styles.statusPending
+                                    }`}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => {
+                                      const newStatus = (laptop.stockStatus === 'available' || !laptop.stockStatus) ? 'unavailable' : 'available';
+                                      if (isDynamic) {
+                                        const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+                                        let list = saved ? JSON.parse(saved) : [];
+                                        const idx = list.findIndex(p => p.id === laptop.id);
+                                        if (idx !== -1) {
+                                          list[idx].stockStatus = newStatus;
+                                          if (list[idx].rawSpecs) {
+                                            list[idx].rawSpecs.stockStatus = newStatus;
+                                          }
+                                          localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
+                                          setUploadedProducts(list);
+                                        }
+                                      } else {
+                                        const parsed = parseProductToForm(laptop);
+                                        parsed.stockStatus = newStatus;
+                                        const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+                                        let list = saved ? JSON.parse(saved) : [];
+                                        const overrideProduct = {
+                                          ...laptop,
+                                          stockStatus: newStatus,
+                                          rawSpecs: parsed
+                                        };
+                                        const idx = list.findIndex(p => p.id === laptop.id);
+                                        if (idx !== -1) {
+                                          list[idx] = overrideProduct;
+                                        } else {
+                                          list.unshift(overrideProduct);
+                                        }
+                                        localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(list));
+                                        setUploadedProducts(list);
+                                      }
+                                      alert('وضعیت موجودی لپ‌تاپ با موفقیت بروزرسانی شد.');
+                                    }}
+                                  >
+                                    {(laptop.stockStatus === 'available' || !laptop.stockStatus) ? 'موجود در انبار' : 'ناموجود'}
+                                  </span>
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                    <button 
+                                      onClick={() => triggerEditLaptop(laptop)} 
+                                      className={styles.statusActionBtn}
+                                      style={{ background: 'rgba(248, 120, 32, 0.1)', color: '#f87820', border: '1px solid rgba(248, 120, 32, 0.2)', padding: '5px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                                    >
+                                      📝 ویرایش
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteLaptop(laptop.id)} 
+                                      className={styles.statusActionBtn}
+                                      style={{ background: 'rgba(255, 77, 77, 0.1)', color: '#ff4d4d', border: '1px solid rgba(255, 77, 77, 0.2)', padding: '5px 12px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer' }}
+                                    >
+                                      🗑️ حذف
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {getFilteredAdminLaptops().length === 0 && (
+                            <tr>
+                              <td colSpan="7" style={{ textAlign: 'center', color: '#8b92a5', padding: '40px 0' }}>
+                                هیچ لپ‌تاپی یافت نشد. برای افزودن اولین لپ‌تاپ روی دکمه بالای صفحه کلیک کنید.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
+              ) : (
+                <div>
+                  <div className={styles.pageTitleSection}>
+                    <div className={styles.titleArea}>
+                      <h1>{editingLaptopId ? `ویرایش لپ‌تاپ ${laptopForm.brand} مدل ${laptopForm.model}` : 'افزودن لپ‌تاپ جدید'}</h1>
+                      <div className={styles.breadcrumbs}>
+                        <span>{editingLaptopId ? 'ویرایش لپ‌تاپ' : 'افزودن لپ‌تاپ جدید'}</span>
+                        <span>‹</span>
+                        <a href="#" onClick={(e) => { e.preventDefault(); setLaptopViewMode('list'); setEditingLaptopId(null); resetLaptopForm(); }}>مدیریت لپ‌تاپ‌ها</a>
+                      </div>
+                    </div>
 
-                <div className={styles.titleActionBtns}>
-                  <button type="button" onClick={() => setActiveTab('site_products')} className={styles.cancelFormBtn}>
-                    <span>✕</span> انصراف
-                  </button>
-                  <button type="button" onClick={handleSaveLaptop} className={styles.saveFormBtn}>
-                    <span>✓</span> ذخیره لپ‌تاپ
-                  </button>
-                </div>
-              </div>
+                    <div className={styles.titleActionBtns}>
+                      <button 
+                        type="button" 
+                        onClick={() => { setLaptopViewMode('list'); setEditingLaptopId(null); resetLaptopForm(); }} 
+                        className={styles.cancelFormBtn}
+                      >
+                        <span>✕</span> انصراف
+                      </button>
+                      <button type="button" onClick={handleSaveLaptop} className={styles.saveFormBtn}>
+                        <span>✓</span> {editingLaptopId ? 'بروزرسانی لپ‌تاپ' : 'ذخیره لپ‌تاپ'}
+                      </button>
+                    </div>
+                  </div>
 
-              {/* Form split layout grid */}
-              <div className={styles.formGridSplit}>
+                  {/* Form split layout grid */}
+                  <div className={styles.formGridSplit}>
                 
                 {/* Left Columns cards */}
                 <div className={styles.columnLeft}>
@@ -1312,6 +1776,8 @@ export default function AdminPanel() {
                 </div>
 
               </div>
+                </div>
+              )}
             </div>
           )}
 
