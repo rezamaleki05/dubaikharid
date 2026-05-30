@@ -703,6 +703,12 @@ export default function AdminPanel() {
                               setCustomModel(val);
                               setLaptopForm(prev => ({ ...prev, model: val }));
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.target.blur();
+                              }
+                            }}
                             onBlur={() => {
                               if (customModel.trim()) {
                                 const trimmed = customModel.trim();
@@ -716,6 +722,11 @@ export default function AdminPanel() {
                                   }
                                   return prev;
                                 });
+                                setLaptopForm(prev => ({ ...prev, model: trimmed }));
+                                setShowCustomModelInput(false);
+                              } else {
+                                setShowCustomModelInput(false);
+                                setLaptopForm(prev => ({ ...prev, model: modelsByBrand[laptopForm.brand]?.[0] || '' }));
                               }
                             }}
                             placeholder="تایپ مدل جدید..."
@@ -767,6 +778,12 @@ export default function AdminPanel() {
                               setCustomCpu(val);
                               setLaptopForm(prev => ({ ...prev, cpu: val }));
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.target.blur();
+                              }
+                            }}
                             onBlur={() => {
                               if (customCpu.trim()) {
                                 const trimmed = customCpu.trim();
@@ -776,6 +793,11 @@ export default function AdminPanel() {
                                   }
                                   return prev;
                                 });
+                                setLaptopForm(prev => ({ ...prev, cpu: trimmed }));
+                                setShowCustomCpuInput(false);
+                              } else {
+                                setShowCustomCpuInput(false);
+                                setLaptopForm(prev => ({ ...prev, cpu: cpuOptions[0] || '' }));
                               }
                             }}
                             placeholder="تایپ پردازنده جدید..."
@@ -887,6 +909,12 @@ export default function AdminPanel() {
                               setCustomGpu(val);
                               setLaptopForm(prev => ({ ...prev, gpu: val }));
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.target.blur();
+                              }
+                            }}
                             onBlur={() => {
                               if (customGpu.trim()) {
                                 const trimmed = customGpu.trim();
@@ -896,6 +924,11 @@ export default function AdminPanel() {
                                   }
                                   return prev;
                                 });
+                                setLaptopForm(prev => ({ ...prev, gpu: trimmed }));
+                                setShowCustomGpuInput(false);
+                              } else {
+                                setShowCustomGpuInput(false);
+                                setLaptopForm(prev => ({ ...prev, gpu: gpuOptions[0] || '' }));
                               }
                             }}
                             placeholder="تایپ کارت گرافیک جدید..."
@@ -964,6 +997,12 @@ export default function AdminPanel() {
                               setCustomColor(val);
                               setLaptopForm(prev => ({ ...prev, color: val }));
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.target.blur();
+                              }
+                            }}
                             onBlur={() => {
                               if (customColor.trim()) {
                                 const trimmed = customColor.trim();
@@ -973,6 +1012,11 @@ export default function AdminPanel() {
                                   }
                                   return prev;
                                 });
+                                setLaptopForm(prev => ({ ...prev, color: trimmed }));
+                                setShowCustomColorInput(false);
+                              } else {
+                                setShowCustomColorInput(false);
+                                setLaptopForm(prev => ({ ...prev, color: colorOptions[0] || '' }));
                               }
                             }}
                             placeholder="تایپ رنگ جدید..."
