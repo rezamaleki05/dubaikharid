@@ -77,6 +77,43 @@ export default function AdminPanel() {
   const [uploadedProducts, setUploadedProducts] = useState([]);
   const [allProductsCount, setAllProductsCount] = useState(0);
 
+  // Dynamic Options states for brand-filtered models, CPUs, and GPUs
+  const [modelsByBrand, setModelsByBrand] = useState({
+    Apple: ['MacBook Air M2', 'MacBook Pro M3', 'MacBook Air M1', 'MacBook Pro 16"'],
+    Dell: ['Dell XPS 13 9315', 'Dell Latitude 5430', 'Dell Inspiron 15', 'Dell G15 Gaming'],
+    Lenovo: ['ThinkPad T14', 'ThinkPad X1 Carbon', 'Yoga Slim 7', 'Legion 5'],
+    HP: ['HP Spectre x360', 'HP Pavilion 15', 'HP EliteBook 840', 'HP Omen 16'],
+    ASUS: ['ASUS ROG Zephyrus', 'ASUS ZenBook 14', 'ASUS VivoBook 15', 'ASUS TUF Gaming']
+  });
+
+  const [cpuOptions, setCpuOptions] = useState([
+    'Apple M2', 'Apple M3', 'Intel Core i5', 'Intel Core i7', 'Intel Core i9', 'AMD Ryzen 7', 'AMD Ryzen 9'
+  ]);
+
+  const [gpuOptions, setGpuOptions] = useState([
+    'Apple GPU 8-Core', 'Apple GPU 10-Core', 'Intel Iris Xe', 'AMD Radeon RX', 'NVIDIA GeForce RTX 4060', 'NVIDIA GeForce RTX 4070'
+  ]);
+
+  const [customModel, setCustomModel] = useState('');
+  const [showCustomModelInput, setShowCustomModelInput] = useState(false);
+
+  const [customCpu, setCustomCpu] = useState('');
+  const [showCustomCpuInput, setShowCustomCpuInput] = useState(false);
+
+  const [customGpu, setCustomGpu] = useState('');
+  const [showCustomGpuInput, setShowCustomGpuInput] = useState(false);
+
+  const handleBrandChange = (newBrand) => {
+    setShowCustomModelInput(false);
+    setCustomModel('');
+    const defaultModel = modelsByBrand[newBrand]?.[0] || '';
+    setLaptopForm(prev => ({
+      ...prev,
+      brand: newBrand,
+      model: defaultModel
+    }));
+  };
+
   // Expanded lead row ID (Accordion)
   const [expandedLeadId, setExpandedLeadId] = useState(null);
 
@@ -610,7 +647,7 @@ export default function AdminPanel() {
                         <label>برند <span className={styles.requiredStar}>*</span></label>
                         <select 
                           value={laptopForm.brand} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, brand: e.target.value }))}
+                          onChange={(e) => handleBrandChange(e.target.value)}
                           className={styles.selectField}
                         >
                           <option value="Apple">Apple</option>
@@ -624,108 +661,211 @@ export default function AdminPanel() {
                       <div className={styles.formGroup}>
                         <label>مدل <span className={styles.requiredStar}>*</span></label>
                         <select 
-                          value={laptopForm.model} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, model: e.target.value }))}
+                          value={showCustomModelInput ? "+custom" : laptopForm.model} 
+                          onChange={(e) => {
+                            if (e.target.value === "+custom") {
+                              setShowCustomModelInput(true);
+                              setLaptopForm(prev => ({ ...prev, model: '' }));
+                            } else {
+                              setShowCustomModelInput(false);
+                              setLaptopForm(prev => ({ ...prev, model: e.target.value }));
+                            }
+                          }}
                           className={styles.selectField}
                         >
-                          <option value="MacBook Air M2">MacBook Air M2</option>
-                          <option value="Dell XPS 13 9315">Dell XPS 13 9315</option>
-                          <option value="ThinkPad T14">ThinkPad T14</option>
-                          <option value="HP Spectre x360">HP Spectre x360</option>
-                          <option value="ASUS ROG Zephyrus">ASUS ROG Zephyrus</option>
+                          {(modelsByBrand[laptopForm.brand] || []).map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                          <option value="+custom">+ افزودن مدل جدید...</option>
                         </select>
+                        {showCustomModelInput && (
+                          <input 
+                            type="text" 
+                            value={customModel}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomModel(val);
+                              setLaptopForm(prev => ({ ...prev, model: val }));
+                            }}
+                            onBlur={() => {
+                              if (customModel.trim()) {
+                                const trimmed = customModel.trim();
+                                setModelsByBrand(prev => {
+                                  const currentList = prev[laptopForm.brand] || [];
+                                  if (!currentList.includes(trimmed)) {
+                                    return {
+                                      ...prev,
+                                      [laptopForm.brand]: [...currentList, trimmed]
+                                    };
+                                  }
+                                  return prev;
+                                });
+                              }
+                            }}
+                            placeholder="تایپ مدل جدید..."
+                            className={styles.inputField}
+                            style={{ marginTop: '8px' }}
+                            autoFocus
+                            required
+                          />
+                        )}
                       </div>
 
                       <div className={styles.formGroup}>
-                        <label>(Serial Number) <span className={styles.requiredStar}>*</span></label>
+                        <label>(Serial Number) شماره سریال</label>
                         <input 
                           type="text" 
                           value={laptopForm.serial} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, serial: e.target.value }))}
+                          placeholder="شماره سریال (اختیاری)"
                           className={styles.inputField} 
-                          required
                         />
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>پردازنده (CPU) <span className={styles.requiredStar}>*</span></label>
                         <select 
-                          value={laptopForm.cpu} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, cpu: e.target.value }))}
+                          value={showCustomCpuInput ? "+custom" : laptopForm.cpu} 
+                          onChange={(e) => {
+                            if (e.target.value === "+custom") {
+                              setShowCustomCpuInput(true);
+                              setLaptopForm(prev => ({ ...prev, cpu: '' }));
+                            } else {
+                              setShowCustomCpuInput(false);
+                              setLaptopForm(prev => ({ ...prev, cpu: e.target.value }));
+                            }
+                          }}
                           className={styles.selectField}
                         >
-                          <option value="Apple M2">Apple M2</option>
-                          <option value="Intel Core i5">Intel Core i5</option>
-                          <option value="Intel Core i7">Intel Core i7</option>
-                          <option value="AMD Ryzen 9">AMD Ryzen 9</option>
+                          {cpuOptions.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                          <option value="+custom">+ افزودن پردازنده جدید...</option>
                         </select>
+                        {showCustomCpuInput && (
+                          <input 
+                            type="text" 
+                            value={customCpu}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomCpu(val);
+                              setLaptopForm(prev => ({ ...prev, cpu: val }));
+                            }}
+                            onBlur={() => {
+                              if (customCpu.trim()) {
+                                const trimmed = customCpu.trim();
+                                setCpuOptions(prev => {
+                                  if (!prev.includes(trimmed)) {
+                                    return [...prev, trimmed];
+                                  }
+                                  return prev;
+                                });
+                              }
+                            }}
+                            placeholder="تایپ پردازنده جدید..."
+                            className={styles.inputField}
+                            style={{ marginTop: '8px' }}
+                            autoFocus
+                            required
+                          />
+                        )}
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>رم (RAM) <span className={styles.requiredStar}>*</span></label>
-                        <select 
+                        <input 
+                          type="text" 
                           value={laptopForm.ram} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, ram: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="8GB">8GB</option>
-                          <option value="16GB">16GB</option>
-                          <option value="32GB">32GB</option>
-                        </select>
+                          placeholder="مثال: 16GB"
+                          className={styles.inputField}
+                          required
+                        />
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>حافظه داخلی (Storage) <span className={styles.requiredStar}>*</span></label>
-                        <select 
+                        <input 
+                          type="text" 
                           value={laptopForm.storage} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, storage: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="256GB SSD">256GB SSD</option>
-                          <option value="512GB SSD">512GB SSD</option>
-                          <option value="1TB SSD">1TB SSD</option>
-                        </select>
+                          placeholder="مثال: 512GB SSD"
+                          className={styles.inputField}
+                          required
+                        />
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>(GPU) کارت گرافیک</label>
                         <select 
-                          value={laptopForm.gpu} 
-                          onChange={(e) => setLaptopForm(prev => ({ ...prev, gpu: e.target.value }))}
+                          value={showCustomGpuInput ? "+custom" : laptopForm.gpu} 
+                          onChange={(e) => {
+                            if (e.target.value === "+custom") {
+                              setShowCustomGpuInput(true);
+                              setLaptopForm(prev => ({ ...prev, gpu: '' }));
+                            } else {
+                              setShowCustomGpuInput(false);
+                              setLaptopForm(prev => ({ ...prev, gpu: e.target.value }));
+                            }
+                          }}
                           className={styles.selectField}
                         >
-                          <option value="Apple GPU 8-Core">Apple GPU 8-Core</option>
-                          <option value="Intel Iris Xe">Intel Iris Xe</option>
-                          <option value="AMD Radeon RX">AMD Radeon RX</option>
+                          {gpuOptions.map(g => (
+                            <option key={g} value={g}>{g}</option>
+                          ))}
+                          <option value="+custom">+ افزودن کارت گرافیک جدید...</option>
                         </select>
+                        {showCustomGpuInput && (
+                          <input 
+                            type="text" 
+                            value={customGpu}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomGpu(val);
+                              setLaptopForm(prev => ({ ...prev, gpu: val }));
+                            }}
+                            onBlur={() => {
+                              if (customGpu.trim()) {
+                                const trimmed = customGpu.trim();
+                                setGpuOptions(prev => {
+                                  if (!prev.includes(trimmed)) {
+                                    return [...prev, trimmed];
+                                  }
+                                  return prev;
+                                });
+                              }
+                            }}
+                            placeholder="تایپ کارت گرافیک جدید..."
+                            className={styles.inputField}
+                            style={{ marginTop: '8px' }}
+                            autoFocus
+                            required
+                          />
+                        )}
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>اندازه صفحه نمایش <span className={styles.requiredStar}>*</span></label>
-                        <select 
+                        <input 
+                          type="text" 
                           value={laptopForm.screenSize} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, screenSize: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="13.6 inch">13.6 inch</option>
-                          <option value="13.4 inch">13.4 inch</option>
-                          <option value="14 inch">14 inch</option>
-                          <option value="13.5 inch">13.5 inch</option>
-                        </select>
+                          placeholder="مثال: 13.6 inch"
+                          className={styles.inputField}
+                          required
+                        />
                       </div>
 
                       <div className={styles.formGroup}>
                         <label>سال ساخت <span className={styles.requiredStar}>*</span></label>
-                        <select 
+                        <input 
+                          type="text" 
                           value={laptopForm.manufactureYear} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, manufactureYear: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="2022">2022</option>
-                          <option value="2023">2023</option>
-                          <option value="2024">2024</option>
-                          <option value="2021">2021</option>
-                        </select>
+                          placeholder="مثال: 2022"
+                          className={styles.inputField}
+                          required
+                        />
                       </div>
 
                       <div className={styles.formGroup}>
@@ -744,16 +884,13 @@ export default function AdminPanel() {
 
                       <div className={styles.formGroup}>
                         <label>وضعیت باتری</label>
-                        <select 
+                        <input 
+                          type="text" 
                           value={laptopForm.batteryHealth} 
                           onChange={(e) => setLaptopForm(prev => ({ ...prev, batteryHealth: e.target.value }))}
-                          className={styles.selectField}
-                        >
-                          <option value="92%">92%</option>
-                          <option value="100%">100%</option>
-                          <option value="95%">95%</option>
-                          <option value="88%">88%</option>
-                        </select>
+                          placeholder="مثال: 92%"
+                          className={styles.inputField}
+                        />
                       </div>
 
                       <div className={styles.formGroup}>
@@ -1016,57 +1153,6 @@ export default function AdminPanel() {
                         type="text" 
                         value={laptopForm.internalSku} 
                         onChange={(e) => setLaptopForm(prev => ({ ...prev, internalSku: e.target.value }))}
-                        className={styles.inputField} 
-                      />
-                    </div>
-                  </div>
-
-                  {/* 3. More information Panel */}
-                  <div className={styles.cardPanel}>
-                    <div className={styles.cardHeaderRow}>
-                      <span className={styles.cardHeaderIcon}>🛡️</span>
-                      <h2>اطلاعات بیشتر</h2>
-                    </div>
-
-                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
-                      <label>مدت گارانتی (روز)</label>
-                      <input 
-                        type="number" 
-                        value={laptopForm.warrantyDays} 
-                        onChange={(e) => setLaptopForm(prev => ({ ...prev, warrantyDays: e.target.value }))}
-                        className={styles.inputField} 
-                      />
-                    </div>
-
-                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
-                      <label>تاریخ انقضای گارانتی</label>
-                      <input 
-                        type="text" 
-                        value={laptopForm.warrantyExpiry} 
-                        onChange={(e) => setLaptopForm(prev => ({ ...prev, warrantyExpiry: e.target.value }))}
-                        placeholder="مثال: 1403/04/20"
-                        className={styles.inputField} 
-                      />
-                    </div>
-
-                    <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
-                      <label>تاریخ آخرین سرویس</label>
-                      <input 
-                        type="text" 
-                        value={laptopForm.lastService} 
-                        onChange={(e) => setLaptopForm(prev => ({ ...prev, lastService: e.target.value }))}
-                        placeholder="مثال: 1403/03/15"
-                        className={styles.inputField} 
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label>سرویس بعدی</label>
-                      <input 
-                        type="text" 
-                        value={laptopForm.nextService} 
-                        onChange={(e) => setLaptopForm(prev => ({ ...prev, nextService: e.target.value }))}
-                        placeholder="مثال: 1403/06/15"
                         className={styles.inputField} 
                       />
                     </div>
