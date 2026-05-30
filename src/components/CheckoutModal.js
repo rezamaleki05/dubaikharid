@@ -79,6 +79,8 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
       const tracking = `DKHARID-${randNum}`;
       setTrackingCode(tracking);
 
+      const totalTomanVal = orderData.totalToman || ((orderData.price || 0) * 19500);
+
       // Save order lead to localStorage for Admin Panel
       try {
         const existingLeads = JSON.parse(localStorage.getItem('dubaiKharidLeads') || '[]');
@@ -91,7 +93,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
           productName: orderData.productName || orderData.name || 'کالای سفارشی دبی',
           brand: orderData.brand || 'سفارشی',
           weight: orderData.weight || 0.5,
-          totalToman: orderData.totalToman || ((orderData.price || 0) * 19500),
+          totalToman: totalTomanVal,
           priceAed: orderData.priceAed || orderData.price || 0,
           date: new Date().toISOString(),
           status: 'pending', // 'pending' = در انتظار بررسی, 'contacted' = تماس گرفته شده, etc.
@@ -101,6 +103,27 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
         localStorage.setItem('dubaiKharidLeads', JSON.stringify(existingLeads));
       } catch (err) {
         console.error('Failed to save checkout lead locally:', err);
+      }
+
+      // Check if this order contains a stock laptop to redirect to online Shetab gateway
+      const isLaptop = orderData.category === 'electronics' || 
+                      (orderData.productName && (
+                        orderData.productName.toLowerCase().includes('macbook') || 
+                        orderData.productName.toLowerCase().includes('dell') || 
+                        orderData.productName.toLowerCase().includes('thinkpad') || 
+                        orderData.productName.toLowerCase().includes('hp') || 
+                        orderData.productName.toLowerCase().includes('asus') || 
+                        orderData.productName.includes('لپ‌تاپ') || 
+                        orderData.productName.includes('لپ تاپ')
+                      ));
+
+      if (isLaptop) {
+        if (onCartIncrement) {
+          onCartIncrement(); // empties the cart if checked out from cart
+        }
+        // Redirect browser to Shetab online payment gate
+        window.location.href = `/payment?amount=${totalTomanVal}&tracking=${tracking}&prodName=${encodeURIComponent(orderData.productName || orderData.name)}&customer=${encodeURIComponent(formData.name.trim())}&phone=${cleanPhone}&address=${encodeURIComponent(formData.address.trim())}&notes=${encodeURIComponent(formData.notes.trim())}`;
+        return;
       }
 
       setStep(3);

@@ -1,0 +1,666 @@
+/* ==========================================================================
+   OFFICIAL SHAPARAK ELECTRONIC PAYMENT GATEWAY THEME STYLES (Shetab)
+   ========================================================================== */
+
+.pageWrapper {
+  background-color: #f2f3f7;
+  color: #333;
+  min-height: 100vh;
+  font-family: var(--font-vazirmatn), Tahoma, sans-serif;
+  direction: rtl;
+  padding-bottom: 50px;
+}
+
+/* Authentic Shaparak Header */
+.header {
+  background-color: #0b2240; /* Official deep blue Shaparak header */
+  border-bottom: 4px solid #ffcc00; /* Yellow line */
+  padding: 10px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.shaparakLogo {
+  height: 48px;
+  width: auto;
+}
+
+.headerText {
+  color: #fff;
+}
+
+.headerText h1 {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.headerText span {
+  font-size: 10px;
+  color: #a0b2c6;
+  margin-top: 4px;
+  display: block;
+}
+
+.shetabLogo {
+  height: 40px;
+  width: auto;
+}
+
+/* Gateway Split Layout */
+.gatewayContainer {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 30px;
+  align-items: start;
+}
+
+/* Right Panel: Merchant Details Card */
+.merchantCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border: 1px solid #e1e4ed;
+  overflow: hidden;
+}
+
+.merchantHeader {
+  background: #f8f9fc;
+  padding: 20px;
+  border-bottom: 1px solid #e1e4ed;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.merchantAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #ffcc00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 10px rgba(255, 204, 0, 0.2);
+}
+
+.merchantHeader h2 {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0b2240;
+  margin: 0;
+}
+
+.merchantHeader span {
+  font-size: 11px;
+  color: #7e8b9b;
+  display: block;
+  margin-top: 4px;
+}
+
+.merchantBody {
+  padding: 24px;
+}
+
+.merchantRow {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed #e1e4ed;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.merchantRow:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.merchantRow label {
+  color: #7e8b9b;
+  font-weight: 500;
+}
+
+.merchantRow span {
+  font-weight: 700;
+  color: #333;
+}
+
+.timerGlow {
+  color: #ff3333 !important;
+  font-family: monospace;
+  font-size: 15px;
+}
+
+/* Payable Pricing display */
+.amountContainer {
+  background: rgba(11, 34, 64, 0.03);
+  border: 1px solid rgba(11, 34, 64, 0.08);
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.amountLabel {
+  font-size: 11px;
+  color: #7e8b9b;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.amountVal {
+  font-size: 22px;
+  font-weight: 900;
+  color: #0b2240;
+}
+
+.amountUnit {
+  font-size: 12px;
+  color: #7e8b9b;
+  font-weight: normal;
+  margin-right: 4px;
+}
+
+.amountRial {
+  font-size: 11px;
+  color: #7e8b9b;
+  margin-top: 6px;
+  display: block;
+}
+
+/* Left Panel: Card Entry Form Card */
+.formCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border: 1px solid #e1e4ed;
+  padding: 30px;
+}
+
+.formTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0b2240;
+  margin-bottom: 25px;
+  border-right: 3px solid #ffcc00;
+  padding-right: 10px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 30px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.inputGroup label {
+  font-size: 12.5px;
+  color: #555;
+  font-weight: 700;
+}
+
+/* Card Number Input with Dynamic Bank Logo inline */
+.cardNumberWrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #c8cbd5;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.cardNumberWrapper:focus-within {
+  border-color: #0b2240;
+  box-shadow: 0 0 0 3px rgba(11, 34, 64, 0.1);
+}
+
+.cardNumInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #333;
+  letter-spacing: 2px;
+  font-family: monospace;
+  direction: ltr;
+  text-align: center;
+}
+
+.bankLogoInline {
+  padding: 0 12px;
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+  border-right: 1px solid #e1e4ed;
+}
+
+.formInput {
+  background: #fff;
+  border: 1px solid #c8cbd5;
+  color: #333;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  border-color: #0b2240;
+  box-shadow: 0 0 0 3px rgba(11, 34, 64, 0.1);
+}
+
+/* Horizontal inputs like Expiry, CVV2, Captcha */
+.formRowSplit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.expiryGrid {
+  display: grid;
+  grid-template-columns: 1fr 12px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.expirySlash {
+  text-align: center;
+  color: #7e8b9b;
+  font-weight: bold;
+}
+
+/* Captcha Module */
+.captchaContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+}
+
+.captchaImageBlock {
+  background: #f8f9fc;
+  border: 1px solid #c8cbd5;
+  border-radius: 8px;
+  height: 44px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  font-family: monospace;
+  color: #333;
+  user-select: none;
+  background-image: linear-gradient(45deg, #eef1f6 25%, transparent 25%), linear-gradient(-45deg, #eef1f6 25%, transparent 25%);
+  background-size: 10px 10px;
+}
+
+.captchaRefreshBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #7e8b9b;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.captchaRefreshBtn:hover {
+  background: #f0f2f5;
+  color: #0b2240;
+}
+
+/* Dynamic second password (OTP) input and countdown trigger button */
+.otpWrapper {
+  display: flex;
+  gap: 12px;
+}
+
+.otpWrapper input {
+  flex: 1;
+}
+
+.requestOtpBtn {
+  background: #f8f9fc;
+  border: 1.5px solid #0b2240;
+  color: #0b2240;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.requestOtpBtn:hover:not(:disabled) {
+  background: rgba(11, 34, 64, 0.05);
+}
+
+.requestOtpBtn:disabled {
+  background: #f4f5f8;
+  border-color: #c8cbd5;
+  color: #8b92a5;
+  cursor: not-allowed;
+}
+
+/* Virtual Numeric Secure Keypad on the left */
+.keypadCard {
+  background: #f8f9fc;
+  border: 1px solid #e1e4ed;
+  border-radius: 12px;
+  padding: 20px;
+  height: fit-content;
+}
+
+.keypadTitle {
+  font-size: 11px;
+  color: #7e8b9b;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-align: center;
+  display: block;
+}
+
+.keypadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.keypadBtn {
+  background: #fff;
+  border: 1px solid #e1e4ed;
+  color: #333;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.keypadBtn:hover {
+  background: #0b2240;
+  color: #fff;
+  border-color: #0b2240;
+}
+
+/* Gateway Form Actions */
+.formActions {
+  grid-column: span 2;
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  border-top: 1px solid #e1e4ed;
+  padding-top: 24px;
+}
+
+.payBtn {
+  background: #16a34a; /* Safe Mellat gateway green */
+  color: #fff;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.2);
+}
+
+.payBtn:hover {
+  background: #15803d;
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.35);
+}
+
+.cancelBtn {
+  background: transparent;
+  color: #ff3333;
+  border: 1.5px solid #ff3333;
+  padding: 14px 30px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 51, 51, 0.05);
+}
+
+/* Security Guideline Tips Card */
+.guidelineCard {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.guidelineInner {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e1e4ed;
+  padding: 20px 24px;
+  display: flex;
+  gap: 15px;
+}
+
+.guidelineIcon {
+  font-size: 24px;
+}
+
+.guidelineText h4 {
+  font-size: 13.5px;
+  font-weight: 750;
+  color: #0b2240;
+  margin-bottom: 8px;
+}
+
+.guidelineText p {
+  font-size: 11px;
+  color: #7e8b9b;
+  line-height: 1.8;
+}
+
+/* Simulated Transaction Loading Screen */
+.loadingOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 40px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(11, 34, 64, 0.08);
+  border-top-color: #0b2240;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 25px;
+}
+
+.loadingOverlay h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0b2240;
+  margin-bottom: 8px;
+}
+
+.loadingOverlay p {
+  color: #7e8b9b;
+  font-size: 13px;
+}
+
+/* High-End digital Transaction Receipt Success page */
+.receiptOverlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 20px;
+}
+
+.receiptCard {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  border: 1px solid #e1e4ed;
+  width: 100%;
+  max-width: 550px;
+  overflow: hidden;
+  animation: modalIn 0.4s cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+
+.receiptBanner {
+  background: #16a34a; /* success green */
+  color: #fff;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.successCircle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.receiptBanner h2 {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.receiptBody {
+  padding: 30px;
+}
+
+.receiptRow {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e1e4ed;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+}
+
+.receiptRow:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.receiptRow label {
+  color: #7e8b9b;
+}
+
+.receiptRow span {
+  font-weight: 750;
+  color: #333;
+}
+
+.receiptStatusBadge {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.doneBtn {
+  background: #0b2240;
+  color: #fff;
+  border: none;
+  padding: 14px 20px;
+  width: 100%;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: 24px;
+}
+
+.doneBtn:hover {
+  background: #143560;
+  box-shadow: 0 4px 12px rgba(11, 34, 64, 0.25);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(.95) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Responsive elements */
+@media (max-width: 900px) {
+  .gatewayContainer {
+    grid-template-columns: 1fr;
+  }
+  .merchantCard {
+    order: -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  .keypadCard {
+    display: none;
+  }
+  .formActions {
+    grid-column: span 1;
+    flex-direction: column;
+  }
+  .payBtn, .cancelBtn {
+    width: 100%;
+  }
+}
