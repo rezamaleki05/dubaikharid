@@ -17,7 +17,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fa" dir="rtl" className={vazirmatn.variable}>
+    <html lang="fa" dir="rtl" className={vazirmatn.variable} data-scroll-behavior="smooth">
       <body style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
         <WishlistProvider>
           <CartProvider>

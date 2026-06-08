@@ -99,6 +99,25 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #f0f0f0; }
-::-webkit-scrollbar-thumb { background: #ccc; border-radius: 99px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #666666; }
+
+/* ── Toman Price Font Rule ── */
+.priceToman,
+[class*="priceToman"],
+[class*="PriceToman"],
+[class*="tomanPrice"],
+[class*="TomanPrice"],
+[class*="totalPrice"],
+[class*="TotalPrice"],
+[class*="perfValue"],
+[class*="fieldValue"],
+[class*="specValue"],
+.toman-digit,
+.toman-price {
+  font-family: var(--font-vazirmatn), Tahoma, sans-serif !important;
+}
+
+

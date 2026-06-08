@@ -28,7 +28,7 @@
 /* ── SIDEBAR CONTAINER ── */
 .sidebar {
   width: 280px;
-  background-color: #050608;
+  background-color: var(--admin-card-bg);
   border-left: 1px solid var(--admin-border);
   padding: 30px 20px;
   display: flex;
@@ -63,7 +63,7 @@
 .sidebarLogoText {
   font-size: 22px;
   font-weight: 900;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
   letter-spacing: -0.5px;
 }
 
@@ -126,6 +126,14 @@
   align-items: center;
   justify-content: center;
   width: 22px;
+}
+
+.navIconSvg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  transition: all 0.2s ease;
 }
 
 .navBadge {
@@ -912,3 +920,1905 @@
   background: var(--admin-card-bg);
   color: var(--admin-white);
 }
+
+/* ── ADMIN LOGIN SCREEN ── */
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 40px 30px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 50px rgba(248, 120, 32, 0.03);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.loginLogo {
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, var(--admin-orange), #ff9d00);
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 5px 15px rgba(248, 120, 32, 0.35);
+  margin-bottom: 24px;
+}
+
+.loginCard h1 {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--admin-white);
+  margin: 0 0 10px 0;
+}
+
+.loginCard p {
+  font-size: 13px;
+  color: var(--admin-grey-text);
+  line-height: 1.6;
+  margin: 0 0 30px 0;
+}
+
+.loginInput {
+  width: 100%;
+  padding: 13px 16px;
+  background-color: var(--admin-input-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  color: var(--admin-white);
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.2s ease;
+  text-align: right;
+}
+
+.loginInput:focus {
+  border-color: var(--admin-orange);
+  box-shadow: 0 0 0 3px rgba(248, 120, 32, 0.15);
+}
+
+.loginInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.loginBtn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--admin-orange), #f95f00);
+  border: none;
+  border-radius: 12px;
+  color: var(--admin-white);
+  font-size: 14px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(248, 120, 32, 0.25);
+  transition: all 0.25s ease;
+  margin-top: 10px;
+}
+
+.loginBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(248, 120, 32, 0.35);
+}
+
+.loginBtn:active {
+  transform: translateY(0);
+}
+
+.loginError {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-bottom: 20px;
+  text-align: right;
+}
+
+.loginCard .formGroup {
+  margin-bottom: 20px;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loginCard .formGroup label {
+  font-size: 13px;
+  color: var(--admin-grey-text);
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* ── STAT CARDS ROW (سفارشات آنلاین) ── */
+.statOrdersRow {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+  direction: rtl;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+}
+
+.statOrdersRow::-webkit-scrollbar {
+  height: 6px;
+}
+
+.statOrdersRow::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.statOrdersCard {
+  min-width: 110px;
+  background-color: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.statOrdersCard:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.015);
+  transform: translateY(-1px);
+}
+
+.statOrdersCardActive {
+  background-color: var(--admin-orange-glow) !important;
+  border-color: var(--admin-orange) !important;
+  box-shadow: 0 4px 15px rgba(248, 120, 32, 0.08);
+}
+
+.statOrdersCardIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.statOrdersMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+  flex-grow: 1;
+}
+
+.statOrdersLabel {
+  font-size: 9.5px;
+  color: var(--admin-grey-text);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.statOrdersCountRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.statOrdersCount {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--admin-white);
+}
+
+.statOrdersSub {
+  font-size: 8.5px;
+  color: var(--admin-grey-text);
+}
+
+.statOrdersCardActive .statOrdersLabel,
+.statOrdersCardActive .statOrdersSub {
+  color: var(--admin-orange) !important;
+  opacity: 0.8;
+}
+
+.statOrdersCardActive .statOrdersCount {
+  color: var(--admin-orange) !important;
+}
+
+/* ── DOUBLE COLUMN WORKSPACE GRID ── */
+.splitWorkspaceGrid {
+  display: grid;
+  grid-template-columns: 2.3fr 1fr;
+  gap: 18px;
+  direction: rtl;
+  align-items: start;
+}
+
+/* ── ORDER DETAILS PANEL (LEFT SIDE) ── */
+.detailsContainer {
+  background-color: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 22px;
+  position: sticky;
+  top: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.detailsHeader {
+  border-bottom: 1px solid var(--admin-border);
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  text-align: right;
+}
+
+.detailsTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.detailsTitle {
+  font-size: 13px;
+  color: var(--admin-grey-text);
+  font-weight: 700;
+}
+
+.detailsOrderCodeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detailsOrderCode {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--admin-white);
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
+}
+
+.detailsDate {
+  font-size: 10.5px;
+  color: var(--admin-grey-text);
+  margin-top: 4px;
+}
+
+/* Collapsible Section */
+.detailsCollapsible {
+  border-bottom: 1px solid var(--admin-border);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  text-align: right;
+}
+
+.detailsSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.detailsSectionHeader h3 {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--admin-white);
+  margin: 0;
+}
+
+.detailsArrowIcon {
+  font-size: 10px;
+  color: var(--admin-grey-text);
+  transition: transform 0.2s ease;
+}
+
+.detailsCollapsibleBody {
+  margin-top: 12px;
+  animation: slide-down 0.25s ease-out;
+}
+
+.customerAvatarBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.customerAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.04);
+  object-fit: cover;
+}
+
+.customerMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+}
+
+.customerName {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--admin-white);
+}
+
+.customerPhone {
+  font-size: 11px;
+  color: var(--admin-grey-text);
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+.customerDetailsList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.customerDetailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.customerDetailLabel {
+  color: var(--admin-grey-text);
+}
+
+.customerDetailValue {
+  color: var(--admin-white);
+  font-weight: 600;
+}
+
+/* Products and Pricing */
+.detailsProductItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.detailsProductImg {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: var(--admin-card-bg);
+  flex-shrink: 0;
+}
+
+.detailsProductInfo {
+  flex-grow: 1;
+  text-align: right;
+}
+
+.detailsProductTitle {
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--admin-white);
+}
+
+.detailsProductDesc {
+  font-size: 10px;
+  color: var(--admin-grey-text);
+  margin-top: 2px;
+}
+
+.detailsProductQty {
+  font-size: 11px;
+  color: var(--admin-orange);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nestedPriceTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 11.5px;
+}
+
+.nestedPriceTable td {
+  padding: 6px 0;
+  color: var(--admin-grey-text);
+}
+
+.nestedPriceTable tr:last-child td {
+  border-top: 1px dashed var(--admin-border);
+  padding-top: 8px;
+  font-weight: 900;
+  color: var(--admin-white);
+}
+
+/* Footer buttons split */
+.detailsFooterActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.detailsActionsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.detailsActionBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: transparent;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-white);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.detailsActionBtn:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.detailsActionBtnRed {
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+}
+
+.detailsActionBtnRed:hover {
+  background-color: rgba(239, 68, 68, 0.05) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+.detailsActionIcon {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+}
+
+/* ── PAGINATION AND FILTER OVERRIDES ── */
+.pagerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  direction: rtl;
+}
+
+.pagerBtns {
+  display: flex;
+  gap: 4px;
+}
+
+.pagerBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-grey-text);
+  font-size: 12px;
+  font-weight: 750;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
+}
+
+.pagerBtn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--admin-white);
+}
+
+.pagerBtnActive {
+  background-color: var(--admin-orange) !important;
+  border-color: var(--admin-orange) !important;
+  color: var(--admin-white) !important;
+}
+
+.paymentDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+/* ── HIGH FIDELITY ADMIN TABLE SPACING & STYLES ── */
+.adminTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.adminTable th {
+  padding: 18px 24px !important; /* Increased horizontal padding to spread columns */
+  color: var(--admin-grey-text);
+  font-weight: 750;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.adminTable td {
+  padding: 20px 24px !important; /* Increased horizontal padding to spread columns */
+  color: #e5e7eb;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  vertical-align: middle;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.adminTable tbody tr {
+  transition: all 0.2s ease;
+}
+
+.adminTable tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.015) !important;
+}
+
+/* ── CUSTOMER MANAGEMENT PREMIUM STYLES ── */
+.customerSplitGrid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+@media (max-width: 1200px) {
+  .customerSplitGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 5 Metrics Cards */
+.metricsGrid5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+  .metricsGrid5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .metricsGrid5 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metricCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.metricCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.metricContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+  gap: 4px;
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: #8b92a5;
+  font-weight: bold;
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: 850;
+  color: #fff;
+  font-family: var(--font-vazirmatn), system-ui;
+}
+
+.metricSubText {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.metricSubText.up {
+  color: #10b981;
+}
+
+.metricIconContainer {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Details Sticky Panel */
+.stickyDetailsPanel {
+  position: sticky;
+  top: 20px;
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.detailsHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.detailsCloseBtn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: none;
+  border: none;
+  color: #8b92a5;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.detailsCloseBtn:hover {
+  color: #fff;
+}
+
+.largeAvatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.06);
+  object-fit: cover;
+  margin-bottom: 12px;
+}
+
+.detailsName {
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 6px 0;
+}
+
+/* Status Badges */
+.badgeActive {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.badgeVip {
+  background-color: rgba(248, 120, 32, 0.1);
+  color: #f87820;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.badgeInactive {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* 5 Circular Action Buttons */
+.quickActionsRow {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.actionButtonWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionCircleBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.02);
+  color: #c4c8d4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.actionCircleBtn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.actionCircleBtn.delete {
+  background-color: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.actionCircleBtn.delete:hover {
+  background-color: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.actionLabel {
+  font-size: 9.5px;
+  color: #8b92a5;
+}
+
+/* Sticky Details Tab controls */
+.detailsTabContainer {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 2px;
+  gap: 4px;
+}
+
+.detailsTabBtn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #8b92a5;
+  font-size: 11.5px;
+  font-weight: 750;
+  cursor: pointer;
+  padding: 8px 4px;
+  position: relative;
+  text-align: center;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.detailsTabBtn:hover {
+  color: #fff;
+}
+
+.detailsTabBtnActive {
+  color: #f87820 !important;
+}
+
+.detailsTabBtnActive::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #f87820;
+  border-radius: 2px;
+}
+
+/* Profile field item */
+.profileDetailField {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.profileDetailField:last-child {
+  border-bottom: none;
+}
+
+.fieldLabel {
+  color: #8b92a5;
+  font-size: 11.5px;
+}
+
+.fieldValue {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+/* Notes Widget */
+.notesWidget {
+  background-color: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 4px;
+}
+
+.notesWidgetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.notesWidgetTitle {
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.notesEditBtn {
+  background: none;
+  border: none;
+  color: #8b92a5;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.notesEditBtn:hover {
+  color: #f87820;
+}
+
+.notesContentBlock {
+  font-size: 11.5px;
+  color: #c4c8d4;
+  line-height: 1.6;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  text-align: right;
+  min-height: 50px;
+}
+
+.notesTextarea {
+  width: 100%;
+  min-height: 60px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(248, 120, 32, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px;
+  font-size: 11.5px;
+  font-family: inherit;
+  resize: vertical;
+  text-align: right;
+  outline: none;
+}
+
+/* Performance 2x2 Grid block */
+.performanceSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.performanceTitle {
+  font-size: 12.5px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+.performanceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.perfItem {
+  background-color: var(--admin-card-bg);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+  gap: 4px;
+}
+
+.perfLabel {
+  font-size: 10px;
+  color: #8b92a5;
+}
+
+.perfValue {
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+  font-family: var(--font-vazirmatn), 'Inter', system-ui;
+}
+
+/* Filter Strip styling */
+.filterStrip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.filterControlsLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchBarWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 260px;
+}
+
+.searchBarIcon {
+  position: absolute;
+  right: 12px;
+  color: #8b92a5;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.searchBarInput {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 8px 36px 8px 12px;
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s;
+  text-align: right;
+}
+
+.searchBarInput:focus {
+  border-color: rgba(248, 120, 32, 0.5);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.filterSelect {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #c4c8d4;
+  font-size: 11.5px;
+  outline: none;
+  cursor: pointer;
+  min-width: 110px;
+  text-align: right;
+  transition: all 0.2s;
+}
+
+.filterSelect:focus {
+  border-color: rgba(248, 120, 32, 0.5);
+}
+
+.advFilterBtn {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #c4c8d4;
+  font-size: 11.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.advFilterBtn:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+/* Overlays / Modal Windows */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modalContent {
+  width: 500px;
+  max-width: 90%;
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  direction: rtl;
+  text-align: right;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modalHeader {
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  color: #8b92a5;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modalCloseBtn:hover {
+  color: #fff;
+}
+
+.modalBody {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.inputGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ── SHIPMENTS TAB PREMIUM STYLES ── */
+.shipmentsRightWidgetsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.shipmentsDoughnutCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.shipmentsCardTitle {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.doughnutWrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  direction: rtl;
+}
+
+.doughnutSvgContainer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.doughnutCenterText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.doughnutCenterNum {
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  font-family: var(--font-vazirmatn), 'Inter', system-ui;
+}
+
+.doughnutCenterLabel {
+  font-size: 8.5px;
+  color: #8b92a5;
+  margin-top: 2px;
+  font-weight: bold;
+}
+
+.doughnutLegendList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+}
+
+.doughnutLegendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.legendLabelBlock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legendText {
+  color: #c4c8d4;
+}
+
+.legendValBlock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-vazirmatn), 'Inter', system-ui;
+}
+
+.legendCount {
+  color: #fff;
+  font-weight: bold;
+}
+
+.legendPct {
+  color: #8b92a5;
+  font-size: 10px;
+}
+
+/* Timeline Card */
+.shipmentsTimelineCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  padding-right: 14px;
+}
+
+.timelineList::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  bottom: 6px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.timelineItem {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  align-items: flex-start;
+  text-align: right;
+  gap: 4px;
+}
+
+.timelineItemDot {
+  position: absolute;
+  right: -13px;
+  top: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 0 0 3px var(--admin-card-bg);
+}
+
+.timelineTime {
+  font-size: 9.5px;
+  color: #8b92a5;
+}
+
+.timelineDesc {
+  font-size: 11px;
+  color: #e5e7eb;
+  line-height: 1.5;
+}
+
+/* Tracking Boxes */
+.shipmentsTrackingCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.trackingCardHeaderLink {
+  font-size: 10.5px;
+  color: #f87820;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.trackingCardHeaderLink:hover {
+  text-decoration: underline;
+}
+
+.trackingList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trackingBoxItem {
+  background-color: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.trackingBoxItem:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.trackingBoxHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trackingBoxCode {
+  font-size: 11.5px;
+  font-weight: 850;
+  color: #fff;
+  font-family: 'Inter', monospace;
+}
+
+.trackingBoxRoute {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #c4c8d4;
+}
+
+.trackingBoxRouteDetails {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: bold;
+}
+
+.trackingBoxRouteEst {
+  font-size: 10px;
+  color: #8b92a5;
+  font-family: var(--font-vazirmatn), 'Inter', system-ui;
+}
+
+.badgeCustoms {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 9.5px;
+  font-weight: bold;
+}
+
+.badgeIran {
+  background-color: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 9.5px;
+  font-weight: bold;
+}
+
+.badgeProblem {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 9.5px;
+  font-weight: bold;
+}
+
+/* ── INTERACTIVE SHIPMENT DETAILS CARD STYLES ── */
+.shipmentDetailsCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  direction: rtl;
+  color: #e5e7eb;
+}
+
+.detailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 14px;
+}
+
+.detailsHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.backToStatsBtn {
+  background: rgba(248, 120, 32, 0.1);
+  color: #f87820;
+  border: 1px solid rgba(248, 120, 32, 0.2);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.backToStatsBtn:hover {
+  background: #f87820;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.shipmentMainCodeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.shipmentMainCode {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ff9d00;
+  font-family: var(--font-vazirmatn), 'Inter', monospace;
+}
+
+.productMiniSection {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.productMiniImg {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: #1a1d26;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.productMiniInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.productMiniName {
+  font-size: 13px;
+  font-weight: 750;
+  color: #fff;
+}
+
+.productMiniOrderId {
+  font-size: 11.5px;
+  color: #f87820;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.productMiniOrderId:hover {
+  color: #ff8c3a;
+}
+
+.specsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.specItem {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.specLabel {
+  font-size: 10.5px;
+  color: #8b92a5;
+  font-weight: bold;
+}
+
+.specValue {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #fff;
+}
+
+.addressSection {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addressTitle {
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding-bottom: 6px;
+  margin: 0;
+}
+
+.addressRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+}
+
+.addressLabel {
+  color: #8b92a5;
+}
+
+.addressVal {
+  color: #e5e7eb;
+  font-weight: 700;
+  text-align: left;
+}
+
+.trackingTimelineSection {
+  margin-bottom: 24px;
+}
+
+.timelineHeading {
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.timelineStages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  padding-right: 20px;
+}
+
+.timelineStages::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 5px;
+  bottom: 8px;
+  width: 2px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.timelineStage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.stageDot {
+  position: absolute;
+  right: -20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #242834;
+  border: 2px solid var(--admin-card-bg);
+  z-index: 2;
+  transition: all 0.3s;
+}
+
+.stageDotActive {
+  background-color: #f87820;
+  box-shadow: 0 0 0 4px rgba(248, 120, 32, 0.2);
+}
+
+.stageDotCompleted {
+  background-color: #10b981;
+}
+
+.stageInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stageTitle {
+  font-size: 12px;
+  font-weight: 750;
+  color: #8b92a5;
+  transition: color 0.3s;
+}
+
+.stageTitleActive {
+  color: #fff;
+}
+
+.stageTitleCompleted {
+  color: #10b981;
+}
+
+.stageSubtext {
+  font-size: 10px;
+  color: #6c7284;
+}
+
+.printLabelActionBtn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #f87820 0%, #ff5e00 100%);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(248, 120, 32, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.printLabelActionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(248, 120, 32, 0.35);
+}
+
+/* Progress Bar for Payment Methods */
+.progressBarTrack {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* Excel Downloader styles */
+.downloadActionLink {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #f87820;
+}
+
+/* Financial Reports dashboard styles */
+.finReportsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+@media (min-width: 1024px) {
+  .finReportsGrid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.finReportsMetricCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s;
+}
+
+.finReportsMetricCard:hover {
+  border-color: rgba(248, 120, 32, 0.25);
+  transform: translateY(-2px);
+}
+
+.finChartCard {
+  background-color: var(--admin-card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.finChartTitle {
+  font-size: 15px;
+  font-weight: 850;
+  color: #fff;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.finBreakdownList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.finBreakdownItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.finBreakdownHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.finBreakdownName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #c4c8d4;
+}
+
+.finBreakdownVal {
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Product Catalog Lists */
+.categoryListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.categoryListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.categoryListItem:hover {
+  background: rgba(248, 120, 32, 0.08);
+  border-color: rgba(248, 120, 32, 0.2);
+  transform: translateX(-4px);
+}
+
+.categoryListItemActive {
+  background: rgba(248, 120, 32, 0.12) !important;
+  border-color: rgba(248, 120, 32, 0.3) !important;
+}
+
+.categoryListText {
+  color: #c4c8d4;
+  font-size: 11.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.categoryListCount {
+  color: #8b92a5;
+  font-size: 11px;
+  font-family: var(--font-vazirmatn), system-ui;
+}
+
+.brandListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.brandListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.brandListItem:hover {
+  background: rgba(248, 120, 32, 0.08);
+  border-color: rgba(248, 120, 32, 0.15);
+  transform: translateX(-4px);
+}
+
+.brandListItemActive {
+  background: rgba(248, 120, 32, 0.1) !important;
+  border-color: rgba(248, 120, 32, 0.25) !important;
+}
+
+.brandListText {
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: bold;
+}
+
+.brandListCount {
+  color: #8b92a5;
+  font-size: 11px;
+  font-family: var(--font-vazirmatn), system-ui;
+}
+
+
+
+

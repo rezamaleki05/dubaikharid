@@ -367,3 +367,197 @@
     order: 2;
   }
 }
+
+/* STEP 2: PAYMENT METHOD SELECTOR STYLE */
+.paymentSection {
+  padding: 32px;
+}
+
+.paymentTitle {
+  font-size: 1.25rem;
+  font-weight: 850;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.paymentDesc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.paymentCards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.paymentCard {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-align: right;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.paymentCard:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.paymentCardActive {
+  background-color: rgba(248, 120, 32, 0.05) !important;
+  border-color: #f87820 !important;
+  box-shadow: 0 0 15px rgba(248, 120, 32, 0.1);
+}
+
+.paymentCardIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #f87820;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.paymentCardActive .paymentCardIcon {
+  background-color: rgba(248, 120, 32, 0.15);
+  border-color: rgba(248, 120, 32, 0.3);
+  color: #f87820;
+}
+
+.paymentCardInfo {
+  flex-grow: 1;
+}
+
+.paymentCardTitle {
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.paymentCardDesc {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+.paymentRadio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.paymentCardActive .paymentRadio {
+  border-color: #f87820;
+}
+
+.paymentRadioInner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #f87820;
+  transform: scale(0);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.paymentCardActive .paymentRadioInner {
+  transform: scale(1);
+}
+
+/* BANK CARD DETAILS STYLE (FOR CARD TO CARD OPTION) */
+.bankDetailsBox {
+  background-color: rgba(248, 120, 32, 0.04);
+  border: 1px solid rgba(248, 120, 32, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.bankDetailsTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f87820;
+  margin-bottom: 12px;
+}
+
+.bankRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+
+.bankRow:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.bankLabel {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.bankValue {
+  color: #fff;
+  font-weight: 750;
+}
+
+.cardNumBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardNum {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1px;
+  font-family: 'Inter', sans-serif;
+}
+
+.copyBtn {
+  background-color: rgba(248, 120, 32, 0.1);
+  color: #f87820;
+  border: 1px solid rgba(248, 120, 32, 0.3);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copyBtn:hover {
+  background-color: #f87820;
+  color: #fff;
+}

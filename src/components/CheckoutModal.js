@@ -12,8 +12,10 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   });
 
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState(1); // 1 = Form, 2 = Loading, 3 = Success
+  const [step, setStep] = useState(1); // 1 = Form, 2 = Payment Method, 3 = Loading, 4 = Success
   const [trackingCode, setTrackingCode] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('gateway'); // 'gateway' | 'card'
+  const [copied, setCopied] = useState(false);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -54,7 +56,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     if (!cleanPhone) {
       newErrors.phone = 'شماره موبایل الزامی است';
     } else if (!/^(?:09|\+989|989|00989)\d{9}$/.test(cleanPhone)) {
-      newErrors.phone = 'شماره موبایل معتبر نیست (نمونه: ۰۹۱۲۳۴۵۶۷۸۹ یا +۹۸۹۱۲۳۴۵۶۷۸۹)';
+      newErrors.phone = 'شماره موبایل معتبر نیست (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)';
     }
     
     if (!formData.address.trim()) newErrors.address = 'آدرس تحویل الزامی است';
@@ -63,14 +65,17 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+    setStep(2); // Go to Payment Selection Step
+  };
 
+  const handlePaymentSubmit = () => {
     const cleanPhone = toEnglishDigits(formData.phone.trim().replace(/\s+/g, ''));
 
     // Transition to loading step
-    setStep(2);
+    setStep(3);
 
     // Simulate database insertion and payment gateway handshake
     setTimeout(() => {
@@ -80,23 +85,28 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
       setTrackingCode(tracking);
 
       const totalTomanVal = orderData.totalToman || ((orderData.price || 0) * 19500);
+      const isCardSelected = paymentMethod === 'card';
 
       // Save order lead to localStorage for Admin Panel
       try {
         const existingLeads = JSON.parse(localStorage.getItem('dubaiKharidLeads') || '[]');
+        const paymentNotes = isCardSelected 
+          ? `[کارت به کارت] ${formData.notes.trim()}`
+          : `[درگاه شتاب] ${formData.notes.trim()}`;
+
         const newLead = {
           id: tracking,
           customerName: formData.name.trim(),
           phone: cleanPhone,
           address: formData.address.trim(),
-          notes: formData.notes.trim(),
-          productName: orderData.productName || orderData.name || 'کالای سفارشی دبی',
-          brand: orderData.brand || 'سفارشی',
+          notes: paymentNotes,
+          productName: orderData.productName || orderData.name || 'پیش‌فاکتور سبد خرید دبی',
+          brand: orderData.brand || 'دبی خرید',
           weight: orderData.weight || 0.5,
           totalToman: totalTomanVal,
           priceAed: orderData.priceAed || orderData.price || 0,
           date: new Date().toISOString(),
-          status: 'pending', // 'pending' = در انتظار بررسی, 'contacted' = تماس گرفته شده, etc.
+          status: 'pending', // 'pending' = در انتظار بررسی
           items: orderData.items || null
         };
         existingLeads.unshift(newLead);
@@ -105,30 +115,20 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
         console.error('Failed to save checkout lead locally:', err);
       }
 
-      // Check if this order contains a stock laptop to redirect to online Shetab gateway
-      const isLaptop = orderData.category === 'electronics' || 
-                      (orderData.productName && (
-                        orderData.productName.toLowerCase().includes('macbook') || 
-                        orderData.productName.toLowerCase().includes('dell') || 
-                        orderData.productName.toLowerCase().includes('thinkpad') || 
-                        orderData.productName.toLowerCase().includes('hp') || 
-                        orderData.productName.toLowerCase().includes('asus') || 
-                        orderData.productName.includes('لپ‌تاپ') || 
-                        orderData.productName.includes('لپ تاپ')
-                      ));
-
-      if (isLaptop) {
+      if (!isCardSelected) {
+        // RENDER 1: ONLINE BANK PORTAL (Simulated banking Shetab)
         if (onCartIncrement) {
-          onCartIncrement(); // empties the cart if checked out from cart
+          onCartIncrement(); // Empties the cart if checked out from cart page
         }
         // Redirect browser to Shetab online payment gate
         window.location.href = `/payment?amount=${totalTomanVal}&tracking=${tracking}&prodName=${encodeURIComponent(orderData.productName || orderData.name)}&customer=${encodeURIComponent(formData.name.trim())}&phone=${cleanPhone}&address=${encodeURIComponent(formData.address.trim())}&notes=${encodeURIComponent(formData.notes.trim())}`;
         return;
       }
 
-      setStep(3);
+      // RENDER 2: CARD TO CARD (Transition to Success / Bank Card details)
+      setStep(4);
       if (onCartIncrement) {
-        onCartIncrement();
+        onCartIncrement(); // Empties the cart for card-to-card success
       }
     }, 1800);
   };
@@ -137,7 +137,15 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     setStep(1);
     setFormData({ name: '', phone: '', address: '', notes: '' });
     setErrors({});
+    setPaymentMethod('gateway');
+    setCopied(false);
     onClose();
+  };
+
+  const handleCopyCard = () => {
+    navigator.clipboard.writeText('6037997512345678');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const formatPrice = (price) => {
@@ -154,7 +162,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
 
         {/* STEP 1: FORM INPUT */}
         {step === 1 && (
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <form onSubmit={handleFormSubmit} className={styles.form} dir="rtl">
             <div className={styles.modalHeader}>
               <span className={styles.airplaneIcon}>✈️</span>
               <h2>ثبت نهایی سفارش خرید از دبی</h2>
@@ -170,7 +178,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               </div>
               <div className={styles.summaryPriceRow}>
                 <span>مبلغ قابل پرداخت:</span>
-                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman)} تومان</span>
+                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * 19500))} تومان</span>
               </div>
             </div>
 
@@ -184,7 +192,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="مثال: رضا احمدی"
+                  placeholder="مثال: رضا ملکی"
                   className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
                 />
                 {errors.name && <span className={styles.errorText}>{errors.name}</span>}
@@ -236,7 +244,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             {/* Action Buttons */}
             <div className={styles.actions}>
               <button type="submit" className={styles.submitBtn}>
-                تأیید و ثبت نهایی سفارش خرید دبی
+                تأیید مشخصات و مرحله بعد
               </button>
               <button type="button" onClick={handleClose} className={styles.cancelBtn}>
                 انصراف
@@ -245,42 +253,133 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
           </form>
         )}
 
-        {/* STEP 2: SIMULATED GATEWAY LOADING */}
+        {/* STEP 2: PAYMENT METHOD SELECTOR */}
         {step === 2 && (
+          <div className={styles.paymentSection} dir="rtl">
+            <div className={styles.modalHeader}>
+              <span className={styles.airplaneIcon}>💳</span>
+              <h2 className={styles.paymentTitle}>انتخاب روش پرداخت سفارش</h2>
+              <p>لطفاً یکی از دو روش پرداخت ایمن زیر را برای نهایی کردن سفارش انتخاب کنید.</p>
+            </div>
+
+            {/* Price Row */}
+            <div className={styles.summaryCard} style={{ marginBottom: '20px' }}>
+              <div className={styles.summaryPriceRow}>
+                <span>مبلغ قابل پرداخت سفارش:</span>
+                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * 19500))} تومان</span>
+              </div>
+            </div>
+
+            {/* Methods list */}
+            <div className={styles.paymentCards}>
+              {/* Method 1: online Gateway */}
+              <div 
+                className={`${styles.paymentCard} ${paymentMethod === 'gateway' ? styles.paymentCardActive : ''}`}
+                onClick={() => setPaymentMethod('gateway')}
+              >
+                <div className={styles.paymentCardIcon}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <div className={styles.paymentCardInfo}>
+                  <div className={styles.paymentCardTitle}>درگاه پرداخت آنلاین شتاب</div>
+                  <div className={styles.paymentCardDesc}>اتصال مستقیم به کلیه کارت‌های بانکی عضو شبکه شتاب</div>
+                </div>
+                <div className={styles.paymentRadio}>
+                  <div className={styles.paymentRadioInner}></div>
+                </div>
+              </div>
+
+              {/* Method 2: Card to Card */}
+              <div 
+                className={`${styles.paymentCard} ${paymentMethod === 'card' ? styles.paymentCardActive : ''}`}
+                onClick={() => setPaymentMethod('card')}
+              >
+                <div className={styles.paymentCardIcon}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                </div>
+                <div className={styles.paymentCardInfo}>
+                  <div className={styles.paymentCardTitle}>کارت به کارت مستقیم بانکی</div>
+                  <div className={styles.paymentCardDesc}>انتقال مستقیم مبلغ به کارت بانکی فروشگاه دبی خرید</div>
+                </div>
+                <div className={styles.paymentRadio}>
+                  <div className={styles.paymentRadioInner}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className={styles.actions}>
+              <button type="button" onClick={handlePaymentSubmit} className={styles.submitBtn}>
+                تأیید و پرداخت نهایی سفارش
+              </button>
+              <button type="button" onClick={() => setStep(1)} className={styles.cancelBtn}>
+                مرحله قبل
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: LOADING SPINNER */}
+        {step === 3 && (
           <div className={styles.loadingContainer}>
             <div className={styles.loaderSpinner}></div>
-            <h3>در حال ثبت اطلاعات و هماهنگی خرید از دبی...</h3>
+            <h3>در حال ثبت اطلاعات و اتصال به درگاه پرداخت...</h3>
             <p>لطفاً شکیبا باشید. اطلاعات پیش‌فاکتور شما در حال اتصال به سرور مرکزی خرید است.</p>
           </div>
         )}
 
-        {/* STEP 3: SUCCESS ANIMATION SCREEN */}
-        {step === 3 && (
-          <div className={styles.successContainer}>
-            {/* Animated Checkmark Circle */}
+        {/* STEP 4: CARD TRANSFER SUCCESS OR GATEWAY DONE SCREEN */}
+        {step === 4 && (
+          <div className={styles.successContainer} dir="rtl">
             <div className={styles.successCircle}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
 
-            <h2>سفارش شما با موفقیت در دبی ثبت شد!</h2>
-            
+            <h2>پیش‌فاکتور سفارش شما با موفقیت ثبت شد!</h2>
+
             {/* Tracking Card */}
             <div className={styles.trackingCard}>
               <div className={styles.trackingLabel}>کد رهگیری پیش‌فاکتور شما:</div>
               <div className={styles.trackingCode}>{trackingCode}</div>
             </div>
 
-            <p className={styles.successDesc}>
-              کارشناسان دبی خرید ظرف حداکثر <strong>۳۰ دقیقه آینده</strong> جهت هماهنگی نهایی خرید، تأیید رنگ/سایز و صدور فاکتور نهایی و نحوه پرداخت ایمن با شماره تلفن <strong>{formData.phone}</strong> تماس خواهند گرفت.
-            </p>
+            {/* Direct Bank Card Details for Card to Card transfer */}
+            <div className={styles.bankDetailsBox}>
+              <div className={styles.bankDetailsTitle}>💳 اطلاعات کارت فروشگاه جهت واریز کارت‌به‌کارت:</div>
+              
+              <div className={styles.bankRow}>
+                <span className={styles.bankLabel}>شماره کارت:</span>
+                <div className={styles.cardNumBox}>
+                  <span className={styles.cardNum}>۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸</span>
+                  <button onClick={handleCopyCard} className={styles.copyBtn}>
+                    {copied ? 'کپی شد! ✓' : 'کپی کارت'}
+                  </button>
+                </div>
+              </div>
 
-            <div className={styles.successBadges}>
-              <div className={styles.badgeItem}>🛡️ خرید تضمینی</div>
-              <div className={styles.badgeItem}>📦 تحویل قطعی درب منزل</div>
-              <div className={styles.badgeItem}>✈️ کارگو اختصاصی هوایی</div>
+              <div className={styles.bankRow}>
+                <span className={styles.bankLabel}>نام بانک:</span>
+                <span className={styles.bankValue}>بانک ملی ایران</span>
+              </div>
+
+              <div className={styles.bankRow}>
+                <span className={styles.bankLabel}>نام صاحب حساب:</span>
+                <span className={styles.bankValue}>امین دبی خرید (مدیریت سیستم)</span>
+              </div>
+
+              <div className={styles.bankRow}>
+                <span className={styles.bankLabel}>مبلغ واریزی:</span>
+                <span className={styles.bankValue} style={{ color: '#4ade80', fontSize: '1rem' }}>
+                  {formatPrice(orderData.totalToman || (orderData.price * 19500))} تومان
+                </span>
+              </div>
             </div>
+
+            <p className={styles.successDesc} style={{ textAlign: 'right' }}>
+              کاربر گرامی، سفارش شما با موفقیت در پنل مدیریت دبی خرید به ثبت رسید. لطفا مبلغ فوق را به شماره کارت درج شده واریز کرده و فیش واریزی را جهت نهایی‌سازی فاکتور و ارسال هوایی بار از دبی، نزد خود نگه دارید. کارشناسان ما حداکثر تا <strong>۳۰ دقیقه آینده</strong> با شما تماس خواهند گرفت.
+            </p>
 
             <button type="button" onClick={handleClose} className={styles.doneBtn}>
               فهمیدم، بازگشت به فروشگاه
