@@ -305,6 +305,43 @@ const AdminIcons = {
       <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z" />
       <path d="M16 8H8M16 12H8M12 16H8" />
     </svg>
+  ),
+  star: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  sync: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M23 4v6h-6" />
+      <path d="M1 20v-6h6" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+      <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+  ),
+  whatsapp: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+  ),
+  bell: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
+  logout: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </svg>
+  ),
+  plus: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
   )
 };
 
@@ -2513,7 +2550,7 @@ export default function AdminPanel() {
     return (
       <div className={styles.pageWrapper} style={{ alignItems: 'center', justifyContent: 'center' }}>
         <form onSubmit={handleLogin} className={styles.loginCard}>
-          <span className={styles.loginLogo}>✈️</span>
+          <span className={styles.loginLogo}>{AdminIcons.plane(36)}</span>
           <h1>پنل مدیریت دبی خرید</h1>
           <p>جهت دسترسی به سفارشات، آپلود محصولات و نظرات کاربران، وارد شوید.</p>
 
@@ -2556,7 +2593,7 @@ export default function AdminPanel() {
       <aside className={styles.sidebar}>
         <div>
           <div className={styles.sidebarLogoArea}>
-            <span className={styles.sidebarLogoIcon}>✈️</span>
+            <span className={styles.sidebarLogoIcon}>{AdminIcons.plane(20)}</span>
             <div className={styles.sidebarLogoText}>
               <span className={styles.logoDubai}>Dubai</span>
               <span className={styles.logoKharid}>Kharid</span>
@@ -2678,7 +2715,7 @@ export default function AdminPanel() {
             </div>
           </div>
           <button onClick={handleLogout} className={styles.exitButton}>
-            <span>🚪</span> خروج از حساب کاربری
+            <span>{AdminIcons.logout(14)}</span> خروج از حساب کاربری
           </button>
         </div>
       </aside>
@@ -2689,7 +2726,7 @@ export default function AdminPanel() {
         {/* Top bar header */}
         <header className={styles.topHeader}>
           <div className={styles.searchWrapper}>
-            <span className={styles.searchIcon}>🔍</span>
+            <span className={styles.searchIcon}>{AdminIcons.search(14)}</span>
             <input type="text" placeholder="جستجو کنید..." className={styles.searchInput} />
           </div>
           
@@ -2700,7 +2737,7 @@ export default function AdminPanel() {
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                 style={{ position: 'relative' }}
               >
-                <span>🔔</span>
+                <span>{AdminIcons.bell(16)}</span>
                 <span className={styles.bellBadge}>5</span>
               </button>
               
@@ -2722,7 +2759,7 @@ export default function AdminPanel() {
                   }}
                 >
                   <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff' }}>🔔 اعلان‌های اخیر مدیریت</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>{AdminIcons.bell(13)} اعلان‌های اخیر مدیریت</span>
                     <span style={{ fontSize: '10px', color: '#f87820', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => alert('همه اعلان‌ها خوانده شدند.')}>علامت خوانده شده</span>
                   </div>
                   <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
@@ -2849,7 +2886,7 @@ export default function AdminPanel() {
 
                     {/* Card 4: Sold */}
                     <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #3b82f6' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#3b82f6' }}>🛍️</div>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#3b82f6' }}>{AdminIcons.bag(18)}</div>
                       <div>
                         <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>فروخته شده</span>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
@@ -2861,7 +2898,7 @@ export default function AdminPanel() {
 
                     {/* Card 5: Total Profit */}
                     <div className={styles.cardPanel} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #2ecc71' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#2ecc71' }}>💰</div>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#2ecc71' }}>{AdminIcons.bank(18)}</div>
                       <div>
                         <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>سود کل</span>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
@@ -3144,9 +3181,9 @@ export default function AdminPanel() {
                             <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>جزئیات لپ‌تاپ</span>
                             <button 
                               onClick={() => setSelectedLaptopId(null)}
-                              style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '14px' }}
+                              style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '14px', display: 'inline-flex', alignItems: 'center' }}
                             >
-                              ✕
+                              {AdminIcons.close(14)}
                             </button>
                           </div>
 
@@ -3285,7 +3322,7 @@ export default function AdminPanel() {
                                   return (
                                     <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'rgba(255,255,255,0.01)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
                                       <span style={{ color: '#c4c8d4' }}>{labelMap[key] || key}</span>
-                                      <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontWeight: 'bold' }}>{passed ? '✓ تایید شده' : '✕ خطا'}</span>
+                                      <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{passed ? <>{AdminIcons.check(12)} تایید شده</> : <>{AdminIcons.close(12)} خطا</>}</span>
                                     </div>
                                   );
                                 })}
@@ -3994,8 +4031,8 @@ export default function AdminPanel() {
                       {laptopImages.map((imgUrl, idx) => (
                         <div key={idx} className={styles.imageThumbCard}>
                           <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} />
-                          <button type="button" onClick={() => handleRemoveImage(idx)} className={styles.removeThumbBtn}>
-                            ✕
+                          <button type="button" onClick={() => handleRemoveImage(idx)} className={styles.removeThumbBtn} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {AdminIcons.close(10)}
                           </button>
                         </div>
                       ))}
@@ -4211,7 +4248,7 @@ export default function AdminPanel() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', direction: 'rtl' }}>
                 <div>
                   <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0' }}>
-                    خوش آمدید، مدیر سایت 👋
+                    خوش آمدید، مدیر سایت
                   </h1>
                   <p style={{ fontSize: '13px', color: '#8b92a5', margin: 0 }}>
                     نمای کلی از وضعیت فروشگاه و سفارشات (همه بخش‌ها با کلیک واکنش‌گرا هستند)
@@ -4639,7 +4676,7 @@ export default function AdminPanel() {
                           alignItems: 'center', 
                           gap: '4px' 
                         }}>
-                          {tx.isSuccess ? '✓' : '↩'} {tx.status}
+                          {tx.isSuccess ? AdminIcons.check(9) : '↩'} {tx.status}
                         </span>
                       </div>
                     ))}
@@ -5274,7 +5311,7 @@ export default function AdminPanel() {
                                           alignItems: 'center'
                                         }}
                                       >
-                                        💬
+                                        {AdminIcons.whatsapp(12)}
                                       </a>
                                       
                                       <button 
@@ -5285,10 +5322,13 @@ export default function AdminPanel() {
                                           color: '#ef4444',
                                           cursor: 'pointer',
                                           fontSize: '12px',
-                                          padding: '4px 8px'
+                                          padding: '4px 8px',
+                                          display: 'inline-flex',
+                                          alignItems: 'center'
                                         }}
+                                        title="حذف سفارش"
                                       >
-                                        ✕
+                                        {AdminIcons.trash(12)}
                                       </button>
                                     </div>
                                   </td>
@@ -5907,11 +5947,11 @@ export default function AdminPanel() {
                       <span>اکسل</span>
                     </button>
                     <button onClick={() => setShowProductFilters(!showProductFilters)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: showProductFilters ? 'rgba(248, 120, 32, 0.08)' : 'rgba(255,255,255,0.03)', border: showProductFilters ? '1px solid var(--admin-orange)' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: showProductFilters ? 'var(--admin-orange)' : '#fff', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}>
-                      <span style={{ fontSize: '10px' }}>🔍</span>
+                      <span style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.search(10)}</span>
                       <span>فیلترها</span>
                     </button>
                     <button onClick={() => setIsAddProductOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}>
-                      <span style={{ fontSize: '10px' }}>➕</span>
+                      <span style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.plus(10)}</span>
                       <span>افزودن محصول جدید</span>
                     </button>
                   </div>
@@ -5934,7 +5974,7 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '10px', color: '#8b92a5' }}>کل محصولات فعال</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(248, 120, 32, 0.1)', color: 'var(--admin-orange)' }}>
-                      📦
+                      {AdminIcons.package(18)}
                     </div>
                   </div>
 
@@ -5949,7 +5989,7 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '10px', color: '#8b92a5' }}>دارای موجودی انبار</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                      ✅
+                      {AdminIcons.check(18)}
                     </div>
                   </div>
 
@@ -5964,7 +6004,7 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '10px', color: '#8b92a5' }}>اتمام موجودی</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                      ❌
+                      {AdminIcons.close(18)}
                     </div>
                   </div>
 
@@ -5979,7 +6019,7 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '10px', color: '#8b92a5' }}>کمتر از ۱۰ عدد</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                      ⚠️
+                      {AdminIcons.alert(18)}
                     </div>
                   </div>
 
@@ -5996,7 +6036,7 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '10px', color: '#10b981' }}>نمایش گزارش محاسبات ➔</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(248, 120, 32, 0.1)', color: 'var(--admin-orange)' }}>
-                      💰
+                      {AdminIcons.dollar(18)}
                     </div>
                   </div>
                 </div>
@@ -6151,7 +6191,7 @@ export default function AdminPanel() {
                               className={`${styles.categoryListItem} ${isActive ? styles.categoryListItemActive : ''}`}
                             >
                               <span className={styles.categoryListText}>
-                                <span>{isActive ? '🔸' : '🔹'}</span>
+                                <span>{isActive ? <span style={{ color: 'var(--admin-orange)', marginLeft: '6px' }}>{AdminIcons.check(11)}</span> : <span style={{ display: 'inline-block', width: '11px', marginLeft: '6px' }} />}</span>
                                 <span>{catName}</span>
                               </span>
                               <span className={styles.categoryListCount}>{count.toLocaleString('fa-IR')} محصول</span>
@@ -6297,7 +6337,7 @@ export default function AdminPanel() {
                             <span style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-orange)', fontFamily: 'var(--font-vazirmatn)' }}>{formatToman(metrics.totalValuation)}</span>
                           </div>
                           <div style={{ background: 'var(--admin-orange)', color: '#fff', width: '42px', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                            💼
+                            {AdminIcons.bank(18)}
                           </div>
                         </div>
 
@@ -6505,8 +6545,8 @@ export default function AdminPanel() {
                           </td>
                           <td style={{ fontSize: '11px', color: '#8b92a5' }}>{fmtDate(rev.date)}</td>
                           <td>
-                            <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '6px', background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)' }}>
-                              ✓ تایید شده
+                            <span style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '6px', background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              {AdminIcons.check(10)} تایید شده
                             </span>
                           </td>
                           <td>
@@ -6575,7 +6615,7 @@ export default function AdminPanel() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '28px', color: '#f87820' }}>👥</span>
+                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.users(28)}</span>
                     <div>
                       <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>مشتریان</h1>
                       <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت و بررسی اطلاعات مشتریان</p>
@@ -6603,7 +6643,7 @@ export default function AdminPanel() {
                     </button>
 
                     <button type="button" className={styles.advFilterBtn} style={{ padding: '10px 15px' }}>
-                      <span>📥</span> خروجی اکسل
+                      <span>{AdminIcons.download(12)}</span> خروجی اکسل
                     </button>
                   </div>
                 </div>
@@ -6618,7 +6658,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`}>+12.5% نسبت به ماه قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
-                      👥
+                      {AdminIcons.users(18)}
                     </div>
                   </div>
 
@@ -6630,7 +6670,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`}>+8.5% نسبت به ماه قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                      👤
+                      {AdminIcons.user(18)}
                     </div>
                   </div>
 
@@ -6642,7 +6682,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`}>+15.7% نسبت به ماه قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                      🔒
+                      {AdminIcons.lock(18)}
                     </div>
                   </div>
 
@@ -6654,7 +6694,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`}>+4.6% نسبت به ماه قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                      👑
+                      {AdminIcons.crown(18)}
                     </div>
                   </div>
 
@@ -6666,7 +6706,7 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>تومان</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4' }}>
-                      💳
+                      {AdminIcons.card(18)}
                     </div>
                   </div>
                 </div>
@@ -6676,7 +6716,7 @@ export default function AdminPanel() {
                   <div className={styles.filterControlsLeft}>
                     {/* Live search input */}
                     <div className={styles.searchBarWrapper}>
-                      <span className={styles.searchBarIcon}>🔍</span>
+                      <span className={styles.searchBarIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.search(13)}</span>
                       <input 
                         type="text" 
                         placeholder="جستجو در مشتریان..." 
@@ -6814,10 +6854,10 @@ export default function AdminPanel() {
                                           });
                                           setIsEditCustomerOpen(true);
                                         }}
-                                        style={{ background: 'none', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '16px', padding: '6px' }}
+                                        style={{ background: 'none', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '16px', padding: '6px', display: 'inline-flex', alignItems: 'center' }}
                                         title="ویرایش سریع"
                                       >
-                                        ✏️
+                                        {AdminIcons.edit(13)}
                                       </button>
 
                                       <button 
@@ -6918,7 +6958,7 @@ export default function AdminPanel() {
                               className={styles.actionCircleBtn}
                               title="ویرایش مشخصات"
                             >
-                              ✏️
+                              {AdminIcons.edit(14)}
                             </button>
                             <span className={styles.actionLabel}>ویرایش</span>
                           </div>
@@ -6929,8 +6969,9 @@ export default function AdminPanel() {
                               href={`mailto:${selCust.email}`}
                               className={styles.actionCircleBtn}
                               title="ارسال ایمیل"
+                              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                             >
-                              ✉️
+                              {AdminIcons.mail(14)}
                             </a>
                             <span className={styles.actionLabel}>ایمیل</span>
                           </div>
@@ -6941,8 +6982,9 @@ export default function AdminPanel() {
                               onClick={() => alert(`ارسال پیامک ترویجی به شماره ${selCust.phone} با موفقیت در صف ارسال قرار گرفت.`)} 
                               className={styles.actionCircleBtn}
                               title="ارسال پیامک"
+                              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                             >
-                              💬
+                              {AdminIcons.chat(14)}
                             </button>
                             <span className={styles.actionLabel}>پیامک</span>
                           </div>
@@ -6953,8 +6995,9 @@ export default function AdminPanel() {
                               href={`tel:${selCust.phone}`} 
                               className={styles.actionCircleBtn}
                               title="تماس تلفنی"
+                              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                             >
-                              📞
+                              {AdminIcons.phone(14)}
                             </a>
                             <span className={styles.actionLabel}>تماس</span>
                           </div>
@@ -7157,7 +7200,7 @@ export default function AdminPanel() {
                       </div>
                     ) : (
                       <div style={{ textAlign: 'center', padding: '40px', background: '#11131a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <span style={{ fontSize: '32px' }}>👤</span>
+                        <span style={{ color: '#8b92a5', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{AdminIcons.users(32)}</span>
                         <p style={{ color: '#8b92a5', fontSize: '12px', marginTop: '10px' }}>جهت مشاهده جزئیات کامل، روی ردیف یکی از مشتریان کلیک کنید.</p>
                       </div>
                     )}
@@ -7471,7 +7514,7 @@ export default function AdminPanel() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '28px', color: '#f87820' }}>🚚</span>
+                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.truck(28)}</span>
                     <div>
                       <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>ارسال ها</h1>
                       <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت و پیگیری تمام ارسالی های کالا</p>
@@ -7497,8 +7540,8 @@ export default function AdminPanel() {
                       <span>{AdminIcons.sliders(12)}</span> فیلترها
                     </button>
 
-                    <button type="button" className={styles.advFilterBtn} style={{ padding: '10px 15px' }}>
-                      <span>📊</span> گزارش ارسال ها
+                    <button type="button" className={styles.advFilterBtn} style={{ padding: '10px 15px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>{AdminIcons.chart(12)}</span> گزارش ارسال ها
                     </button>
                   </div>
                 </div>
@@ -7514,7 +7557,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`} style={{ color: '#3b82f6', marginTop: '2px' }}>+18.6% نسبت به قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                      📊
+                      {AdminIcons.chart(18)}
                     </div>
                   </div>
 
@@ -7527,7 +7570,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`} style={{ marginTop: '2px' }}>+12.5% نسبت به قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                      🟢
+                      {AdminIcons.truck(18)}
                     </div>
                   </div>
 
@@ -7540,7 +7583,7 @@ export default function AdminPanel() {
                       <span className={styles.metricSubText} style={{ color: '#f59e0b', marginTop: '2px' }}>+8.2% نسبت به قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                      ⚙️
+                      {AdminIcons.settings(18)}
                     </div>
                   </div>
 
@@ -7553,7 +7596,7 @@ export default function AdminPanel() {
                       <span className={styles.metricSubText} style={{ color: '#a855f7', marginTop: '2px' }}>+5.1% نسبت به قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
-                      🛍️
+                      {AdminIcons.bag(18)}
                     </div>
                   </div>
 
@@ -7566,7 +7609,7 @@ export default function AdminPanel() {
                       <span className={`${styles.metricSubText} ${styles.up}`} style={{ marginTop: '2px' }}>+20.4% نسبت به قبل</span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                      ✔️
+                      {AdminIcons.check(18)}
                     </div>
                   </div>
                 </div>
@@ -7576,7 +7619,7 @@ export default function AdminPanel() {
                   <div className={styles.filterControlsLeft}>
                     {/* Search bar input */}
                     <div className={styles.searchBarWrapper}>
-                      <span className={styles.searchBarIcon}>🔍</span>
+                      <span className={styles.searchBarIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.search(13)}</span>
                       <input 
                         type="text" 
                         placeholder="جستجو کنید..." 
@@ -7624,8 +7667,8 @@ export default function AdminPanel() {
                     </select>
 
                     {/* Date picker mock range */}
-                    <div className={styles.advFilterBtn} style={{ cursor: 'default' }}>
-                      <span>📅</span> 1403/03/01 - 1403/03/20
+                    <div className={styles.advFilterBtn} style={{ cursor: 'default', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <span>{AdminIcons.calendar(12)}</span> 1403/03/01 - 1403/03/20
                     </div>
                   </div>
 
@@ -7685,12 +7728,12 @@ export default function AdminPanel() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                       {ship.method === 'هوایی' ? (
                                         <>
-                                          <span style={{ fontSize: '14px', color: '#3b82f6' }}>✈️</span>
+                                          <span style={{ color: '#3b82f6', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.plane(14)}</span>
                                           <span>هوایی</span>
                                         </>
                                       ) : (
                                         <>
-                                          <span style={{ fontSize: '14px', color: '#10b981' }}>🚚</span>
+                                          <span style={{ color: '#10b981', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.truck(14)}</span>
                                           <span>زمینی</span>
                                         </>
                                       )}
@@ -7780,7 +7823,7 @@ export default function AdminPanel() {
                       <>
                         {/* Widget 1: Doughnut Chart SVG representation */}
                         <div className={styles.shipmentsDoughnutCard}>
-                          <h3 className={styles.shipmentsCardTitle}>📊 وضعیت ارسال‌ها</h3>
+                          <h3 className={styles.shipmentsCardTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{AdminIcons.chart(14)} وضعیت ارسال‌ها</h3>
                           
                           <div className={styles.doughnutWrapper}>
                             {/* Circular doughnut SVG graphics */}
@@ -8113,7 +8156,7 @@ export default function AdminPanel() {
                                       <span className={`${styles.stageTitle} ${isCompleted ? styles.stageTitleCompleted : ''} ${isActive ? styles.stageTitleActive : ''}`}
                                         style={{ color: activeIndex === -1 && idx === 1 ? '#ef4444' : undefined }}
                                       >
-                                        {stage.label} {activeIndex === -1 && idx === 1 && '⚠️'}
+                                        {stage.label} {activeIndex === -1 && idx === 1 && <span style={{ color: '#ef4444', display: 'inline-flex', alignItems: 'center', marginRight: '4px' }}>{AdminIcons.alert(12)}</span>}
                                       </span>
                                       <span className={styles.stageSubtext}>
                                         {activeIndex === -1 && idx === 1 ? 'توقف مرسوله به دلیل بازرسی گمرکی یا نقض مدارک' : stage.desc}
@@ -8129,7 +8172,7 @@ export default function AdminPanel() {
                           <button 
                             type="button" 
                             className={styles.printLabelActionBtn}
-                            onClick={() => alert(`🖨️ برچسب بارکد دار مرسوله ${selectedShip.id} آماده چاپ شد. جهت ارسال دستور چاپ به چاپگر حرارتی انبار دبی تایید نمایید.`)}
+                            onClick={() => alert(`برچسب بارکد دار مرسوله ${selectedShip.id} آماده چاپ شد. جهت ارسال دستور چاپ به چاپگر حرارتی انبار دبی تایید نمایید.`)}
                           >
                             {AdminIcons.printer(12)} چاپ بارکد و برچسب مرسوله ارسالی
                           </button>
@@ -8180,8 +8223,8 @@ export default function AdminPanel() {
                                 onChange={(e) => setNewShipmentForm(prev => ({ ...prev, method: e.target.value }))}
                                 className={styles.inputField}
                               >
-                                <option value="هوایی">هوایی ✈️</option>
-                                <option value="زمینی">زمینی 🚚</option>
+                                <option value="هوایی">هوایی</option>
+                                <option value="زمینی">زمینی</option>
                               </select>
                             </div>
 
@@ -8268,7 +8311,7 @@ export default function AdminPanel() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '28px', color: '#f87820' }}>💳</span>
+                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.card(28)}</span>
                     <div>
                       <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>پرداخت‌ها</h1>
                       <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت تمامی پرداخت‌های دریافتی و هزینه‌ها</p>
@@ -8337,7 +8380,7 @@ export default function AdminPanel() {
                       </span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '50%' }}>
-                      📥
+                      {AdminIcons.download(18)}
                     </div>
                   </div>
 
@@ -8362,7 +8405,7 @@ export default function AdminPanel() {
                       </span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '50%' }}>
-                      📤
+                      {AdminIcons.upload(18)}
                     </div>
                   </div>
 
@@ -8383,7 +8426,7 @@ export default function AdminPanel() {
                       </span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '50%' }}>
-                      💼
+                      {AdminIcons.bank(18)}
                     </div>
                   </div>
 
@@ -8409,7 +8452,7 @@ export default function AdminPanel() {
                       </span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', borderRadius: '50%' }}>
-                      🔄
+                      {AdminIcons.sync(18)}
                     </div>
                   </div>
 
@@ -8430,7 +8473,7 @@ export default function AdminPanel() {
                       </span>
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(251, 191, 36, 0.1)', color: '#f59e0b', borderRadius: '50%' }}>
-                      🔒
+                      {AdminIcons.lock(18)}
                     </div>
                   </div>
                 </div>
@@ -8440,7 +8483,7 @@ export default function AdminPanel() {
                   <div className={styles.filterControlsLeft}>
                     {/* Search bar input */}
                     <div className={styles.searchBarWrapper}>
-                      <span className={styles.searchBarIcon}>🔍</span>
+                      <span className={styles.searchBarIcon} style={{ display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.search(13)}</span>
                       <input 
                         type="text" 
                         placeholder="جستجو..." 
@@ -8487,7 +8530,7 @@ export default function AdminPanel() {
 
                     {/* Date picker mock range */}
                     <div className={styles.advFilterBtn} style={{ cursor: 'default', direction: 'ltr', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>📅</span> 1403/03/01 - 1403/03/20
+                      <span>{AdminIcons.calendar(12)}</span> 1403/03/01 - 1403/03/20
                     </div>
                   </div>
                 </div>
@@ -9036,7 +9079,7 @@ export default function AdminPanel() {
                           ) : (
                             <button 
                               type="button" 
-                              onClick={() => alert(`📥 رسید دیجیتالی تراکنش ${selectedTxn.id} دانلود شد.`)}
+                              onClick={() => alert(`رسید دیجیتالی تراکنش ${selectedTxn.id} دانلود شد.`)}
                               className={styles.printLabelActionBtn}
                             >
                               {AdminIcons.download(12)} دانلود فاکتور و رسید تراکنش (PDF)
@@ -9245,7 +9288,7 @@ export default function AdminPanel() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '28px', color: '#f87820' }}>📊</span>
+                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.chart(28)}</span>
                     <div>
                       <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>گزارشات مالی</h1>
                       <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>بررسی تراز مالی، سود ناخالص، هزینه‌های جاری و مخارج حمل و نقل</p>
@@ -9255,7 +9298,7 @@ export default function AdminPanel() {
                   <div className={styles.titleActionBtns} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button 
                       type="button" 
-                      onClick={() => alert('📥 گزارش عملکرد مالی دوره خرداد ماه به صورت فایل PDF دانلود گردید.')} 
+                      onClick={() => alert('گزارش عملکرد مالی دوره خرداد ماه به صورت فایل PDF دانلود گردید.')} 
                       className={styles.advFilterBtn} 
                       style={{ padding: '10px 15px', color: '#fff' }}
                     >
@@ -9477,7 +9520,7 @@ export default function AdminPanel() {
                             </span>
                           </td>
                           <td>
-                            <span onClick={() => alert('📥 گزارش کامل خرداد ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
+                            <span onClick={() => alert('گزارش کامل خرداد ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
                               {AdminIcons.download(11)} دانلود گزارش (CSV)
                             </span>
                           </td>
@@ -9493,7 +9536,7 @@ export default function AdminPanel() {
                             </span>
                           </td>
                           <td>
-                            <span onClick={() => alert('📥 گزارش کامل اردیبهشت ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
+                            <span onClick={() => alert('گزارش کامل اردیبهشت ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
                               {AdminIcons.download(11)} دانلود گزارش (CSV)
                             </span>
                           </td>
@@ -9509,7 +9552,7 @@ export default function AdminPanel() {
                             </span>
                           </td>
                           <td>
-                            <span onClick={() => alert('📥 گزارش کامل فروردین ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
+                            <span onClick={() => alert('گزارش کامل فروردین ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
                               {AdminIcons.download(11)} دانلود گزارش (CSV)
                             </span>
                           </td>
@@ -9525,7 +9568,7 @@ export default function AdminPanel() {
                             </span>
                           </td>
                           <td>
-                            <span onClick={() => alert('📥 گزارش کامل اسفند ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
+                            <span onClick={() => alert('گزارش کامل اسفند ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
                               {AdminIcons.download(11)} دانلود گزارش (CSV)
                             </span>
                           </td>
