@@ -3012,8 +3012,6 @@ export default function AdminPanel() {
                               <th style={{ padding: '12px 15px', textAlign: 'center', width: '60px' }}>تصویر</th>
                               <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>مدل</th>
                               <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>پردازنده</th>
-                              <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5' }}>رم</th>
-                              <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>حافظه</th>
                               <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>کارت گرافیک</th>
                               <th style={{ textAlign: 'left', fontSize: '11.5px', color: '#8b92a5' }}>قیمت فروش (تومان)</th>
                               <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5' }}>وضعیت</th>
@@ -3068,14 +3066,13 @@ export default function AdminPanel() {
                                       style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.08)' }}
                                     />
                                   </td>
-                                  <td style={{ padding: '18px 10px', fontWeight: '600', color: '#fff', fontSize: '12px' }}>
-                                    {parsedSpecs.brand} {parsedSpecs.model}
+                                  <td style={{ padding: '18px 10px', fontSize: '12px' }}>
+                                    <div style={{ fontWeight: '700', color: '#fff' }}>{parsedSpecs.brand} {parsedSpecs.model}</div>
+                                    <div style={{ fontSize: '10.5px', fontWeight: '300', color: '#8b92a5', marginTop: '4px' }}>
+                                      رم: {parsedSpecs.ram}GB | حافظه: {parsedSpecs.storageSize}{parsedSpecs.storageType}
+                                    </div>
                                   </td>
                                   <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#c4c8d4' }}>{parsedSpecs.cpu}</td>
-                                  <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#fff', textAlign: 'center' }}>{parsedSpecs.ram}GB</td>
-                                  <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#c4c8d4' }}>
-                                    {parsedSpecs.storageSize}{parsedSpecs.storageType}
-                                  </td>
                                   <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#8b92a5' }}>{parsedSpecs.gpu}</td>
                                   <td style={{ padding: '18px 10px', fontWeight: '700', color: '#fff', fontSize: '12.5px', textAlign: 'left', fontFamily: 'var(--font-vazirmatn)' }}>
                                     {Math.round(priceToman).toLocaleString('fa-IR')}
