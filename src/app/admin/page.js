@@ -3265,7 +3265,7 @@ export default function AdminPanel() {
                           </div>
 
                           {/* Tab Content Panels */}
-                          <div style={{ minHeight: '230px', maxHeight: '300px', overflowY: 'auto', paddingRight: '4px', fontSize: '12px' }} dir="rtl">
+                          <div style={{ minHeight: '230px', maxHeight: '300px', overflowY: 'auto', paddingRight: '6px', paddingLeft: '14px', fontSize: '12px' }} dir="rtl">
                             
                             {/* TAB: SPECS TABLE */}
                             {activeDetailTab === 'specs' && (
