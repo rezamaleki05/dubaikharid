@@ -12,7 +12,7 @@ import styles from './page.module.css';
 
 export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [cartCount, setCartCount] = useState(2);
+  const [cartCount, setCartCount] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrderData, setModalOrderData] = useState(null);
 
