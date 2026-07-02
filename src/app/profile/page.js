@@ -127,6 +127,38 @@ const getDetailedStepIndex = (status) => {
   return map[status] || 1;
 };
 
+// ── 9-STAGE PURCHASE REQUEST TIMELINE CONFIGURATION ──
+const REQUEST_DETAILED_STEPS = [
+  { id: 'pending', text: 'ثبت درخواست', step: 1 },
+  { id: 'reviewing', text: 'در حال بررسی', step: 2 },
+  { id: 'price_tagged', text: 'قیمت اعلام شد', step: 3 },
+  { id: 'paid', text: 'پرداخت انجام شد', step: 4 },
+  { id: 'purchased', text: 'خرید از امارات', step: 5 },
+  { id: 'warehouse_dubai', text: 'رسید به انبار دبی', step: 6 },
+  { id: 'shipped', text: 'ارسال به ایران', step: 7 },
+  { id: 'customs', text: 'ترخیص', step: 8 },
+  { id: 'delivered', text: 'تحویل شده', step: 9 }
+];
+
+const getRequestStepIndex = (status) => {
+  const map = {
+    pending: 1,
+    reviewing: 2,
+    price_tagged: 3,
+    approved: 4,
+    paid: 4,
+    purchased: 5,
+    noon_dubai: 5,
+    warehouse_dubai: 6,
+    processing: 6,
+    shipped: 7,
+    customs: 8,
+    delivered: 9,
+    cancelled: 0
+  };
+  return map[status] || 1;
+};
+
 // Simplified 6-Step Stepper (Dashboard)
 const DASHBOARD_STEPS = [
   { text: 'ثبت سفارش', step: 1 },
@@ -169,6 +201,8 @@ function ProfileContent() {
   const [activeCouponFilter, setActiveCouponFilter] = useState('active');
   const [activeOrderFilter, setActiveOrderFilter] = useState('all');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [viewingRequestId, setViewingRequestId] = useState(null);
+  const [requestSuccessMessage, setRequestSuccessMessage] = useState(false);
 
   // Form states
   const [editName, setEditName] = useState('');
@@ -229,7 +263,46 @@ function ProfileContent() {
       if (isReza && rezaLeads.length === 0) {
         const mockLeads = [
           {
-            id: 'DK-1256',
+            id: '1258',
+            customerName: currentUser.name,
+            phone: currentUser.phone,
+            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
+            totalToman: 0,
+            status: 'pending', // در انتظار بررسی
+            paymentStatus: 'pending',
+            paymentMethod: 'gateway',
+            date: '2024-07-05T14:30:00Z', // 1403/04/15 14:30
+            productName: "Apple Watch Series 9 45mm",
+            img: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=200&q=80",
+            store: 'Amazon.ae',
+            isRequest: true,
+            details: 'رنگ Midnight، سایز ۴۵ میلی‌متری، نسخه آلومینیوم',
+            originalUrl: 'https://www.amazon.ae/dp/B0CHX5765R'
+          },
+          {
+            id: '1257',
+            customerName: currentUser.name,
+            phone: currentUser.phone,
+            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
+            totalToman: 4850000,
+            status: 'price_tagged', // قیمت اعلام شده
+            paymentStatus: 'pending',
+            paymentMethod: 'gateway',
+            date: '2024-07-04T11:20:00Z', // 1403/04/14 11:20
+            productName: "Adidas Samba OG",
+            img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80",
+            store: 'Noon.com',
+            isRequest: true,
+            details: 'رنگ سفید-مشکی، سایز ۴۲ مردانه، چرم طبیعی',
+            originalUrl: 'https://www.noon.com/uae-en/samba-og-shoes/N53351996A/p/',
+            priceBreakdown: {
+              product: 4000000,
+              shipping: 500000,
+              commission: 350000
+            }
+          },
+          {
+            id: '1256',
             customerName: currentUser.name,
             phone: currentUser.phone,
             address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
@@ -237,14 +310,14 @@ function ProfileContent() {
             status: 'price_tagged', // Step 3
             paymentStatus: 'pending',
             paymentMethod: 'gateway',
-            date: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+            date: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
             productName: "Apple Watch Series 9 (45mm - Midnight)",
             img: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=200&q=80",
             store: 'Apple.com',
-            isRequest: true
+            isRequest: false
           },
           {
-            id: 'DK-1255',
+            id: '1255',
             customerName: currentUser.name,
             phone: currentUser.phone,
             address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
@@ -252,14 +325,14 @@ function ProfileContent() {
             status: 'shipped', // Step 7
             paymentStatus: 'paid',
             paymentMethod: 'gateway',
-            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
             productName: "iPhone 15 Pro Case & Charger bundle",
             img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&q=80",
             store: 'Amazon.ae',
             isRequest: false
           },
           {
-            id: 'DK-1254',
+            id: '1254',
             customerName: currentUser.name,
             phone: currentUser.phone,
             address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
@@ -274,7 +347,7 @@ function ProfileContent() {
             isRequest: false
           },
           {
-            id: 'DK-1253',
+            id: '1253',
             customerName: currentUser.name,
             phone: currentUser.phone,
             address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
@@ -286,10 +359,10 @@ function ProfileContent() {
             productName: "Sony PlayStation 5 Slim Edition Console",
             img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=200&q=80",
             store: 'Amazon.ae',
-            isRequest: true
+            isRequest: false
           },
           {
-            id: 'DK-1252',
+            id: '1252',
             customerName: currentUser.name,
             phone: currentUser.phone,
             address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
@@ -416,14 +489,14 @@ function ProfileContent() {
       localStorage.setItem(`dubaiKharidNotifs_${currentUser.phone}`, JSON.stringify([newNotif, ...currentNotifs]));
       setNotifications([newNotif, ...currentNotifs]);
 
-      // Reset
+      // Reset Form fields but keep success flag active
       setReqUrl('');
       setReqProductName('');
       setReqImg('');
       setReqNotes('');
       setReqQty(1);
       
-      alert(`درخواست خرید شما با شناسه ${newId} ثبت شد. قیمت نهایی پس از بررسی ادمین اعلام خواهد شد.`);
+      setRequestSuccessMessage(true);
     } catch (err) {
       console.error(err);
     }
@@ -1232,166 +1305,389 @@ function ProfileContent() {
             {/* 3. VIEW: PURCHASE REQUESTS */}
             {activeMenu === 'requests' && (
               <div>
-                <h2 className={styles.welcomeTitle} style={{ marginBottom: '24px' }}>ثبت درخواست خرید محصول خارجی</h2>
-                
-                {/* Form to submit request */}
-                <form className={styles.requestSubmitForm} onSubmit={handleSubmitRequest}>
-                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', marginBottom: '16px', textAlign: 'right' }}>اطلاعات کالا در سایتهای امارات (آمازون، نون و...):</h3>
+                {/* ── SUB-VIEW A: DETAILED REQUEST VIEWER ── */}
+                {viewingRequestId ? (() => {
+                  const req = orders.find(o => o.id === viewingRequestId);
+                  if (!req) return <div className={styles.panelCard}>درخواست یافت نشد. <button onClick={() => setViewingRequestId(null)}>بازگشت</button></div>;
                   
-                  <div className={styles.formRowFull}>
-                    <label className={styles.label}>لینک صفحه محصول *</label>
-                    <input 
-                      type="url" 
-                      className={styles.inputField} 
-                      placeholder="https://www.amazon.ae/dp/..."
-                      value={reqUrl}
-                      onChange={(e) => setReqUrl(e.target.value)}
-                    />
-                  </div>
+                  const stepIdx = getRequestStepIndex(req.status);
+                  
+                  // Calculate breakdown prices safely
+                  const breakdown = req.priceBreakdown || {
+                    product: req.totalToman > 0 ? req.totalToman * 0.85 : 0,
+                    shipping: req.totalToman > 0 ? req.totalToman * 0.08 : 0,
+                    commission: req.totalToman > 0 ? req.totalToman * 0.07 : 0
+                  };
 
-                  <div className={styles.formRow}>
-                    <div className={styles.inputGroup}>
-                      <label className={styles.label}>نام محصول *</label>
-                      <input 
-                        type="text" 
-                        className={styles.inputField} 
-                        placeholder="مثال: کفش ورزشی نایک زنانه"
-                        value={reqProductName}
-                        onChange={(e) => setReqProductName(e.target.value)}
-                      />
-                    </div>
-                    <div className={styles.inputGroup}>
-                      <label className={styles.label}>فروشگاه مبدا</label>
-                      <select 
-                        className={styles.inputField}
-                        value={reqSite}
-                        onChange={(e) => setReqSite(e.target.value)}
-                        style={{ cursor: 'pointer', background: '#1c1926' }}
-                      >
-                        <option value="Amazon.ae">آمازون امارات (Amazon.ae)</option>
-                        <option value="Noon.com">نون امارات (Noon.com)</option>
-                        <option value="Namshi.com">نمشی (Namshi)</option>
-                        <option value="Adidas.ae">آدیداس دبی</option>
-                        <option value="Apple.com">اپل استور امارات</option>
-                        <option value="Other">سایر فروشگاه‌ها</option>
-                      </select>
-                    </div>
-                  </div>
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                        <h2 className={styles.welcomeTitle}>جزئیات درخواست خرید #{req.id}</h2>
+                        <button className={styles.tableActionBtn} onClick={() => setViewingRequestId(null)}>
+                          ← بازگشت به لیست
+                        </button>
+                      </div>
 
-                  <div className={styles.formRow}>
-                    <div className={styles.inputGroup}>
-                      <label className={styles.label}>تعداد</label>
-                      <input 
-                        type="number" 
-                        min="1"
-                        className={styles.inputField} 
-                        value={reqQty}
-                        onChange={(e) => setReqQty(parseInt(e.target.value))}
-                      />
-                    </div>
-                    <div className={styles.inputGroup}>
-                      <label className={styles.label}>لینک تصویر محصول (اختیاری)</label>
-                      <input 
-                        type="url" 
-                        className={styles.inputField} 
-                        placeholder="https://image-url.com/pic.jpg"
-                        value={reqImg}
-                        onChange={(e) => setReqImg(e.target.value)}
-                      />
-                    </div>
-                  </div>
+                      {/* Detailed request block */}
+                      <div className={styles.panelCard} style={{ marginBottom: '24px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '24px' }}>
+                          <img 
+                            src={req.img || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=200&q=80"} 
+                            alt="product" 
+                            style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '12px', background: '#111' }} 
+                          />
+                          <div style={{ textAlign: 'right' }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#fff', margin: '0 0 16px 0' }}>{req.productName}</h3>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px' }}>
+                              <div>
+                                <span style={{ color: '#8b92a5', display: 'block', marginBottom: '4px' }}>فروشگاه مبدا:</span>
+                                <strong style={{ color: '#fff' }}>{req.store}</strong>
+                              </div>
+                              <div>
+                                <span style={{ color: '#8b92a5', display: 'block', marginBottom: '4px' }}>تعداد درخواستی:</span>
+                                <strong style={{ color: '#fff' }}>{req.qty || 1} عدد</strong>
+                              </div>
+                              <div style={{ gridColumn: 'span 2' }}>
+                                <span style={{ color: '#8b92a5', display: 'block', marginBottom: '4px' }}>آدرس لینک کالا:</span>
+                                <a 
+                                  href={req.originalUrl || '#'} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  style={{ color: '#f87820', textDecoration: 'none', wordBreak: 'break-all' }}
+                                >
+                                  {req.originalUrl || 'مشاهده صفحه کالا ↗'}
+                                </a>
+                              </div>
+                              <div style={{ gridColumn: 'span 2' }}>
+                                <span style={{ color: '#8b92a5', display: 'block', marginBottom: '4px' }}>توضیحات خریدار:</span>
+                                <p style={{ color: '#d1d5db', margin: 0, lineHeight: '1.5' }}>{req.details || 'توضیحی ثبت نشده است.'}</p>
+                              </div>
+                              <div>
+                                <span style={{ color: '#8b92a5', display: 'block', marginBottom: '4px' }}>تاریخ ثبت درخواست:</span>
+                                <span style={{ color: '#fff' }}>{new Date(req.date).toLocaleDateString('fa-IR')}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className={styles.formRowFull}>
-                    <label className={styles.label}>توضیحات تکمیلی (سایز، رنگ، گارانتی یا مشخصات فنی)</label>
-                    <textarea 
-                      className={`${styles.inputField} ${styles.textareaField}`}
-                      placeholder="رنگ مشکی، سایز ۴۲ مردانه و..."
-                      value={reqNotes}
-                      onChange={(e) => setReqNotes(e.target.value)}
-                    />
-                  </div>
+                      {/* 9-Stage Progress Timeline */}
+                      <div className={styles.panelCard} style={{ marginBottom: '24px' }}>
+                        <h4 style={{ fontSize: '13px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', borderBottom: '1px dashed rgba(255,255,255,0.06)', paddingBottom: '10px' }}>
+                          مسیر پردازش و رهگیری سفارش خارجی
+                        </h4>
 
-                  <button type="submit" className={styles.saveBtn}>
-                    🚀 ثبت درخواست خرید
-                  </button>
-                </form>
+                        {req.status === 'cancelled' ? (
+                          <div style={{ color: '#ef4444', background: 'rgba(239,68,68,0.06)', border: '1px dashed rgba(239,68,68,0.2)', padding: '16px', borderRadius: '10px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold' }}>
+                            ❌ این درخواست خرید لغو شده است.
+                          </div>
+                        ) : (
+                          <div className={styles.detailedTimeline} style={{ gridTemplateColumns: 'repeat(9, 1fr)' }}>
+                            <div className={styles.detailedLine} style={{ left: '6%', right: '6%' }}></div>
+                            <div 
+                              className={styles.detailedFill}
+                              style={{ left: '6%', width: `${Math.max(0, (stepIdx - 1) * 12.5)}%`, background: '#f87820', boxShadow: '0 0 8px rgba(248,120,32,0.4)' }}
+                            ></div>
 
-                {/* Requests list */}
-                <div className={styles.panelCard}>
-                  <h3 className={styles.cardHeaderTitle}>لیست درخواست‌های ارسال شده</h3>
-                  {purchaseRequests.length === 0 ? (
-                    <div style={{ padding: '30px', textAlign: 'center', color: '#8b92a5' }}>هنوز هیچ درخواست خریدی ثبت نکرده‌اید.</div>
-                  ) : (
-                    <div className={styles.tableContainer}>
-                      <table className={styles.recentOrdersTable}>
-                        <thead>
-                          <tr>
-                            <th>محصول درخواستی</th>
-                            <th>سایت مبدا</th>
-                            <th>تاریخ ثبت</th>
-                            <th>وضعیت قیمت</th>
-                            <th>مبلغ نهایی</th>
-                            <th>عملیات</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {purchaseRequests.map(r => (
-                            <tr key={r.id}>
-                              <td>
-                                <div className={styles.tableProdName}>
-                                  <img src={r.img} alt="thumb" className={styles.tableProdImg} />
-                                  <div>
-                                    <span style={{ fontWeight: 'bold', color: '#fff', display: 'block' }}>{r.productName}</span>
-                                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>شناسه: #{r.id}</span>
+                            {REQUEST_DETAILED_STEPS.map((s, idx) => {
+                              const isCompleted = (idx + 1) < stepIdx;
+                              const isActive = (idx + 1) === stepIdx;
+
+                              return (
+                                <div key={s.id} className={`${styles.detailedStep} ${isCompleted ? styles.detailedStepCompleted : ''} ${isActive ? styles.detailedStepActive : ''}`}>
+                                  <div 
+                                    className={styles.detailedStepIcon}
+                                    style={{
+                                      borderColor: isCompleted || isActive ? '#f87820' : 'rgba(255, 255, 255, 0.15)',
+                                      background: isActive ? '#f87820' : isCompleted ? 'rgba(248, 120, 32, 0.15)' : '#150f28',
+                                      color: isActive ? '#fff' : isCompleted ? '#f87820' : '#8b92a5'
+                                    }}
+                                  >
+                                    {isCompleted ? '✓' : isActive ? '●' : ProfileIcons.lock(10)}
                                   </div>
+                                  <span className={styles.detailedStepLabel} style={{ color: isActive ? '#fff' : isCompleted ? '#f87820' : '#8b92a5' }}>
+                                    {s.text}
+                                  </span>
                                 </div>
-                              </td>
-                              <td>{r.store}</td>
-                              <td>{new Date(r.date).toLocaleDateString('fa-IR')}</td>
-                              <td>
-                                <span style={{
-                                  fontSize: '11px',
-                                  padding: '3px 8px',
-                                  borderRadius: '6px',
-                                  background: r.status === 'price_tagged' ? 'rgba(16,185,129,0.1)' : r.status === 'cancelled' ? 'rgba(239,68,68,0.1)' : 'rgba(249,115,22,0.1)',
-                                  color: r.status === 'price_tagged' ? '#10b981' : r.status === 'cancelled' ? '#ef4444' : '#f97316',
-                                  fontWeight: 'bold'
-                                }}>
-                                  {r.status === 'price_tagged' ? 'محاسبه شده' : r.status === 'cancelled' ? 'لغو شده' : 'در انتظار بررسی'}
-                                </span>
-                              </td>
-                              <td style={{ fontWeight: 'bold', color: '#f87820' }}>
-                                {r.totalToman > 0 ? `${fmtToman(r.totalToman)} تومان` : '⏳ در حال محاسبه'}
-                              </td>
-                              <td>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                  {r.status === 'price_tagged' && r.paymentStatus !== 'paid' && (
-                                    <button 
-                                      className={styles.payActiveBtn}
-                                      style={{ padding: '4px 10px', fontSize: '10.5px' }}
-                                      onClick={() => handlePayOrder(r.id)}
-                                    >
-                                      پرداخت آنلاین
-                                    </button>
-                                  )}
-                                  {r.status === 'pending' && (
-                                    <button 
-                                      className={styles.tableActionBtn}
-                                      style={{ color: '#ef4444', borderColor: 'rgba(239,68,68,0.2)' }}
-                                      onClick={() => handleCancelRequest(r.id)}
-                                    >
-                                      لغو درخواست
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pricing Block Card */}
+                      <div className={styles.panelCard}>
+                        <h4 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', marginBottom: '16px' }}>برآورد قیمت و هزینه‌های ترخیص</h4>
+                        
+                        {req.status === 'pending' || req.status === 'reviewing' ? (
+                          <div style={{ padding: '24px', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '12px' }}>
+                            <span style={{ fontSize: '15px', color: '#f87820', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
+                              ⏳ در حال بررسی توسط کارشناسان
+                            </span>
+                            <span style={{ fontSize: '11px', color: '#8b92a5' }}>
+                              قیمت نهایی محصول پس از بررسی وزن کالا، نرخ روز درهم و هزینه‌های گمرکی به شما اعلام خواهد شد. پیامک تایید برای شما ارسال می‌گردد.
+                            </span>
+                          </div>
+                        ) : (
+                          <div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+                              <div style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '6px' }}>قیمت اصلی کالا:</span>
+                                <strong style={{ fontSize: '14px', color: '#fff' }}>{fmtToman(breakdown.product)} تومان</strong>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '6px' }}>هزینه ارسال کارگو:</span>
+                                <strong style={{ fontSize: '14px', color: '#fff' }}>{fmtToman(breakdown.shipping)} تومان</strong>
+                              </div>
+                              <div style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '6px' }}>کارمزد خرید و گمرک:</span>
+                                <strong style={{ fontSize: '14px', color: '#fff' }}>{fmtToman(breakdown.commission)} تومان</strong>
+                              </div>
+                              <div style={{ textAlign: 'right', borderRight: '1px solid rgba(255,255,255,0.08)', paddingRight: '16px' }}>
+                                <span style={{ fontSize: '11.5px', color: '#f87820', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>مبلغ کل نهایی:</span>
+                                <strong style={{ fontSize: '18px', color: '#f87820', fontWeight: '900' }}>{fmtToman(req.totalToman)} تومان</strong>
+                              </div>
+                            </div>
+
+                            {req.paymentStatus !== 'paid' && req.status !== 'cancelled' && (
+                              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button className={styles.payActiveBtn} style={{ padding: '12px 28px', fontSize: '13px' }} onClick={() => handlePayOrder(req.id)}>
+                                  💳 پرداخت آنلاین و نهایی‌سازی سفارش
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })() : (
+                  /* ── SUB-VIEW B: FORM & LIST TABLE ── */
+                  <div>
+                    {/* Header */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                      <div style={{ width: '46px', height: '46px', borderRadius: '12px', border: '1.5px solid #f87820', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', color: '#f87820' }}>
+                        {ProfileIcons.requests(22)}
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <h2 className={styles.welcomeTitle} style={{ margin: 0 }}>ثبت درخواست خرید محصول خارجی</h2>
+                        <p style={{ fontSize: '12px', color: '#8b92a5', margin: '4px 0 0 0' }}>
+                          لینک محصول را وارد کنید تا کارشناسان ما قیمت نهایی، هزینه ارسال، نرخ روز درهم و زمان تحویل را بررسی کنند.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Guide Card warnings steps */}
+                    <div className={styles.guideWarning}>
+                      <div className={styles.guideWarningIcon}>ℹ</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <strong style={{ fontSize: '13px', color: '#f87820', display: 'block', marginBottom: '8px' }}>مراحل انجام سفارش خرید خارجی:</strong>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'x', columnGap: '20px', rowGap: '8px', fontSize: '11px', color: '#c9ccd8' }}>
+                          <span>۱- لینک محصول را وارد کنید.</span>
+                          <span>۲- درخواست ثبت می‌شود.</span>
+                          <span>۳- بررسی قیمت توسط کارشناس.</span>
+                          <span>۴- ارسال قیمت نهایی.</span>
+                          <span>۵- تایید و پرداخت آنلاین.</span>
+                          <span>۶- خرید کالا از امارات.</span>
+                          <span>۷- ارسال کارگو به ایران.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Success notification overlay */}
+                    {requestSuccessMessage ? (
+                      <div className={styles.panelCard} style={{ textAlign: 'center', padding: '40px', border: '1px solid rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.02)', marginBottom: '24px' }}>
+                        <span style={{ fontSize: '42px', display: 'block', marginBottom: '16px' }}>✓</span>
+                        <strong style={{ fontSize: '15px', color: '#10b981', display: 'block', marginBottom: '8px' }}>درخواست شما با موفقیت ثبت شد.</strong>
+                        <p style={{ fontSize: '12px', color: '#8b92a5', maxWidth: '600px', margin: '0 auto 20px auto', lineHeight: '1.6' }}>
+                          کارشناسان ما پس از بررسی وزن، قیمت روز، هزینه ارسال و نرخ درهم، قیمت نهایی را محاسبه کرده و فاکتور پرداخت را در همین صفحه برای شما فعال خواهند کرد.
+                        </p>
+                        <button className={styles.tableActionBtn} style={{ borderColor: '#10b981', color: '#10b981' }} onClick={() => setRequestSuccessMessage(false)}>
+                          ثبت درخواست جدید +
+                        </button>
+                      </div>
+                    ) : (
+                      /* Form to submit request */
+                      <form className={styles.requestSubmitForm} onSubmit={handleSubmitRequest} style={{ background: 'rgba(13, 8, 28, 0.4)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '30px' }}>
+                        <h3 style={{ fontSize: '13.5px', fontWeight: 'bold', color: '#fff', marginBottom: '20px', textAlign: 'right', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          🏷️ اطلاعات محصول مورد نظر
+                        </h3>
+                        
+                        <div className={styles.formRowFull}>
+                          <label className={styles.label}>لینک صفحه محصول *</label>
+                          <div style={{ position: 'relative' }}>
+                            <input 
+                              type="url" 
+                              className={styles.inputField} 
+                              placeholder="https://www.amazon.ae/dp/XXXXXXX"
+                              value={reqUrl}
+                              onChange={(e) => setReqUrl(e.target.value)}
+                              style={{ paddingLeft: '40px', direction: 'ltr', textAlign: 'left' }}
+                            />
+                            <span style={{ position: 'absolute', left: '14px', top: '13px', color: '#555' }}>🔗</span>
+                          </div>
+                        </div>
+
+                        <div className={styles.formRow}>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label}>نام محصول *</label>
+                            <input 
+                              type="text" 
+                              className={styles.inputField} 
+                              placeholder="مثال: کفش ورزشی نایک زنانه"
+                              value={reqProductName}
+                              onChange={(e) => setReqProductName(e.target.value)}
+                            />
+                          </div>
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label}>فروشگاه مبدا *</label>
+                            <select 
+                              className={styles.inputField}
+                              value={reqSite}
+                              onChange={(e) => setReqSite(e.target.value)}
+                              style={{ cursor: 'pointer', background: '#1c1926' }}
+                            >
+                              <option value="Amazon.ae">آمازون امارات (Amazon.ae)</option>
+                              <option value="Noon.com">نون امارات (Noon.com)</option>
+                              <option value="Namshi.com">نمشی (Namshi)</option>
+                              <option value="Adidas.ae">آدیداس (Adidas)</option>
+                              <option value="Nike.com">نایک (Nike)</option>
+                              <option value="Apple.com">اپل استور امارات (Apple)</option>
+                              <option value="Shein.com">شین (Shein)</option>
+                              <option value="Other">سایر فروشگاه‌ها</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className={styles.formRow}>
+                          {/* Quantity with +/- step buttons */}
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label}>تعداد *</label>
+                            <div className={styles.qtyStepper}>
+                              <button type="button" className={styles.qtyBtn} onClick={() => setReqQty(reqQty + 1)}>+</button>
+                              <input 
+                                type="text" 
+                                className={styles.qtyInput} 
+                                value={reqQty}
+                                readOnly
+                              />
+                              <button type="button" className={styles.qtyBtn} onClick={() => setReqQty(Math.max(1, reqQty - 1))}>-</button>
+                            </div>
+                          </div>
+
+                          {/* Image Drop & Drag mock card */}
+                          <div className={styles.inputGroup}>
+                            <label className={styles.label}>آپلود تصویر کالا (اختیاری)</label>
+                            <div 
+                              className={styles.uploaderZone}
+                              onClick={() => {
+                                const inputImg = prompt('لینک عکس کالا را وارد کنید:');
+                                if (inputImg) setReqImg(inputImg);
+                              }}
+                            >
+                              <div className={styles.uploaderLeft}>
+                                <div className={styles.uploaderIcon}>📁</div>
+                                <div className={styles.uploaderText}>
+                                  <span className={styles.uploaderTitle}>
+                                    {reqImg ? '✓ عکس اضافه شد' : 'افزودن تصویر (اختیاری)'}
+                                  </span>
+                                  <span className={styles.uploaderDesc}>حداکثر ۵ تصویر (JPG/PNG)</span>
+                                </div>
+                              </div>
+                              <button type="button" className={styles.selectFileBtn}>انتخاب فایل</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className={styles.formRowFull}>
+                          <label className={styles.label}>توضیحات تکمیلی (سایز، رنگ، گارانتی یا مشخصات فنی)</label>
+                          <textarea 
+                            className={`${styles.inputField} ${styles.textareaField}`}
+                            placeholder="مثال: رنگ مشکی، سایز ۴۲ مردانه، گارانتی جهانی..."
+                            value={reqNotes}
+                            onChange={(e) => setReqNotes(e.target.value)}
+                            style={{ minHeight: '80px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                          <button type="submit" className={styles.saveBtn} style={{ background: '#f87820', borderColor: '#f87820', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>🚀 ثبت درخواست خرید</span>
+                          </button>
+                          <button type="button" className={styles.tableActionBtn} style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={handleResetForm}>
+                            <span>🗑️ پاک کردن فرم</span>
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {/* Requests list */}
+                    <div className={styles.panelCard}>
+                      <h3 className={styles.cardHeaderTitle}>لیست درخواست‌های ارسال شده</h3>
+                      {purchaseRequests.length === 0 ? (
+                        <div style={{ padding: '30px', textAlign: 'center', color: '#8b92a5' }}>هنوز هیچ درخواست خریدی ثبت نکرده‌اید.</div>
+                      ) : (
+                        <div className={styles.tableContainer}>
+                          <table className={styles.recentOrdersTable}>
+                            <thead>
+                              <tr>
+                                <th>شماره درخواست</th>
+                                <th>محصول</th>
+                                <th>فروشگاه</th>
+                                <th>تاریخ ثبت</th>
+                                <th>وضعیت</th>
+                                <th>عملیات</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {purchaseRequests.map(r => (
+                                <tr key={r.id}>
+                                  <td style={{ fontWeight: 'bold', color: '#fff', fontFamily: 'monospace' }}>#{r.id}</td>
+                                  <td>
+                                    <div className={styles.tableProdName}>
+                                      <img src={r.img} alt="thumb" className={styles.tableProdImg} />
+                                      <span style={{ fontWeight: 'bold', color: '#fff' }}>{r.productName}</span>
+                                    </div>
+                                  </td>
+                                  <td>{r.store}</td>
+                                  <td>
+                                    {new Date(r.date).toLocaleDateString('fa-IR')}
+                                    <span style={{ fontSize: '9.5px', color: '#6b7280', display: 'block', marginTop: '2px' }}>
+                                      {new Date(r.date).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span style={{
+                                      fontSize: '11px',
+                                      padding: '4px 10px',
+                                      borderRadius: '6px',
+                                      fontWeight: 'bold',
+                                      background: r.status === 'price_tagged' ? 'rgba(59, 130, 246, 0.1)' : r.status === 'cancelled' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(249, 115, 22, 0.1)',
+                                      color: r.status === 'price_tagged' ? '#3b82f6' : r.status === 'cancelled' ? '#ef4444' : '#f97316'
+                                    }}>
+                                      {r.status === 'price_tagged' ? 'قیمت اعلام شده' : r.status === 'cancelled' ? 'لغو شده' : 'در انتظار بررسی'}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                      <button 
+                                        className={styles.tableActionBtn}
+                                        onClick={() => setViewingRequestId(r.id)}
+                                      >
+                                        مشاهده جزئیات →
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
