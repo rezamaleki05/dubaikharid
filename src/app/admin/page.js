@@ -4030,6 +4030,20 @@ export default function AdminPanel() {
           {activeTab === 'overview' && (() => {
             const pendingLeadsCount = leads.filter(l => l.status === 'pending').length;
             const activeOrders = leads.filter(l => l.status !== 'cancelled' && l.status !== 'delivered').length;
+            const readyToShipCount = leads.filter(l => l.status === 'purchased' || l.status === 'warehouse_dubai').length;
+            const unverifiedPaymentsCount = payments.filter(p => p.status === 'pending').length;
+            const lowStockCount = warehouseProducts.filter(p => (p.stock || 0) < 3).length;
+            const unansweredCount = leads.filter(l => l.status === 'pending').length;
+            const actionItemsCount = pendingLeadsCount + readyToShipCount + unverifiedPaymentsCount + lowStockCount;
+
+            const todayPersian = new Date().toLocaleDateString('fa-IR');
+            const currentMonthPrefix = todayPersian.split('/').slice(0, 2).join('/');
+            const todayRevenue = payments
+              .filter(p => p.type === 'دریافتی' && p.status === 'success' && p.date && p.date.startsWith(todayPersian))
+              .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+            const monthProfit = payments
+              .filter(p => p.status === 'success' && p.date && p.date.startsWith(currentMonthPrefix))
+              .reduce((sum, p) => p.type === 'پرداختی' ? sum - (Number(p.amount) || 0) : sum + (Number(p.amount) || 0), 0);
 
             return (
             <div style={{ direction: 'rtl' }}>
@@ -4043,9 +4057,9 @@ export default function AdminPanel() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {[
                     { text: 'نرخ درهم به‌روزرسانی نشده', urgent: true, onClick: () => setActiveTab('settings') },
-                    { text: `${leads.filter(l => l.status === 'shipped').length + 2} سفارش ارسال‌نشده`, urgent: true, onClick: () => setActiveTab('shipments') },
+                    { text: `${leads.filter(l => ['processing', 'purchased', 'noon_dubai', 'warehouse_dubai'].includes(l.status)).length} سفارش ارسال‌نشده`, urgent: true, onClick: () => setActiveTab('shipments') },
                     { text: `${pendingLeadsCount} درخواست منتظر قیمت`, urgent: false, onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
-                    { text: '3 محصول کم‌موجود', urgent: false, onClick: () => setActiveTab('site_products') },
+                    { text: `${warehouseProducts.filter(p => (p.stock || 0) < 3).length} محصول کم‌موجود`, urgent: false, onClick: () => setActiveTab('warehouse') },
                   ].map((item, i) => (
                     <div
                       key={i}
@@ -4070,12 +4084,12 @@ export default function AdminPanel() {
               {/* KPI CARDS */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px', marginBottom: '20px' }}>
                 {[
-                  { label: 'درآمد امروز', value: '48,200,000', unit: 'تومان', trend: '+12.5%', trendUp: true, iconColor: '#f87820', iconBg: 'rgba(248,120,32,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> },
-                  { label: 'سود ماه جاری', value: '386,750,000', unit: 'تومان', trend: '+21.3%', trendUp: true, iconColor: '#2ecc71', iconBg: 'rgba(46,204,113,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
-                  { label: 'سفارشات فعال', value: String(activeOrders + 78), unit: 'سفارش', trend: '+8 امروز', trendUp: true, iconColor: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-                  { label: 'درخواست‌های فعال', value: String(pendingLeadsCount + 14), unit: 'درخواست', trend: `${pendingLeadsCount} منتظر قیمت`, trendUp: false, iconColor: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg> },
-                  { label: 'پرداخت‌های در انتظار', value: '7', unit: 'تراکنش', trend: 'نیاز به تایید', trendUp: false, iconColor: '#a855f7', iconBg: 'rgba(168,85,247,0.1)', onClick: () => setActiveTab('payments'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
-                  { label: 'مشتریان فعال', value: '2,145', unit: 'مشتری', trend: '+15.6%', trendUp: true, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.1)', onClick: () => setActiveTab('customers'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+                  { label: 'درآمد امروز', value: todayRevenue.toLocaleString('fa-IR'), unit: 'تومان', trend: todayRevenue > 0 ? 'روند صعودی امروز' : 'بدون دریافتی امروز', trendUp: todayRevenue > 0, iconColor: '#f87820', iconBg: 'rgba(248,120,32,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> },
+                  { label: 'سود ماه جاری', value: monthProfit.toLocaleString('fa-IR'), unit: 'تومان', trend: monthProfit > 0 ? 'سوددهی مثبت' : 'بدون سود ثبت‌شده', trendUp: monthProfit >= 0, iconColor: '#2ecc71', iconBg: 'rgba(46,204,113,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+                  { label: 'سفارشات فعال', value: String(activeOrders), unit: 'سفارش', trend: 'فعال در جریان', trendUp: true, iconColor: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+                  { label: 'درخواست‌های فعال', value: String(pendingLeadsCount), unit: 'درخواست', trend: `${pendingLeadsCount} منتظر قیمت`, trendUp: false, iconColor: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg> },
+                  { label: 'پرداخت‌های در انتظار', value: String(payments.filter(p => p.status === 'pending').length), unit: 'تراکنش', trend: 'نیاز به تایید', trendUp: false, iconColor: '#a855f7', iconBg: 'rgba(168,85,247,0.1)', onClick: () => setActiveTab('payments'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+                  { label: 'مشتریان فعال', value: String(customers.length), unit: 'مشتری', trend: 'ثبت‌شده در سیستم', trendUp: true, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.1)', onClick: () => setActiveTab('customers'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
                 ].map((card, i) => (
                   <div key={i} className={styles.cardPanel} onClick={card.onClick}
                     style={{ padding: '16px', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -4123,15 +4137,15 @@ export default function AdminPanel() {
                 <div className={styles.cardPanel} style={{ padding: '20px', borderRadius: '14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <span style={{ fontWeight: '800', fontSize: '13px', color: '#fff' }}>کارهای نیازمند اقدام</span>
-                    <span style={{ fontSize: '9px', background: 'rgba(248,120,32,0.15)', color: '#f87820', padding: '2px 8px', borderRadius: '10px', fontWeight: '700' }}>{pendingLeadsCount + 7} مورد</span>
+                    <span style={{ fontSize: '9px', background: 'rgba(248,120,32,0.15)', color: '#f87820', padding: '2px 8px', borderRadius: '10px', fontWeight: '700' }}>{actionItemsCount} مورد</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {[
-                      { label: 'درخواست‌های منتظر قیمت', count: pendingLeadsCount + 4, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: AdminIcons.clock(13), onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
-                      { label: 'سفارش‌های آماده ارسال', count: leads.filter(l => l.status === 'purchased' || l.status === 'warehouse_dubai').length + 3, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: AdminIcons.truck(13), onClick: () => setActiveTab('shipments') },
-                      { label: 'پرداخت‌های تایید نشده', count: 7, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', icon: AdminIcons.card(13), onClick: () => setActiveTab('payments') },
-                      { label: 'محصولات کم‌موجود', count: 3, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', icon: AdminIcons.alert(13), onClick: () => setActiveTab('site_products') },
-                      { label: 'درخواست‌های بدون پاسخ', count: 2, color: '#06b6d4', bg: 'rgba(6,182,212,0.08)', icon: AdminIcons.chat(13), onClick: () => setActiveTab('leads') },
+                      { label: 'درخواست‌های منتظر قیمت', count: pendingLeadsCount, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: AdminIcons.clock(13), onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
+                      { label: 'سفارش‌های آماده ارسال', count: readyToShipCount, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: AdminIcons.truck(13), onClick: () => setActiveTab('shipments') },
+                      { label: 'پرداخت‌های تایید نشده', count: unverifiedPaymentsCount, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', icon: AdminIcons.card(13), onClick: () => setActiveTab('payments') },
+                      { label: 'محصولات کم‌موجود', count: lowStockCount, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', icon: AdminIcons.alert(13), onClick: () => setActiveTab('warehouse') },
+                      { label: 'درخواست‌های بدون پاسخ', count: unansweredCount, color: '#06b6d4', bg: 'rgba(6,182,212,0.08)', icon: AdminIcons.chat(13), onClick: () => setActiveTab('leads') },
                     ].map((item, i) => (
                       <div key={i} onClick={item.onClick}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', cursor: 'pointer', background: item.bg, border: `1px solid ${item.color}20`, transition: 'opacity 0.2s' }}
@@ -7220,7 +7234,7 @@ export default function AdminPanel() {
             const activeProducts = adminProducts.filter(p => getProductForeignStatus(p) === 'active').length;
             const brokenLinks = adminProducts.filter(p => getProductForeignStatus(p) === 'broken_link').length;
             const needsUpdate = adminProducts.filter(p => getProductForeignStatus(p) === 'needs_update').length;
-            const salesCountThisMonth = leads.filter(l => ['purchased', 'noon_dubai', 'warehouse_dubai', 'shipped', 'delivered'].includes(l.status)).length + 42;
+            const salesCountThisMonth = leads.filter(l => ['processing', 'purchased', 'noon_dubai', 'warehouse_dubai', 'shipped', 'delivered'].includes(l.status)).length;
 
             // Search & Filtering
             const filteredProds = adminProducts.filter(p => {
