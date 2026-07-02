@@ -3174,7 +3174,7 @@ export default function AdminPanel() {
                 <span className={styles.navIcon}>
                   <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </span> درخواست خرید
-                <span className={`${styles.navBadge} ${styles.badgeOrange}`} style={{ background: '#a855f7' }}>
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>
                   {leads.filter(l => ['pending', 'price_tagged', 'approved'].includes(l.status)).length}
                 </span>
               </button>
@@ -3195,7 +3195,7 @@ export default function AdminPanel() {
                 <span className={styles.navIcon}>
                   {AdminIcons.building(16)}
                 </span> انبار
-                <span className={`${styles.navBadge} ${styles.badgeOrange}`} style={{ background: '#06b6d4' }}>
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>
                   {leads.filter(l => l.status === 'warehouse_dubai').length}
                 </span>
               </button>
