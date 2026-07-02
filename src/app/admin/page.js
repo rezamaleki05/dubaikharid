@@ -1577,7 +1577,7 @@ export default function AdminPanel() {
   const handleExportExcel = () => {
     const headers = ['شناسه تراکنش', 'تاریخ و ساعت', 'نوع', 'مبلغ (تومان)', 'روش پرداخت', 'دسته', 'وضعیت', 'سفارش مرجع', 'مشتری', 'تلفن', 'آدرس', 'کالا', 'توضیحات'];
     const csvRows = [headers.join(',')];
-    payments.forEach(p => {
+    getMergedPayments().forEach(p => {
       const typeStr = p.type || (p.amount > 0 ? 'دریافتی' : 'پرداختی');
       const categoryStr = p.category || (p.amount > 0 ? 'سفارشات' : 'هزینه ها');
       const statusStr = p.status === 'success' ? 'تسویه شده' : 'در انتظار';
@@ -1887,6 +1887,67 @@ export default function AdminPanel() {
       }
     });
 
+    return list;
+  };
+
+  // Compile full list of payments dynamically by merging manual ones and site orders/sales
+  const getMergedPayments = () => {
+    let list = [...payments];
+    
+    // Create payment records dynamically from all orders that have paymentStatus === 'paid' or status in ['processing', 'purchased', 'warehouse_dubai', 'shipped', 'delivered']
+    leads.forEach(order => {
+      const isPaid = order.paymentStatus === 'paid' || !['pending', 'price_tagged', 'approved', 'new_order'].includes(order.status);
+      if (isPaid) {
+        const exists = list.some(p => p.orderId === order.id || p.id === `TXN-ORD-${order.id}`);
+        if (!exists) {
+          list.push({
+            id: `TXN-ORD-${order.id}`,
+            orderId: order.id,
+            recipient: order.name,
+            phone: order.phone,
+            amount: parseFloat(order.totalToman) || 0,
+            type: 'دریافتی',
+            method: order.paymentMethod || 'درگاه بانکی',
+            category: 'سفارشات',
+            status: 'success',
+            date: order.date || '1403/03/15',
+            productName: order.items ? order.items.map(item => item.name).join(' + ') : 'خرید لپ‌تاپ'
+          });
+        }
+      }
+    });
+    
+    return list;
+  };
+
+  // Compile full list of shipments dynamically by merging manual ones and actual orders
+  const getMergedShipments = () => {
+    let list = [...shipments];
+    
+    // Add shipments dynamically from leads/orders that are NOT requests (i.e. paid/processing or higher statuses)
+    leads.forEach(order => {
+      const isRequest = ['pending', 'price_tagged', 'approved', 'new_order'].includes(order.status);
+      if (!isRequest) {
+        const exists = list.some(s => s.orderId === order.id || s.id === `TRK-${order.id}`);
+        if (!exists) {
+          let shipStatus = 'transit';
+          if (order.status === 'warehouse_dubai') shipStatus = 'customs';
+          if (order.status === 'shipped') shipStatus = 'iran';
+          if (order.status === 'delivered') shipStatus = 'delivered';
+          
+          list.push({
+            id: `TRK-${order.id}`,
+            orderId: order.id,
+            recipient: order.name,
+            method: order.shippingMethod || 'هوایی',
+            status: shipStatus,
+            dateShipped: order.date || '1403/03/15',
+            dateUpdated: order.date || '1403/03/15'
+          });
+        }
+      }
+    });
+    
     return list;
   };
 
@@ -4065,17 +4126,17 @@ export default function AdminPanel() {
             const pendingLeadsCount = leads.filter(l => l.status === 'pending').length;
             const activeOrders = leads.filter(l => l.status !== 'cancelled' && l.status !== 'delivered').length;
             const readyToShipCount = leads.filter(l => l.status === 'purchased' || l.status === 'warehouse_dubai').length;
-            const unverifiedPaymentsCount = payments.filter(p => p.status === 'pending').length;
+            const unverifiedPaymentsCount = getMergedPayments().filter(p => p.status === 'pending').length;
             const lowStockCount = warehouseProducts.filter(p => (p.stock || 0) < 3).length;
             const unansweredCount = leads.filter(l => l.status === 'pending').length;
             const actionItemsCount = pendingLeadsCount + readyToShipCount + unverifiedPaymentsCount + lowStockCount;
 
             const todayPersian = new Date().toLocaleDateString('fa-IR');
             const currentMonthPrefix = todayPersian.split('/').slice(0, 2).join('/');
-            const todayRevenue = payments
+            const todayRevenue = getMergedPayments()
               .filter(p => p.type === 'دریافتی' && p.status === 'success' && p.date && p.date.startsWith(todayPersian))
               .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-            const monthProfit = payments
+            const monthProfit = getMergedPayments()
               .filter(p => p.status === 'success' && p.date && p.date.startsWith(currentMonthPrefix))
               .reduce((sum, p) => p.type === 'پرداختی' ? sum - (Number(p.amount) || 0) : sum + (Number(p.amount) || 0), 0);
 
@@ -4122,7 +4183,7 @@ export default function AdminPanel() {
                   { label: 'سود ماه جاری', value: monthProfit.toLocaleString('fa-IR'), unit: 'تومان', trend: monthProfit > 0 ? 'سوددهی مثبت' : 'بدون سود ثبت‌شده', trendUp: monthProfit >= 0, iconColor: '#2ecc71', iconBg: 'rgba(46,204,113,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
                   { label: 'سفارشات فعال', value: String(activeOrders), unit: 'سفارش', trend: 'فعال در جریان', trendUp: true, iconColor: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
                   { label: 'درخواست‌های فعال', value: String(pendingLeadsCount), unit: 'درخواست', trend: `${pendingLeadsCount} منتظر قیمت`, trendUp: false, iconColor: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg> },
-                  { label: 'پرداخت‌های در انتظار', value: String(payments.filter(p => p.status === 'pending').length), unit: 'تراکنش', trend: 'نیاز به تایید', trendUp: false, iconColor: '#a855f7', iconBg: 'rgba(168,85,247,0.1)', onClick: () => setActiveTab('payments'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+                  { label: 'پرداخت‌های در انتظار', value: String(getMergedPayments().filter(p => p.status === 'pending').length), unit: 'تراکنش', trend: 'نیاز به تایید', trendUp: false, iconColor: '#a855f7', iconBg: 'rgba(168,85,247,0.1)', onClick: () => setActiveTab('payments'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
                   { label: 'مشتریان فعال', value: String(getMergedCustomers().length), unit: 'مشتری', trend: 'ثبت‌شده در سیستم', trendUp: true, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.1)', onClick: () => setActiveTab('customers'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
                 ].map((card, i) => (
                   <div key={i} className={styles.cardPanel} onClick={card.onClick}
@@ -9864,7 +9925,8 @@ export default function AdminPanel() {
           {/* TAB: PAYMENTS MANAGEMENT (Premium Redesign with 100% Interactive parity) */}
           {activeTab === 'payments' && (() => {
             // Apply filters
-            const filteredPayments = payments.filter(p => {
+            const allPayments = getMergedPayments();
+            const filteredPayments = allPayments.filter(p => {
               const matchSearch = !paymentSearchQuery || 
                 p.id.toLowerCase().includes(paymentSearchQuery.toLowerCase()) ||
                 (p.recipient && p.recipient.toLowerCase().includes(paymentSearchQuery.toLowerCase())) ||
@@ -9882,21 +9944,12 @@ export default function AdminPanel() {
               return matchSearch && matchStatus && matchMethod && matchCategory;
             });
 
-            // Base KPI numbers from mockup + dynamic additions
-            const baseIncome = 2145500000;
-            const baseExpenses = 1245300000;
-            const baseTxns = 367;
-            const baseBalance = 5845000;
-
-            const dynamicPayments = payments.filter(p => !INITIAL_PAYMENTS_SEED.some(seed => seed.id === p.id));
-            const dynamicIncome = dynamicPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((sum, p) => sum + Math.abs(p.amount), 0);
-            const dynamicExpenses = dynamicPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
-
-            const displayIncome = baseIncome + dynamicIncome;
-            const displayExpenses = baseExpenses + dynamicExpenses;
+            // Dynamic KPI numbers based on allPayments
+            const displayIncome = allPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+            const displayExpenses = allPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
             const displayProfit = displayIncome - displayExpenses;
-            const displayTxnCount = baseTxns + dynamicPayments.length;
-            const displayBalance = baseBalance + (dynamicIncome - dynamicExpenses);
+            const displayTxnCount = allPayments.length;
+            const displayBalance = displayIncome - displayExpenses;
 
             return (
               <div>
@@ -10514,7 +10567,7 @@ export default function AdminPanel() {
                         </div>
                       </>
                     ) : (() => {
-                      const selectedTxn = payments.find(p => p.id === selectedPaymentId);
+                      const selectedTxn = getMergedPayments().find(p => p.id === selectedPaymentId);
                       if (!selectedTxn) return <p style={{ color: '#8b92a5', textAlign: 'center', padding: '20px' }}>تراکنش یافت نشد.</p>;
 
                       return (
