@@ -9167,6 +9167,72 @@ export default function AdminPanel() {
             const deliveredCount = allShips.filter(s => s.status === 'delivered').length;
             const problemCount = allShips.filter(s => s.status === 'problem').length;
 
+            // Calculate growth percentages comparing the last 30 days vs the previous 30 days
+            const parseDate = (dStr) => {
+              if (!dStr) return new Date(0);
+              if (dStr.includes('T') || dStr.includes('-') || (isNaN(Date.parse(dStr)) === false && !dStr.includes('/'))) {
+                return new Date(dStr);
+              }
+              const parts = dStr.split('/');
+              if (parts.length === 3) {
+                const y = parseInt(parts[0]);
+                const m = parseInt(parts[1]);
+                const d = parseInt(parts[2]);
+                const gregYear = y + 621;
+                return new Date(gregYear, m - 1, d);
+              }
+              return new Date(0);
+            };
+
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+            const curPeriod = allShips.filter(s => parseDate(s.dateShipped) >= thirtyDaysAgo);
+            const prevPeriod = allShips.filter(s => {
+              const d = parseDate(s.dateShipped);
+              return d >= sixtyDaysAgo && d < thirtyDaysAgo;
+            });
+
+            const getGrowth = (currentCount, prevCount) => {
+              if (prevCount === 0) {
+                return currentCount > 0 ? 100 : 0;
+              }
+              return ((currentCount - prevCount) / prevCount) * 100;
+            };
+
+            const totalGrowth = getGrowth(curPeriod.length, prevPeriod.length);
+            const transitGrowth = getGrowth(
+              curPeriod.filter(s => s.status === 'transit').length,
+              prevPeriod.filter(s => s.status === 'transit').length
+            );
+            const customsGrowth = getGrowth(
+              curPeriod.filter(s => s.status === 'customs').length,
+              prevPeriod.filter(s => s.status === 'customs').length
+            );
+            const iranGrowth = getGrowth(
+              curPeriod.filter(s => s.status === 'iran').length,
+              prevPeriod.filter(s => s.status === 'iran').length
+            );
+            const deliveredGrowth = getGrowth(
+              curPeriod.filter(s => s.status === 'delivered').length,
+              prevPeriod.filter(s => s.status === 'delivered').length
+            );
+
+            const renderGrowthSub = (growthVal) => {
+              if (growthVal === 0) {
+                return <span className={styles.metricSubText} style={{ color: '#8b92a5', marginTop: '2px' }}>بدون تغییر</span>;
+              }
+              const isUp = growthVal > 0;
+              const color = isUp ? '#10b981' : '#ef4444';
+              const sign = isUp ? '+' : '';
+              return (
+                <span className={`${styles.metricSubText} ${isUp ? styles.up : ''}`} style={{ color, marginTop: '2px' }}>
+                  {sign}{growthVal.toFixed(1)}% نسبت به قبل
+                </span>
+              );
+            };
+
             const pct = (val) => {
               if (totalCount === 0) return '0%';
               return ((val / totalCount) * 100).toFixed(1) + '%';
@@ -9226,7 +9292,7 @@ export default function AdminPanel() {
                       <span className={styles.metricLabel}>کل ارسال ها</span>
                       <span className={styles.metricValue}>{totalCount.toLocaleString()}</span>
                       <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>در این ماه</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`} style={{ color: '#3b82f6', marginTop: '2px' }}>+18.6% نسبت به قبل</span>
+                      {renderGrowthSub(totalGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                       {AdminIcons.chart(18)}
@@ -9239,7 +9305,7 @@ export default function AdminPanel() {
                       <span className={styles.metricLabel}>در حال ارسال</span>
                       <span className={styles.metricValue}>{transitCount}</span>
                       <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`} style={{ marginTop: '2px' }}>+12.5% نسبت به قبل</span>
+                      {renderGrowthSub(transitGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                       {AdminIcons.truck(18)}
@@ -9252,7 +9318,7 @@ export default function AdminPanel() {
                       <span className={styles.metricLabel}>رسیده به گمرک</span>
                       <span className={styles.metricValue}>{customsCount}</span>
                       <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
-                      <span className={styles.metricSubText} style={{ color: '#f59e0b', marginTop: '2px' }}>+8.2% نسبت به قبل</span>
+                      {renderGrowthSub(customsGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
                       {AdminIcons.settings(18)}
@@ -9265,7 +9331,7 @@ export default function AdminPanel() {
                       <span className={styles.metricLabel}>در ایران</span>
                       <span className={styles.metricValue}>{iranCount}</span>
                       <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
-                      <span className={styles.metricSubText} style={{ color: '#a855f7', marginTop: '2px' }}>+5.1% نسبت به قبل</span>
+                      {renderGrowthSub(iranGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
                       {AdminIcons.bag(18)}
@@ -9278,7 +9344,7 @@ export default function AdminPanel() {
                       <span className={styles.metricLabel}>تحویل شده</span>
                       <span className={styles.metricValue}>{deliveredCount.toLocaleString()}</span>
                       <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`} style={{ marginTop: '2px' }}>+20.4% نسبت به قبل</span>
+                      {renderGrowthSub(deliveredGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                       {AdminIcons.check(18)}
