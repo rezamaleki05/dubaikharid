@@ -11324,8 +11324,52 @@ export default function AdminPanel() {
                           <input type="url" value={addBrandForm.url} onChange={e => setAddBrandForm({...addBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="https://www.nike.com/ae/" />
                         </div>
                         <div style={{ marginBottom: '20px' }}>
-                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
-                          <input type="url" value={addBrandForm.img} onChange={e => setAddBrandForm({...addBrandForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>تصویر لوگو برند (آدرس اینترنتی یا آپلود فایل)</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                              type="url"
+                              value={addBrandForm.img}
+                              onChange={e => setAddBrandForm({...addBrandForm, img: e.target.value})}
+                              style={{ flex: 1, padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px' }}
+                              placeholder="https://example.com/logo.png"
+                            />
+                            <label
+                              style={{
+                                padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
+                              }}
+                            >
+                              📁 آپلود فایل
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = ev => {
+                                      setAddBrandForm(prev => ({ ...prev, img: ev.target.result }));
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          {addBrandForm.img && (
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>پیش‌نمایش لوگو:</span>
+                              <img src={addBrandForm.img} alt="Preview" style={{ height: '32px', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', padding: '2px' }} />
+                              <button
+                                type="button"
+                                onClick={() => setAddBrandForm(prev => ({ ...prev, img: '' }))}
+                                style={{ fontSize: '11px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
+                              >
+                                حذف تصویر
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                           <button type="button" onClick={() => setIsAddBrandOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
@@ -11365,8 +11409,52 @@ export default function AdminPanel() {
                           <input type="url" value={editBrandForm.url} onChange={e => setEditBrandForm({...editBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
                         </div>
                         <div style={{ marginBottom: '20px' }}>
-                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
-                          <input type="url" value={editBrandForm.img} onChange={e => setEditBrandForm({...editBrandForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>تصویر لوگو برند (آدرس اینترنتی یا آپلود فایل)</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                              type="url"
+                              value={editBrandForm.img}
+                              onChange={e => setEditBrandForm({...editBrandForm, img: e.target.value})}
+                              style={{ flex: 1, padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px' }}
+                              placeholder="https://example.com/logo.png"
+                            />
+                            <label
+                              style={{
+                                padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
+                              }}
+                            >
+                              📁 آپلود فایل
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = ev => {
+                                      setEditBrandForm(prev => ({ ...prev, img: ev.target.result }));
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          {editBrandForm.img && (
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>پیش‌نمایش لوگو:</span>
+                              <img src={editBrandForm.img} alt="Preview" style={{ height: '32px', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', padding: '2px' }} />
+                              <button
+                                type="button"
+                                onClick={() => setEditBrandForm(prev => ({ ...prev, img: '' }))}
+                                style={{ fontSize: '11px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
+                              >
+                                حذف تصویر
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                           <button type="button" onClick={() => setIsEditBrandOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
@@ -11396,8 +11484,52 @@ export default function AdminPanel() {
                           <input type="url" value={addStoreForm.url} onChange={e => setAddStoreForm({...addStoreForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="https://www.amazon.ae/" />
                         </div>
                         <div style={{ marginBottom: '20px' }}>
-                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
-                          <input type="url" value={addStoreForm.img} onChange={e => setAddStoreForm({...addStoreForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>تصویر لوگو فروشگاه (آدرس اینترنتی یا آپلود فایل)</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                              type="url"
+                              value={addStoreForm.img}
+                              onChange={e => setAddStoreForm({...addStoreForm, img: e.target.value})}
+                              style={{ flex: 1, padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px' }}
+                              placeholder="https://example.com/logo.png"
+                            />
+                            <label
+                              style={{
+                                padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
+                              }}
+                            >
+                              📁 آپلود فایل
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = ev => {
+                                      setAddStoreForm(prev => ({ ...prev, img: ev.target.result }));
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          {addStoreForm.img && (
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>پیش‌نمایش لوگو:</span>
+                              <img src={addStoreForm.img} alt="Preview" style={{ height: '32px', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', padding: '2px' }} />
+                              <button
+                                type="button"
+                                onClick={() => setAddStoreForm(prev => ({ ...prev, img: '' }))}
+                                style={{ fontSize: '11px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
+                              >
+                                حذف تصویر
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                           <button type="button" onClick={() => setIsAddStoreOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
@@ -11427,8 +11559,52 @@ export default function AdminPanel() {
                           <input type="url" value={editStoreForm.url} onChange={e => setEditStoreForm({...editStoreForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
                         </div>
                         <div style={{ marginBottom: '20px' }}>
-                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
-                          <input type="url" value={editStoreForm.img} onChange={e => setEditStoreForm({...editStoreForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>تصویر لوگو فروشگاه (آدرس اینترنتی یا آپلود فایل)</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                              type="url"
+                              value={editStoreForm.img}
+                              onChange={e => setEditStoreForm({...editStoreForm, img: e.target.value})}
+                              style={{ flex: 1, padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px' }}
+                              placeholder="https://example.com/logo.png"
+                            />
+                            <label
+                              style={{
+                                padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
+                              }}
+                            >
+                              📁 آپلود فایل
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={e => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = ev => {
+                                      setEditStoreForm(prev => ({ ...prev, img: ev.target.result }));
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                          {editStoreForm.img && (
+                            <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '11px', color: '#8b92a5' }}>پیش‌نمایش لوگو:</span>
+                              <img src={editStoreForm.img} alt="Preview" style={{ height: '32px', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', padding: '2px' }} />
+                              <button
+                                type="button"
+                                onClick={() => setEditStoreForm(prev => ({ ...prev, img: '' }))}
+                                style={{ fontSize: '11px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
+                              >
+                                حذف تصویر
+                              </button>
+                            </div>
+                          )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                           <button type="button" onClick={() => setIsEditStoreOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
