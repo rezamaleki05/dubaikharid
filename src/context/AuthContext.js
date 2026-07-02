@@ -123,7 +123,7 @@ function AuthInnerProvider({ children }) {
       // Default fallback demo user
       const defaultUsers = [
         {
-          name: 'رضا محمدی',
+          name: 'رضا ملکی',
           phone: '09123456789',
           email: 'reza.mohammadi@gmail.com',
           password: 'password123',
