@@ -14,16 +14,22 @@ export const metadata = {
 
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({ children }) {
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable} data-scroll-behavior="smooth">
       <body style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
-        <WishlistProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </WishlistProvider>
+        <SiteSettingsProvider>
+          <AuthProvider>
+            <WishlistProvider>
+              <CartProvider>
+                {children}
+              </CartProvider>
+            </WishlistProvider>
+          </AuthProvider>
+        </SiteSettingsProvider>
       </body>
     </html>
   );

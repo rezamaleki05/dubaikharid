@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getAllProducts, laptops } from '@/data/products';
 import styles from './Admin.module.css';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 // Premium Monochrome Line Icons matching the sidebar SVG style
 const AdminIcons = {
@@ -92,6 +93,19 @@ const AdminIcons = {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  ),
+  upload: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="17 8 12 3 7 8" />
+      <line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
+  ),
+  mail: (size = 16) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
     </svg>
   ),
   search: (size = 16) => (
@@ -1054,6 +1068,227 @@ const INITIAL_SHIPMENTS_SEED = [
   }
 ];
 
+const INITIAL_WAREHOUSE_PRODUCTS_SEED = [
+  {
+    id: 'DK-INV-1001',
+    name: 'iPhone 15 Pro 256GB',
+    brand: 'Apple',
+    category: 'موبایل',
+    sku: 'AIP15P-256',
+    price: 42500000,
+    stock: 12,
+    reserved: 2,
+    location: 'قفسه A1 - ردیف ۳',
+    minStock: 5,
+    lastUpdated: '۱۴۰۳/۰۸/۱۲ - ۱۴:۴۵',
+    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [
+      { id: 'n1', text: 'مخصوص سفارش مشتری #1256', date: '۱۴۰۳/۰۸/۱۲', user: 'مدیر سایت' }
+    ],
+    history: [
+      { id: 'h1', action: 'افزایش موجودی', qty: '+12', date: '۱۴۰۳/۰۸/۱۲ - ۱۴:۴۵', user: 'مدیر سایت', reason: 'ورود بار جدید از دبی' },
+      { id: 'h2', action: 'رزرو', qty: '+2', date: '۱۴۰۳/۰۸/۱۳ - ۱۰:۳۰', user: 'سیستم', reason: 'ثبت سفارش مشتری #1256' }
+    ]
+  },
+  {
+    id: 'DK-INV-1002',
+    name: 'PlayStation 5',
+    brand: 'Sony',
+    category: 'کنسول بازی',
+    sku: 'PS5-825',
+    price: 31900000,
+    stock: 8,
+    reserved: 1,
+    location: 'قفسه B2 - ردیف ۱',
+    minStock: 3,
+    lastUpdated: '۱۴۰۳/۰۸/۱۵ - ۱۰:۳۰',
+    image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [
+      { id: 'n2', text: 'کارتن آسیب دیده جزیی در حمل', date: '۱۴۰۳/۰۸/۱۵', user: 'انباردار' }
+    ],
+    history: [
+      { id: 'h3', action: 'افزایش موجودی', qty: '+8', date: '۱۴۰۳/۰۸/۱۵ - ۱۰:۳۰', user: 'مدیر انبار', reason: 'فاکتور خرید شماره ۱۰۲' },
+      { id: 'h4', action: 'رزرو', qty: '+1', date: '۱۴۰۳/۰۸/۱۶ - ۱۲:۰۰', user: 'سیستم', reason: 'پیش‌فاکتور مشتری #1259' }
+    ]
+  },
+  {
+    id: 'DK-INV-1003',
+    name: 'AirPods Pro 2',
+    brand: 'Apple',
+    category: 'هدفون',
+    sku: 'APP-AP2',
+    price: 11250000,
+    stock: 20,
+    reserved: 0,
+    location: 'قفسه A2 - ردیف ۴',
+    minStock: 5,
+    lastUpdated: '۱۴۰۳/۰۸/۱۶ - ۱۱:۱۵',
+    image: 'https://images.unsplash.com/photo-1588449668365-d15e397f6787?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [],
+    history: [
+      { id: 'h5', action: 'افزایش موجودی', qty: '+20', date: '۱۴۰۳/۰۸/۱۶ - ۱۱:۱۵', user: 'مدیر سایت', reason: 'ورود بار جدید' }
+    ]
+  },
+  {
+    id: 'DK-INV-1004',
+    name: 'Nike Air Max 270',
+    brand: 'Nike',
+    category: 'کفش ورزشی',
+    sku: 'NK-AM270',
+    price: 5800000,
+    stock: 6,
+    reserved: 1,
+    location: 'قفسه C1 - ردیف ۲',
+    minStock: 8,
+    lastUpdated: '۱۴۰۳/۰۸/۱۸ - ۱۶:۲۰',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [
+      { id: 'n3', text: 'در انتظار تامین سایز ۴۲', date: '۱۴۰۳/۰۸/۱۸', user: 'پشتیبان' }
+    ],
+    history: [
+      { id: 'h6', action: 'افزایش موجودی', qty: '+6', date: '۱۴۰۳/۰۸/۱۸ - ۱۶:۲۰', user: 'مدیر سایت', reason: 'تامین محلی' }
+    ]
+  },
+  {
+    id: 'DK-INV-1005',
+    name: 'ASUS TUF Gaming F15',
+    brand: 'Asus',
+    category: 'لپتاپ',
+    sku: 'AS-TUF15',
+    price: 34900000,
+    stock: 3,
+    reserved: 0,
+    location: 'قفسه D3 - ردیف ۵',
+    minStock: 4,
+    lastUpdated: '۱۴۰۳/۰۸/۲۰ - ۰۹:۰۰',
+    image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [],
+    history: [
+      { id: 'h7', action: 'افزایش موجودی', qty: '+3', date: '۱۴۰۳/۰۸/۲۰ - ۰۹:۰۰', user: 'مدیر انبار', reason: 'خرید از نماینده رسمی' }
+    ]
+  },
+  {
+    id: 'DK-INV-1006',
+    name: 'Dior Sauvage EDP',
+    brand: 'Dior',
+    category: 'عطر',
+    sku: 'DIOR-EDP',
+    price: 6400000,
+    stock: 15,
+    reserved: 0,
+    location: 'قفسه E1 - ردیف ۱',
+    minStock: 5,
+    lastUpdated: '۱۴۰۳/۰۸/۲۲ - ۱۴:۱۰',
+    image: 'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [],
+    history: [
+      { id: 'h8', action: 'افزایش موجودی', qty: '+15', date: '۱۴۰۳/۰۸/۲۲ - ۱۴:۱۰', user: 'مدیر سایت', reason: 'ورود بار آرایشی' }
+    ]
+  },
+  {
+    id: 'DK-INV-1007',
+    name: 'Sony WH-1000XM5',
+    brand: 'Sony',
+    category: 'هدفون',
+    sku: 'SONY-XM5',
+    price: 14800000,
+    stock: 4,
+    reserved: 0,
+    location: 'قفسه A2 - ردیف ۵',
+    minStock: 6,
+    lastUpdated: '۱۴۰۳/۰۸/۲۳ - ۱۶:۴۰',
+    image: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [],
+    history: [
+      { id: 'h9', action: 'افزایش موجودی', qty: '+4', date: '۱۴۰۳/۰۸/۲۳ - ۱۶:۴۰', user: 'مدیر انبار', reason: 'ورود بار صوتی' }
+    ]
+  },
+  {
+    id: 'DK-INV-1008',
+    name: 'Logitech MX Master 3S',
+    brand: 'Logitech',
+    category: 'اکسسوری',
+    sku: 'LOGI-MX3',
+    price: 4500000,
+    stock: 2,
+    reserved: 0,
+    location: 'قفسه C2 - ردیف ۳',
+    minStock: 4,
+    lastUpdated: '۱۴۰۳/۰۸/۲۴ - ۱۲:۳۰',
+    image: 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [],
+    history: [
+      { id: 'h10', action: 'افزایش موجودی', qty: '+2', date: '۱۴۰۳/۰۸/۲۴ - ۱۲:۳۰', user: 'مدیر سایت', reason: 'خرید تعداد محدود' }
+    ]
+  },
+  {
+    id: 'DK-INV-1009',
+    name: 'Samsung Galaxy S24 Ultra',
+    brand: 'Samsung',
+    category: 'موبایل',
+    sku: 'S24-ULTRA',
+    price: 52000000,
+    stock: 0,
+    reserved: 0,
+    location: 'قفسه A1 - ردیف ۵',
+    minStock: 3,
+    lastUpdated: '۱۴۰۳/۰۸/۲۵ - ۱۰:۰۰',
+    image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [
+      { id: 'n4', text: 'در انتظار تامین از دبی', date: '۱۴۰۳/۰۸/۲۵', user: 'پشتیبان' }
+    ],
+    history: []
+  },
+  {
+    id: 'DK-INV-1010',
+    name: 'Apple Watch Series 9',
+    brand: 'Apple',
+    category: 'ساعت هوشمند',
+    sku: 'APP-WATCH9',
+    price: 17200000,
+    stock: 0,
+    reserved: 0,
+    location: 'قفسه A2 - ردیف ۱',
+    minStock: 2,
+    lastUpdated: '۱۴۰۳/۰۸/۲۶ - ۱۱:۳۰',
+    image: 'https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [],
+    history: []
+  },
+  {
+    id: 'DK-INV-1011',
+    name: 'Nintendo Switch OLED',
+    brand: 'Nintendo',
+    category: 'کنسول بازی',
+    sku: 'NIN-SWITCH',
+    price: 15500000,
+    stock: 2,
+    reserved: 3,
+    location: 'قفسه B2 - ردیف ۴',
+    minStock: 2,
+    lastUpdated: '۱۴۰۳/۰۸/۲۷ - ۱۵:۰۰',
+    image: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=200&auto=format&fit=crop',
+    isArchived: false,
+    notes: [
+      { id: 'n5', text: 'کسری موجودی نسبت به رزرو! نیاز به تامین فوری ۱ عدد.', date: '۱۴۰۳/۰۸/۲۷', user: 'مدیر انبار' }
+    ],
+    history: [
+      { id: 'h11', action: 'افزایش موجودی', qty: '+2', date: '۱۴۰۳/۰۸/۲۷ - ۱۵:۰۰', user: 'مدیر انبار', reason: 'موجودی قبلی' },
+      { id: 'h12', action: 'رزرو', qty: '+3', date: '۱۴۰۳/۰۸/۲۸ - ۰۹:۳۰', user: 'سیستم', reason: 'سفارش مشتری #1272' }
+    ]
+  }
+];
+
 const INITIAL_ADMIN_PRODUCTS_SEED = [
   {
     id: 'prod-1001',
@@ -1146,6 +1381,9 @@ const INITIAL_ADMIN_PRODUCTS_SEED = [
 ];
 
 export default function AdminPanel() {
+  // Site settings context
+  const { settings: siteCtxSettings, updateSettings: updateSiteCtxSettings, updateAedRateAuto } = useSiteSettings();
+
   // Authentication states
   const [passwordInput, setPasswordInput] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -1154,10 +1392,171 @@ export default function AdminPanel() {
   // Active section/tab (Matches the sidebar items, default is 'overview' for dashboard)
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedOrderId, setSelectedOrderId] = useState('DK-1256');
+
+  // Calculator states for foreign products (external_product leads)
   const [activeStatusFilter, setActiveStatusFilter] = useState('all');
   const [activePaymentFilter, setActivePaymentFilter] = useState('all');
   const [isCustomerInfoExpanded, setIsCustomerInfoExpanded] = useState(true);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('general');
+  const [siteSubTab, setSiteSubTab] = useState('banners');
+  
+  // Site management states
+  const [banners, setBanners] = useState([
+    { id: 1, title: 'کالکشن بهاره لباس ورزشی', subtitle: 'خرید مستقیم و ارزان از شعب نایک دبی', link: '/men', status: 'فعال' },
+    { id: 2, title: 'خرید جدیدترین مدل‌های آیفون', subtitle: 'قیمت عالی به همراه گارانتی بین‌المللی', link: '/electronics', status: 'غیرفعال' }
+  ]);
+  
+  const [sitePages, setSitePages] = useState({
+    about: 'فروشگاه دبی خرید با بیش از ۵ سال سابقه در حوزه واسطه‌گری خرید از امارات و تحویل مستقیم بار به مشتریان در ایران تأسیس شده است. ما خرید شما را از تمامی سایت‌های اماراتی تسهیل می‌کنیم.',
+    terms: '۱. مسئولیت انتخاب سایز، رنگ و ویژگی‌های فیزیکی کالا بر عهده خریدار است.\n۲. ارسال کالا معمولاً بین ۷ الی ۱۴ روز کاری زمان خواهد برد.\n۳. با توجه به بین‌المللی بودن خریدها، امکان تغییر کالا یا مرجوعی پس از ثبت خرید در دبی وجود ندارد.',
+    privacy: 'دبی خرید حریم خصوصی و اطلاعات کاربران را محترم شمرده و متعهد به حفظ آن بر اساس برترین شیوه‌های رمزنگاری است.'
+  });
+  
+  const [faqs, setFaqs] = useState([
+    { id: 1, question: 'چقدر زمان می‌برد تا کالا تحویل داده شود؟', answer: 'تحویل هوایی بار معمولاً ۷ تا ۱۴ روز کاری زمان می‌برد.' },
+    { id: 2, question: 'آیا امکان سفارش هر محصولی وجود دارد؟', answer: 'بله، کالاهایی که با قوانین گمرکی جمهوری اسلامی ایران مغایرت نداشته باشند قابل سفارش هستند.' }
+  ]);
+  
+  const [rules, setRules] = useState([
+    { id: 1, title: 'قوانین خرید مستقیم', desc: 'نرخ محاسبه نهایی بر اساس زمان ثبت پیش‌پرداخت تایید شده سنجیده می‌شود.' },
+    { id: 2, title: 'مقررات ارسال هوایی', desc: 'هزینه ارسال هوایی بر اساس وزن واقعی یا حجمی بار محاسبه شده و حداقل بار محاسبه شده ۱ کیلوگرم است.' }
+  ]);
+  
+  const [seo, setSeo] = useState({
+    title: 'دبی خرید | واسط مستقیم خرید کالا از امارات',
+    desc: 'سفارش آسان و مستقیم از سایت‌های آمازون امارات، نون و برندهای معتبر دبی به همراه ارسال هوایی سریع.',
+    keywords: 'خرید از دبی, خرید از آمازون دبی, خرید کالا از امارات, ارسال بار از دبی',
+    googleAnalytics: 'G-77894562-1'
+  });
+  
+  // Security management states
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [lastLoginTime, setLastLoginTime] = useState('۱۴۰۵/۰۳/۳۰ ساعت ۰۱:۲۲');
+  const [lastLoginIp, setLastLoginIp] = useState('5.119.82.106 (تهران، ایران)');
+  
+  // Foreign Products management states
+  const [selectedAdminProductId, setSelectedAdminProductId] = useState(null);
+  const [productLinkInput, setProductLinkInput] = useState('');
+  const [isFetchingProductLink, setIsFetchingProductLink] = useState(false);
+  const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+  const [editProductForm, setEditProductForm] = useState({
+    id: '', name: '', brand: 'Nike', priceAed: '', weight: '', sourceStore: '', originalLink: '', foreignStatus: 'active',
+    image: '', gender: '', category: '', discountPercent: 0, isBestSeller: false
+  });
+  const [isAddProductManualOpen, setIsAddProductManualOpen] = useState(false);
+  const [addProductManualForm, setAddProductManualForm] = useState({
+    name: '', brand: 'Nike', priceAed: '', weight: '1.0', sourceStore: 'Amazon.ae', originalLink: '', image: '',
+    category: '', gender: '', discountPercent: 0, isBestSeller: false
+  });
+
+  // Local warehouse states
+  const [warehouseProducts, setWarehouseProducts] = useState([]);
+  const [selectedWarehouseProductId, setSelectedWarehouseProductId] = useState('');
+  const [warehouseSearchQuery, setWarehouseSearchQuery] = useState('');
+  const [warehouseCategoryFilter, setWarehouseCategoryFilter] = useState('همه');
+  const [warehouseBrandFilter, setWarehouseBrandFilter] = useState('همه');
+  const [warehouseStatusFilter, setWarehouseStatusFilter] = useState('همه');
+  const [warehouseFilterMode, setWarehouseFilterMode] = useState('all'); // all, lowstock, outofstock, reserved, overreserved
+  
+  // Modals state
+  const [isAddWarehouseOpen, setIsAddWarehouseOpen] = useState(false);
+  const [isEditWarehouseOpen, setIsEditWarehouseOpen] = useState(false);
+  const [editWarehouseForm, setEditWarehouseForm] = useState({
+    id: '', name: '', brand: '', category: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: ''
+  });
+  
+  const [warehouseAdjustStockOpen, setWarehouseAdjustStockOpen] = useState(false);
+  const [warehouseAdjustStockType, setWarehouseAdjustStockType] = useState('increase'); // increase, decrease
+  const [warehouseAdjustStockQty, setWarehouseAdjustStockQty] = useState('');
+  const [warehouseAdjustStockReason, setWarehouseAdjustStockReason] = useState('');
+  
+  const [warehouseAddNoteOpen, setWarehouseAddNoteOpen] = useState(false);
+  const [warehouseAddNoteText, setWarehouseAddNoteText] = useState('');
+  const [warehouseReportOpen, setWarehouseReportOpen] = useState(false);
+  const [activeWarehouseMenuId, setActiveWarehouseMenuId] = useState(null);
+  const [addWarehouseForm, setAddWarehouseForm] = useState({
+    name: '', brand: '', category: 'موبایل', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: ''
+  });
+  const [warehousePage, setWarehousePage] = useState(1);
+  const [warehouseLimit, setWarehouseLimit] = useState(10);
+
+  const [aedRate, setAedRate] = useState(() => { try { return localStorage.getItem('dubaiKharidAedRate') || '13850'; } catch { return '13850'; } });
+  const [siteSettings, setSiteSettings] = useState({ siteName: 'دبی خرید', siteUrl: 'dubaykharid.ir', supportPhone: '021-88001234', supportEmail: 'support@dubaykharid.ir', telegramId: '@dubaykharid', whatsapp: '+971501234567', instagramId: '@dubaykharid', dubaiAddress: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور', iranAddress: 'شیراز، شهرک گلستان، خیابان گل آرا', address: 'دبی، امارات متحده عربی', workingHours: 'شنبه تا پنجشنبه ۹ تا ۱۸', minOrderAed: '500', commissionPercent: '8', shippingBaseRate: '1200000', shippingPerKg: '350000', freeShippingThreshold: '80000000', maintenanceMode: false, allowRegistration: true, autoNotify: true, notifyNewOrder: true, notifyPayment: true, notifyShipment: true });
+
+  useEffect(() => {
+    if (siteCtxSettings) {
+      setSiteSettings(prev => ({ ...prev, ...siteCtxSettings }));
+    }
+  }, [siteCtxSettings]);
+
+  const [localGeneral, setLocalGeneral] = useState({
+    siteName: 'دبی خرید',
+    adminName: 'مدیر سایت',
+    adminEmail: 'admin@dubaykharid.ir',
+    adminPhone: '021-88001234',
+    timezone: 'Asia/Tehran',
+    siteLogoUrl: '/images/logo dubai kharid.png',
+    faviconUrl: '/favicon.ico',
+    googleClientId: '48558991372-4r4qd9m2kerqnnu9d9jbiru1q4cj96ee.apps.googleusercontent.com',
+    googleAuthMode: 'simulated'
+  });
+  const [logoPreview, setLogoPreview] = useState('/images/logo dubai kharid.png');
+  const [faviconPreview, setFaviconPreview] = useState('/favicon.ico');
+  const [saveGeneralSuccess, setSaveGeneralSuccess] = useState(false);
+  const [isUpdatingAedRate, setIsUpdatingAedRate] = useState(false);
+
+  useEffect(() => {
+    if (siteCtxSettings) {
+      setLocalGeneral({
+        siteName: siteCtxSettings.siteName || 'دبی خرید',
+        adminName: siteCtxSettings.adminName || 'مدیر سایت',
+        adminEmail: siteCtxSettings.adminEmail || 'admin@dubaykharid.ir',
+        adminPhone: siteCtxSettings.adminPhone || '021-88001234',
+        timezone: siteCtxSettings.timezone || 'Asia/Tehran',
+        siteLogoUrl: siteCtxSettings.siteLogoUrl || '/images/logo dubai kharid.png',
+        faviconUrl: siteCtxSettings.faviconUrl || '/favicon.ico',
+        googleClientId: siteCtxSettings.googleClientId || '48558991372-4r4qd9m2kerqnnu9d9jbiru1q4cj96ee.apps.googleusercontent.com',
+        googleAuthMode: siteCtxSettings.googleAuthMode || 'simulated'
+      });
+      setLogoPreview(siteCtxSettings.siteLogoUrl || '/images/logo dubai kharid.png');
+      setFaviconPreview(siteCtxSettings.faviconUrl || '/favicon.ico');
+    }
+  }, [siteCtxSettings]);
+
+  const handleFileUpload = (e, field, setPreview) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target.result;
+      setLocalGeneral(p => ({ ...p, [field]: dataUrl }));
+      setPreview(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleWarehouseImageUploadLocal = (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      if (type === 'add') {
+        setAddWarehouseForm(prev => ({ ...prev, image: dataUrl }));
+      } else {
+        setEditWarehouseForm(prev => ({ ...prev, image: dataUrl }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveGeneral = () => {
+    updateSiteCtxSettings(localGeneral);
+    setSaveGeneralSuccess(true);
+    setTimeout(() => setSaveGeneralSuccess(false), 3000);
+  };
+  const [readNotifIds, setReadNotifIds] = useState([]);
 
   // Customers states
   const [customers, setCustomers] = useState([]);
@@ -1223,6 +1622,128 @@ export default function AdminPanel() {
 
   // Leads & reviews lists
   const [leads, setLeads] = useState([]);
+  const [calcPriceAed, setCalcPriceAed] = useState(0);
+  const [calcWeight, setCalcWeight] = useState(0);
+  const [calcShippingAed, setCalcShippingAed] = useState(0);
+  const [calcCommissionAed, setCalcCommissionAed] = useState(0);
+  const [calcAedRate, setCalcAedRate] = useState(0);
+
+  useEffect(() => {
+    const selectedLead = leads.find(l => l.id === selectedOrderId);
+    if (selectedLead) {
+      setCalcPriceAed(parseFloat(selectedLead.priceAed) || 0);
+      setCalcWeight(parseFloat(selectedLead.weight) || 0.5);
+      
+      const rate = parseFloat(siteCtxSettings.aedRate) || 19500;
+      setCalcAedRate(rate);
+
+      // Pre-calculate based on settings
+      const priceVal = parseFloat(selectedLead.priceAed) || 0;
+      const weightVal = parseFloat(selectedLead.weight) || 0.5;
+      
+      const commissionPercent = parseFloat(siteCtxSettings.commissionPercent) || 25;
+      const commissionAedVal = priceVal * (commissionPercent / 100);
+      setCalcCommissionAed(Math.round(commissionAedVal));
+
+      const minWeight = parseFloat(siteCtxSettings.minWeightClass) || 1.0;
+      const roundingMethod = siteCtxSettings.roundingMethod || 'ceil';
+      let roundedWeight = weightVal;
+      if (roundingMethod === 'ceil') roundedWeight = Math.ceil(weightVal);
+      else if (roundingMethod === 'floor') roundedWeight = Math.floor(weightVal);
+      else if (roundingMethod === 'round') roundedWeight = Math.round(weightVal);
+      if (roundedWeight < minWeight) roundedWeight = minWeight;
+
+      const shippingPerKgAed = parseFloat(siteCtxSettings.shippingPerKgAed) || 40;
+      setCalcShippingAed(Math.round(roundedWeight * shippingPerKgAed));
+    }
+  }, [selectedOrderId, leads, siteCtxSettings]);
+
+  const calcTotalAed = calcPriceAed + calcShippingAed + calcCommissionAed;
+  const calcTotalToman = Math.round(calcTotalAed * calcAedRate);
+
+  const handleSaveFinalPrice = () => {
+    const updated = leads.map(l => {
+      if (l.id === selectedOrderId) {
+        return {
+          ...l,
+          status: 'price_tagged', // قیمت اعلام شده
+          priceAed: calcPriceAed,
+          weight: calcWeight,
+          totalToman: calcTotalToman,
+          priceDetails: {
+            product: Math.round(calcPriceAed * calcAedRate),
+            shipping: Math.round(calcShippingAed * calcAedRate),
+            commission: Math.round(calcCommissionAed * calcAedRate)
+          }
+        };
+      }
+      return l;
+    });
+    setLeads(updated);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+    alert(`قیمت نهایی ${calcTotalToman.toLocaleString('fa-IR')} تومان ثبت و وضعیت درخواست به «قیمت اعلام شده» تغییر یافت.`);
+  };
+
+  const getWhatsAppPaymentLink = (lead) => {
+    const link = `${window.location.origin}/payment?amount=${lead.totalToman}&tracking=${lead.id}&prodName=${encodeURIComponent(lead.productName)}&customer=${encodeURIComponent(lead.customerName)}&phone=${lead.phone}`;
+    const text = `سلام جناب ${lead.customerName} عزیز،\nقیمت نهایی محصول مورد نظر شما (${lead.productName}) بررسی و اعلام گردید:\n\nقیمت محصول: ${lead.priceAed} درهم\nوزن واقعی: ${lead.weight} کیلوگرم\nقیمت نهایی به تومان: ${lead.totalToman.toLocaleString('fa-IR')} تومان\n\nجهت تکمیل پرداخت آنلاین از طریق درگاه شتاب بانکی می‌توانید روی لینک زیر کلیک کنید:\n${link}\n\nبا تشکر، دبی خرید`;
+    return `https://wa.me/${lead.phone.replace(/^[0]/, '+98')}?text=${encodeURIComponent(text)}`;
+  };
+
+  const handleSendPaymentLink = (lead) => {
+    const link = `${window.location.origin}/payment?amount=${lead.totalToman}&tracking=${lead.id}&prodName=${encodeURIComponent(lead.productName)}&customer=${encodeURIComponent(lead.customerName)}&phone=${lead.phone}`;
+    navigator.clipboard.writeText(link);
+    alert('لینک پرداخت با موفقیت به کلیپ‌بورد کپی شد!');
+    window.open(getWhatsAppPaymentLink(lead), '_blank');
+  };
+
+  const handleConvertToOrder = (leadId) => {
+    const updated = leads.map(l => {
+      if (l.id === leadId) {
+        return {
+          ...l,
+          status: 'purchased',
+          paymentStatus: 'paid'
+        };
+      }
+      return l;
+    });
+    setLeads(updated);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+    alert('درخواست با موفقیت به سفارش خرید قطعی تبدیل شد.');
+  };
+
+  const handleManualPayment = (leadId) => {
+    const updated = leads.map(l => {
+      if (l.id === leadId) {
+        return {
+          ...l,
+          status: 'purchased',
+          paymentStatus: 'paid',
+          paymentMethod: 'card'
+        };
+      }
+      return l;
+    });
+    setLeads(updated);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+    alert('پرداخت دستی ثبت شد و درخواست به سفارش قطعی تبدیل گردید.');
+  };
+
+  const handleCancelRequest = (leadId) => {
+    const updated = leads.map(l => {
+      if (l.id === leadId) {
+        return {
+          ...l,
+          status: 'cancelled'
+        };
+      }
+      return l;
+    });
+    setLeads(updated);
+    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+    alert('درخواست با موفقیت لغو شد.');
+  };
   const [reviews, setReviews] = useState([]);
   const [uploadedProducts, setUploadedProducts] = useState([]);
   const [allProductsCount, setAllProductsCount] = useState(0);
@@ -1569,6 +2090,22 @@ export default function AdminPanel() {
     } else {
       localStorage.setItem('dubaiKharidAdminProducts', JSON.stringify(INITIAL_ADMIN_PRODUCTS_SEED));
       setAdminProducts(INITIAL_ADMIN_PRODUCTS_SEED);
+    }
+
+    // Warehouse Products seed
+    const savedWarehouseProducts = localStorage.getItem('dubaiKharidWarehouseProducts');
+    if (savedWarehouseProducts) {
+      const parsed = JSON.parse(savedWarehouseProducts);
+      setWarehouseProducts(parsed);
+      if (parsed.length > 0) {
+        setSelectedWarehouseProductId(parsed[0].id);
+      }
+    } else {
+      localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(INITIAL_WAREHOUSE_PRODUCTS_SEED));
+      setWarehouseProducts(INITIAL_WAREHOUSE_PRODUCTS_SEED);
+      if (INITIAL_WAREHOUSE_PRODUCTS_SEED.length > 0) {
+        setSelectedWarehouseProductId(INITIAL_WAREHOUSE_PRODUCTS_SEED[0].id);
+      }
     }
 
     // Load deleted static laptop IDs
@@ -2526,6 +3063,15 @@ export default function AdminPanel() {
     );
     if (!matchesSearch) return false;
 
+    // Split between Orders and Purchase Requests (leads) tabs
+    const isOrdersTab = activeTab === 'orders';
+    const isLeadsTab = activeTab === 'leads';
+    if (isOrdersTab || isLeadsTab) {
+      const isRequest = ['pending', 'price_tagged', 'approved', 'new_order'].includes(lead.status);
+      if (isOrdersTab && isRequest) return false;
+      if (isLeadsTab && !isRequest) return false;
+    }
+
     // Status Filter
     const matchesStatus = activeStatusFilter === 'all' || 
       (activeStatusFilter === 'noon_dubai' ? (lead.status === 'noon_dubai' || lead.status === 'purchased') : lead.status === activeStatusFilter);
@@ -2601,6 +3147,7 @@ export default function AdminPanel() {
           </div>
 
           <ul className={styles.navMenuList}>
+            {/* 1. داشبورد */}
             <li className={styles.navMenuItem}>
               <button onClick={() => setActiveTab('overview')} className={`${styles.navMenuLink} ${activeTab === 'overview' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
@@ -2608,42 +3155,53 @@ export default function AdminPanel() {
                 </span> داشبورد
               </button>
             </li>
+            
+            {/* 2. سفارشات */}
             <li className={styles.navMenuItem}>
-              <button onClick={() => setActiveTab('leads')} className={`${styles.navMenuLink} ${activeTab === 'leads' ? styles.navMenuLinkActive : ''}`}>
+              <button onClick={() => { setActiveTab('orders'); setActiveStatusFilter('all'); }} className={`${styles.navMenuLink} ${activeTab === 'orders' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>
+                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </span> سفارشات
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>
+                  {leads.filter(l => ['purchased', 'noon_dubai', 'warehouse_dubai', 'shipped', 'delivered'].includes(l.status)).length}
+                </span>
+              </button>
+            </li>
+
+            {/* 3. درخواست خرید */}
+            <li className={styles.navMenuItem}>
+              <button onClick={() => { setActiveTab('leads'); setActiveStatusFilter('all'); }} className={`${styles.navMenuLink} ${activeTab === 'leads' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
                   <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                </span> سفارشات
-                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>12</span>
+                </span> درخواست خرید
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`} style={{ background: '#a855f7' }}>
+                  {leads.filter(l => ['pending', 'price_tagged', 'approved'].includes(l.status)).length}
+                </span>
               </button>
             </li>
-            <li className={styles.navMenuItem}>
-              <button onClick={() => setActiveTab('customers')} className={`${styles.navMenuLink} ${activeTab === 'customers' ? styles.navMenuLinkActive : ''}`}>
-                <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                </span> مشتریان
-              </button>
-            </li>
-            <li className={styles.navMenuItem}>
-              <button onClick={() => { setActiveTab('payments'); setSelectedPaymentId(''); }} className={`${styles.navMenuLink} ${activeTab === 'payments' ? styles.navMenuLinkActive : ''}`}>
-                <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                </span> پرداخت ها
-              </button>
-            </li>
-            <li className={styles.navMenuItem}>
-              <button onClick={() => setActiveTab('shipments')} className={`${styles.navMenuLink} ${activeTab === 'shipments' ? styles.navMenuLinkActive : ''}`}>
-                <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                </span> ارسال ها
-              </button>
-            </li>
+
+            {/* 4. محصولات خارجی */}
             <li className={styles.navMenuItem}>
               <button onClick={() => setActiveTab('site_products')} className={`${styles.navMenuLink} ${activeTab === 'site_products' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
                   <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                </span> محصولات
+                </span> محصولات خارجی
               </button>
             </li>
+
+            {/* 5. انبار */}
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('warehouse')} className={`${styles.navMenuLink} ${activeTab === 'warehouse' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>
+                  {AdminIcons.building(16)}
+                </span> انبار
+                <span className={`${styles.navBadge} ${styles.badgeOrange}`} style={{ background: '#06b6d4' }}>
+                  {leads.filter(l => l.status === 'warehouse_dubai').length}
+                </span>
+              </button>
+            </li>
+
+            {/* 6. لپ تاپ های استوک */}
             <li className={styles.navMenuItem}>
               <button onClick={() => setActiveTab('stock_laptops')} className={`${styles.navMenuLink} ${activeTab === 'stock_laptops' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
@@ -2651,55 +3209,49 @@ export default function AdminPanel() {
                 </span> لپ تاپ های استوک
               </button>
             </li>
+
+            {/* 7. مشتریان */}
             <li className={styles.navMenuItem}>
-              <button onClick={() => {}} className={styles.navMenuLink}>
+              <button onClick={() => setActiveTab('customers')} className={`${styles.navMenuLink} ${activeTab === 'customers' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
-                </span> درخواست خرید
+                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </span> مشتریان
               </button>
             </li>
+
+            {/* 8. پرداخت ها */}
             <li className={styles.navMenuItem}>
-              <button onClick={() => setActiveTab('reviews')} className={`${styles.navMenuLink} ${activeTab === 'reviews' ? styles.navMenuLinkActive : ''}`}>
+              <button onClick={() => { setActiveTab('payments'); setSelectedPaymentId(''); }} className={`${styles.navMenuLink} ${activeTab === 'payments' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                </span> نظرات و بازخوردها
-                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>3</span>
+                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </span> پرداخت ها
               </button>
             </li>
+
+            {/* 9. ارسال ها */}
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('shipments')} className={`${styles.navMenuLink} ${activeTab === 'shipments' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>
+                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                </span> ارسال ها
+              </button>
+            </li>
+
+            {/* 10. گزارش مالی */}
             <li className={styles.navMenuItem}>
               <button onClick={() => { setActiveTab('financial_reports'); setSelectedPaymentId(''); }} className={`${styles.navMenuLink} ${activeTab === 'financial_reports' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
                   <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                </span> گزارشات مالی
+                </span> گزارش مالی
               </button>
             </li>
-            <li className={styles.navMenuItem}>
-              <button onClick={() => {}} className={styles.navMenuLink}>
-                <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                </span> محتوا و صفحات
-              </button>
-            </li>
+
+            {/* 11. تنظیمات */}
             <li className={styles.navMenuItem}>
               <button onClick={() => setActiveTab('settings')} className={`${styles.navMenuLink} ${activeTab === 'settings' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
                   <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 </span> تنظیمات
-              </button>
-            </li>
-            <li className={styles.navMenuItem}>
-              <button onClick={() => {}} className={styles.navMenuLink}>
-                <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </span> مدیریت کاربران
-              </button>
-            </li>
-            <li className={styles.navMenuItem}>
-              <button onClick={() => {}} className={styles.navMenuLink}>
-                <span className={styles.navIcon}>
-                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                </span> اعلان ها
-                <span className={`${styles.navBadge} ${styles.badgeOrange}`}>5</span>
               </button>
             </li>
           </ul>
@@ -2732,73 +3284,118 @@ export default function AdminPanel() {
           
           <div className={styles.topRightControls}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              <button 
-                className={styles.iconControlBtn} 
-                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                style={{ position: 'relative' }}
-              >
-                <span>{AdminIcons.bell(16)}</span>
-                <span className={styles.bellBadge}>5</span>
-              </button>
-              
-              {isNotificationsOpen && (
-                <div 
-                  style={{
-                    position: 'absolute',
-                    top: '50px',
-                    left: '0',
-                    width: '320px',
-                    backgroundColor: '#11131a',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                    zIndex: 999,
-                    direction: 'rtl',
-                    textAlign: 'right',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>{AdminIcons.bell(13)} اعلان‌های اخیر مدیریت</span>
-                    <span style={{ fontSize: '10px', color: '#f87820', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => alert('همه اعلان‌ها خوانده شدند.')}>علامت خوانده شده</span>
-                  </div>
-                  <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
-                    {[
-                      { id: 1, text: 'سفارش جدید DK-1256 توسط علی محمدی ثبت شد.', time: '۵ دقیقه پیش', unread: true, targetTab: 'leads', targetOrderId: 'DK-1256' },
-                      { id: 2, text: 'پیش‌فاکتور DK-1255 در انتظار محاسبه قیمت نهایی است.', time: '۲ ساعت پیش', unread: true, targetTab: 'leads', targetOrderId: 'DK-1255' },
-                      { id: 3, text: 'پرداخت سفارش DK-1254 با درگاه شتاب تایید شد.', time: '۴ ساعت پیش', unread: false, targetTab: 'leads', targetOrderId: 'DK-1254' },
-                      { id: 4, text: 'سفارش DK-1252 به دفتر دبی منتقل شد.', time: 'دیروز', unread: false, targetTab: 'leads', targetOrderId: 'DK-1252' },
-                      { id: 5, text: 'کاربر جدید "Mohammadreza Maleki" در سایت ثبت‌نام کرد.', time: 'دیروز', unread: false, targetTab: 'overview' }
-                    ].map(n => (
-                      <div 
-                        key={n.id}
-                        onClick={() => {
-                          if (n.targetTab) {
-                            setActiveTab(n.targetTab);
-                            if (n.targetOrderId) {
-                              setSelectedOrderId(n.targetOrderId);
-                            }
-                          }
-                          setIsNotificationsOpen(false);
-                        }}
+              {(() => {
+                // Build dynamic notifications from real leads state (latest 5)
+                const sortedLeads = [...leads].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+                const dynamicNotifs = sortedLeads.map(lead => ({
+                  id: lead.id,
+                  text: `سفارش ${lead.id} توسط ${lead.customerName} — ${lead.productName}`,
+                  time: (() => {
+                    const diff = Date.now() - new Date(lead.date).getTime();
+                    const mins = Math.floor(diff / 60000);
+                    const hours = Math.floor(diff / 3600000);
+                    const days = Math.floor(diff / 86400000);
+                    if (mins < 60) return `${mins} دقیقه پیش`;
+                    if (hours < 24) return `${hours} ساعت پیش`;
+                    return `${days} روز پیش`;
+                  })(),
+                  unread: !readNotifIds.includes(lead.id),
+                  status: lead.status,
+                  targetTab: 'leads',
+                  targetOrderId: lead.id
+                }));
+                const unreadCount = dynamicNotifs.filter(n => n.unread).length;
+                const statusLabel = {
+                  pending: 'در انتظار', processing: 'در حال پردازش', shipped: 'ارسال شده',
+                  delivered: 'تحویل داده شده', cancelled: 'لغو شده'
+                };
+                return (
+                  <>
+                    <button
+                      className={styles.iconControlBtn}
+                      onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                      style={{ position: 'relative' }}
+                    >
+                      <span>{AdminIcons.bell(16)}</span>
+                      {unreadCount > 0 && (
+                        <span className={styles.bellBadge}>{unreadCount}</span>
+                      )}
+                    </button>
+
+                    {isNotificationsOpen && (
+                      <div
                         style={{
-                          padding: '12px 16px',
-                          borderBottom: '1px solid rgba(255,255,255,0.03)',
-                          cursor: 'pointer',
-                          background: n.unread ? 'rgba(248, 120, 32, 0.03)' : 'transparent',
-                          transition: 'background 0.2s',
-                          textAlign: 'right'
+                          position: 'absolute', top: '50px', left: '0', width: '340px',
+                          backgroundColor: '#11131a', border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                          zIndex: 999, direction: 'rtl', textAlign: 'right', overflow: 'hidden'
                         }}
-                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'}
-                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = n.unread ? 'rgba(248, 120, 32, 0.03)' : 'transparent'}
                       >
-                        <p style={{ margin: 0, fontSize: '11.5px', color: n.unread ? '#fff' : '#d1d5db', lineHeight: '1.4', fontWeight: n.unread ? 'bold' : 'normal' }}>{n.text}</p>
-                        <span style={{ display: 'block', fontSize: '9px', color: '#8b92a5', marginTop: '4px' }}>{n.time}</span>
+                        {/* Header */}
+                        <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            {AdminIcons.bell(13)} اعلان‌های سفارشات
+                            {unreadCount > 0 && <span style={{ background: '#f87820', color: '#fff', borderRadius: '20px', padding: '1px 7px', fontSize: '10px' }}>{unreadCount} جدید</span>}
+                          </span>
+                          <span
+                            style={{ fontSize: '10px', color: '#f87820', cursor: 'pointer', fontWeight: 'bold' }}
+                            onClick={() => setReadNotifIds(dynamicNotifs.map(n => n.id))}
+                          >
+                            همه خوانده شد
+                          </span>
+                        </div>
+
+                        {/* Notifications list */}
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                          {dynamicNotifs.length === 0 ? (
+                            <div style={{ padding: '24px', textAlign: 'center', color: '#8b92a5', fontSize: '12px' }}>اعلانی وجود ندارد</div>
+                          ) : dynamicNotifs.map(n => (
+                            <div
+                              key={n.id}
+                              onClick={() => {
+                                setActiveTab(n.targetTab);
+                                setSelectedOrderId(n.targetOrderId);
+                                setReadNotifIds(prev => [...new Set([...prev, n.id])]);
+                                setIsNotificationsOpen(false);
+                              }}
+                              style={{
+                                padding: '11px 16px',
+                                borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                cursor: 'pointer',
+                                background: n.unread ? 'rgba(248,120,32,0.05)' : 'transparent',
+                                transition: 'background 0.2s',
+                                display: 'flex', alignItems: 'flex-start', gap: '10px'
+                              }}
+                              onMouseOver={e => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'}
+                              onMouseOut={e => e.currentTarget.style.backgroundColor = n.unread ? 'rgba(248,120,32,0.05)' : 'transparent'}
+                            >
+                              {/* Unread dot */}
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: n.unread ? '#f87820' : 'transparent', flexShrink: 0, marginTop: '5px', border: n.unread ? 'none' : '1px solid #3a3f50' }} />
+                              <div style={{ flex: 1 }}>
+                                <p style={{ margin: 0, fontSize: '11.5px', color: n.unread ? '#fff' : '#c0c8d8', lineHeight: '1.5', fontWeight: n.unread ? '600' : '400' }}>{n.text}</p>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                                  <span style={{ fontSize: '9.5px', color: '#8b92a5' }}>{n.time}</span>
+                                  <span style={{ fontSize: '9px', padding: '2px 7px', borderRadius: '6px', background: 'rgba(255,255,255,0.06)', color: '#c0c8d8' }}>{statusLabel[n.status] || n.status}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Footer */}
+                        <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                          <span
+                            style={{ fontSize: '11px', color: '#f87820', cursor: 'pointer', fontWeight: '600' }}
+                            onClick={() => { setActiveTab('leads'); setIsNotificationsOpen(false); }}
+                          >
+                            مشاهده همه سفارشات
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    )}
+                  </>
+                );
+              })()}
             </div>
             
             <div className={styles.headerProfileBadge}>
@@ -4219,638 +4816,270 @@ export default function AdminPanel() {
             </div>
           )}
 
-          {/* TAB: DASHBOARD STATS - FULL MOCKUP PARITY REDESIGN */}
+          {/* TAB: DASHBOARD - OPERATIONAL REDESIGN */}
           {activeTab === 'overview' && (() => {
-            const totalRevenue = leads.filter(l => l.status === 'paid' || l.status === 'shipped').reduce((sum, l) => sum + (l.totalToman || 0), 0);
             const pendingLeadsCount = leads.filter(l => l.status === 'pending').length;
-            const contactedCount = leads.filter(l => l.status === 'contacted').length;
-            const paidCount = leads.filter(l => l.status === 'paid').length;
-            const shippedCount = leads.filter(l => l.status === 'shipped').length;
-            const deliveredCount = leads.filter(l => l.status === 'delivered').length;
             const activeOrders = leads.filter(l => l.status !== 'cancelled' && l.status !== 'delivered').length;
 
-            // Donut chart data
-            const orderStatuses = [
-              { label: 'سفارش جدید', count: 12, pct: 14.0, color: '#f87820' },
-              { label: 'در انتظار بررسی', count: 18, pct: 20.9, color: '#ff9d00' },
-              { label: 'تایید شده', count: 24, pct: 27.9, color: '#3b82f6' },
-              { label: 'خرید شده', count: 16, pct: 18.6, color: '#a855f7' },
-              { label: 'در حال ارسال', count: 14, pct: 16.3, color: '#2ecc71' },
-              { label: 'تحویل شده', count: 2, pct: 2.3, color: '#ea580c' }
-            ];
-
             return (
-            <div>
-              {/* Welcome Banner */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', direction: 'rtl' }}>
-                <div>
-                  <h1 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0' }}>
-                    خوش آمدید، مدیر سایت
-                  </h1>
-                  <p style={{ fontSize: '13px', color: '#8b92a5', margin: 0 }}>
-                    نمای کلی از وضعیت فروشگاه و سفارشات (همه بخش‌ها با کلیک واکنش‌گرا هستند)
-                  </p>
+            <div style={{ direction: 'rtl' }}>
+
+              {/* ALERTS BANNER */}
+              <div style={{ background: 'rgba(248,120,32,0.06)', border: '1px solid rgba(248,120,32,0.18)', borderRadius: '14px', padding: '14px 18px', marginBottom: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <span style={{ color: '#f87820' }}>{AdminIcons.alert(15)}</span>
+                  <span style={{ fontWeight: '800', fontSize: '13px', color: '#f87820' }}>هشدارهای امروز</span>
                 </div>
-                <div 
-                  onClick={() => alert('تقویم مدیریت به زودی فعال می‌شود.')}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#8b92a5', fontSize: '13px', background: 'rgba(255,255,255,0.02)', padding: '8px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer' }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  <span>امروز ۲ خرداد ۱۴۰۳</span>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {[
+                    { text: 'نرخ درهم به‌روزرسانی نشده', urgent: true, onClick: () => setActiveTab('settings') },
+                    { text: `${leads.filter(l => l.status === 'shipped').length + 2} سفارش ارسال‌نشده`, urgent: true, onClick: () => setActiveTab('shipments') },
+                    { text: `${pendingLeadsCount} درخواست منتظر قیمت`, urgent: false, onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
+                    { text: '3 محصول کم‌موجود', urgent: false, onClick: () => setActiveTab('site_products') },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      onClick={item.onClick}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '5px 14px', borderRadius: '20px', cursor: 'pointer',
+                        background: item.urgent ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${item.urgent ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.07)'}`,
+                        color: item.urgent ? '#ef4444' : '#c0c8d8',
+                        fontSize: '11.5px', fontWeight: '600', transition: 'opacity 0.2s'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.opacity = '0.75'}
+                      onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      {item.urgent ? AdminIcons.alert(11) : AdminIcons.clock(11)} {item.text}
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* 6-Metric Cards Row - Ordered Right to Left to match RTL layout exactly */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '14px', marginBottom: '24px', direction: 'rtl' }}>
-
-                {/* Card 1 (Far Right in RTL): مشتریان فعال */}
-                <div 
-                  className={styles.cardPanel} 
-                  onClick={() => alert('لیست مشتریان فعال به زودی فعال می‌شود.')}
-                  style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.25)'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.015)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(234,179,8,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#eab308' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              {/* KPI CARDS */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                {[
+                  { label: 'درآمد امروز', value: '48,200,000', unit: 'تومان', trend: '+12.5%', trendUp: true, iconColor: '#f87820', iconBg: 'rgba(248,120,32,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> },
+                  { label: 'سود ماه جاری', value: '386,750,000', unit: 'تومان', trend: '+21.3%', trendUp: true, iconColor: '#2ecc71', iconBg: 'rgba(46,204,113,0.1)', onClick: () => setActiveTab('financial_reports'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+                  { label: 'سفارشات فعال', value: String(activeOrders + 78), unit: 'سفارش', trend: '+8 امروز', trendUp: true, iconColor: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+                  { label: 'درخواست‌های فعال', value: String(pendingLeadsCount + 14), unit: 'درخواست', trend: `${pendingLeadsCount} منتظر قیمت`, trendUp: false, iconColor: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg> },
+                  { label: 'پرداخت‌های در انتظار', value: '7', unit: 'تراکنش', trend: 'نیاز به تایید', trendUp: false, iconColor: '#a855f7', iconBg: 'rgba(168,85,247,0.1)', onClick: () => setActiveTab('payments'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+                  { label: 'مشتریان فعال', value: '2,145', unit: 'مشتری', trend: '+15.6%', trendUp: true, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.1)', onClick: () => setActiveTab('customers'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+                ].map((card, i) => (
+                  <div key={i} className={styles.cardPanel} onClick={card.onClick}
+                    style={{ padding: '16px', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
+                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(248,120,32,0.3)'; e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; }}
+                    onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: card.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.iconColor }}>{card.icon}</div>
+                      <span style={{ fontSize: '9.5px', color: '#8b92a5', textAlign: 'left' }}>{card.label}</span>
                     </div>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>مشتریان فعال</span>
+                    <strong style={{ fontSize: '20px', fontWeight: '900', color: '#fff', display: 'block', lineHeight: 1 }}>{card.value}</strong>
+                    <span style={{ fontSize: '9px', color: '#8b92a5' }}>{card.unit}</span>
+                    <div style={{ marginTop: '8px', fontSize: '9.5px', color: card.trendUp ? '#2ecc71' : '#f59e0b', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      {card.trendUp ? '▲' : '●'} {card.trend}
+                    </div>
                   </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#fff', display: 'block' }}>2,145</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>مشتری</span>
+                ))}
+              </div>
+
+              {/* QUICK ACCESS */}
+              <div className={styles.cardPanel} style={{ padding: '14px 20px', borderRadius: '14px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: '800', fontSize: '12px', color: '#8b92a5', whiteSpace: 'nowrap' }}>دسترسی سریع:</span>
+                  {[
+                    { label: 'ثبت سفارش', onClick: () => setActiveTab('leads') },
+                    { label: 'افزودن محصول', onClick: () => setActiveTab('site_products') },
+                    { label: 'افزودن لپ‌تاپ استوک', onClick: () => setActiveTab('stock_laptops') },
+                    { label: 'ثبت پرداخت', onClick: () => setActiveTab('payments') },
+                    { label: 'ثبت ارسال', onClick: () => setActiveTab('shipments') },
+                    { label: 'به‌روزرسانی نرخ درهم', onClick: () => setActiveTab('settings') },
+                  ].map((btn, i) => (
+                    <button key={i} onClick={btn.onClick}
+                      style={{ padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: '600', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#c0c8d8', transition: 'all 0.2s' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'rgba(248,120,32,0.1)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.3)'; e.currentTarget.style.color = '#f87820'; }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#c0c8d8'; }}
+                    >{btn.label}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* MAIN GRID: Action Items + Orders */}
+              <div style={{ display: 'grid', gridTemplateColumns: '290px 1fr', gap: '18px', marginBottom: '18px' }}>
+
+                {/* کارهای نیازمند اقدام */}
+                <div className={styles.cardPanel} style={{ padding: '20px', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '13px', color: '#fff' }}>کارهای نیازمند اقدام</span>
+                    <span style={{ fontSize: '9px', background: 'rgba(248,120,32,0.15)', color: '#f87820', padding: '2px 8px', borderRadius: '10px', fontWeight: '700' }}>{pendingLeadsCount + 7} مورد</span>
                   </div>
-                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '8px' }}>▲</span> +15.6% <span style={{ color: '#8b92a5' }}>نسبت به ماه قبل</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                      { label: 'درخواست‌های منتظر قیمت', count: pendingLeadsCount + 4, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: AdminIcons.clock(13), onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
+                      { label: 'سفارش‌های آماده ارسال', count: leads.filter(l => l.status === 'purchased' || l.status === 'warehouse_dubai').length + 3, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: AdminIcons.truck(13), onClick: () => setActiveTab('shipments') },
+                      { label: 'پرداخت‌های تایید نشده', count: 7, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', icon: AdminIcons.card(13), onClick: () => setActiveTab('payments') },
+                      { label: 'محصولات کم‌موجود', count: 3, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', icon: AdminIcons.alert(13), onClick: () => setActiveTab('site_products') },
+                      { label: 'درخواست‌های بدون پاسخ', count: 2, color: '#06b6d4', bg: 'rgba(6,182,212,0.08)', icon: AdminIcons.chat(13), onClick: () => setActiveTab('leads') },
+                    ].map((item, i) => (
+                      <div key={i} onClick={item.onClick}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', cursor: 'pointer', background: item.bg, border: `1px solid ${item.color}20`, transition: 'opacity 0.2s' }}
+                        onMouseOver={e => e.currentTarget.style.opacity = '0.8'}
+                        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: item.color }}>
+                          {item.icon}
+                          <span style={{ fontSize: '11.5px', color: '#c0c8d8', fontWeight: '600' }}>{item.label}</span>
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: '900', color: item.color }}>{item.count}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* Card 2: سود خالص این ماه */}
-                <div 
-                  className={styles.cardPanel} 
-                  onClick={() => alert('گزارش سود و زیان مالی این ماه در دست تکمیل است.')}
-                  style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.25)'; e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.015)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(6,182,212,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#06b6d4' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                    </div>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سود خالص این ماه</span>
+                {/* آخرین سفارشات */}
+                <div className={styles.cardPanel} style={{ padding: '20px', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '13px', color: '#fff' }}>آخرین سفارشات</span>
+                    <button onClick={() => { setActiveTab('leads'); setActiveStatusFilter('all'); }} style={{ padding: '5px 14px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(248,120,32,0.4)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: '700' }}>مشاهده همه</button>
                   </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <strong style={{ fontSize: '20px', fontWeight: '900', color: '#fff', display: 'block' }}>386,750,000</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>تومان</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr 130px 110px 90px 80px', gap: '8px', padding: '4px 8px', marginBottom: '6px' }}>
+                    {['شماره سفارش', 'مشتری', 'مبلغ', 'وضعیت', 'تاریخ', ''].map((h, i) => (
+                      <span key={i} style={{ fontSize: '9.5px', color: '#8b92a5', fontWeight: '700' }}>{h}</span>
+                    ))}
                   </div>
-                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '8px' }}>▲</span> +21.3% <span style={{ color: '#8b92a5' }}>نسبت به ماه قبل</span>
-                  </div>
-                </div>
-
-                {/* Card 3: سفارشات در حال ارسال */}
-                <div 
-                  className={styles.cardPanel} 
-                  onClick={() => {
-                    setActiveTab('leads');
-                    setActiveStatusFilter('shipped');
-                  }}
-                  style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.4)'; e.currentTarget.style.backgroundColor = 'rgba(248, 120, 32, 0.03)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                    </div>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارشات در حال ارسال</span>
-                  </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#fff', display: 'block' }}>{leads.filter(l => l.status === 'shipped').length + 21}</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارش <span style={{ color: '#f87820', fontWeight: 'bold' }}>(مشاهده)</span></span>
-                  </div>
-                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#ff4d4d', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '8px' }}>▼</span> -3% <span style={{ color: '#8b92a5' }}>نسبت به دیروز</span>
-                  </div>
-                </div>
-
-                {/* Card 4: سفارشات فعال */}
-                <div 
-                  className={styles.cardPanel} 
-                  onClick={() => {
-                    setActiveTab('leads');
-                    setActiveStatusFilter('pending');
-                  }}
-                  style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.4)'; e.currentTarget.style.backgroundColor = 'rgba(248, 120, 32, 0.03)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(46,204,113,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2ecc71' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    </div>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارشات فعال</span>
-                  </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <strong style={{ fontSize: '24px', fontWeight: '900', color: '#fff', display: 'block' }}>{leads.filter(l => l.status !== 'cancelled' && l.status !== 'delivered').length + 78}</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>سفارش <span style={{ color: '#f87820', fontWeight: 'bold' }}>(مشاهده)</span></span>
-                  </div>
-                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '8px' }}>▲</span> +8 <span style={{ color: '#8b92a5' }}>نسبت به دیروز</span>
-                  </div>
-                </div>
-
-                {/* Card 5: درآمد این ماه */}
-                <div 
-                  className={styles.cardPanel} 
-                  onClick={() => {
-                    setActiveTab('leads');
-                    setActiveStatusFilter('all');
-                  }}
-                  style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.4)'; e.currentTarget.style.backgroundColor = 'rgba(248, 120, 32, 0.03)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(168,85,247,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a855f7' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
-                    </div>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>درآمد این ماه</span>
-                  </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <strong style={{ fontSize: '20px', fontWeight: '900', color: '#fff', display: 'block' }}>1,245,800,000</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>تومان <span style={{ color: '#f87820', fontWeight: 'bold' }}>(مشاهده)</span></span>
-                  </div>
-                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '8px' }}>▲</span> +18.7% <span style={{ color: '#8b92a5' }}>نسبت به ماه قبل</span>
-                  </div>
-                </div>
-
-                {/* Card 6 (Far Left in RTL): درآمد امروز */}
-                <div 
-                  className={styles.cardPanel} 
-                  onClick={() => {
-                    setActiveTab('leads');
-                    setActiveStatusFilter('all');
-                  }}
-                  style={{ padding: '18px 16px', borderRadius: '16px', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
-                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.4)'; e.currentTarget.style.backgroundColor = 'rgba(248, 120, 32, 0.03)'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(248,120,32,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87820' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                    </div>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>درآمد امروز</span>
-                  </div>
-                  <div style={{ marginTop: '14px' }}>
-                    <strong style={{ fontSize: '22px', fontWeight: '900', color: '#fff', display: 'block' }}>48,200,000</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>تومان <span style={{ color: '#f87820', fontWeight: 'bold' }}>(مشاهده)</span></span>
-                  </div>
-                  <div style={{ marginTop: '8px', fontSize: '10px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '8px' }}>▲</span> +12.5% <span style={{ color: '#8b92a5' }}>نسبت به دیروز</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {[...leads].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 7).map((order) => {
+                      const stMap = {
+                        pending: { label: 'در انتظار', color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
+                        price_tagged: { label: 'قیمت‌گذاری', color: '#a855f7', bg: 'rgba(168,85,247,0.1)' },
+                        approved: { label: 'تایید شده', color: '#2ecc71', bg: 'rgba(46,204,113,0.1)' },
+                        purchased: { label: 'خریداری', color: '#06b6d4', bg: 'rgba(6,182,212,0.1)' },
+                        warehouse_dubai: { label: 'انبار دبی', color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+                        shipped: { label: 'ارسال شده', color: '#2ecc71', bg: 'rgba(46,204,113,0.1)' },
+                        delivered: { label: 'تحویل شده', color: '#8b92a5', bg: 'rgba(139,146,165,0.1)' },
+                        cancelled: { label: 'لغو شده', color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+                      };
+                      const st = stMap[order.status] || { label: order.status, color: '#8b92a5', bg: 'rgba(139,146,165,0.1)' };
+                      const d = new Date(order.date);
+                      const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+                      return (
+                        <div key={order.id} onClick={() => { setActiveTab('leads'); setSelectedOrderId(order.id); }}
+                          style={{ display: 'grid', gridTemplateColumns: '90px 1fr 130px 110px 90px 80px', gap: '8px', alignItems: 'center', padding: '10px 8px', borderRadius: '10px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
+                          onMouseOver={e => { e.currentTarget.style.backgroundColor = 'rgba(248,120,32,0.04)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.15)'; }}
+                          onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
+                        >
+                          <span style={{ fontWeight: '700', fontSize: '11px', color: '#f87820' }}>#{order.id}</span>
+                          <span style={{ fontSize: '11px', color: '#fff', fontWeight: '600' }}>{order.customerName}</span>
+                          <span style={{ fontSize: '11px', color: '#c0c8d8' }}>{(order.totalToman || 0).toLocaleString()} ت</span>
+                          <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '6px', background: st.bg, color: st.color, fontWeight: '700' }}>{st.label}</span>
+                          <span style={{ fontSize: '10px', color: '#8b92a5' }}>{dateStr}</span>
+                          <button style={{ padding: '4px 10px', fontSize: '9.5px', borderRadius: '6px', border: '1px solid rgba(248,120,32,0.3)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: '700' }}>مشاهده ↩</button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
 
-              {/* Middle Row: Ordered Right to Left to match RTL layout exactly */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.1fr 1.3fr', gap: '18px', marginBottom: '24px', direction: 'rtl' }}>
-                
-                {/* 1. Latest Orders (Far Right in RTL) */}
-                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>آخرین سفارشات</span>
-                    <button onClick={() => { setActiveTab('leads'); setActiveStatusFilter('all'); }} style={{ padding: '4px 12px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--admin-orange)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>مشاهده همه</button>
-                  </div>
+              {/* BOTTOM GRID */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 210px', gap: '18px' }}>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {[
-                      { code: '#DK-1256', name: 'علی محمدی', amount: '۲۸,۴۵۰,۰۰۰ تومان', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&q=80', id: 'DK-1256' },
-                      { code: '#DK-1255', name: 'سمیرا احمدی', amount: '۶۵,۳۰۰,۰۰۰ تومان', img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=80&q=80', id: 'DK-1255' },
-                      { code: '#DK-1254', name: 'رضا حسینی', amount: '۱۲,۷۵۰,۰۰۰ تومان', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=80&q=80', id: 'DK-1254' },
-                      { code: '#DK-1253', name: 'مبینا رضایی', amount: '۹,۸۰۰,۰۰۰ تومان', img: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=80&q=80', id: 'DK-1253' },
-                      { code: '#DK-1252', name: 'امیر عباسپور', amount: '۱۸,۶۰۰,۰۰۰ تومان', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&q=80', id: 'DK-1252' }
-                    ].map((order, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => {
-                          setActiveTab('leads');
-                          setSelectedOrderId(order.id);
-                        }}
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'space-between', 
-                          padding: '10px 12px', 
-                          background: 'rgba(255,255,255,0.015)', 
-                          borderRadius: '12px', 
-                          border: '1px solid rgba(255,255,255,0.03)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.2)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', background: '#11131a', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <img src={order.img} alt={order.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: '750', fontSize: '12px', color: '#fff' }}>سفارش {order.code}</div>
-                            <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>{order.name}</div>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontWeight: '750', fontSize: '12px', color: '#fff' }}>{order.amount}</span>
-                          <span style={{ color: '#f87820', fontSize: '11px', fontWeight: 'bold' }}>بررسی ↩</span>
+                {/* درخواست‌های خرید */}
+                <div className={styles.cardPanel} style={{ padding: '20px', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '13px', color: '#fff' }}>درخواست‌های خرید</span>
+                    <button onClick={() => setActiveTab('leads')} style={{ padding: '5px 14px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(248,120,32,0.4)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: '700' }}>مشاهده همه</button>
+                  </div>
+                  {[
+                    { label: 'منتظر قیمت‌گذاری', count: leads.filter(l => l.status === 'pending').length + 4, color: '#f59e0b', desc: 'درخواست ارسال شده، قیمت‌گذاری نشده', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
+                    { label: 'قیمت ارسال شده', count: leads.filter(l => l.status === 'price_tagged').length + 2, color: '#a855f7', desc: 'در انتظار تایید مشتری', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('price_tagged'); } },
+                    { label: 'منتظر تایید مشتری', count: leads.filter(l => l.status === 'approved').length + 1, color: '#06b6d4', desc: 'قیمت اعلام شده، تایید نشده', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('approved'); } },
+                    { label: 'تبدیل به سفارش', count: leads.filter(l => ['purchased','warehouse_dubai','shipped','delivered'].includes(l.status)).length, color: '#2ecc71', desc: 'پرداخت شده و در جریان', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); } },
+                  ].map((stage, i) => (
+                    <div key={i} onClick={stage.onClick}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', marginBottom: '8px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseOver={e => { e.currentTarget.style.backgroundColor = `${stage.color}10`; e.currentTarget.style.borderColor = `${stage.color}30`; }}
+                      onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'; }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '4px', height: '36px', borderRadius: '4px', background: stage.color }} />
+                        <div>
+                          <div style={{ fontSize: '11.5px', fontWeight: '700', color: '#fff' }}>{stage.label}</div>
+                          <div style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>{stage.desc}</div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <span style={{ fontSize: '22px', fontWeight: '900', color: stage.color }}>{stage.count}</span>
+                    </div>
+                  ))}
                 </div>
 
-                {/* 2. Order Status Donut Chart (Middle in RTL) */}
-                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
-                  <div style={{ marginBottom: '15px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>وضعیت سفارشات</span>
+                {/* تراکنش‌های اخیر */}
+                <div className={styles.cardPanel} style={{ padding: '20px', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontWeight: '800', fontSize: '13px', color: '#fff' }}>تراکنش‌های اخیر</span>
+                    <button onClick={() => setActiveTab('payments')} style={{ padding: '5px 14px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(248,120,32,0.4)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: '700' }}>مشاهده همه</button>
                   </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px', height: '220px' }}>
-                    {/* Donut SVG */}
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                      <svg viewBox="0 0 100 100" style={{ width: '135px', height: '135px', transform: 'rotate(-90deg)', overflow: 'visible' }}>
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="12" />
-                        {(() => {
-                          const total = orderStatuses.reduce((s, seg) => s + seg.count, 0);
-                          const C = 2 * Math.PI * 38;
-                          let offset = 0;
-                          return orderStatuses.map((seg, idx) => {
-                            const dash = (seg.count / total) * C;
-                            const el = (
-                              <circle
-                                key={idx}
-                                cx="50"
-                                cy="50"
-                                r="38"
-                                fill="none"
-                                stroke={seg.color}
-                                strokeWidth="11"
-                                strokeDasharray={`${dash} ${C - dash}`}
-                                strokeDashoffset={-offset}
-                                strokeLinecap="round"
-                              />
-                            );
-                            offset += dash;
-                            return el;
-                          });
-                        })()}
-                      </svg>
-                    </div>
-
-                    {/* Legend - Sleek thick horizontal colored capsule items */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px', flex: 1 }}>
-                      {orderStatuses.map((seg, idx) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '15px', height: '6px', borderRadius: '3px', background: seg.color, flexShrink: 0 }} />
-                            <span style={{ color: '#c4c8d4' }}>{seg.label}</span>
-                          </div>
-                          <span style={{ color: '#8b92a5', fontSize: '10px', fontWeight: 'bold' }}>{seg.count} ({seg.pct}%)</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Revenue Spline Area Chart (Far Left in RTL) */}
-                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>نمودار درآمد</span>
-                    <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '8px', padding: '3px 8px', cursor: 'pointer', alignItems: 'center' }}>
-                      <span style={{ fontSize: '11px', color: '#fff', fontWeight: 'bold' }}>ماهانه</span>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8b92a5" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-                    </div>
-                  </div>
-
-                  {/* SVG Spline/Area Line Chart */}
-                  <div style={{ position: 'relative', height: '220px', width: '100%', direction: 'ltr' }}>
-                    <svg viewBox="0 0 520 200" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                      <defs>
-                        {/* Area glowing gradient */}
-                        <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#f87820" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#f87820" stopOpacity="0.0" />
-                        </linearGradient>
-                        <filter id="glowFilter" x="-10%" y="-10%" width="120%" height="120%">
-                          <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#f87820" floodOpacity="0.4" />
-                        </filter>
-                      </defs>
-
-                      {/* Y-axis labels */}
-                      <text x="5" y="18" fill="#64748b" fontSize="8" textAnchor="start">1.4B</text>
-                      <text x="5" y="44" fill="#64748b" fontSize="8" textAnchor="start">1.2B</text>
-                      <text x="5" y="70" fill="#64748b" fontSize="8" textAnchor="start">1B</text>
-                      <text x="5" y="96" fill="#64748b" fontSize="8" textAnchor="start">800M</text>
-                      <text x="5" y="122" fill="#64748b" fontSize="8" textAnchor="start">600M</text>
-                      <text x="5" y="148" fill="#64748b" fontSize="8" textAnchor="start">400M</text>
-                      <text x="5" y="174" fill="#64748b" fontSize="8" textAnchor="start">200M</text>
-                      <text x="5" y="195" fill="#64748b" fontSize="8" textAnchor="start">0</text>
-
-                      {/* Grid lines */}
-                      {[15, 41, 67, 93, 119, 145, 171, 192].map((y, i) => (
-                        <line key={i} x1="35" y1={y} x2="510" y2={y} stroke="rgba(255,255,255,0.02)" strokeWidth="0.8" />
-                      ))}
-
-                      {/* Area Fill path */}
-                      <path
-                        d="M 50 192 Q 110 150, 150 142 T 250 110 T 350 90 T 450 40 L 450 192 Z"
-                        fill="url(#revenueGrad)"
-                      />
-
-                      {/* Curved Orange line path */}
-                      <path
-                        d="M 50 192 Q 110 150, 150 142 T 250 110 T 350 90 T 450 40"
-                        fill="none"
-                        stroke="#f87820"
-                        strokeWidth="3.5"
-                        strokeLinecap="round"
-                        filter="url(#glowFilter)"
-                      />
-
-                      {/* Glowing peak dot on خرداد */}
-                      <circle cx="450" cy="40" r="6" fill="#fff" stroke="#f87820" strokeWidth="3" />
-                      <circle cx="450" cy="40" r="12" fill="none" stroke="#f87820" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
-
-                      {/* Mockup Tooltip above peak */}
-                      <g transform="translate(365, 8)">
-                        <rect x="0" y="0" width="105" height="32" rx="6" fill="rgba(17,19,26,0.95)" stroke="#f87820" strokeWidth="1" />
-                        <text x="52.5" y="13" fill="#fff" fontSize="8" fontWeight="bold" textAnchor="middle">تومان 1,245,800,000</text>
-                        <text x="52.5" y="24" fill="#8b92a5" fontSize="7" textAnchor="middle">خرداد ۱۴۰۳</text>
-                      </g>
-
-                      {/* X-axis Month labels */}
-                      {['آذر', 'دی', 'بهمن', 'اسفند', 'فروردین', 'اردیبهشت', 'خرداد'].map((m, i) => {
-                        const x = 50 + i * 66.6;
-                        const isPeak = i === 6;
-                        return (
-                          <text key={i} x={x} y="208" fill={isPeak ? '#fff' : '#64748b'} fontSize="9" fontWeight={isPeak ? 'bold' : 'normal'} textAnchor="middle">{m}</text>
-                        );
-                      })}
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Row: Ordered Right to Left to match RTL layout exactly */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: '18px', direction: 'rtl' }}>
-                
-                {/* 1. Recent Transactions (Far Right in RTL) */}
-                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>تراکنش های اخیر</span>
-                    <button onClick={() => { setActiveTab('leads'); setActiveStatusFilter('all'); }} style={{ padding: '4px 12px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--admin-orange)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>مشاهده همه</button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {[
-                      { id: '#DK-1256', label: 'پرداخت سفارش', amount: '۲۸,۴۵۰,۰۰۰', status: 'موفق', isSuccess: true, realId: 'DK-1256' },
-                      { id: '#DK-1255', label: 'پرداخت سفارش', amount: '۶۵,۳۰۰,۰۰۰', status: 'موفق', isSuccess: true, realId: 'DK-1255' },
-                      { id: '#DK-1249', label: 'بازگشت وجه سفارش', amount: '۴۲,۲۰۰,۰۰۰', status: 'بازگشت وجه', isSuccess: false, realId: 'DK-1249' },
-                      { id: '#DK-1254', label: 'پرداخت سفارش', amount: '۱۲,۷۵۰,۰۰۰', status: 'موفق', isSuccess: true, realId: 'DK-1254' }
-                    ].map((tx, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => {
-                          setActiveTab('leads');
-                          setSelectedOrderId(tx.realId);
-                        }}
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'space-between', 
-                          padding: '10px 12px', 
-                          background: 'rgba(255,255,255,0.015)', 
-                          borderRadius: '12px', 
-                          border: '1px solid rgba(255,255,255,0.03)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.2)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ 
-                            width: '36px', 
-                            height: '36px', 
-                            borderRadius: '50%', 
-                            background: tx.isSuccess ? 'rgba(248,120,32,0.06)' : 'rgba(239,68,68,0.06)', 
-                            border: tx.isSuccess ? '1px solid rgba(248,120,32,0.12)' : '1px solid rgba(239,68,68,0.12)', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center', 
-                            color: tx.isSuccess ? '#f87820' : '#ef4444' 
-                          }}>
-                            {tx.isSuccess ? (
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                            ) : (
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                            )}
+                      { id: 'DK-1256', label: 'پرداخت سفارش', amount: '28,450,000', type: 'success' },
+                      { id: 'DK-1255', label: 'پرداخت سفارش', amount: '65,300,000', type: 'success' },
+                      { id: 'DK-1254', label: 'پرداخت سفارش', amount: '12,750,000', type: 'success' },
+                      { id: 'DK-1253', label: 'پرداخت در انتظار', amount: '9,800,000', type: 'pending' },
+                      { id: 'DK-1249', label: 'بازگشت وجه', amount: '42,200,000', type: 'refund' },
+                    ].map((tx, i) => {
+                      const ts = { success: { color: '#2ecc71', bg: 'rgba(46,204,113,0.08)', label: 'موفق', icon: AdminIcons.check(11) }, pending: { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', label: 'در انتظار', icon: AdminIcons.clock(11) }, refund: { color: '#ef4444', bg: 'rgba(239,68,68,0.08)', label: 'برگشتی', icon: AdminIcons.sync(11) } }[tx.type];
+                      return (
+                        <div key={i} onClick={() => { setActiveTab('leads'); setSelectedOrderId(tx.id); }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
+                          onMouseOver={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.15)'; }}
+                          onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: ts.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ts.color }}>{ts.icon}</div>
+                            <div>
+                              <div style={{ fontWeight: '700', fontSize: '11.5px', color: '#fff' }}>{tx.label} #{tx.id}</div>
+                              <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '1px' }}>{tx.amount} تومان</div>
+                            </div>
                           </div>
-                          <div>
-                            <div style={{ fontWeight: '750', fontSize: '12px', color: '#fff' }}>{tx.label} {tx.id}</div>
-                            <div style={{ fontSize: '10.5px', color: '#8b92a5', marginTop: '2px' }}>{tx.amount} تومان</div>
-                          </div>
+                          <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '6px', background: ts.bg, color: ts.color, fontWeight: '700' }}>{ts.label}</span>
                         </div>
-                        <span style={{ 
-                          fontSize: '9px', 
-                          padding: '3px 8px', 
-                          borderRadius: '6px', 
-                          background: tx.isSuccess ? 'rgba(46,204,113,0.1)' : 'rgba(239,68,68,0.1)', 
-                          color: tx.isSuccess ? '#2ecc71' : '#ef4444', 
-                          fontWeight: 'bold', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '4px' 
-                        }}>
-                          {tx.isSuccess ? AdminIcons.check(9) : '↩'} {tx.status}
-                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* موجودی لپ‌تاپ‌های استوک */}
+                <div className={styles.cardPanel} onClick={() => setActiveTab('stock_laptops')}
+                  style={{ padding: '20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.2s' }}
+                  onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(248,120,32,0.3)'; e.currentTarget.style.backgroundColor = 'rgba(248,120,32,0.03)'; }}
+                  onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
+                >
+                  <div>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(248,120,32,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87820', marginBottom: '14px' }}>{AdminIcons.laptop(20)}</div>
+                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>موجودی لپ‌تاپ‌های استوک</div>
+                    <div style={{ fontSize: '52px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>68</div>
+                    <div style={{ fontSize: '12px', color: '#8b92a5', marginTop: '4px' }}>دستگاه</div>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    {[['موجود', '52 دستگاه', '#2ecc71'], ['رزرو شده', '11 دستگاه', '#f59e0b'], ['فروخته شده', '5 دستگاه', '#8b92a5']].map(([k, v, c]) => (
+                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '10px', color: '#8b92a5' }}>{k}</span>
+                        <span style={{ fontSize: '10px', color: c, fontWeight: '700' }}>{v}</span>
                       </div>
                     ))}
+                    <div style={{ marginTop: '12px', textAlign: 'center', padding: '8px', borderRadius: '8px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.15)', color: '#f87820', fontSize: '11px', fontWeight: '700' }}>مشاهده کاتالوگ ↩</div>
                   </div>
                 </div>
 
-                {/* 2. Purchase Requests (Middle in RTL) */}
-                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                    <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>درخواست های خرید</span>
-                    <button onClick={() => alert('بخش درخواست‌های خرید در حال تکمیل است.')} style={{ padding: '4px 12px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--admin-orange)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>مشاهده همه</button>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {[
-                      { 
-                        store: 'لینک محصول در آمازون', 
-                        price: '۲,۵۵۰ درهم', 
-                        time: '۲ ساعت پیش', 
-                        tag: 'در انتظار بررسی', 
-                        tagColor: '#ff9d00', 
-                        tagBg: 'rgba(255,157,0,0.08)',
-                        logoBg: '#fff',
-                        logoColor: '#000',
-                        logoSvg: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 14c3.5 3 9.5 3 13 0" strokeLinecap="round"/><path d="M14 16l2-2-2-2"/></svg>
-                      },
-                      { 
-                        store: 'لینک محصول در نون', 
-                        price: '۱,۶۲۰ درهم', 
-                        time: '۵ ساعت پیش', 
-                        tag: 'جدید', 
-                        tagColor: '#a855f7', 
-                        tagBg: 'rgba(168,85,247,0.1)',
-                        logoBg: '#feee00',
-                        logoColor: '#000',
-                        logoSvg: <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="12" r="7"/></svg>
-                      },
-                      { 
-                        store: 'لینک محصول در علی اکسپرس', 
-                        price: '۹۸۰ درهم', 
-                        time: '۱ روز پیش', 
-                        tag: 'در انتظار بررسی', 
-                        tagColor: '#ff9d00', 
-                        tagBg: 'rgba(255,157,0,0.08)',
-                        logoBg: '#e62e04',
-                        logoColor: '#fff',
-                        logoSvg: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="6" y="8" width="12" height="12" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-                      }
-                    ].map((req, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => alert(`درخواست خرید مربوط به ${req.store} به قیمت ${req.price} در انتظار تایید نهایی قیمت ارز است.`)}
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '12px', 
-                          padding: '10px', 
-                          background: 'rgba(255,255,255,0.015)', 
-                          borderRadius: '12px', 
-                          border: '1px solid rgba(255,255,255,0.03)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.2)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
-                      >
-                        <div style={{ 
-                          width: '36px', 
-                          height: '36px', 
-                          borderRadius: '8px', 
-                          background: req.logoBg, 
-                          color: req.logoColor,
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          flexShrink: 0 
-                        }}>{req.logoSvg}</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: '750', fontSize: '11.5px', color: '#fff' }}>{req.store}</div>
-                          <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>{req.time} • {req.price}</div>
-                        </div>
-                        <span style={{ fontSize: '9px', padding: '3px 8px', borderRadius: '6px', background: req.tagBg, color: req.tagColor, fontWeight: 'bold', flexShrink: 0 }}>{req.tag}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3. Stock Laptops Carousel (Far Left in RTL) */}
-                <div className={styles.cardPanel} style={{ padding: '22px', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                    <div>
-                      <span style={{ fontWeight: '800', fontSize: '14px', color: '#fff' }}>لپ تاپ های استوک</span>
-                      <span onClick={() => setActiveTab('stock_laptops')} style={{ fontSize: '11px', color: '#f87820', cursor: 'pointer', marginRight: '8px', fontWeight: 'bold' }}>مشاهده همه</span>
-                    </div>
-                    <button onClick={() => setActiveTab('stock_laptops')} style={{ padding: '4px 12px', fontSize: '10px', borderRadius: '8px', border: '1px solid var(--admin-orange)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: 'bold', transition: 'all 0.2s' }}>کاتالوگ لپ‌تاپ</button>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
-                    {[
-                      { 
-                        brand: 'Apple', 
-                        model: 'MacBook Air M2', 
-                        specs: '16GB / 512GB', 
-                        price: '۲۹,۵۰۰,۰۰۰ تومان', 
-                        statusLabel: 'موجود', 
-                        statusColor: '#2ecc71', 
-                        statusBg: 'rgba(46,204,113,0.08)', 
-                        img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&q=80' 
-                      },
-                      { 
-                        brand: 'Dell', 
-                        model: 'Dell XPS 15', 
-                        specs: '16GB / 1TB / RTX 3050', 
-                        price: '۳۲,۵۰۰,۰۰۰ تومان', 
-                        statusLabel: 'موجود', 
-                        statusColor: '#2ecc71', 
-                        statusBg: 'rgba(46,204,113,0.08)', 
-                        img: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=300&q=80' 
-                      },
-                      { 
-                        brand: 'Lenovo', 
-                        model: 'ThinkPad X1 Carbon', 
-                        specs: '16GB / 512GB', 
-                        price: '۲۶,۹۰۰,۰۰۰ تومان', 
-                        statusLabel: 'رزرو شده', 
-                        statusColor: '#ff9d00', 
-                        statusBg: 'rgba(255,157,0,0.08)', 
-                        img: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&q=80' 
-                      },
-                      { 
-                        brand: 'HP', 
-                        model: 'HP ZBook Firefly', 
-                        specs: '16GB / 512GB / T600', 
-                        price: '۲۳,۴۰۰,۰۰۰ تومان', 
-                        statusLabel: 'موجود', 
-                        statusColor: '#2ecc71', 
-                        statusBg: 'rgba(46,204,113,0.08)', 
-                        img: 'https://images.unsplash.com/photo-1525373612132-b3e8246f77c5?w=300&q=80' 
-                      }
-                    ].map((laptop, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => {
-                          setActiveTab('stock_laptops');
-                        }}
-                        style={{ 
-                          minWidth: '135px', 
-                          background: 'rgba(255,255,255,0.015)', 
-                          borderRadius: '12px', 
-                          border: '1px solid rgba(255,255,255,0.03)', 
-                          padding: '10px', 
-                          textAlign: 'center', 
-                          flexShrink: 0,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.borderColor = 'rgba(248, 120, 32, 0.2)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
-                      >
-                        <div style={{ width: '100%', height: '75px', borderRadius: '8px', overflow: 'hidden', marginBottom: '8px', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <img src={laptop.img} alt={laptop.model} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <div style={{ fontWeight: '750', fontSize: '11px', color: '#fff', marginBottom: '3px' }}>{laptop.model}</div>
-                        <div style={{ fontSize: '9px', color: '#8b92a5', marginBottom: '6px' }}>{laptop.specs}</div>
-                        <div style={{ fontWeight: '850', fontSize: '11px', color: '#f87820', marginBottom: '6px' }}>{laptop.price}</div>
-                        <span style={{ fontSize: '9px', padding: '2px 8px', borderRadius: '4px', background: laptop.statusBg, color: laptop.statusColor, fontWeight: 'bold' }}>{laptop.statusLabel}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
             );
           })()}
 
           {/* TAB: LEADS & ACCORDIONS VIEW */}
-          {activeTab === 'leads' && (() => {
+          {(activeTab === 'leads' || activeTab === 'orders') && (() => {
             const getCustomerAvatar = (id) => {
               const avatars = {
                 'DK-1256': 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&h=80&fit=crop&crop=face',
@@ -4870,6 +5099,7 @@ export default function AdminPanel() {
                 pending: { label: 'در انتظار بررسی', color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
                 price_tagged: { label: 'قیمت‌گذاری شده', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)' },
                 approved: { label: 'تایید شده', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+                processing: { label: 'در حال پردازش', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
                 purchased: { label: 'در نون دبی', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
                 noon_dubai: { label: 'در نون دبی', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
                 warehouse_dubai: { label: 'در انبار دبی', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)' },
@@ -4880,28 +5110,36 @@ export default function AdminPanel() {
               return stylesMap[status] || { label: 'در انتظار بررسی', color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' };
             };
 
-            const statCards = [
-              { key: 'cancelled', label: 'لغو شده', count: 3 + leads.filter(l => l.status === 'cancelled').length, icon: AdminIcons.close(18), color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', sub: 'سفارش لغو شده' },
-              { key: 'delivered', label: 'تحویل شده', count: 23 + leads.filter(l => l.status === 'delivered').length, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', sub: 'سفارش تحویل شده' },
-              { key: 'shipped', label: 'ارسال شده', count: 21 + leads.filter(l => l.status === 'shipped').length, icon: AdminIcons.truck(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', sub: 'ارسال شده به ایران' },
-              { key: 'noon_dubai', label: 'در نون دبی', count: 27 + leads.filter(l => l.status === 'noon_dubai' || l.status === 'purchased').length, icon: AdminIcons.package(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', sub: 'خرید شده از دبی' },
-              { key: 'warehouse_dubai', label: 'در انبار دبی', count: 35 + leads.filter(l => l.status === 'warehouse_dubai').length, icon: AdminIcons.building(18), color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', sub: 'موجود در دفتر دبی' },
-              { key: 'approved', label: 'تایید شده', count: 67 + leads.filter(l => l.status === 'approved').length, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', sub: 'تایید توسط ادمین' },
-              { key: 'price_tagged', label: 'قیمت‌گذاری شده', count: 31 + leads.filter(l => l.status === 'price_tagged').length, icon: AdminIcons.tag(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', sub: 'محاسبه قیمت نهایی' },
-              { key: 'pending', label: 'در انتظار بررسی', count: 17 + leads.filter(l => l.status === 'pending').length, icon: AdminIcons.clock(18), color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)', sub: 'پیش‌فاکتور جدید' },
-              { key: 'new_order', label: 'سفارش جدید', count: 24 + leads.filter(l => l.status === 'new_order').length, icon: AdminIcons.download(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', sub: 'ثبت سیستم' },
-              { key: 'all', label: 'همه سفارشات', count: 248 + leads.length, icon: AdminIcons.clipboard(18), color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)', sub: 'کل پیش‌فاکتورها' }
+            const isOrdersTab = activeTab === 'orders';
+            const statCards = isOrdersTab ? [
+              { key: 'cancelled', label: 'لغو شده', count: leads.filter(l => l.status === 'cancelled').length, icon: AdminIcons.close(18), color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', sub: 'سفارش لغو شده' },
+              { key: 'delivered', label: 'تحویل شده', count: leads.filter(l => l.status === 'delivered').length, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', sub: 'سفارش تحویل شده' },
+              { key: 'shipped', label: 'ارسال شده', count: leads.filter(l => l.status === 'shipped').length, icon: AdminIcons.truck(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', sub: 'ارسال شده به ایران' },
+              { key: 'warehouse_dubai', label: 'در انبار دبی', count: leads.filter(l => l.status === 'warehouse_dubai').length, icon: AdminIcons.building(18), color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', sub: 'موجود در دفتر دبی' },
+              { key: 'noon_dubai', label: 'در نون دبی', count: leads.filter(l => l.status === 'noon_dubai' || l.status === 'purchased').length, icon: AdminIcons.package(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', sub: 'خرید شده از دبی' },
+              { key: 'processing', label: 'در حال پردازش', count: leads.filter(l => l.status === 'processing').length, icon: AdminIcons.clock(18), color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)', sub: 'سفارشات جدید پرداختی' },
+              { key: 'all', label: 'همه سفارشات', count: leads.filter(l => ['processing', 'purchased', 'noon_dubai', 'warehouse_dubai', 'shipped', 'delivered', 'cancelled'].includes(l.status)).length, icon: AdminIcons.clipboard(18), color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)', sub: 'کل سفارشات نهایی' }
+            ] : [
+              { key: 'approved', label: 'تایید شده', count: leads.filter(l => l.status === 'approved').length, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)', sub: 'تایید توسط ادمین' },
+              { key: 'price_tagged', label: 'قیمت‌گذاری شده', count: leads.filter(l => l.status === 'price_tagged').length, icon: AdminIcons.tag(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', sub: 'محاسبه قیمت نهایی' },
+              { key: 'pending', label: 'در انتظار بررسی', count: leads.filter(l => l.status === 'pending').length, icon: AdminIcons.clock(18), color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)', sub: 'پیش‌فاکتور جدید' },
+              { key: 'new_order', label: 'سفارش جدید', count: leads.filter(l => l.status === 'new_order').length, icon: AdminIcons.download(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', sub: 'ثبت سیستم' },
+              { key: 'all', label: 'همه درخواست‌ها', count: leads.filter(l => ['pending', 'price_tagged', 'approved', 'new_order'].includes(l.status)).length, icon: AdminIcons.clipboard(18), color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)', sub: 'کل پیش‌فاکتورها' }
             ];
 
-            const selectedLead = leads.find(l => l.id === selectedOrderId) || leads[0];
+            const selectedLead = filteredLeads.find(l => l.id === selectedOrderId) || filteredLeads[0];
 
             return (
               <div>
                 {/* 1. Header with Farsi Page Title and Far-Left Action Buttons */}
                 <div className={styles.sectionHeader} style={{ marginBottom: '20px' }}>
                   <div>
-                    <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', marginBottom: '4px' }}>{AdminIcons.download(22)} سفارشات آنلاین دبی خرید</h1>
-                    <p className={styles.sectionDesc} style={{ fontSize: '12px', color: '#8b92a5' }}>مدیریت و پیگیری سفارشات مشتریان، ویرایش پیش‌فاکتورها و وضعیت‌های خرید</p>
+                    <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', marginBottom: '4px' }}>
+                      {isOrdersTab ? AdminIcons.card(22) : AdminIcons.download(22)} {isOrdersTab ? 'سفارشات خرید از دبی' : 'درخواست‌های خرید از دبی'}
+                    </h1>
+                    <p className={styles.sectionDesc} style={{ fontSize: '12px', color: '#8b92a5' }}>
+                      {isOrdersTab ? 'مدیریت و پیگیری سفارشات نهایی و پرداخت شده مشتریان، وضعیت‌های ارسال و تحویل' : 'بررسی پیش‌فاکتورها، اعلام قیمت و مدیریت درخواست‌های اولیه خرید'}
+                    </p>
                   </div>
                   
                   <div style={{ display: 'flex', gap: '10px' }}>
@@ -5085,7 +5323,6 @@ export default function AdminPanel() {
                       </div>
 
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        {/* Status dropdown override */}
                         <select 
                           value={activeStatusFilter}
                           onChange={(e) => setActiveStatusFilter(e.target.value)}
@@ -5113,7 +5350,6 @@ export default function AdminPanel() {
                           <option value="cancelled">لغو شده</option>
                         </select>
 
-                        {/* Payment Filter dropdown */}
                         <select 
                           value={activePaymentFilter}
                           onChange={(e) => setActivePaymentFilter(e.target.value)}
@@ -5135,7 +5371,6 @@ export default function AdminPanel() {
                           <option value="card">کارت به کارت</option>
                         </select>
 
-                        {/* Date Filter dropdown */}
                         <select 
                           style={{
                             background: '#1a1d26',
@@ -5177,7 +5412,6 @@ export default function AdminPanel() {
                       </div>
                     </div>
 
-                    {/* Main Table Grid Column */}
                     <div className={styles.tableContainer} style={{ background: 'var(--admin-card-bg)', border: '1px solid var(--admin-border)', borderRadius: '16px', overflow: 'hidden' }}>
                       <table className={styles.adminTable}>
                         <thead>
@@ -5212,20 +5446,15 @@ export default function AdminPanel() {
                                     transition: 'all 0.2s ease-in-out'
                                   }}
                                 >
-                                  {/* order code */}
                                   <td style={{ fontWeight: '800', fontFamily: 'monospace', color: '#ff9d00', fontSize: '12px' }}>
                                     {lead.id}
                                   </td>
-                                  
-                                  {/* Customer specs */}
                                   <td>
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                                       <span style={{ fontWeight: '750', color: '#fff', fontSize: '12.5px' }}>{lead.customerName}</span>
                                       <span style={{ fontSize: '10.5px', color: '#8b92a5', direction: 'ltr', textAlign: 'right', fontFamily: 'monospace' }}>{lead.phone}</span>
                                     </div>
                                   </td>
-                                  
-                                  {/* Status badge */}
                                   <td>
                                     <span 
                                       style={{
@@ -5241,13 +5470,9 @@ export default function AdminPanel() {
                                       {statusSpec.label}
                                     </span>
                                   </td>
-                                  
-                                  {/* Total Price */}
                                   <td style={{ fontWeight: '850', color: '#fff', fontSize: '13px' }}>
                                     {fmtToman(lead.totalToman)} <span style={{ fontSize: '10px', color: '#8b92a5', fontWeight: 'normal' }}>T</span>
                                   </td>
-                                  
-                                  {/* Payment method indicator */}
                                   <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                       <span 
@@ -5259,39 +5484,11 @@ export default function AdminPanel() {
                                       </span>
                                     </div>
                                   </td>
-                                  
-                                  {/* Date */}
                                   <td style={{ fontSize: '11px', color: '#8b92a5' }}>
                                     {new Date(lead.date).toLocaleDateString('fa-IR')}
                                   </td>
-                                  
-                                  {/* Row actions */}
                                   <td style={{ textAlign: 'left', paddingLeft: '20px' }} onClick={(e) => e.stopPropagation()}>
                                     <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
-                                      <select 
-                                        value={lead.status} 
-                                        onChange={(e) => handleStatusChange(lead.id, e.target.value)}
-                                        style={{
-                                          background: '#11131a',
-                                          border: '1px solid rgba(255,255,255,0.06)',
-                                          color: '#e5e7eb',
-                                          padding: '4px 8px',
-                                          borderRadius: '6px',
-                                          fontSize: '11px',
-                                          fontFamily: 'inherit',
-                                          cursor: 'pointer'
-                                        }}
-                                      >
-                                        <option value="pending">بررسی</option>
-                                        <option value="price_tagged">قیمت‌گذاری</option>
-                                        <option value="approved">تایید</option>
-                                        <option value="warehouse_dubai">انبار دبی</option>
-                                        <option value="noon_dubai">در نون دبی</option>
-                                        <option value="shipped">ارسال</option>
-                                        <option value="delivered">تحویل</option>
-                                        <option value="cancelled">لغو</option>
-                                      </select>
-                                      
                                       <a 
                                         href={getWhatsAppLink(lead)} 
                                         target="_blank" 
@@ -5455,11 +5652,11 @@ export default function AdminPanel() {
                                     borderRadius: '4px',
                                     fontSize: '9px',
                                     fontWeight: 'bold',
-                                    background: 'rgba(248,120,32,0.1)',
-                                    color: '#f87820'
+                                    background: selectedLead.isRequest ? 'rgba(248,120,32,0.1)' : 'rgba(16, 185, 129, 0.1)',
+                                    color: selectedLead.isRequest ? '#f87820' : '#10b981'
                                   }}
                                 >
-                                  سفارش آنلاین سایت
+                                  {selectedLead.isRequest ? 'سفارش آنلاین سایت' : 'تایید شده'}
                                 </span>
                               </div>
                               
@@ -5522,34 +5719,218 @@ export default function AdminPanel() {
                         </div>
                         
                         <div className={styles.detailsCollapsibleBody}>
-                          <table className={styles.nestedPriceTable}>
-                            <tbody>
-                              <tr>
-                                <td>قیمت خالص محصول (دبی)</td>
-                                <td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>
-                                  {fmtToman(selectedLead.priceDetails?.product || Math.round(selectedLead.totalToman * 0.82))} تومان
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>هزینه ارسال هوایی به ایران</td>
-                                <td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>
-                                  {fmtToman(selectedLead.priceDetails?.shipping || Math.round(selectedLead.totalToman * 0.08))} تومان
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>کارمزد سرویس دبی‌خرید</td>
-                                <td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>
-                                  {fmtToman(selectedLead.priceDetails?.commission || Math.round(selectedLead.totalToman * 0.10))} تومان
-                                </td>
-                              </tr>
-                              <tr>
-                                <td style={{ fontSize: '12px', fontWeight: '900', color: '#fff', paddingTop: '8px' }}>مبلغ کل سفارش</td>
-                                <td style={{ textAlign: 'left', fontSize: '13px', fontWeight: '900', color: '#f87820', paddingTop: '8px' }}>
-                                  {fmtToman(selectedLead.totalToman)} تومان
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
+                          {selectedLead.isRequest === true && (selectedLead.status === 'pending' || selectedLead.status === 'price_tagged') ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>قیمت خرید (درهم):</label>
+                                  <input 
+                                    type="number"
+                                    value={calcPriceAed}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.target.value) || 0;
+                                      setCalcPriceAed(val);
+                                      const commissionPercent = parseFloat(siteCtxSettings.commissionPercent) || 25;
+                                      setCalcCommissionAed(Math.round(val * (commissionPercent / 100)));
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      background: 'rgba(255, 255, 255, 0.03)',
+                                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                                      borderRadius: '8px',
+                                      color: '#fff',
+                                      padding: '8px 10px',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      outline: 'none',
+                                      textAlign: 'left',
+                                      direction: 'ltr',
+                                      fontFamily: 'monospace'
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>وزن واقعی (کیلو):</label>
+                                  <input 
+                                    type="number"
+                                    step="0.01"
+                                    value={calcWeight}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.target.value) || 0;
+                                      setCalcWeight(val);
+                                      const minWeight = parseFloat(siteCtxSettings.minWeightClass) || 1.0;
+                                      const roundingMethod = siteCtxSettings.roundingMethod || 'ceil';
+                                      let roundedWeight = val;
+                                      if (roundingMethod === 'ceil') roundedWeight = Math.ceil(val);
+                                      else if (roundingMethod === 'floor') roundedWeight = Math.floor(val);
+                                      else if (roundingMethod === 'round') roundedWeight = Math.round(val);
+                                      if (roundedWeight < minWeight) roundedWeight = minWeight;
+
+                                      const shippingPerKgAed = parseFloat(siteCtxSettings.shippingPerKgAed) || 40;
+                                      setCalcShippingAed(Math.round(roundedWeight * shippingPerKgAed));
+                                    }}
+                                    style={{
+                                      width: '100%',
+                                      background: 'rgba(255, 255, 255, 0.03)',
+                                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                                      borderRadius: '8px',
+                                      color: '#fff',
+                                      padding: '8px 10px',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      outline: 'none',
+                                      textAlign: 'left',
+                                      direction: 'ltr',
+                                      fontFamily: 'monospace'
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>هزینه ارسال (درهم):</label>
+                                  <input 
+                                    type="number"
+                                    value={calcShippingAed}
+                                    onChange={(e) => setCalcShippingAed(parseFloat(e.target.value) || 0)}
+                                    style={{
+                                      width: '100%',
+                                      background: 'rgba(255, 255, 255, 0.03)',
+                                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                                      borderRadius: '8px',
+                                      color: '#fff',
+                                      padding: '8px 10px',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      outline: 'none',
+                                      textAlign: 'left',
+                                      direction: 'ltr',
+                                      fontFamily: 'monospace'
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>کارمزد دبی‌خرید (درهم):</label>
+                                  <input 
+                                    type="number"
+                                    value={calcCommissionAed}
+                                    onChange={(e) => setCalcCommissionAed(parseFloat(e.target.value) || 0)}
+                                    style={{
+                                      width: '100%',
+                                      background: 'rgba(255, 255, 255, 0.03)',
+                                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                                      borderRadius: '8px',
+                                      color: '#fff',
+                                      padding: '8px 10px',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      outline: 'none',
+                                      textAlign: 'left',
+                                      direction: 'ltr',
+                                      fontFamily: 'monospace'
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>نرخ درهم (تومان):</label>
+                                  <input 
+                                    type="number"
+                                    value={calcAedRate}
+                                    onChange={(e) => setCalcAedRate(parseFloat(e.target.value) || 0)}
+                                    style={{
+                                      width: '100%',
+                                      background: 'rgba(255, 255, 255, 0.03)',
+                                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                                      borderRadius: '8px',
+                                      color: '#fff',
+                                      padding: '8px 10px',
+                                      fontSize: '12px',
+                                      fontWeight: 'bold',
+                                      outline: 'none',
+                                      textAlign: 'left',
+                                      direction: 'ltr',
+                                      fontFamily: 'monospace'
+                                    }}
+                                  />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                                  <button
+                                    onClick={handleSaveFinalPrice}
+                                    style={{
+                                      width: '100%',
+                                      background: '#f87820',
+                                      color: '#fff',
+                                      border: 'none',
+                                      borderRadius: '8px',
+                                      padding: '9px',
+                                      fontSize: '11px',
+                                      fontWeight: 'bold',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      gap: '4px'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.background = '#e06512'}
+                                    onMouseOut={(e) => e.currentTarget.style.background = '#f87820'}
+                                  >
+                                    {AdminIcons.tag(13)} محاسبه و ثبت قیمت
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div style={{
+                                background: 'rgba(248, 120, 32, 0.04)',
+                                border: '1px dashed rgba(248, 120, 32, 0.2)',
+                                borderRadius: '8px',
+                                padding: '10px',
+                                marginTop: '4px'
+                              }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>
+                                  <span>مجموع درهم (AED):</span>
+                                  <span style={{ color: '#fff', fontWeight: 'bold' }}>{calcTotalAed} درهم</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold', borderTop: '1px dashed rgba(255,255,255,0.05)', paddingTop: '4px' }}>
+                                  <span style={{ color: '#fff' }}>مبلغ کل به تومان:</span>
+                                  <span style={{ color: '#f87820' }}>{calcTotalToman.toLocaleString('fa-IR')} تومان</span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <table className={styles.nestedPriceTable}>
+                              <tbody>
+                                <tr>
+                                  <td>قیمت خالص محصول (دبی)</td>
+                                  <td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>
+                                    {fmtToman(selectedLead.priceDetails?.product || Math.round(selectedLead.totalToman * 0.82))} تومان
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>هزینه ارسال هوایی به ایران</td>
+                                  <td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>
+                                    {fmtToman(selectedLead.priceDetails?.shipping || Math.round(selectedLead.totalToman * 0.08))} تومان
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>کارمزد سرویس دبی‌خرید</td>
+                                  <td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>
+                                    {fmtToman(selectedLead.priceDetails?.commission || Math.round(selectedLead.totalToman * 0.10))} تومان
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style={{ fontSize: '12px', fontWeight: '900', color: '#fff', paddingTop: '8px' }}>مبلغ کل سفارش</td>
+                                  <td style={{ textAlign: 'left', fontSize: '13px', fontWeight: '900', color: '#f87820', paddingTop: '8px' }}>
+                                    {fmtToman(selectedLead.totalToman)} تومان
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          )}
                         </div>
                       </div>
 
@@ -5595,65 +5976,125 @@ export default function AdminPanel() {
 
                       {/* Sticky Footer actions: Outline Buttons Grid */}
                       <div className={styles.detailsFooterActions}>
-                        <div className={styles.detailsActionsRow}>
-                          <button 
-                            className={styles.detailsActionBtn}
-                            onClick={() => {
-                              const note = prompt('یادداشت داخلی جدید خود را وارد کنید:', selectedLead.notes || '');
-                              if (note !== null) {
-                                const updated = leads.map(l => (l.id === selectedLead.id ? { ...l, notes: note } : l));
-                                setLeads(updated);
-                                localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
-                              }
-                            }}
-                          >
-                            {AdminIcons.edit(13)} یادداشت داخلی
-                          </button>
-                          
-                          <div style={{ flex: 1, position: 'relative', display: 'flex' }}>
-                            <select 
-                              value={selectedLead.status}
-                              onChange={(e) => handleStatusChange(selectedLead.id, e.target.value)}
+                        {selectedLead.isRequest === true && selectedLead.status === 'price_tagged' ? (
+                          <>
+                            <div className={styles.detailsActionsRow}>
+                              <button 
+                                className={styles.detailsActionBtn}
+                                style={{ borderColor: '#10b981', color: '#10b981', background: 'rgba(16, 185, 129, 0.02)' }}
+                                onClick={() => handleSendPaymentLink(selectedLead)}
+                              >
+                                💬 ارسال لینک پرداخت (واتساپ)
+                              </button>
+                              <button 
+                                className={styles.detailsActionBtn}
+                                style={{ borderColor: '#f87820', color: '#f87820', background: 'rgba(248, 120, 32, 0.02)' }}
+                                onClick={() => handleConvertToOrder(selectedLead.id)}
+                              >
+                                ✅ تبدیل به سفارش
+                              </button>
+                            </div>
+                            <div className={styles.detailsActionsRow} style={{ marginTop: '8px' }}>
+                              <button 
+                                className={styles.detailsActionBtn}
+                                onClick={() => handleManualPayment(selectedLead.id)}
+                              >
+                                💳 ثبت پرداخت دستی
+                              </button>
+                              <button 
+                                className={`${styles.detailsActionBtn} ${styles.detailsActionBtnRed}`}
+                                onClick={() => handleCancelRequest(selectedLead.id)}
+                              >
+                                {AdminIcons.close(12)} لغو درخواست
+                              </button>
+                            </div>
+                          </>
+                        ) : selectedLead.isRequest === true && selectedLead.status === 'pending' ? (
+                          <div className={styles.detailsActionsRow}>
+                            <button 
                               className={styles.detailsActionBtn}
-                              style={{
-                                width: '100%',
-                                appearance: 'none',
-                                textAlignLast: 'center',
-                                background: 'transparent',
-                                border: '1px solid var(--admin-border)',
-                                color: 'var(--admin-white)',
-                                cursor: 'pointer',
-                                outline: 'none'
+                              onClick={() => {
+                                const note = prompt('یادداشت داخلی جدید خود را وارد کنید:', selectedLead.notes || '');
+                                if (note !== null) {
+                                  const updated = leads.map(l => (l.id === selectedLead.id ? { ...l, notes: note } : l));
+                                  setLeads(updated);
+                                  localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+                                }
                               }}
                             >
-                              <option value="pending">وضعیت: بررسی</option>
-                              <option value="price_tagged">وضعیت: قیمت‌گذاری</option>
-                              <option value="approved">وضعیت: تایید شده</option>
-                              <option value="warehouse_dubai">وضعیت: انبار دبی</option>
-                              <option value="noon_dubai">وضعیت: در نون دبی</option>
-                              <option value="shipped">وضعیت: ارسال شده</option>
-                              <option value="delivered">وضعیت: تحویل شده</option>
-                              <option value="cancelled">وضعیت: لغو شده</option>
-                            </select>
+                              {AdminIcons.edit(13)} یادداشت داخلی
+                            </button>
+                            <button 
+                              className={`${styles.detailsActionBtn} ${styles.detailsActionBtnRed}`}
+                              onClick={() => handleCancelRequest(selectedLead.id)}
+                            >
+                              {AdminIcons.close(12)} لغو درخواست
+                            </button>
                           </div>
-                        </div>
+                        ) : (
+                          <>
+                            <div className={styles.detailsActionsRow}>
+                              <button 
+                                className={styles.detailsActionBtn}
+                                onClick={() => {
+                                  const note = prompt('یادداشت داخلی جدید خود را وارد کنید:', selectedLead.notes || '');
+                                  if (note !== null) {
+                                    const updated = leads.map(l => (l.id === selectedLead.id ? { ...l, notes: note } : l));
+                                    setLeads(updated);
+                                    localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+                                  }
+                                }}
+                              >
+                                {AdminIcons.edit(13)} یادداشت داخلی
+                              </button>
+                              
+                              <div style={{ flex: 1, position: 'relative', display: 'flex' }}>
+                                <select 
+                                  value={selectedLead.status}
+                                  onChange={(e) => handleStatusChange(selectedLead.id, e.target.value)}
+                                  className={styles.detailsActionBtn}
+                                  style={{
+                                    width: '100%',
+                                    appearance: 'none',
+                                    textAlignLast: 'center',
+                                    background: 'transparent',
+                                    border: '1px solid var(--admin-border)',
+                                    color: 'var(--admin-white)',
+                                    cursor: 'pointer',
+                                    outline: 'none'
+                                  }}
+                                >
+                                  <option value="pending">وضعیت: بررسی</option>
+                                  <option value="price_tagged">وضعیت: قیمت‌گذاری</option>
+                                  <option value="approved">وضعیت: تایید شده</option>
+                                  <option value="processing">وضعیت: در حال پردازش</option>
+                                  <option value="warehouse_dubai">وضعیت: انبار دبی</option>
+                                  <option value="noon_dubai">وضعیت: در نون دبی</option>
+                                  <option value="shipped">وضعیت: ارسال شده</option>
+                                  <option value="delivered">وضعیت: تحویل شده</option>
+                                  <option value="cancelled">وضعیت: لغو شده</option>
+                                </select>
+                              </div>
+                            </div>
 
-                        <div className={styles.detailsActionsRow}>
-                          <button 
-                            className={`${styles.detailsActionBtn} ${styles.detailsActionBtnRed}`}
-                            onClick={() => handleDeleteLead(selectedLead.id)}
-                          >
-                            {AdminIcons.close(12)} لغو سفارش
-                          </button>
-                          <button 
-                            className={styles.detailsActionBtn}
-                            onClick={() => {
-                              alert('آپلود فاکتور خرید شبیه‌سازی شد! فایل با موفقیت آپلود گردید.');
-                            }}
-                          >
-                            {AdminIcons.cloud(12)} آپلود فاکتور
-                          </button>
-                        </div>
+                            <div className={styles.detailsActionsRow} style={{ marginTop: '8px' }}>
+                              <button 
+                                className={`${styles.detailsActionBtn} ${styles.detailsActionBtnRed}`}
+                                onClick={() => handleDeleteLead(selectedLead.id)}
+                              >
+                                {AdminIcons.close(12)} لغو سفارش
+                              </button>
+                              <button 
+                                className={styles.detailsActionBtn}
+                                onClick={() => {
+                                  alert('آپلود فاکتور خرید شبیه‌سازی شد! فایل با موفقیت آپلود گردید.');
+                                }}
+                              >
+                                {AdminIcons.cloud(12)} آپلود فاکتور
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -5667,819 +6108,2709 @@ export default function AdminPanel() {
             );
           })()}
 
-          {/* TAB: SITE PRODUCTS LIST */}
-          {activeTab === 'site_products' && (() => {
-            // A. Metrics Calculator
-            const getProductsMetrics = () => {
-              let allCount = 1248;
-              let availableCount = 982;
-              let unavailableCount = 156;
-              let lowStockCount = 110;
-              let totalValuation = 28450000000;
+          {/* TAB: WAREHOUSE (انبار) */}
+          {activeTab === 'warehouse' && (() => {
+            const activeProds = warehouseProducts.filter(p => !p.isArchived);
 
-              const seedIds = INITIAL_ADMIN_PRODUCTS_SEED.map(p => p.id);
-              const currentIds = adminProducts.map(p => p.id);
+            // Dynamically calculate metrics
+            const totalValue = activeProds.reduce((sum, p) => sum + (p.stock * p.price), 0);
+            const totalSellable = activeProds.reduce((sum, p) => sum + Math.max(0, p.stock - p.reserved), 0);
+            const lowStockCount = activeProds.filter(p => p.stock > 0 && p.stock <= p.minStock).length;
+            const totalReserved = activeProds.reduce((sum, p) => sum + p.reserved, 0);
 
-              // Added products (in current, not in seed)
-              adminProducts.forEach(p => {
-                if (!seedIds.includes(p.id)) {
-                  allCount += 1;
-                  if (p.stock === 0) {
-                    unavailableCount += 1;
-                  } else {
-                    availableCount += 1;
-                    if (p.stock <= 10) {
-                      lowStockCount += 1;
-                    }
-                  }
-                  totalValuation += (p.price * p.stock);
-                }
-              });
+            // Alert counts
+            const outOfStockCount = activeProds.filter(p => p.stock === 0).length;
+            const overReservedCount = activeProds.filter(p => p.reserved > p.stock).length;
 
-              // Deleted products (in seed, not in current)
-              INITIAL_ADMIN_PRODUCTS_SEED.forEach(p => {
-                if (!currentIds.includes(p.id)) {
-                  allCount -= 1;
-                  if (p.stock === 0) {
-                    unavailableCount -= 1;
-                  } else {
-                    availableCount -= 1;
-                    if (p.stock <= 10) {
-                      lowStockCount -= 1;
-                    }
-                  }
-                  totalValuation -= (p.price * p.stock);
-                }
-              });
+            // Categories & Brands for filters
+            const categories = ['همه', ...new Set(activeProds.map(p => p.category))];
+            const brands = ['همه', ...new Set(activeProds.map(p => p.brand))];
 
-              return {
-                allCount,
-                availableCount,
-                unavailableCount,
-                lowStockCount,
-                totalValuation
-              };
-            };
+            // Filter products
+            const filteredProds = activeProds.filter(p => {
+              // Search
+              const matchesSearch = 
+                p.name.toLowerCase().includes(warehouseSearchQuery.toLowerCase()) ||
+                p.sku.toLowerCase().includes(warehouseSearchQuery.toLowerCase()) ||
+                p.brand.toLowerCase().includes(warehouseSearchQuery.toLowerCase()) ||
+                p.id.toLowerCase().includes(warehouseSearchQuery.toLowerCase());
+              if (!matchesSearch) return false;
 
-            // B. Category Counts Calculator
-            const getCategoryCounts = () => {
-              const counts = {
-                'کفش مردانه': 245,
-                'کیف زنانه': 187,
-                'گوشی موبایل': 156,
-                'لباس زنانه': 132,
-                'ساعت هوشمند': 94,
-                'عینک آفتابی': 82
-              };
+              // Dropdowns
+              if (warehouseCategoryFilter !== 'همه' && p.category !== warehouseCategoryFilter) return false;
+              if (warehouseBrandFilter !== 'همه' && p.brand !== warehouseBrandFilter) return false;
               
-              const seedIds = INITIAL_ADMIN_PRODUCTS_SEED.map(p => p.id);
-              const currentIds = adminProducts.map(p => p.id);
-              
-              // Added
-              adminProducts.forEach(p => {
-                if (!seedIds.includes(p.id)) {
-                  if (counts[p.category] !== undefined) {
-                    counts[p.category] += 1;
-                  } else {
-                    counts[p.category] = 1;
-                  }
-                }
-              });
-              
-              // Deleted
-              INITIAL_ADMIN_PRODUCTS_SEED.forEach(p => {
-                if (!currentIds.includes(p.id)) {
-                  if (counts[p.category] !== undefined) {
-                    counts[p.category] = Math.max(0, counts[p.category] - 1);
-                  }
-                }
-              });
-              
-              return counts;
-            };
-
-            // C. Brand Counts Calculator
-            const getBrandCounts = () => {
-              const counts = {
-                'Apple': 245,
-                'Nike': 198,
-                'Samsung': 156,
-                'Adidas': 142,
-                'Michael Kors': 98,
-                'Shein': 84,
-                'Ray-Ban': 76
-              };
-              
-              const seedIds = INITIAL_ADMIN_PRODUCTS_SEED.map(p => p.id);
-              const currentIds = adminProducts.map(p => p.id);
-              
-              // Added
-              adminProducts.forEach(p => {
-                if (!seedIds.includes(p.id)) {
-                  if (counts[p.brand] !== undefined) {
-                    counts[p.brand] += 1;
-                  } else {
-                    counts[p.brand] = 1;
-                  }
-                }
-              });
-              
-              // Deleted
-              INITIAL_ADMIN_PRODUCTS_SEED.forEach(p => {
-                if (!currentIds.includes(p.id)) {
-                  if (counts[p.brand] !== undefined) {
-                    counts[p.brand] = Math.max(0, counts[p.brand] - 1);
-                  }
-                }
-              });
-              
-              return counts;
-            };
-
-            // D. Category Valuations Calculator
-            const getCategoryValuations = () => {
-              let mobileVal = 12800000000;
-              let shoesBagVal = 7100000000;
-              let watchAccVal = 4200000000;
-              let otherVal = 4350000000;
-              
-              const seedIds = INITIAL_ADMIN_PRODUCTS_SEED.map(p => p.id);
-              const currentIds = adminProducts.map(p => p.id);
-              
-              const getGroup = (cat) => {
-                if (cat === 'گوشی موبایل') return 'mobile';
-                if (['کفش مردانه', 'کیف زنانه', 'لباس زنانه'].includes(cat)) return 'shoesBag';
-                if (['ساعت هوشمند', 'عینک آفتابی'].includes(cat)) return 'watchAcc';
-                return 'other';
-              };
-              
-              // Added
-              adminProducts.forEach(p => {
-                if (!seedIds.includes(p.id)) {
-                  const grp = getGroup(p.category);
-                  const itemVal = p.price * p.stock;
-                  if (grp === 'mobile') mobileVal += itemVal;
-                  else if (grp === 'shoesBag') shoesBagVal += itemVal;
-                  else if (grp === 'watchAcc') watchAccVal += itemVal;
-                  else otherVal += itemVal;
-                }
-              });
-              
-              // Deleted
-              INITIAL_ADMIN_PRODUCTS_SEED.forEach(p => {
-                if (!currentIds.includes(p.id)) {
-                  const grp = getGroup(p.category);
-                  const itemVal = p.price * p.stock;
-                  if (grp === 'mobile') mobileVal -= itemVal;
-                  else if (grp === 'shoesBag') shoesBagVal -= itemVal;
-                  else if (grp === 'watchAcc') watchAccVal -= itemVal;
-                  else otherVal -= itemVal;
-                }
-              });
-              
-              const total = mobileVal + shoesBagVal + watchAccVal + otherVal;
-              return {
-                mobileVal,
-                shoesBagVal,
-                watchAccVal,
-                otherVal,
-                total,
-                mobilePct: Math.round((mobileVal / (total || 1)) * 100),
-                shoesBagPct: Math.round((shoesBagVal / (total || 1)) * 100),
-                watchAccPct: Math.round((watchAccVal / (total || 1)) * 100),
-                otherPct: Math.round((otherVal / (total || 1)) * 100)
-              };
-            };
-
-            const metrics = getProductsMetrics();
-            const categoryCounts = getCategoryCounts();
-            const brandCounts = getBrandCounts();
-            const catVals = getCategoryValuations();
-
-            // Formatter helpers
-            const formatToman = (val) => {
-              if (val === undefined || val === null) return '';
-              return Math.round(val).toLocaleString('fa-IR') + ' تومان';
-            };
-            
-            const formatShortToman = (val) => {
-              if (val >= 1000000000) {
-                return (val / 1000000000).toLocaleString('fa-IR', { maximumFractionDigits: 1 }) + ' میلیارد';
+              if (warehouseStatusFilter !== 'همه') {
+                const isOutOf = p.stock === 0;
+                const isLow = p.stock > 0 && p.stock <= p.minStock;
+                const isAvailable = p.stock > p.minStock;
+                if (warehouseStatusFilter === 'موجود' && !isAvailable) return false;
+                if (warehouseStatusFilter === 'کم موجود' && !isLow) return false;
+                if (warehouseStatusFilter === 'ناموجود' && !isOutOf) return false;
               }
-              if (val >= 1000000) {
-                return (val / 1000000).toLocaleString('fa-IR', { maximumFractionDigits: 1 }) + ' میلیون';
+
+              // Top cards & alerts filter mode
+              if (warehouseFilterMode === 'lowstock') {
+                return p.stock > 0 && p.stock <= p.minStock;
               }
-              return val.toLocaleString('fa-IR');
-            };
+              if (warehouseFilterMode === 'outofstock') {
+                return p.stock === 0;
+              }
+              if (warehouseFilterMode === 'reserved') {
+                return p.reserved > 0;
+              }
+              if (warehouseFilterMode === 'overreserved') {
+                return p.reserved > p.stock;
+              }
+              if (warehouseFilterMode === 'sellable') {
+                return (p.stock - p.reserved) > 0;
+              }
 
-            // Filtering logic
-            const filteredProds = adminProducts.filter(p => {
-              const matchesSearch = productSearchQuery === '' || 
-                p.name.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
-                (p.code && p.code.toLowerCase().includes(productSearchQuery.toLowerCase())) ||
-                p.brand.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
-                p.category.toLowerCase().includes(productSearchQuery.toLowerCase());
-
-              const matchesStatus = productStatusFilter === 'همه' || p.status === productStatusFilter;
-              const matchesCategory = productCategoryFilter === 'همه' || p.category === productCategoryFilter;
-              const matchesBrand = productBrandFilter === 'همه' || p.brand === productBrandFilter;
-
-              return matchesSearch && matchesStatus && matchesCategory && matchesBrand;
+              return true;
             });
 
-            // Sorting logic
+            // Pagination
+            const totalItemsCount = filteredProds.length;
+            const totalPages = Math.ceil(totalItemsCount / warehouseLimit) || 1;
+            const currentPage = Math.min(warehousePage, totalPages);
+            const startIndex = (currentPage - 1) * warehouseLimit;
+            const endIndex = startIndex + warehouseLimit;
+            const paginatedProds = filteredProds.slice(startIndex, endIndex);
+
+            // Selected product
+            const selectedProduct = warehouseProducts.find(p => p.id === selectedWarehouseProductId) || filteredProds[0] || null;
+
+            // Form uploader helper
+            const triggerWarehouseUpload = (type) => {
+              const el = document.getElementById(`warehouseUploadInput_${type}`);
+              if (el) el.click();
+            };
+
+            // Stock adjustment handler
+            const handleAdjustStockLocal = (productId, type, qty, reason) => {
+              const amount = parseInt(qty);
+              if (isNaN(amount) || amount <= 0) return alert('مقدار نامعتبر است.');
+              
+              const updated = warehouseProducts.map(p => {
+                if (p.id === productId) {
+                  const oldStock = p.stock;
+                  const newStock = type === 'increase' ? oldStock + amount : Math.max(0, oldStock - amount);
+                  const changeSign = type === 'increase' ? `+${amount}` : `-${amount}`;
+                  
+                  const newHistoryEntry = {
+                    id: 'h_' + Date.now(),
+                    action: type === 'increase' ? 'افزایش موجودی' : 'کاهش موجودی',
+                    qty: changeSign,
+                    date: new Date().toLocaleDateString('fa-IR') + ' - ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+                    user: 'مدیر سایت',
+                    reason: reason || (type === 'increase' ? 'تغییر دستی موجودی' : 'کاهش دستی موجودی')
+                  };
+                  
+                  return {
+                    ...p,
+                    stock: newStock,
+                    lastUpdated: newHistoryEntry.date,
+                    history: [newHistoryEntry, ...(p.history || [])]
+                  };
+                }
+                return p;
+              });
+              
+              setWarehouseProducts(updated);
+              localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(updated));
+              setWarehouseAdjustStockOpen(false);
+              setWarehouseAdjustStockQty('');
+              setWarehouseAdjustStockReason('');
+              alert('موجودی با موفقیت بروزرسانی شد.');
+            };
+
+            // Add note handler
+            const handleAddNoteLocal = (productId, text) => {
+              if (!text.trim()) return alert('متن یادداشت نمی‌تواند خالی باشد.');
+              const updated = warehouseProducts.map(p => {
+                if (p.id === productId) {
+                  const newNote = {
+                    id: 'n_' + Date.now(),
+                    text: text,
+                    date: new Date().toLocaleDateString('fa-IR'),
+                    user: 'مدیر سایت'
+                  };
+                  return {
+                    ...p,
+                    notes: [newNote, ...(p.notes || [])]
+                  };
+                }
+                return p;
+              });
+              
+              setWarehouseProducts(updated);
+              localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(updated));
+              setWarehouseAddNoteOpen(false);
+              setWarehouseAddNoteText('');
+              alert('یادداشت با موفقیت ثبت شد.');
+            };
+
+            // Archive handler
+            const handleArchiveProductLocal = (productId) => {
+              if (!confirm('آیا از آرشیو کردن این کالا اطمینان دارید؟ (کالا از لیست فعال حذف خواهد شد)')) return;
+              const updated = warehouseProducts.map(p => {
+                if (p.id === productId) {
+                  return { ...p, isArchived: true };
+                }
+                return p;
+              });
+              setWarehouseProducts(updated);
+              localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(updated));
+              alert('کالا آرشیو شد.');
+            };
+
+            // Manual product submissions
+            const handleAddWarehouseProductSubmit = (e) => {
+              e.preventDefault();
+              if (!addWarehouseForm.name || !addWarehouseForm.brand || !addWarehouseForm.price) {
+                return alert('لطفاً فیلدهای ضروری را پر کنید.');
+              }
+              const newId = 'DK-INV-' + (1000 + warehouseProducts.length + 1);
+              const newProduct = {
+                id: newId,
+                name: addWarehouseForm.name,
+                brand: addWarehouseForm.brand,
+                category: addWarehouseForm.category,
+                sku: addWarehouseForm.sku || ('SKU-' + Date.now().toString().slice(-6)),
+                price: parseInt(addWarehouseForm.price) || 0,
+                stock: parseInt(addWarehouseForm.stock) || 0,
+                reserved: parseInt(addWarehouseForm.reserved) || 0,
+                location: addWarehouseForm.location || 'ثبت نشده',
+                minStock: parseInt(addWarehouseForm.minStock) || 5,
+                lastUpdated: new Date().toLocaleDateString('fa-IR') + ' - ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+                image: addWarehouseForm.image || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=200&auto=format&fit=crop',
+                isArchived: false,
+                notes: [],
+                history: [
+                  {
+                    id: 'h_init',
+                    action: 'ایجاد کالا',
+                    qty: `+${addWarehouseForm.stock || 0}`,
+                    date: new Date().toLocaleDateString('fa-IR') + ' - ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+                    user: 'مدیر سایت',
+                    reason: 'ثبت اولیه کالا در انبار'
+                  }
+                ]
+              };
+              
+              const updated = [newProduct, ...warehouseProducts];
+              setWarehouseProducts(updated);
+              localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(updated));
+              setSelectedWarehouseProductId(newId);
+              setIsAddWarehouseOpen(false);
+              setAddWarehouseForm({
+                name: '', brand: '', category: 'موبایل', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: ''
+              });
+              alert('کالا با موفقیت اضافه شد.');
+            };
+
+            const handleEditWarehouseProductSubmit = (e) => {
+              e.preventDefault();
+              if (!editWarehouseForm.name || !editWarehouseForm.brand || !editWarehouseForm.price) {
+                return alert('لطفاً فیلدهای ضروری را پر کنید.');
+              }
+              const updated = warehouseProducts.map(p => {
+                if (p.id === editWarehouseForm.id) {
+                  return {
+                    ...p,
+                    name: editWarehouseForm.name,
+                    brand: editWarehouseForm.brand,
+                    category: editWarehouseForm.category,
+                    sku: editWarehouseForm.sku,
+                    price: parseInt(editWarehouseForm.price) || 0,
+                    stock: parseInt(editWarehouseForm.stock) || 0,
+                    reserved: parseInt(editWarehouseForm.reserved) || 0,
+                    location: editWarehouseForm.location,
+                    minStock: parseInt(editWarehouseForm.minStock) || 5,
+                    image: editWarehouseForm.image,
+                    lastUpdated: new Date().toLocaleDateString('fa-IR') + ' - ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+                  };
+                }
+                return p;
+              });
+              
+              setWarehouseProducts(updated);
+              localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(updated));
+              setIsEditWarehouseOpen(false);
+              alert('تغییرات کالا با موفقیت ذخیره شد.');
+            };
+
+            // Helper for combining history log for reports
+            const combinedHistory = activeProds.flatMap(p => 
+              (p.history || []).map(h => ({
+                ...h,
+                productName: p.name,
+                productId: p.id,
+                sku: p.sku
+              }))
+            ).sort((a, b) => {
+              return b.id.localeCompare(a.id);
+            });
+
+            return (
+              <div style={{ direction: 'rtl', textAlign: 'right' }}>
+                
+                {/* HEADER SECTION */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div>
+                    <h1 style={{ fontSize: '22px', fontWeight: '950', color: '#fff', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      📦 مدیریت انبار ایران
+                    </h1>
+                    <p style={{ fontSize: '12.5px', color: '#8b92a5' }}>
+                      مدیریت و مانیتورینگ فیزیکی موجودی کالاها، مقادیر رزرو شده و تاریخچه تغییرات انبار ایران
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsAddWarehouseOpen(true)}
+                    style={{
+                      padding: '10px 18px',
+                      background: 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontWeight: '800',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 4px 12px rgba(248, 120, 32, 0.2)'
+                    }}
+                  >
+                    ➕ افزودن کالا
+                  </button>
+                </div>
+
+                {/* STATS GRID (Clickable Cards) */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' }}>
+                  
+                  {/* Card 1: ارزش کل انبار */}
+                  <div
+                    onClick={() => {
+                      setWarehouseFilterMode('all');
+                      setWarehouseStatusFilter('all');
+                    }}
+                    style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      border: warehouseFilterMode === 'all' ? '1px solid #f87820' : '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>ارزش کل انبار</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#fff' }}>{totalValue.toLocaleString()}</div>
+                      <div style={{ fontSize: '10px', color: '#f87820', marginTop: '2px' }}>تومان</div>
+                    </div>
+                    <div style={{ background: 'rgba(248,120,32,0.08)', borderRadius: '8px', padding: '10px', color: '#f87820' }}>
+                      {AdminIcons.dollar(20)}
+                    </div>
+                  </div>
+
+                  {/* Card 2: موجودی قابل فروش */}
+                  <div
+                    onClick={() => setWarehouseFilterMode('sellable')}
+                    style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      border: warehouseFilterMode === 'sellable' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>موجودی قابل فروش</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#10b981' }}>{totalSellable.toLocaleString()}</div>
+                      <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>عدد</div>
+                    </div>
+                    <div style={{ background: 'rgba(16,185,129,0.08)', borderRadius: '8px', padding: '10px', color: '#10b981' }}>
+                      {AdminIcons.laptop(20)}
+                    </div>
+                  </div>
+
+                  {/* Card 3: کالاهای کم موجود */}
+                  <div
+                    onClick={() => setWarehouseFilterMode('lowstock')}
+                    style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      border: warehouseFilterMode === 'lowstock' ? '1px solid #f59e0b' : '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>کم موجود</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#f59e0b' }}>{lowStockCount.toLocaleString()}</div>
+                      <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>کالا</div>
+                    </div>
+                    <div style={{ background: 'rgba(245,158,11,0.08)', borderRadius: '8px', padding: '10px', color: '#f59e0b' }}>
+                      {AdminIcons.sliders(20)}
+                    </div>
+                  </div>
+
+                  {/* Card 4: کالاهای رزرو شده */}
+                  <div
+                    onClick={() => setWarehouseFilterMode('reserved')}
+                    style={{
+                      background: 'rgba(255,255,255,0.02)',
+                      border: warehouseFilterMode === 'reserved' ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>رزرو شده</div>
+                      <div style={{ fontSize: '18px', fontWeight: '900', color: '#3b82f6' }}>{totalReserved.toLocaleString()}</div>
+                      <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>عدد</div>
+                    </div>
+                    <div style={{ background: 'rgba(59,130,246,0.08)', borderRadius: '8px', padding: '10px', color: '#3b82f6' }}>
+                      {AdminIcons.lock(20)}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* WARNINGS BAR */}
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  background: 'rgba(255,255,255,0.01)',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  marginBottom: '20px',
+                  fontSize: '12px'
+                }}>
+                  <div style={{ color: '#8b92a5', fontWeight: '700', marginLeft: '12px' }}>وضعیت هشدارها:</div>
+                  
+                  {lowStockCount > 0 && (
+                    <div
+                      onClick={() => setWarehouseFilterMode('lowstock')}
+                      style={{ color: '#f59e0b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      ⚠️ {lowStockCount} کالا کم موجود
+                    </div>
+                  )}
+
+                  {outOfStockCount > 0 && (
+                    <div
+                      onClick={() => setWarehouseFilterMode('outofstock')}
+                      style={{ color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', borderRight: '1px solid rgba(255,255,255,0.08)', paddingRight: '12px' }}
+                    >
+                      ⚠️ {outOfStockCount} کالا ناموجود
+                    </div>
+                  )}
+
+                  {overReservedCount > 0 && (
+                    <div
+                      onClick={() => setWarehouseFilterMode('overreserved')}
+                      style={{ color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', borderRight: '1px solid rgba(255,255,255,0.08)', paddingRight: '12px' }}
+                    >
+                      ⚠️ {overReservedCount} کالا رزرو شده بیشتر از موجودی
+                    </div>
+                  )}
+
+                  {lowStockCount === 0 && outOfStockCount === 0 && overReservedCount === 0 && (
+                    <div style={{ color: '#10b981' }}>🟢 تمام کالاهای انبار در وضعیت نرمال و مطلوب قرار دارند.</div>
+                  )}
+                </div>
+
+                {/* QUICK OPERATIONS BAR & FILTERS BAR combined */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  background: 'rgba(255,255,255,0.01)',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  borderRadius: '12px 12px 0 0',
+                  padding: '16px',
+                  gap: '12px',
+                  alignItems: 'center',
+                  borderBottom: 'none'
+                }}>
+                  {/* Filters */}
+                  <div style={{ display: 'flex', gap: '10px', flex: 1 }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <input
+                        type="text"
+                        placeholder="جستجو بر اساس نام، SKU یا برند..."
+                        value={warehouseSearchQuery}
+                        onChange={e => {
+                          setWarehouseSearchQuery(e.target.value);
+                          setWarehousePage(1);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 36px 8px 12px',
+                          background: 'rgba(255,255,255,0.02)',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          borderRadius: '8px',
+                          color: '#fff',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <span style={{ position: 'absolute', right: '10px', top: '10px', color: '#8b92a5' }}>
+                        {AdminIcons.search(14)}
+                      </span>
+                    </div>
+
+                    <select
+                      value={warehouseCategoryFilter}
+                      onChange={e => {
+                        setWarehouseCategoryFilter(e.target.value);
+                        setWarehousePage(1);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="همه" style={{ background: '#0c0d12' }}>دسته‌بندی: همه</option>
+                      {categories.filter(c => c !== 'همه').map(cat => (
+                        <option key={cat} value={cat} style={{ background: '#0c0d12' }}>{cat}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={warehouseBrandFilter}
+                      onChange={e => {
+                        setWarehouseBrandFilter(e.target.value);
+                        setWarehousePage(1);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="همه" style={{ background: '#0c0d12' }}>برند: همه</option>
+                      {brands.filter(b => b !== 'همه').map(br => (
+                        <option key={br} value={br} style={{ background: '#0c0d12' }}>{br}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={warehouseStatusFilter}
+                      onChange={e => {
+                        setWarehouseStatusFilter(e.target.value);
+                        setWarehousePage(1);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255,255,255,0.02)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="همه" style={{ background: '#0c0d12' }}>وضعیت: همه</option>
+                      <option value="موجود" style={{ background: '#0c0d12' }}>موجود (سبز)</option>
+                      <option value="کم موجود" style={{ background: '#0c0d12' }}>کم موجود (نارنجی)</option>
+                      <option value="ناموجود" style={{ background: '#0c0d12' }}>ناموجود (قرمز)</option>
+                    </select>
+
+                    {warehouseFilterMode !== 'all' && (
+                      <button
+                        onClick={() => setWarehouseFilterMode('all')}
+                        style={{
+                          padding: '8px 12px',
+                          background: 'rgba(248,120,32,0.1)',
+                          border: '1px solid rgba(248,120,32,0.2)',
+                          borderRadius: '8px',
+                          color: '#f87820',
+                          fontSize: '11px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        پاک کردن فیلتر کارت‌ها
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Quick Operations buttons */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        if (!selectedProduct) return alert('لطفاً ابتدا کالایی را از جدول انتخاب کنید.');
+                        setWarehouseAdjustStockType('increase');
+                        setWarehouseAdjustStockOpen(true);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '8px',
+                        color: '#10b981',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      📦 افزایش موجودی
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!selectedProduct) return alert('لطفاً ابتدا کالایی را از جدول انتخاب کنید.');
+                        setWarehouseAdjustStockType('decrease');
+                        setWarehouseAdjustStockOpen(true);
+                      }}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        borderRadius: '8px',
+                        color: '#ef4444',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      📤 کاهش موجودی
+                    </button>
+                    <button
+                      onClick={() => setWarehouseReportOpen(true)}
+                      style={{
+                        padding: '8px 12px',
+                        background: 'rgba(248,120,32,0.1)',
+                        border: '1px solid rgba(248,120,32,0.2)',
+                        borderRadius: '8px',
+                        color: '#f87820',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      📊 گزارش انبار
+                    </button>
+                  </div>
+                </div>
+
+                {/* SPLIT LAYOUT */}
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                  
+                  {/* Left Column: Directory Table (65%) */}
+                  <div style={{ flex: 13, minWidth: 0, background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', padding: '20px', borderRadius: '0 0 12px 12px' }}>
+                    {paginatedProds.length === 0 ? (
+                      <div style={{ padding: '60px 20px', textAlign: 'center', color: '#8b92a5', fontSize: '13px' }}>
+                        هیچ کالایی متناسب با فیلترها و جستجوی انبار یافت نشد.
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'right' }}>
+                            <thead>
+                              <tr style={{ background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5', width: '45%' }}>کلا</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5' }}>برند</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5' }}>دسته‌بندی</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5', textAlign: 'center' }}>موجودی</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5', textAlign: 'center' }}>رزرو</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5', textAlign: 'center' }}>قابل فروش</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5' }}>قیمت (تومان)</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5', textAlign: 'center' }}>وضعیت</th>
+                                <th style={{ padding: '12px 10px', color: '#8b92a5', textAlign: 'center' }}>عملیات</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {paginatedProds.map(prod => {
+                                const isSelected = prod.id === selectedWarehouseProductId;
+                                const isOutOf = prod.stock === 0;
+                                const isLow = prod.stock > 0 && prod.stock <= prod.minStock;
+                                const isAvailable = prod.stock > prod.minStock;
+                                
+                                return (
+                                  <tr
+                                    key={prod.id}
+                                    onClick={() => setSelectedWarehouseProductId(prod.id)}
+                                    style={{
+                                      borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                      cursor: 'pointer',
+                                      background: isSelected ? 'rgba(248,120,32,0.04)' : 'transparent',
+                                      transition: 'background 0.15s'
+                                    }}
+                                  >
+                                    <td style={{ padding: '12px 10px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <img
+                                          src={prod.image}
+                                          alt={prod.name}
+                                          style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'cover', background: '#222' }}
+                                        />
+                                        <div>
+                                          <div style={{ fontWeight: '800', color: isSelected ? '#f87820' : '#fff' }}>{prod.name}</div>
+                                          <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>{prod.sku} • {prod.id}</div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td style={{ padding: '12px 10px', color: '#c0c8d8' }}>{prod.brand}</td>
+                                    <td style={{ padding: '12px 10px', color: '#c0c8d8' }}>{prod.category}</td>
+                                    <td style={{ padding: '12px 10px', textAlign: 'center', fontWeight: 'bold', color: '#fff' }}>{prod.stock}</td>
+                                    <td style={{ padding: '12px 10px', textAlign: 'center', color: prod.reserved > 0 ? '#3b82f6' : '#8b92a5', fontWeight: prod.reserved > 0 ? 'bold' : 'normal' }}>
+                                      {prod.reserved}
+                                    </td>
+                                    <td style={{ padding: '12px 10px', textAlign: 'center', color: (prod.stock - prod.reserved) <= 0 ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
+                                      {prod.stock - prod.reserved}
+                                    </td>
+                                    <td style={{ padding: '12px 10px', color: '#fff', fontWeight: '700' }}>{prod.price.toLocaleString()}</td>
+                                    <td style={{ padding: '12px 10px', textAlign: 'center' }}>
+                                      {isAvailable && (
+                                        <span style={{ padding: '3px 8px', borderRadius: '50px', fontSize: '10.5px', background: 'rgba(16,185,129,0.08)', color: '#10b981', fontWeight: 'bold' }}>
+                                          موجود
+                                        </span>
+                                      )}
+                                      {isLow && (
+                                        <span style={{ padding: '3px 8px', borderRadius: '50px', fontSize: '10.5px', background: 'rgba(245,158,11,0.08)', color: '#f59e0b', fontWeight: 'bold' }}>
+                                          کم موجود
+                                        </span>
+                                      )}
+                                      {isOutOf && (
+                                        <span style={{ padding: '3px 8px', borderRadius: '50px', fontSize: '10.5px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', fontWeight: 'bold' }}>
+                                          ناموجود
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td style={{ padding: '12px 10px', textAlign: 'center', position: 'relative' }} onClick={e => e.stopPropagation()}>
+                                      <button
+                                        onClick={() => setActiveWarehouseMenuId(activeWarehouseMenuId === prod.id ? null : prod.id)}
+                                        style={{
+                                          background: 'rgba(255,255,255,0.03)',
+                                          border: '1px solid rgba(255,255,255,0.06)',
+                                          borderRadius: '6px',
+                                          color: '#c0c8d8',
+                                          padding: '4px 8px',
+                                          cursor: 'pointer'
+                                        }}
+                                      >
+                                        ⋮
+                                      </button>
+                                      
+                                      {/* Menu Dropdown */}
+                                      {activeWarehouseMenuId === prod.id && (
+                                        <div style={{
+                                          position: 'absolute',
+                                          left: '10px',
+                                          top: '38px',
+                                          zIndex: 100,
+                                          background: '#0c0d12',
+                                          border: '1px solid rgba(255,255,255,0.08)',
+                                          borderRadius: '8px',
+                                          width: '130px',
+                                          boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                                          padding: '6px'
+                                        }}>
+                                          <div
+                                            onClick={() => {
+                                              setSelectedWarehouseProductId(prod.id);
+                                              setActiveWarehouseMenuId(null);
+                                            }}
+                                            style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#fff', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                          >
+                                            👁 مشاهده
+                                          </div>
+                                          <div
+                                            onClick={() => {
+                                              setEditWarehouseForm(prod);
+                                              setIsEditWarehouseOpen(true);
+                                              setActiveWarehouseMenuId(null);
+                                            }}
+                                            style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#fff', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                          >
+                                            ✏️ ویرایش
+                                          </div>
+                                          <div
+                                            onClick={() => {
+                                              setSelectedWarehouseProductId(prod.id);
+                                              setWarehouseAdjustStockType('increase');
+                                              setWarehouseAdjustStockOpen(true);
+                                              setActiveWarehouseMenuId(null);
+                                            }}
+                                            style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#10b981', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                          >
+                                            ➕ افزایش موجودی
+                                          </div>
+                                          <div
+                                            onClick={() => {
+                                              setSelectedWarehouseProductId(prod.id);
+                                              setWarehouseAdjustStockType('decrease');
+                                              setWarehouseAdjustStockOpen(true);
+                                              setActiveWarehouseMenuId(null);
+                                            }}
+                                            style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#ef4444', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                          >
+                                            ➖ کاهش موجودی
+                                          </div>
+                                          <div
+                                            onClick={() => {
+                                              setSelectedWarehouseProductId(prod.id);
+                                              setWarehouseAddNoteOpen(true);
+                                              setActiveWarehouseMenuId(null);
+                                            }}
+                                            style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#3b82f6', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                          >
+                                            📝 ثبت یادداشت
+                                          </div>
+                                          <div
+                                            onClick={() => {
+                                              handleArchiveProductLocal(prod.id);
+                                              setActiveWarehouseMenuId(null);
+                                            }}
+                                            style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#f59e0b', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '4px' }}
+                                          >
+                                            📦 آرشیو کالا
+                                          </div>
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Pagination Controls */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '16px' }}>
+                          <div style={{ color: '#8b92a5' }}>
+                            نمایش {startIndex + 1} تا {Math.min(endIndex, totalItemsCount)} از {totalItemsCount} کالا
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <button
+                              onClick={() => setWarehousePage(prev => Math.max(1, prev - 1))}
+                              disabled={currentPage === 1}
+                              style={{
+                                padding: '4px 8px',
+                                background: 'rgba(255,255,255,0.02)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                borderRadius: '4px',
+                                color: currentPage === 1 ? '#444' : '#fff',
+                                cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                              }}
+                            >
+                              ‹
+                            </button>
+                            
+                            {Array.from({ length: totalPages }).map((_, idx) => {
+                              const pg = idx + 1;
+                              return (
+                                <button
+                                  key={pg}
+                                  onClick={() => setWarehousePage(pg)}
+                                  style={{
+                                    padding: '4px 10px',
+                                    background: currentPage === pg ? '#f87820' : 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    borderRadius: '4px',
+                                    color: '#fff',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {pg}
+                                </button>
+                              );
+                            })}
+
+                            <button
+                              onClick={() => setWarehousePage(prev => Math.min(totalPages, prev + 1))}
+                              disabled={currentPage === totalPages}
+                              style={{
+                                padding: '4px 8px',
+                                background: 'rgba(255,255,255,0.02)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                borderRadius: '4px',
+                                color: currentPage === totalPages ? '#444' : '#fff',
+                                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
+                              }}
+                            >
+                              ›
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>نمایش:</span>
+                            <select
+                              value={warehouseLimit}
+                              onChange={e => {
+                                setWarehouseLimit(parseInt(e.target.value));
+                                setWarehousePage(1);
+                              }}
+                              style={{
+                                padding: '4px 6px',
+                                background: 'rgba(255,255,255,0.02)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                borderRadius: '6px',
+                                color: '#fff',
+                                fontSize: '11px',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="5" style={{ background: '#0c0d12' }}>۵</option>
+                              <option value="10" style={{ background: '#0c0d12' }}>۱۰</option>
+                              <option value="20" style={{ background: '#0c0d12' }}>۲۰</option>
+                              <option value="50" style={{ background: '#0c0d12' }}>۵۰</option>
+                            </select>
+                          </div>
+                        </div>
+
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Details Sidebar (35%) */}
+                  <div style={{ width: '360px', flexShrink: 0, background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '20px' }}>
+                    {selectedProduct ? (
+                      <div>
+                        {/* Title and image */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                          <h3 style={{ fontSize: '14px', fontWeight: '950', color: '#fff' }}>جزئیات کالا</h3>
+                          <span style={{
+                            padding: '3px 8px', borderRadius: '50px', fontSize: '10px', fontWeight: 'bold',
+                            background: selectedProduct.stock === 0 ? 'rgba(239,68,68,0.08)' : selectedProduct.stock <= selectedProduct.minStock ? 'rgba(245,158,11,0.08)' : 'rgba(16,185,129,0.08)',
+                            color: selectedProduct.stock === 0 ? '#ef4444' : selectedProduct.stock <= selectedProduct.minStock ? '#f59e0b' : '#10b981'
+                          }}>
+                            {selectedProduct.stock === 0 ? 'ناموجود' : selectedProduct.stock <= selectedProduct.minStock ? 'کم موجود' : 'موجود'}
+                          </span>
+                        </div>
+
+                        <img
+                          src={selectedProduct.image}
+                          alt={selectedProduct.name}
+                          style={{ width: '100%', height: '180px', borderRadius: '10px', objectFit: 'cover', background: '#222', marginBottom: '16px', border: '1px solid rgba(255,255,255,0.06)' }}
+                        />
+
+                        <h2 style={{ fontSize: '16px', fontWeight: '900', color: '#fff', marginBottom: '12px' }}>{selectedProduct.name}</h2>
+
+                        {/* Specs list */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px', marginBottom: '20px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>برند:</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedProduct.brand}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>دسته‌بندی:</span>
+                            <span style={{ color: '#fff' }}>{selectedProduct.category}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>SKU:</span>
+                            <span style={{ color: '#fff', fontFamily: 'monospace' }}>{selectedProduct.sku}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>قیمت (تومان):</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedProduct.price.toLocaleString()}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>موجود انبار ایران:</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedProduct.stock} عدد</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>رزرو سفارشات:</span>
+                            <span style={{ color: selectedProduct.reserved > 0 ? '#3b82f6' : '#fff' }}>{selectedProduct.reserved} عدد</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>موجودی قابل فروش:</span>
+                            <span style={{ color: (selectedProduct.stock - selectedProduct.reserved) <= 0 ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>
+                              {selectedProduct.stock - selectedProduct.reserved} عدد
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>محل نگهداری در انبار:</span>
+                            <span style={{ color: '#fff' }}>{selectedProduct.location}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
+                            <span style={{ color: '#8b92a5' }}>آخرین بروزرسانی:</span>
+                            <span style={{ color: '#8b92a5', fontSize: '11px' }}>{selectedProduct.lastUpdated || 'ثبت نشده'}</span>
+                          </div>
+                        </div>
+
+                        {/* Sidebar Buttons */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                          <button
+                            onClick={() => {
+                              setEditWarehouseForm(selectedProduct);
+                              setIsEditWarehouseOpen(true);
+                            }}
+                            style={{
+                              width: '100%', padding: '10px', background: 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
+                              color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px',
+                              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
+                            }}
+                          >
+                            ✏️ ویرایش کالا
+                          </button>
+                          
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <button
+                              onClick={() => {
+                                setWarehouseAdjustStockType('increase');
+                                setWarehouseAdjustStockOpen(true);
+                              }}
+                              style={{
+                                padding: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                                color: '#10b981', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                              }}
+                            >
+                              ➕ افزایش
+                            </button>
+                            <button
+                              onClick={() => {
+                                setWarehouseAdjustStockType('decrease');
+                                setWarehouseAdjustStockOpen(true);
+                              }}
+                              style={{
+                                padding: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                                color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                              }}
+                            >
+                              ➖ کاهش
+                            </button>
+                          </div>
+
+                          <button
+                            onClick={() => setWarehouseAddNoteOpen(true)}
+                            style={{
+                              width: '100%', padding: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                              color: '#3b82f6', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold',
+                              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px'
+                            }}
+                          >
+                            📝 ثبت یادداشت کالا
+                          </button>
+                        </div>
+
+                        {/* HISTORY LOG (Inside sidebar) */}
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginBottom: '20px' }}>
+                          <h4 style={{ fontSize: '12.5px', color: '#fff', marginBottom: '10px', fontWeight: 'bold' }}>🕒 تاریخچه تغییرات موجودی</h4>
+                          {selectedProduct.history && selectedProduct.history.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto', paddingLeft: '4px' }}>
+                              {selectedProduct.history.map(hist => (
+                                <div key={hist.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '6px', padding: '8px', fontSize: '11px' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                    <span style={{ fontWeight: '800', color: hist.qty.startsWith('+') ? '#10b981' : '#ef4444' }}>{hist.qty}</span>
+                                    <span style={{ color: '#fff', fontWeight: '700' }}>{hist.action}</span>
+                                  </div>
+                                  <div style={{ color: '#8b92a5', fontSize: '9.5px', display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                                    <span>توسط: {hist.user}</span>
+                                    <span>{hist.date}</span>
+                                  </div>
+                                  {hist.reason && (
+                                    <div style={{ color: '#f87820', fontSize: '10px', marginTop: '4px', background: 'rgba(248,120,32,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+                                      علت: {hist.reason}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '11px', color: '#8b92a5', textAlign: 'center', padding: '12px' }}>
+                              تغییراتی ثبت نشده است.
+                            </div>
+                          )}
+                        </div>
+
+                        {/* NOTES LOG (Inside sidebar) */}
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+                          <h4 style={{ fontSize: '12.5px', color: '#fff', marginBottom: '10px', fontWeight: 'bold' }}>📝 یادداشت‌های انبار</h4>
+                          {selectedProduct.notes && selectedProduct.notes.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '150px', overflowY: 'auto' }}>
+                              {selectedProduct.notes.map(note => (
+                                <div key={note.id} style={{ background: 'rgba(248,120,32,0.03)', border: '1px solid rgba(248,120,32,0.1)', borderRadius: '6px', padding: '8px', fontSize: '11px' }}>
+                                  <div style={{ color: '#c0c8d8', lineHeight: '1.4', marginBottom: '4px' }}>{note.text}</div>
+                                  <div style={{ color: '#8b92a5', fontSize: '9px', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span>ثبت: {note.user}</span>
+                                    <span>{note.date}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '11px', color: '#8b92a5', textAlign: 'center', padding: '12px' }}>
+                              یادداشتی برای این کالا ثبت نشده است.
+                            </div>
+                          )}
+                        </div>
+
+                      </div>
+                    ) : (
+                      <div style={{ padding: '40px 10px', textAlign: 'center', color: '#8b92a5', fontSize: '12px' }}>
+                        برای نمایش جزئیات، یک کالا از جدول انتخاب کنید.
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* MODAL: ADD PRODUCT */}
+                {isAddWarehouseOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
+                    <div style={{ background: '#0f111a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', width: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: '950', color: '#fff' }}>➕ افزودن کالای فیزیکی جدید</h3>
+                        <button onClick={() => setIsAddWarehouseOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8b92a5', fontSize: '18px', cursor: 'pointer' }}>×</button>
+                      </div>
+                      
+                      <form onSubmit={handleAddWarehouseProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
+                        
+                        <div>
+                          <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>نام کالا (ضروری)</label>
+                          <input
+                            type="text"
+                            required
+                            value={addWarehouseForm.name}
+                            onChange={e => setAddWarehouseForm(prev => ({ ...prev, name: e.target.value }))}
+                            style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
+                            <input
+                              type="text"
+                              required
+                              value={addWarehouseForm.brand}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, brand: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
+                            <input
+                              type="text"
+                              required
+                              value={addWarehouseForm.category}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, category: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>SKU کالا</label>
+                            <input
+                              type="text"
+                              placeholder="مثال: APP-AP2"
+                              value={addWarehouseForm.sku}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, sku: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>محل نگهداری در انبار</label>
+                            <input
+                              type="text"
+                              placeholder="مثال: قفسه A2"
+                              value={addWarehouseForm.location}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, location: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>موجودی فیزیکی اولیه</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={addWarehouseForm.stock}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, stock: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>حداقل موجودی (Low limit)</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={addWarehouseForm.minStock}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, minStock: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>قیمت واحد (تومان - ضروری)</label>
+                            <input
+                              type="number"
+                              required
+                              value={addWarehouseForm.price}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, price: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>رزرو شده اولیه</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={addWarehouseForm.reserved}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, reserved: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Local Image Uploader */}
+                        <div>
+                          <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تصویر محصول</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder="آدرس اینترنتی تصویر..."
+                              value={addWarehouseForm.image}
+                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, image: e.target.value }))}
+                              style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => triggerWarehouseUpload('add')}
+                              style={{
+                                padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 'bold'
+                              }}
+                            >
+                              📁 آپلود فایل
+                            </button>
+                            <input
+                              id="warehouseUploadInput_add"
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={e => handleWarehouseImageUploadLocal(e, 'add')}
+                            />
+                          </div>
+                          {addWarehouseForm.image && (
+                            <img
+                              src={addWarehouseForm.image}
+                              alt="پیش‌نمایش"
+                              style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}
+                            />
+                          )}
+                        </div>
+
+                        <button
+                          type="submit"
+                          style={{
+                            width: '100%', padding: '10px', marginTop: '10px',
+                            background: 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
+                            color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer'
+                          }}
+                        >
+                          ثبت نهایی کالا در انبار
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL: EDIT PRODUCT */}
+                {isEditWarehouseOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
+                    <div style={{ background: '#0f111a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', width: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: '950', color: '#fff' }}>✏️ ویرایش کالای فیزیکی</h3>
+                        <button onClick={() => setIsEditWarehouseOpen(false)} style={{ background: 'transparent', border: 'none', color: '#8b92a5', fontSize: '18px', cursor: 'pointer' }}>×</button>
+                      </div>
+                      
+                      <form onSubmit={handleEditWarehouseProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '12px' }}>
+                        
+                        <div>
+                          <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>نام کالا (ضروری)</label>
+                          <input
+                            type="text"
+                            required
+                            value={editWarehouseForm.name}
+                            onChange={e => setEditWarehouseForm(prev => ({ ...prev, name: e.target.value }))}
+                            style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
+                            <input
+                              type="text"
+                              required
+                              value={editWarehouseForm.brand}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, brand: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
+                            <input
+                              type="text"
+                              required
+                              value={editWarehouseForm.category}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, category: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>SKU کالا</label>
+                            <input
+                              type="text"
+                              value={editWarehouseForm.sku}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, sku: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>محل نگهداری در انبار</label>
+                            <input
+                              type="text"
+                              value={editWarehouseForm.location}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, location: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>موجودی فیزیکی</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={editWarehouseForm.stock}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, stock: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>حداقل موجودی (Low limit)</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={editWarehouseForm.minStock}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, minStock: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>قیمت واحد (تومان)</label>
+                            <input
+                              type="number"
+                              required
+                              value={editWarehouseForm.price}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, price: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>رزرو شده سفارشات</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={editWarehouseForm.reserved}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, reserved: e.target.value }))}
+                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Local Image Uploader */}
+                        <div>
+                          <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تصویر محصول</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                              type="text"
+                              placeholder="آدرس اینترنتی تصویر..."
+                              value={editWarehouseForm.image}
+                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, image: e.target.value }))}
+                              style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => triggerWarehouseUpload('edit')}
+                              style={{
+                                padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 'bold'
+                              }}
+                            >
+                              📁 آپلود فایل
+                            </button>
+                            <input
+                              id="warehouseUploadInput_edit"
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              onChange={e => handleWarehouseImageUploadLocal(e, 'edit')}
+                            />
+                          </div>
+                          {editWarehouseForm.image && (
+                            <img
+                              src={editWarehouseForm.image}
+                              alt="پیش‌نمایش"
+                              style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}
+                            />
+                          )}
+                        </div>
+
+                        <button
+                          type="submit"
+                          style={{
+                            width: '100%', padding: '10px', marginTop: '10px',
+                            background: 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
+                            color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer'
+                          }}
+                        >
+                          ذخیره تغییرات
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL: ADJUST STOCK */}
+                {warehouseAdjustStockOpen && selectedProduct && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
+                    <div style={{ background: '#0f111a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px', width: '400px' }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: '950', color: '#fff', marginBottom: '16px' }}>
+                        {warehouseAdjustStockType === 'increase' ? '📦 ثبت افزایش موجودی فیزیکی' : '📤 ثبت کاهش موجودی فیزیکی'}
+                      </h3>
+                      
+                      <div style={{ fontSize: '12px', color: '#8b92a5', marginBottom: '12px' }}>
+                        کالا: <strong style={{ color: '#fff' }}>{selectedProduct.name}</strong> • موجودی فعلی: <strong style={{ color: '#fff' }}>{selectedProduct.stock} عدد</strong>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '12px' }}>
+                        <div>
+                          <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تعداد کالا</label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="تعداد تغییر..."
+                            value={warehouseAdjustStockQty}
+                            onChange={e => setWarehouseAdjustStockQty(e.target.value)}
+                            style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>علت تغییر موجودی</label>
+                          <input
+                            type="text"
+                            placeholder="مثال: فاکتور خرید، کسری فیزیکی، آسیب‌دیدگی..."
+                            value={warehouseAdjustStockReason}
+                            onChange={e => setWarehouseAdjustStockReason(e.target.value)}
+                            style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                          <button
+                            onClick={() => handleAdjustStockLocal(selectedProduct.id, warehouseAdjustStockType, warehouseAdjustStockQty, warehouseAdjustStockReason)}
+                            style={{
+                              flex: 1, padding: '10px', borderRadius: '8px', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer',
+                              background: warehouseAdjustStockType === 'increase' ? '#10b981' : '#ef4444'
+                            }}
+                          >
+                            تأیید و اعمال
+                          </button>
+                          <button
+                            onClick={() => {
+                              setWarehouseAdjustStockOpen(false);
+                              setWarehouseAdjustStockQty('');
+                              setWarehouseAdjustStockReason('');
+                            }}
+                            style={{
+                              flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', cursor: 'pointer',
+                              background: 'transparent'
+                            }}
+                          >
+                            انصراف
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL: ADD NOTE */}
+                {warehouseAddNoteOpen && selectedProduct && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)' }}>
+                    <div style={{ background: '#0f111a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px', width: '400px' }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: '950', color: '#fff', marginBottom: '12px' }}>📝 ثبت یادداشت برای کالا</h3>
+                      <div style={{ fontSize: '12px', color: '#8b92a5', marginBottom: '12px' }}>کالا: <strong style={{ color: '#fff' }}>{selectedProduct.name}</strong></div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <textarea
+                          placeholder="متن یادداشت انبار (مثال: کارتن آسیب دیده، نیاز به شمارش مجدد، منتظر ترخیص...)"
+                          rows="4"
+                          value={warehouseAddNoteText}
+                          onChange={e => setWarehouseAddNoteText(e.target.value)}
+                          style={{ width: '100%', padding: '10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px', resize: 'vertical' }}
+                        />
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            onClick={() => handleAddNoteLocal(selectedProduct.id, warehouseAddNoteText)}
+                            style={{ flex: 1, padding: '10px', background: '#f87820', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            ثبت یادداشت
+                          </button>
+                          <button
+                            onClick={() => {
+                              setWarehouseAddNoteOpen(false);
+                              setWarehouseAddNoteText('');
+                            }}
+                            style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            انصراف
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL: WAREHOUSE REPORT */}
+                {warehouseReportOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.95)' }}>
+                    <div style={{ background: '#08090d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '30px', width: '850px', maxHeight: '90vh', overflowY: 'auto', color: '#fff' }}>
+                      
+                      {/* Printable Area Wrapper */}
+                      <div id="warehousePrintableReport">
+                        
+                        {/* Report Header */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f87820', paddingBottom: '16px', marginBottom: '24px' }}>
+                          <div>
+                            <h2 style={{ fontSize: '24px', fontWeight: '950', color: '#fff', margin: 0 }}>📊 گزارش جامع وضعیت انبار ایران</h2>
+                            <p style={{ fontSize: '12px', color: '#8b92a5', margin: '4px 0 0 0' }}>دبی خرید • سامانه هوشمند مدیریت زنجیره تامین و انبار کالا</p>
+                          </div>
+                          <div style={{ textAlign: 'left', fontSize: '11px', color: '#8b92a5' }}>
+                            <div>تاریخ گزارش: {new Date().toLocaleDateString('fa-IR')}</div>
+                            <div>ساعت تهیه: {new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div>کاربر گزارش‌گیرنده: مدیر سایت</div>
+                          </div>
+                        </div>
+
+                        {/* Key Metrics cards inside report */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+                          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: '#8b92a5', marginBottom: '4px' }}>ارزش کل موجودی انبار</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#f87820' }}>{totalValue.toLocaleString()} تومان</div>
+                          </div>
+                          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: '#8b92a5', marginBottom: '4px' }}>کل اقلام قابل فروش</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#10b981' }}>{totalSellable} کالا</div>
+                          </div>
+                          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: '#8b92a5', marginBottom: '4px' }}>اقلام با موجودی بحرانی</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#f59e0b' }}>{lowStockCount} مورد</div>
+                          </div>
+                          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: '#8b92a5', marginBottom: '4px' }}>تعداد اقلام ناموجود</div>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: '#ef4444' }}>{outOfStockCount} مورد</div>
+                          </div>
+                        </div>
+
+                        {/* List of Products */}
+                        <h4 style={{ fontSize: '14px', color: '#fff', borderRight: '3px solid #f87820', paddingRight: '8px', marginBottom: '12px', fontWeight: 'bold' }}>📋 لیست قلم کالاهای انبار فعال</h4>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'right', marginBottom: '24px' }}>
+                          <thead>
+                            <tr style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                              <th style={{ padding: '8px 10px', color: '#fff' }}>شناسه کالا / SKU</th>
+                              <th style={{ padding: '8px 10px', color: '#fff' }}>نام محصول</th>
+                              <th style={{ padding: '8px 10px', color: '#fff' }}>دسته‌بندی</th>
+                              <th style={{ padding: '8px 10px', color: '#fff', textAlign: 'center' }}>موجودی</th>
+                              <th style={{ padding: '8px 10px', color: '#fff', textAlign: 'center' }}>رزرو</th>
+                              <th style={{ padding: '8px 10px', color: '#fff', textAlign: 'center' }}>قابل فروش</th>
+                              <th style={{ padding: '8px 10px', color: '#fff' }}>قیمت واحد</th>
+                              <th style={{ padding: '8px 10px', color: '#fff' }}>محل قرارگیری</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeProds.map(p => (
+                              <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                <td style={{ padding: '8px 10px', color: '#f87820', fontWeight: 'bold' }}>{p.sku}</td>
+                                <td style={{ padding: '8px 10px', color: '#fff', fontWeight: 'bold' }}>{p.name}</td>
+                                <td style={{ padding: '8px 10px', color: '#c0c8d8' }}>{p.category}</td>
+                                <td style={{ padding: '8px 10px', textAlign: 'center', color: p.stock === 0 ? '#ef4444' : '#fff' }}>{p.stock}</td>
+                                <td style={{ padding: '8px 10px', textAlign: 'center', color: '#3b82f6' }}>{p.reserved}</td>
+                                <td style={{ padding: '8px 10px', textAlign: 'center', color: (p.stock - p.reserved) <= 0 ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>{p.stock - p.reserved}</td>
+                                <td style={{ padding: '8px 10px' }}>{p.price.toLocaleString()} تومان</td>
+                                <td style={{ padding: '8px 10px', color: '#8b92a5' }}>{p.location}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+
+                        {/* Recent combined history logs */}
+                        <h4 style={{ fontSize: '14px', color: '#fff', borderRight: '3px solid #f87820', paddingRight: '8px', marginBottom: '12px', fontWeight: 'bold' }}>🕒 وقایع و تغییرات اخیر انبار (تراکنش‌ها)</h4>
+                        {combinedHistory.length > 0 ? (
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', textAlign: 'right' }}>
+                            <thead>
+                              <tr style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                <th style={{ padding: '6px 10px', color: '#fff' }}>تاریخ و زمان</th>
+                                <th style={{ padding: '6px 10px', color: '#fff' }}>کالا</th>
+                                <th style={{ padding: '6px 10px', color: '#fff' }}>نوع تراکنش</th>
+                                <th style={{ padding: '6px 10px', color: '#fff', textAlign: 'center' }}>تعداد</th>
+                                <th style={{ padding: '6px 10px', color: '#fff' }}>ثبت کننده</th>
+                                <th style={{ padding: '6px 10px', color: '#fff' }}>شرح علت</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {combinedHistory.slice(0, 15).map((log, index) => (
+                                <tr key={index} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <td style={{ padding: '6px 10px', color: '#8b92a5' }}>{log.date}</td>
+                                  <td style={{ padding: '6px 10px', color: '#fff' }}><strong>{log.productName}</strong> <span style={{ fontSize: '9px', color: '#8b92a5' }}>({log.sku})</span></td>
+                                  <td style={{ padding: '6px 10px' }}>
+                                    <span style={{
+                                      padding: '2px 6px', borderRadius: '4px', fontSize: '9.5px',
+                                      background: log.action === 'افزایش موجودی' ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+                                      color: log.action === 'افزایش موجودی' ? '#10b981' : '#ef4444'
+                                    }}>
+                                      {log.action}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 'bold', color: log.qty.startsWith('+') ? '#10b981' : '#ef4444' }}>{log.qty}</td>
+                                  <td style={{ padding: '6px 10px', color: '#c0c8d8' }}>{log.user}</td>
+                                  <td style={{ padding: '6px 10px', color: '#8b92a5' }}>{log.reason || 'ثبت دستی'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <div style={{ fontSize: '11px', color: '#8b92a5', textAlign: 'center', padding: '16px' }}>هیچ تراکنش ثبتی اخیراً وجود ندارد.</div>
+                        )}
+
+                      </div>
+
+                      {/* Modal Footer actions */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
+                        <button
+                          onClick={() => {
+                            const printContent = document.getElementById('warehousePrintableReport').innerHTML;
+                            const originalContent = document.body.innerHTML;
+                            document.body.innerHTML = printContent;
+                            window.print();
+                            // Reload page to restore react DOM bindings after printing
+                            window.location.reload();
+                          }}
+                          style={{
+                            padding: '10px 24px', background: 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
+                            color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px'
+                          }}
+                        >
+                          🖨 چاپ گزارش
+                        </button>
+                        <button
+                          onClick={() => setWarehouseReportOpen(false)}
+                          style={{
+                            padding: '10px 20px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+                            color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '12px'
+                          }}
+                        >
+                          بستن پنجره
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            );
+          })()}
+
+          {/* TAB: SITE PRODUCTS LIST (Foreign Products) */}
+          {activeTab === 'site_products' && (() => {
+            // Helper getters
+            const getProductSourceStore = (product) => {
+              if (product.sourceStore) return product.sourceStore;
+              if (product.brand === 'Apple') return 'Apple UAE';
+              if (product.brand === 'Samsung') return 'Samsung UAE';
+              if (product.brand === 'Nike') return 'Nike UAE';
+              if (product.brand === 'Adidas') return 'Adidas UAE';
+              if (product.id.includes('1001') || product.id.includes('1002')) return 'Noon';
+              if (product.id.includes('1003') || product.id.includes('1004')) return 'Amazon.ae';
+              return 'Namshi';
+            };
+
+            const getProductAedPrice = (product) => {
+              if (product.priceAed !== undefined) return product.priceAed;
+              const rate = parseFloat(siteCtxSettings?.aedRate) || 19500;
+              return Math.round(product.price / rate) || 150;
+            };
+
+            const getProductWeight = (product) => {
+              if (product.weight) return product.weight;
+              if (product.category?.includes('کفش')) return '1.2';
+              if (product.category?.includes('کیف')) return '0.8';
+              if (product.category?.includes('گوشی') || product.category?.includes('ساعت')) return '0.4';
+              return '1.0';
+            };
+
+            const getProductForeignStatus = (product) => {
+              if (product.foreignStatus) return product.foreignStatus;
+              if (product.id.includes('1002')) return 'needs_update';
+              if (product.id.includes('1004')) return 'broken_link';
+              if (product.id.includes('1006')) return 'hidden';
+              return 'active';
+            };
+
+            const getProductLastUpdated = (product) => {
+              return product.lastUpdated || '۱۴۰۵/۰۳/۳۰';
+            };
+
+            const getProductOriginalLink = (product) => {
+              if (product.originalLink) return product.originalLink;
+              const store = getProductSourceStore(product).toLowerCase().replace(' uae', '').replace('.ae', '');
+              return `https://www.${store}.ae/dp/B08${product.id.replace('prod-', '')}`;
+            };
+
+            // Simulated Crawler logic
+            const saveProductsState = (updatedList) => {
+              setAdminProducts(updatedList);
+              localStorage.setItem('dubaiKharidAdminProducts', JSON.stringify(updatedList));
+              localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(updatedList));
+            };
+
+            const handleImageUploadLocal = (e, type) => {
+              const file = e.target.files[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  if (type === 'add') {
+                    setAddProductManualForm(prev => ({ ...prev, image: reader.result }));
+                  } else {
+                    setEditProductForm(prev => ({ ...prev, image: reader.result }));
+                  }
+                };
+                reader.readAsDataURL(file);
+              }
+            };
+
+            const handleDeleteProduct = (prodId) => {
+              if (!confirm('آیا از حذف این محصول مطمئن هستید؟')) return;
+              const filtered = adminProducts.filter(p => p.id !== prodId);
+              saveProductsState(filtered);
+              alert('محصول با موفقیت حذف گردید.');
+            };
+
+            const handleFetchProductFromLink = () => {
+              if (!productLinkInput) return;
+              
+              const isAmazon = productLinkInput.includes('amazon.ae');
+              const isNoon = productLinkInput.includes('noon.com') || productLinkInput.includes('noon.ae');
+              const isNamshi = productLinkInput.includes('namshi.com');
+              
+              if (!isAmazon && !isNoon && !isNamshi) {
+                alert('لطفاً یک لینک معتبر از سایت‌های آمازون امارات (amazon.ae)، نون (noon.com) یا نمشی (namshi.com) وارد نمایید.');
+                return;
+              }
+              
+              setIsFetchingProductLink(true);
+              
+              setTimeout(() => {
+                setIsFetchingProductLink(false);
+                
+                let crawledProduct = {
+                  id: 'prod-' + Date.now(),
+                  code: 'DK-' + Math.floor(1000 + Math.random() * 9000),
+                  name: '',
+                  brand: 'Apple',
+                  category: '',
+                  gender: '',
+                  discountPercent: 0,
+                  isBestSeller: false,
+                  priceAed: 2999,
+                  weight: '0.3',
+                  image: '',
+                  sourceStore: '',
+                  originalLink: productLinkInput,
+                  foreignStatus: 'active',
+                  lastUpdated: 'امروز'
+                };
+                
+                if (isAmazon) {
+                  crawledProduct.name = 'Kindle Paperwhite (16 GB) - Black';
+                  crawledProduct.brand = 'Amazon';
+                  crawledProduct.priceAed = 579;
+                  crawledProduct.weight = '0.25';
+                  crawledProduct.image = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=120&q=80';
+                  crawledProduct.sourceStore = 'Amazon.ae';
+                } else if (isNoon) {
+                  crawledProduct.name = 'Sony PlayStation 5 Slim Console';
+                  crawledProduct.brand = 'Sony';
+                  crawledProduct.priceAed = 1849;
+                  crawledProduct.weight = '3.2';
+                  crawledProduct.image = 'https://images.unsplash.com/photo-1606813907291-d86edd9b94db?w=120&q=80';
+                  crawledProduct.sourceStore = 'Noon';
+                  crawledProduct.isBestSeller = true;
+                } else if (isNamshi) {
+                  crawledProduct.name = 'Calvin Klein Cotton Stretch Boxer Briefs';
+                  crawledProduct.brand = 'Calvin Klein';
+                  crawledProduct.priceAed = 145;
+                  crawledProduct.weight = '0.15';
+                  crawledProduct.image = 'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=120&q=80';
+                  crawledProduct.sourceStore = 'Namshi';
+                  crawledProduct.gender = 'men';
+                }
+                
+                const updated = [crawledProduct, ...adminProducts];
+                saveProductsState(updated);
+                setSelectedAdminProductId(crawledProduct.id);
+                setProductLinkInput('');
+                alert('محصول با موفقیت استخراج و اضافه شد.');
+              }, 1200);
+            };
+
+            // Quick Operations
+            const handlePromptUpdatePrice = (prod) => {
+              const currentPrice = getProductAedPrice(prod);
+              const newPrice = prompt(`قیمت جدید محصول به درهم (AED) را وارد کنید (قیمت فعلی: ${currentPrice} AED):`, currentPrice);
+              if (newPrice !== null && !isNaN(newPrice) && parseFloat(newPrice) > 0) {
+                const updated = adminProducts.map(p => p.id === prod.id ? { ...p, priceAed: parseFloat(newPrice), lastUpdated: 'امروز' } : p);
+                saveProductsState(updated);
+                alert('قیمت با موفقیت بروزرسانی شد.');
+              }
+            };
+
+            const handleToggleHide = (prodId) => {
+              const updated = adminProducts.map(p => {
+                if (p.id === prodId) {
+                  const currStatus = getProductForeignStatus(p);
+                  const newStatus = currStatus === 'hidden' ? 'active' : 'hidden';
+                  return { ...p, foreignStatus: newStatus };
+                }
+                return p;
+              });
+              saveProductsState(updated);
+            };
+
+            const handleEditClick = (prod) => {
+              setEditProductForm({
+                id: prod.id,
+                name: prod.name,
+                brand: prod.brand,
+                priceAed: getProductAedPrice(prod),
+                weight: getProductWeight(prod),
+                sourceStore: getProductSourceStore(prod),
+                originalLink: getProductOriginalLink(prod),
+                foreignStatus: getProductForeignStatus(prod),
+                image: prod.image || '',
+                gender: prod.gender || '',
+                category: prod.category || '',
+                discountPercent: prod.discountPercent || 0,
+                isBestSeller: prod.isBestSeller || false
+              });
+              setIsEditProductModalOpen(true);
+            };
+
+            const handleEditProductSubmitLocal = (e) => {
+              e.preventDefault();
+              const updated = adminProducts.map(p => p.id === editProductForm.id ? {
+                ...p,
+                name: editProductForm.name,
+                brand: editProductForm.brand,
+                priceAed: parseFloat(editProductForm.priceAed),
+                weight: parseFloat(editProductForm.weight),
+                sourceStore: editProductForm.sourceStore,
+                originalLink: editProductForm.originalLink,
+                foreignStatus: editProductForm.foreignStatus,
+                image: editProductForm.image,
+                gender: editProductForm.gender,
+                category: editProductForm.category,
+                discountPercent: parseFloat(editProductForm.discountPercent) || 0,
+                isBestSeller: editProductForm.isBestSeller,
+                lastUpdated: 'امروز'
+              } : p);
+              saveProductsState(updated);
+              setIsEditProductModalOpen(false);
+              alert('محصول با موفقیت ویرایش شد.');
+            };
+
+            const handleManualAddProductSubmit = (e) => {
+              e.preventDefault();
+              if (!addProductManualForm.name || !addProductManualForm.priceAed) {
+                alert('لطفاً نام محصول و قیمت به درهم را وارد کنید.');
+                return;
+              }
+              const newProd = {
+                id: 'prod-' + Date.now(),
+                code: 'DK-' + Math.floor(1000 + Math.random() * 9000),
+                name: addProductManualForm.name,
+                brand: addProductManualForm.brand || 'Nike',
+                priceAed: parseFloat(addProductManualForm.priceAed),
+                weight: parseFloat(addProductManualForm.weight) || 1.0,
+                image: addProductManualForm.image || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&q=80',
+                sourceStore: addProductManualForm.sourceStore || 'Amazon.ae',
+                originalLink: addProductManualForm.originalLink || '',
+                foreignStatus: 'active',
+                gender: addProductManualForm.gender || '',
+                category: addProductManualForm.category || '',
+                discountPercent: parseFloat(addProductManualForm.discountPercent) || 0,
+                isBestSeller: addProductManualForm.isBestSeller || false,
+                lastUpdated: 'امروز'
+              };
+              const updated = [newProd, ...adminProducts];
+              saveProductsState(updated);
+              setSelectedAdminProductId(newProd.id);
+              setIsAddProductManualOpen(false);
+              alert('محصول با موفقیت به صورت دستی اضافه شد.');
+            };
+
+            // Metrics Calculations
+            const totalForeignProducts = adminProducts.length;
+            const activeProducts = adminProducts.filter(p => getProductForeignStatus(p) === 'active').length;
+            const brokenLinks = adminProducts.filter(p => getProductForeignStatus(p) === 'broken_link').length;
+            const needsUpdate = adminProducts.filter(p => getProductForeignStatus(p) === 'needs_update').length;
+            const salesCountThisMonth = leads.filter(l => ['purchased', 'noon_dubai', 'warehouse_dubai', 'shipped', 'delivered'].includes(l.status)).length + 42;
+
+            // Search & Filtering
+            const filteredProds = adminProducts.filter(p => {
+              const q = productSearchQuery.toLowerCase();
+              const matchesSearch = productSearchQuery === '' || 
+                p.name.toLowerCase().includes(q) ||
+                p.brand.toLowerCase().includes(q) ||
+                getProductSourceStore(p).toLowerCase().includes(q);
+
+              const statusVal = getProductForeignStatus(p);
+              const matchesStatus = productStatusFilter === 'همه' || 
+                (productStatusFilter === 'active' && statusVal === 'active') ||
+                (productStatusFilter === 'needs_update' && statusVal === 'needs_update') ||
+                (productStatusFilter === 'broken_link' && statusVal === 'broken_link') ||
+                (productStatusFilter === 'hidden' && statusVal === 'hidden');
+
+              const matchesBrand = productBrandFilter === 'همه' || p.brand === productBrandFilter;
+
+              return matchesSearch && matchesStatus && matchesBrand;
+            });
+
+            // Sorting
             const sortedProds = [...filteredProds].sort((a, b) => {
               let valA = a[productSortField];
               let valB = b[productSortField];
-              
-              if (productSortField === 'price' || productSortField === 'stock') {
-                valA = Number(valA) || 0;
-                valB = Number(valB) || 0;
-              } else {
-                valA = String(valA).toLowerCase();
-                valB = String(valB).toLowerCase();
+              if (productSortField === 'price') {
+                valA = getProductAedPrice(a);
+                valB = getProductAedPrice(b);
               }
-              
               if (valA < valB) return productSortOrder === 'asc' ? -1 : 1;
               if (valA > valB) return productSortOrder === 'asc' ? 1 : -1;
               return 0;
             });
 
-            // SVG parameters
-            const r = 45;
-            const circ = 2 * Math.PI * r;
+            const selectedProduct = adminProducts.find(p => p.id === selectedAdminProductId) || sortedProds[0] || null;
 
-            const f1 = catVals.mobileVal / (catVals.total || 1);
-            const f2 = catVals.shoesBagVal / (catVals.total || 1);
-            const f3 = catVals.watchAccVal / (catVals.total || 1);
-            const f4 = catVals.otherVal / (catVals.total || 1);
-            
-            const stroke1 = f1 * circ;
-            const stroke2 = f2 * circ;
-            const stroke3 = f3 * circ;
-            const stroke4 = f4 * circ;
+            // Price Breakdown Calculations
+            const getPriceBreakdown = (prod) => {
+              if (!prod) return null;
+              const aedRateValue = parseFloat(siteCtxSettings?.aedRate) || 19500;
+              const priceAed = getProductAedPrice(prod);
+              const weight = parseFloat(getProductWeight(prod)) || 1.0;
+              
+              const commissionPct = parseFloat(siteCtxSettings?.commissionPercent) || 25;
+              const shippingPerKg = parseFloat(siteCtxSettings?.shippingPerKgAed) || 40;
+              const minWeight = parseFloat(siteCtxSettings?.minWeightClass) || 1.0;
+              const roundMethod = siteCtxSettings?.roundingMethod || 'ceil';
+              
+              let roundedWeight = weight;
+              if (roundMethod === 'ceil') {
+                roundedWeight = Math.ceil(weight);
+              } else if (roundMethod === 'floor') {
+                roundedWeight = Math.floor(weight);
+              } else if (roundMethod === 'round') {
+                roundedWeight = Math.round(weight);
+              }
+              
+              if (roundedWeight < minWeight) {
+                roundedWeight = minWeight;
+              }
+              
+              const shippingCost = roundedWeight * shippingPerKg;
+              const commissionCost = priceAed * (commissionPct / 100);
+              const finalPriceAed = priceAed + shippingCost + commissionCost;
+              const finalPriceToman = Math.round(finalPriceAed * aedRateValue);
+              
+              return {
+                priceAed,
+                weight,
+                roundedWeight,
+                shippingCost,
+                commissionCost,
+                aedRateValue,
+                finalPriceToman,
+                commissionPct
+              };
+            };
 
-            const offset1 = 0;
-            const offset2 = stroke1;
-            const offset3 = stroke1 + stroke2;
-            const offset4 = stroke1 + stroke2 + stroke3;
-
-            const p1 = catVals.mobilePct || 0;
-            const p2 = catVals.shoesBagPct || 0;
-            const p3 = catVals.watchAccPct || 0;
-            const p4 = catVals.otherPct || 0;
+            const selectedBreakdown = getPriceBreakdown(selectedProduct);
 
             return (
               <div style={{ fontFamily: 'var(--font-vazirmatn), sans-serif' }}>
-                {/* Title and top actions */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+                
+                {/* Title */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                   <div>
-                    <h1 style={{ fontSize: '20px', fontWeight: '850', color: '#fff', margin: 0 }}>{AdminIcons.bag(20)} محصولات</h1>
-                    <p className={styles.sectionDesc} style={{ margin: '4px 0 0 0' }}>مدیریت و مشاهده تمام محصولات فروشگاه دبی خرید</p>
+                    <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      🌐 مدیریت محصولات خارجی
+                    </h1>
+                    <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#8b92a5' }}>
+                      کنترل و نظارت بر روی محصولات استخراج‌شده از فروشگاه‌های امارات (پشتیبانی، قیمت‌گذاری و سودآوری)
+                    </p>
                   </div>
                   
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={handleExportProductsExcel} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}>
-                      <span style={{ fontSize: '10px' }}>{AdminIcons.chart(10)}</span>
-                      <span>اکسل</span>
-                    </button>
-                    <button onClick={() => setShowProductFilters(!showProductFilters)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: showProductFilters ? 'rgba(248, 120, 32, 0.08)' : 'rgba(255,255,255,0.03)', border: showProductFilters ? '1px solid var(--admin-orange)' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: showProductFilters ? 'var(--admin-orange)' : '#fff', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}>
-                      <span style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.search(10)}</span>
-                      <span>فیلترها</span>
-                    </button>
-                    <button onClick={() => setIsAddProductOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: 'bold', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}>
-                      <span style={{ fontSize: '10px', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.plus(10)}</span>
-                      <span>افزودن محصول جدید</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* 5 KPI Metric Cards */}
-                <div className={styles.metricsGrid5}>
-                  <div 
-                    className={`${styles.metricCard} ${productStatusFilter === 'همه' && productCategoryFilter === 'همه' && productBrandFilter === 'همه' ? styles.categoryListItemActive : ''}`}
+                  <button 
                     onClick={() => {
-                      setProductStatusFilter('همه');
-                      setProductCategoryFilter('همه');
-                      setProductBrandFilter('همه');
+                      setAddProductManualForm({
+                        name: '', brand: 'Nike', priceAed: '', weight: '1.0', sourceStore: 'Amazon.ae', originalLink: '', image: '', category: 'موبایل و تبلت'
+                      });
+                      setIsAddProductManualOpen(true);
                     }}
-                    style={{ cursor: 'pointer' }}
+                    style={{ padding: '8px 16px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <div className={styles.metricContent}>
-                      <span className={styles.metricLabel}>همه محصولات</span>
-                      <span className={styles.metricValue} style={{ fontFamily: 'var(--font-vazirmatn)' }}>{metrics.allCount.toLocaleString('fa-IR')}</span>
-                      <span style={{ fontSize: '10px', color: '#8b92a5' }}>کل محصولات فعال</span>
-                    </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(248, 120, 32, 0.1)', color: 'var(--admin-orange)' }}>
-                      {AdminIcons.package(18)}
-                    </div>
-                  </div>
+                    ➕ افزودن دستی محصول
+                  </button>
+                </div>
 
-                  <div 
-                    className={`${styles.metricCard} ${productStatusFilter === 'موجود' ? styles.categoryListItemActive : ''}`}
-                    onClick={() => setProductStatusFilter('موجود')}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className={styles.metricContent}>
-                      <span className={styles.metricLabel}>موجود</span>
-                      <span className={styles.metricValue} style={{ fontFamily: 'var(--font-vazirmatn)', color: '#10b981' }}>{metrics.availableCount.toLocaleString('fa-IR')}</span>
-                      <span style={{ fontSize: '10px', color: '#8b92a5' }}>دارای موجودی انبار</span>
-                    </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                      {AdminIcons.check(18)}
-                    </div>
+                {/* 5 Stats Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>کل محصولات خارجی</div>
+                    <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff' }}>{totalForeignProducts} محصول</div>
+                    <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '4px' }}>در کل آرشیو کاتالوگ</div>
                   </div>
-
-                  <div 
-                    className={`${styles.metricCard} ${productStatusFilter === 'ناموجود' ? styles.categoryListItemActive : ''}`}
-                    onClick={() => setProductStatusFilter('ناموجود')}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className={styles.metricContent}>
-                      <span className={styles.metricLabel}>ناموجود</span>
-                      <span className={styles.metricValue} style={{ fontFamily: 'var(--font-vazirmatn)', color: '#ef4444' }}>{metrics.unavailableCount.toLocaleString('fa-IR')}</span>
-                      <span style={{ fontSize: '10px', color: '#8b92a5' }}>اتمام موجودی</span>
-                    </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                      {AdminIcons.close(18)}
-                    </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>محصولات فعال</div>
+                    <div style={{ fontSize: '20px', fontWeight: '900', color: '#10b981' }}>{activeProducts} کالا</div>
+                    <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '4px' }}>نمایش فعال روی وبسایت</div>
                   </div>
-
-                  <div 
-                    className={`${styles.metricCard} ${productStatusFilter === 'کم موجود' ? styles.categoryListItemActive : ''}`}
-                    onClick={() => setProductStatusFilter('کم موجود')}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className={styles.metricContent}>
-                      <span className={styles.metricLabel}>کم موجود</span>
-                      <span className={styles.metricValue} style={{ fontFamily: 'var(--font-vazirmatn)', color: '#f59e0b' }}>{metrics.lowStockCount.toLocaleString('fa-IR')}</span>
-                      <span style={{ fontSize: '10px', color: '#8b92a5' }}>کمتر از ۱۰ عدد</span>
-                    </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                      {AdminIcons.alert(18)}
-                    </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>لینک‌های خراب</div>
+                    <div style={{ fontSize: '20px', fontWeight: '900', color: '#ef4444' }}>{brokenLinks} مورد</div>
+                    <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '4px' }}>خطای ۴۰۴ مبدا امارات</div>
                   </div>
-
-                  <div 
-                    className={styles.metricCard}
-                    onClick={() => setIsValuationModalOpen(true)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className={styles.metricContent}>
-                      <span className={styles.metricLabel}>ارزش کل موجودی</span>
-                      <span className={styles.metricValue} style={{ fontFamily: 'var(--font-vazirmatn)', fontSize: '15.5px', color: '#f87820' }}>
-                        {formatToman(metrics.totalValuation)}
-                      </span>
-                      <span style={{ fontSize: '10px', color: '#10b981' }}>نمایش گزارش محاسبات ➔</span>
-                    </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(248, 120, 32, 0.1)', color: 'var(--admin-orange)' }}>
-                      {AdminIcons.dollar(18)}
-                    </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>نیاز به بروزرسانی قیمت</div>
+                    <div style={{ fontSize: '20px', fontWeight: '900', color: '#f59e0b' }}>{needsUpdate} کالا</div>
+                    <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '4px' }}>تغییر قیمت در سایت مبدا</div>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>تعداد فروش این ماه</div>
+                    <div style={{ fontSize: '20px', fontWeight: '900', color: '#f87820' }}>{salesCountThisMonth} سفارش</div>
+                    <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '4px' }}>ثبت و نهایی شده در سیستم</div>
                   </div>
                 </div>
 
-                {/* Workspace Split */}
-                <div className={styles.splitWorkspaceGrid}>
-                  {/* Left Column: Table & Filter Strip */}
+                {/* Main Split Layout */}
+                <div style={{ display: 'grid', gridTemplateColumns: '2.1fr 1.3fr', gap: '24px', direction: 'rtl' }}>
+                  
+                  {/* Left Column: Search & Directory Table */}
                   <div>
-                    {showProductFilters && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', background: 'var(--admin-card-bg)', padding: '8px 12px', borderRadius: '12px', marginBottom: '10px', border: '1px solid rgba(255,255,255,0.04)', alignItems: 'center' }}>
-                        {/* Search input */}
-                        <div style={{ flex: '1', minWidth: '180px', position: 'relative' }}>
-                          <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: '#8b92a5', fontSize: '12px' }}>{AdminIcons.search(12)}</span>
-                          <input 
-                            type="text" 
-                            placeholder="جستجو در محصولات..."
-                            value={productSearchQuery}
-                            onChange={(e) => setProductSearchQuery(e.target.value)}
-                            style={{ width: '100%', padding: '6px 30px 6px 10px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '11.5px', outline: 'none' }}
-                          />
-                        </div>
+                    {/* Filters bar */}
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input 
+                        type="text" 
+                        placeholder="جستجو در نام، برند یا فروشگاه..."
+                        value={productSearchQuery}
+                        onChange={(e) => setProductSearchQuery(e.target.value)}
+                        style={{ flex: 1, padding: '8px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px', outline: 'none' }}
+                      />
+                      
+                      <select
+                        value={productStatusFilter}
+                        onChange={e => setProductStatusFilter(e.target.value)}
+                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                      >
+                        <option value="همه" style={{ background: '#1c1d24' }}>همه وضعیت‌ها</option>
+                        <option value="active" style={{ background: '#1c1d24' }}>🟢 فعال</option>
+                        <option value="needs_update" style={{ background: '#1c1d24' }}>🟡 نیاز به بروزرسانی قیمت</option>
+                        <option value="broken_link" style={{ background: '#1c1d24' }}>🔴 لینک خراب</option>
+                        <option value="hidden" style={{ background: '#1c1d24' }}>⚫ مخفی</option>
+                      </select>
 
-                        {/* Category filter */}
-                        <select 
-                          value={productCategoryFilter}
-                          onChange={(e) => setProductCategoryFilter(e.target.value)}
-                          style={{ padding: '5px 10px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#c4c8d4', fontSize: '11px', outline: 'none', cursor: 'pointer' }}
-                        >
-                          <option value="همه">همه دسته‌ها</option>
-                          {Object.keys(categoryCounts).map(cat => (
-                            <option key={cat} value={cat}>{cat}</option>
-                          ))}
-                        </select>
+                      <select
+                        value={productBrandFilter}
+                        onChange={e => setProductBrandFilter(e.target.value)}
+                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                      >
+                        <option value="همه" style={{ background: '#1c1d24' }}>همه برندها</option>
+                        <option value="Nike" style={{ background: '#1c1d24' }}>Nike</option>
+                        <option value="Adidas" style={{ background: '#1c1d24' }}>Adidas</option>
+                        <option value="Apple" style={{ background: '#1c1d24' }}>Apple</option>
+                        <option value="Samsung" style={{ background: '#1c1d24' }}>Samsung</option>
+                        <option value="Michael Kors" style={{ background: '#1c1d24' }}>Michael Kors</option>
+                        <option value="Amazon" style={{ background: '#1c1d24' }}>Amazon</option>
+                        <option value="Sony" style={{ background: '#1c1d24' }}>Sony</option>
+                        <option value="Calvin Klein" style={{ background: '#1c1d24' }}>Calvin Klein</option>
+                      </select>
+                    </div>
 
-                        {/* Brand filter */}
-                        <select 
-                          value={productBrandFilter}
-                          onChange={(e) => setProductBrandFilter(e.target.value)}
-                          style={{ padding: '5px 10px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#c4c8d4', fontSize: '11px', outline: 'none', cursor: 'pointer' }}
-                        >
-                          <option value="همه">همه برندها</option>
-                          {Object.keys(brandCounts).map(br => (
-                            <option key={br} value={br}>{br}</option>
-                          ))}
-                        </select>
-
-                        {/* Sort field */}
-                        <select 
-                          value={productSortField}
-                          onChange={(e) => setProductSortField(e.target.value)}
-                          style={{ padding: '5px 10px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#c4c8d4', fontSize: '11px', outline: 'none', cursor: 'pointer' }}
-                        >
-                          <option value="id">شناسه</option>
-                          <option value="price">قیمت</option>
-                          <option value="stock">موجودی</option>
-                          <option value="name">نام محصول</option>
-                        </select>
-
-                        {/* Sort order toggle */}
-                        <button 
-                          onClick={() => setProductSortOrder(productSortOrder === 'asc' ? 'desc' : 'asc')}
-                          style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '5px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#c4c8d4', fontSize: '11px', cursor: 'pointer' }}
-                        >
-                          <span>⇅</span>
-                          <span>{productSortOrder === 'asc' ? 'صعودی' : 'نزولی'}</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Table Container */}
-                    <div className={styles.tableContainer} style={{ background: 'var(--admin-card-bg)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <table className={styles.adminTable}>
+                    {/* Table */}
+                    <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', overflow: 'hidden' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'right' }}>
                         <thead>
-                          <tr>
-                            <th>محصول</th>
-                            <th>برند</th>
-                            <th>دسته</th>
-                            <th>قیمت (تومان)</th>
-                            <th>موجودی</th>
-                            <th>وضعیت</th>
-                            <th>عملیات</th>
+                          <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>تصویر</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>نام محصول</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>برند</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>فروشگاه مبدا</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>قیمت اصلی (AED)</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>وزن (KG)</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>وضعیت</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>آخرین بروزرسانی</th>
+                            <th style={{ padding: '12px 16px', color: '#8b92a5' }}>عملیات</th>
                           </tr>
                         </thead>
                         <tbody>
                           {sortedProds.length === 0 ? (
                             <tr>
-                              <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#8b92a5' }}>
-                                محصولی منطبق با فیلترهای بالا یافت نشد.
-                              </td>
+                              <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: '#8b92a5' }}>هیچ محصولی با مشخصات جستجو شده یافت نشد.</td>
                             </tr>
                           ) : (
-                            sortedProds.map(p => (
-                              <tr key={p.id}>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }} />
-                                    <div>
-                                      <div style={{ fontWeight: '750', color: '#fff', fontSize: '12.5px' }}>{p.name}</div>
-                                      <span style={{ fontSize: '10.5px', color: '#8b92a5', background: 'rgba(255,255,255,0.04)', padding: '2px 6px', borderRadius: '4px', marginTop: '2px', display: 'inline-block', fontFamily: 'monospace' }}>
-                                        {p.code || p.id}
-                                      </span>
+                            sortedProds.map(p => {
+                              const store = getProductSourceStore(p);
+                              const priceAed = getProductAedPrice(p);
+                              const weight = getProductWeight(p);
+                              const statusVal = getProductForeignStatus(p);
+                              const isSelected = selectedProduct && selectedProduct.id === p.id;
+                              
+                              return (
+                                <tr 
+                                  key={p.id}
+                                  onClick={() => setSelectedAdminProductId(p.id)}
+                                  style={{ 
+                                    borderBottom: '1px solid rgba(255,255,255,0.04)', 
+                                    cursor: 'pointer', 
+                                    background: isSelected ? 'rgba(248,120,32,0.06)' : 'transparent',
+                                    transition: 'background 0.15s'
+                                  }}
+                                  onMouseOver={e => { if(!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                                  onMouseOut={e => { if(!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                  <td style={{ padding: '12px 16px' }}>
+                                    <img src={p.image} alt={p.name} style={{ width: '38px', height: '38px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }} />
+                                  </td>
+                                  <td style={{ padding: '12px 16px', fontWeight: '700', color: '#fff', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</td>
+                                  <td style={{ padding: '12px 16px', color: '#c0c8d8' }}>{p.brand}</td>
+                                  <td style={{ padding: '12px 16px', color: '#8b92a5' }}>
+                                    <span style={{ background: 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{store}</span>
+                                  </td>
+                                  <td style={{ padding: '12px 16px', color: '#fff', fontWeight: 'bold' }}>{priceAed} AED</td>
+                                  <td style={{ padding: '12px 16px', color: '#c0c8d8' }}>{weight} kg</td>
+                                  <td style={{ padding: '12px 16px' }}>
+                                    <span style={{
+                                      padding: '2px 8px', borderRadius: '4px', fontSize: '10.5px', fontWeight: 'bold',
+                                      background: statusVal === 'active' ? 'rgba(16,185,129,0.1)' : statusVal === 'needs_update' ? 'rgba(245,158,11,0.1)' : statusVal === 'broken_link' ? 'rgba(239,68,68,0.1)' : 'rgba(156,163,175,0.1)',
+                                      color: statusVal === 'active' ? '#10b981' : statusVal === 'needs_update' ? '#f59e0b' : statusVal === 'broken_link' ? '#ef4444' : '#9ca3af'
+                                    }}>
+                                      {statusVal === 'active' ? 'فعال' : statusVal === 'needs_update' ? 'بروزرسانی قیمت' : statusVal === 'broken_link' ? 'لینک خراب' : 'مخفی'}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '12px 16px', color: '#8b92a5' }}>{getProductLastUpdated(p)}</td>
+                                  <td style={{ padding: '12px 16px' }}>
+                                    <div style={{ display: 'flex', gap: '8px' }} onClick={e => e.stopPropagation()}>
+                                      <button 
+                                        onClick={() => handleEditClick(p)} 
+                                        style={{ padding: '4px 8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', color: '#c0c8d8', cursor: 'pointer', fontSize: '10px' }}
+                                        title="ویرایش محصول"
+                                      >
+                                        ویرایش
+                                      </button>
+                                      <button 
+                                        onClick={() => handleDeleteProduct(p.id)} 
+                                        style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '4px', color: '#ef4444', cursor: 'pointer', fontSize: '10px' }}
+                                        title="حذف"
+                                      >
+                                        حذف
+                                      </button>
                                     </div>
-                                  </div>
-                                </td>
-                                <td style={{ fontWeight: '600' }}>{p.brand}</td>
-                                <td style={{ color: '#c4c8d4' }}>{p.category}</td>
-                                <td style={{ fontFamily: 'var(--font-vazirmatn)', fontWeight: 'bold', color: 'var(--admin-orange)' }}>
-                                  {formatToman(p.price)}
-                                </td>
-                                <td style={{ fontFamily: 'var(--font-vazirmatn)', fontWeight: 'bold' }}>
-                                  {p.stock.toLocaleString('fa-IR')}
-                                </td>
-                                <td>
-                                  <span className={p.status === 'موجود' ? styles.badgeActive : p.status === 'کم موجود' ? styles.badgeCustoms : styles.badgeProblem}>
-                                    {p.status}
-                                  </span>
-                                </td>
-                                <td>
-                                  <button 
-                                    onClick={() => handleDeleteProduct(p.id)} 
-                                    style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '15px', cursor: 'pointer', padding: '6px' }}
-                                    title="حذف محصول"
-                                  >
-                                    {AdminIcons.trash(13)}
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
+                                  </td>
+                                </tr>
+                              );
+                            })
                           )}
                         </tbody>
                       </table>
                     </div>
                   </div>
 
-                  {/* Right Column: Sidebar Widgets */}
+                  {/* Right Column: Importer Widget & Sidebar details */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {/* Widget 1: Categories list */}
-                    <div style={{ background: 'var(--admin-card-bg)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{AdminIcons.folder(14)} دسته‌بندی محصولات</h4>
-                        {productCategoryFilter !== 'همه' && (
-                          <button onClick={() => setProductCategoryFilter('همه')} style={{ background: 'none', border: 'none', color: 'var(--admin-orange)', fontSize: '10.5px', cursor: 'pointer' }}>حذف فیلتر</button>
-                        )}
-                      </div>
-                      <div className={styles.categoryListContainer}>
-                        {Object.entries(categoryCounts).map(([catName, count]) => {
-                          const isActive = productCategoryFilter === catName;
-                          return (
-                            <div 
-                              key={catName}
-                              onClick={() => setProductCategoryFilter(isActive ? 'همه' : catName)}
-                              className={`${styles.categoryListItem} ${isActive ? styles.categoryListItemActive : ''}`}
-                            >
-                              <span className={styles.categoryListText}>
-                                <span>{isActive ? <span style={{ color: 'var(--admin-orange)', marginLeft: '6px' }}>{AdminIcons.check(11)}</span> : <span style={{ display: 'inline-block', width: '11px', marginLeft: '6px' }} />}</span>
-                                <span>{catName}</span>
-                              </span>
-                              <span className={styles.categoryListCount}>{count.toLocaleString('fa-IR')} محصول</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Widget 2: Brands list */}
-                    <div style={{ background: 'var(--admin-card-bg)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: '#fff' }}>{AdminIcons.tag(14)} برترین برندها</h4>
-                        {productBrandFilter !== 'همه' && (
-                          <button onClick={() => setProductBrandFilter('همه')} style={{ background: 'none', border: 'none', color: 'var(--admin-orange)', fontSize: '10.5px', cursor: 'pointer' }}>حذف فیلتر</button>
-                        )}
-                      </div>
-                      <div className={styles.brandListContainer}>
-                        {Object.entries(brandCounts).map(([brandName, count]) => {
-                          const isActive = productBrandFilter === brandName;
-                          return (
-                            <div 
-                              key={brandName}
-                              onClick={() => setProductBrandFilter(isActive ? 'همه' : brandName)}
-                              className={`${styles.brandListItem} ${isActive ? styles.brandListItemActive : ''}`}
-                            >
-                              <span className={styles.brandListText}>{brandName}</span>
-                              <span className={styles.brandListCount}>{count.toLocaleString('fa-IR')} کالا</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Widget 3: SVG Doughnut Chart */}
-                    <div style={{ background: 'var(--admin-card-bg)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <h4 style={{ margin: '0 0 16px 0', fontSize: '13px', fontWeight: 'bold', color: '#fff', width: '100%', textAlign: 'right' }}>{AdminIcons.chart(14)} توزیع ارزش انبار بر اساس دسته</h4>
+                    
+                    {/* Importer Card */}
+                    <div style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(248, 120, 32, 0.15)', borderRadius: '12px', padding: '16px' }}>
+                      <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        📥 افزودن محصول از لینک
+                      </h3>
                       
-                      <div style={{ position: 'relative', width: '130px', height: '130px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <svg width="130" height="130" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
-                          {/* Mobile */}
-                          <circle
-                            cx="60" cy="60" r={r}
-                            fill="transparent"
-                            stroke="#f87820"
-                            strokeWidth="10"
-                            strokeDasharray={`${stroke1} ${circ}`}
-                            strokeDashoffset={-offset1}
-                            style={{ transition: 'stroke-dasharray 0.3s ease', cursor: 'pointer' }}
-                            onClick={() => setProductCategoryFilter('گوشی موبایل')}
-                          />
-                          {/* Bags & Shoes */}
-                          <circle
-                            cx="60" cy="60" r={r}
-                            fill="transparent"
-                            stroke="#2ecc71"
-                            strokeWidth="10"
-                            strokeDasharray={`${stroke2} ${circ}`}
-                            strokeDashoffset={-offset2}
-                            style={{ transition: 'stroke-dasharray 0.3s ease', cursor: 'pointer' }}
-                            onClick={() => setProductCategoryFilter('کفش مردانه')}
-                          />
-                          {/* Watches */}
-                          <circle
-                            cx="60" cy="60" r={r}
-                            fill="transparent"
-                            stroke="#3498db"
-                            strokeWidth="10"
-                            strokeDasharray={`${stroke3} ${circ}`}
-                            strokeDashoffset={-offset3}
-                            style={{ transition: 'stroke-dasharray 0.3s ease', cursor: 'pointer' }}
-                            onClick={() => setProductCategoryFilter('ساعت هوشمند')}
-                          />
-                          {/* Others */}
-                          <circle
-                            cx="60" cy="60" r={r}
-                            fill="transparent"
-                            stroke="#9b59b6"
-                            strokeWidth="10"
-                            strokeDasharray={`${stroke4} ${circ}`}
-                            strokeDashoffset={-offset4}
-                            style={{ transition: 'stroke-dasharray 0.3s ease', cursor: 'pointer' }}
-                            onClick={() => setProductCategoryFilter('لباس زنانه')}
-                          />
-                        </svg>
-                        
-                        <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: '9px', color: '#8b92a5' }}>ارزش کل انبار</span>
-                          <span style={{ fontSize: '12px', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', color: '#fff', marginTop: '2px' }}>
-                            {formatShortToman(metrics.totalValuation)}
-                          </span>
-                        </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input 
+                          type="text" 
+                          value={productLinkInput}
+                          onChange={e => setProductLinkInput(e.target.value)}
+                          placeholder="لینک کالا از Amazon.ae یا Noon یا Namshi..." 
+                          style={{ width: '100%', padding: '8px 12px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '11px', outline: 'none' }}
+                        />
+                        <button 
+                          onClick={handleFetchProductFromLink}
+                          disabled={isFetchingProductLink}
+                          style={{ 
+                            width: '100%', 
+                            padding: '9px', 
+                            background: 'linear-gradient(135deg, var(--admin-orange), #e65f00)', 
+                            border: 'none', 
+                            borderRadius: '8px', 
+                            color: '#fff', 
+                            fontWeight: 'bold', 
+                            cursor: 'pointer', 
+                            fontSize: '11.5px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          {isFetchingProductLink ? 'در حال استخراج اطلاعات...' : 'دریافت اطلاعات'}
+                        </button>
                       </div>
-
-                      {/* Legend */}
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', cursor: 'pointer' }} onClick={() => setProductCategoryFilter('گوشی موبایل')}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '8px', height: '8px', background: '#f87820', borderRadius: '50%' }}></span>
-                            <span style={{ color: '#c4c8d4' }}>گوشی موبایل</span>
-                          </span>
-                          <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', color: '#fff' }}>{p1}%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', cursor: 'pointer' }} onClick={() => setProductCategoryFilter('کفش مردانه')}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '8px', height: '8px', background: '#2ecc71', borderRadius: '50%' }}></span>
-                            <span style={{ color: '#c4c8d4' }}>کیف و کفش</span>
-                          </span>
-                          <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', color: '#fff' }}>{p2}%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', cursor: 'pointer' }} onClick={() => setProductCategoryFilter('ساعت هوشمند')}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '8px', height: '8px', background: '#3498db', borderRadius: '50%' }}></span>
-                            <span style={{ color: '#c4c8d4' }}>ساعت و اکسسوری</span>
-                          </span>
-                          <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', color: '#fff' }}>{p3}%</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', cursor: 'pointer' }} onClick={() => setProductCategoryFilter('لباس زنانه')}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ width: '8px', height: '8px', background: '#9b59b6', borderRadius: '50%' }}></span>
-                            <span style={{ color: '#c4c8d4' }}>سایر دسته‌ها</span>
-                          </span>
-                          <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', color: '#fff' }}>{p4}%</span>
-                        </div>
-                      </div>
+                      
+                      <span style={{ display: 'block', fontSize: '9.5px', color: '#8b92a5', marginTop: '6px', textAlign: 'center' }}>
+                        سیستم به طور خودکار نام، برند، تصویر و قیمت درهم را استخراج می‌کند.
+                      </span>
                     </div>
+
+                    {/* Details Panel Sidebar */}
+                    {selectedProduct ? (
+                      <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '16px' }}>
+                        <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#fff', margin: '0 0 14px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
+                          📋 جزئیات محصول خارجی
+                        </h3>
+                        
+                        {/* Img and name header */}
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                          <img src={selectedProduct.image} alt={selectedProduct.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }} />
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff', lineHeight: '1.4' }}>{selectedProduct.name}</span>
+                            <span style={{ fontSize: '11px', color: '#8b92a5' }}>برند: {selectedProduct.brand}</span>
+                          </div>
+                        </div>
+
+                        {/* Cost Calculator Grid */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(0,0,0,0.15)', borderRadius: '8px', padding: '12px', marginBottom: '16px', fontSize: '11.5px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#8b92a5' }}>فروشگاه مبدا:</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>{getProductSourceStore(selectedProduct)}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#8b92a5' }}>قیمت اصلی به درهم:</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedBreakdown?.priceAed} AED</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#8b92a5' }}>وزن محصول:</span>
+                            <span style={{ color: '#fff', fontWeight: 'bold' }}>{selectedBreakdown?.weight} KG</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '8px' }}>
+                            <span style={{ color: '#8b92a5' }}>هزینه ارسال مبدا تا تهران:</span>
+                            <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{selectedBreakdown?.shippingCost.toFixed(0)} AED</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#8b92a5' }}>کارمزد خرید ({selectedBreakdown?.commissionPct}%):</span>
+                            <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{selectedBreakdown?.commissionCost.toFixed(0)} AED</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#8b92a5' }}>نرخ فعلی درهم (تومان):</span>
+                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>{selectedBreakdown?.aedRateValue.toLocaleString()} تومان</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', fontSize: '13px' }}>
+                            <span style={{ color: 'var(--admin-orange)', fontWeight: 'bold' }}>قیمت نهایی مصرف‌کننده:</span>
+                            <span style={{ color: 'var(--admin-orange)', fontWeight: '900' }}>{selectedBreakdown?.finalPriceToman.toLocaleString()} تومان</span>
+                          </div>
+                        </div>
+
+                        {/* Order stats */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginBottom: '16px', fontSize: '11px', color: '#8b92a5' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>تعداد سفارش ثبت شده:</span>
+                            <span style={{ color: '#fff' }}>{selectedProduct.ordersCount || (selectedProduct.id.charCodeAt(selectedProduct.id.length - 1) % 7 + 1)} سفارش</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>تعداد فروش موفق:</span>
+                            <span style={{ color: '#fff' }}>{selectedProduct.salesCount || (selectedProduct.id.charCodeAt(selectedProduct.id.length - 1) % 5 + 1)} عدد</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>آخرین سفارش ثبت‌شده:</span>
+                            <span style={{ color: '#fff' }}>{selectedProduct.lastOrderDate || '۱۴۰۵/۰۳/۲۸'}</span>
+                          </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <button 
+                              onClick={() => handleEditClick(selectedProduct)}
+                              style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                              ✏️ ویرایش محصول
+                            </button>
+                            <button 
+                              onClick={() => handlePromptUpdatePrice(selectedProduct)}
+                              style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                              💰 بروزرسانی قیمت
+                            </button>
+                          </div>
+                          
+                          <button 
+                            onClick={() => window.open(getProductOriginalLink(selectedProduct), '_blank')}
+                            style={{ width: '100%', padding: '8px', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '6px', color: '#3b82f6', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                          >
+                            🔗 مشاهده لینک اصلی محصول
+                          </button>
+                          
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                            <button 
+                              onClick={() => handleToggleHide(selectedProduct.id)}
+                              style={{ padding: '8px', background: getProductForeignStatus(selectedProduct) === 'hidden' ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.03)', border: getProductForeignStatus(selectedProduct) === 'hidden' ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: getProductForeignStatus(selectedProduct) === 'hidden' ? '#10b981' : '#c0c8d8', fontSize: '11px', cursor: 'pointer' }}
+                            >
+                              {getProductForeignStatus(selectedProduct) === 'hidden' ? '👁️ نمایش مجدد' : '👁️‍🗨️ مخفی کردن'}
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteProduct(selectedProduct.id)}
+                              style={{ padding: '8px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '6px', color: '#ef4444', fontSize: '11px', cursor: 'pointer' }}
+                            >
+                              ❌ حذف محصول
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '24px', textAlign: 'center', color: '#8b92a5', fontSize: '12px' }}>
+                        محصولی جهت نمایش انتخاب نشده است.
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* MODAL 1: Valuation details breakdown */}
-                {isValuationModalOpen && (
-                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
-                    <div style={{ background: 'var(--admin-card-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '560px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                {isEditProductModalOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
+                    <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
-                        <h2 style={{ fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>{AdminIcons.dollar(16)} گزارش ارزش‌گذاری و توزیع سرمایه انبار</h2>
-                        <button onClick={() => setIsValuationModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
+                        <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0 }}>✏️ ویرایش اطلاعات محصول خارجی</h2>
+                        <button onClick={() => setIsEditProductModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
                       </div>
+                      
+                      <form onSubmit={handleEditProductSubmitLocal} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام محصول:</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={editProductForm.name}
+                            onChange={(e) => setEditProductForm({...editProductForm, name: e.target.value})}
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                          />
+                        </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{ background: 'rgba(248, 120, 32, 0.05)', border: '1px solid rgba(248, 120, 32, 0.2)', padding: '16px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div>
-                            <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>کل سرمایه کاتالوگ انبار (تومان)</span>
-                            <span style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-orange)', fontFamily: 'var(--font-vazirmatn)' }}>{formatToman(metrics.totalValuation)}</span>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
+                            <input 
+                              type="text" 
+                              required
+                              value={editProductForm.brand}
+                              onChange={(e) => setEditProductForm({...editProductForm, brand: e.target.value})}
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                            />
                           </div>
-                          <div style={{ background: 'var(--admin-orange)', color: '#fff', width: '42px', height: '42px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                            {AdminIcons.bank(18)}
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>فروشگاه مبدا:</label>
+                            <select 
+                              value={editProductForm.sourceStore}
+                              onChange={(e) => setEditProductForm({...editProductForm, sourceStore: e.target.value})}
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
+                            >
+                              <option value="Amazon.ae" style={{ background: '#1c1d24' }}>Amazon.ae</option>
+                              <option value="Noon" style={{ background: '#1c1d24' }}>Noon</option>
+                              <option value="Namshi" style={{ background: '#1c1d24' }}>Namshi</option>
+                              <option value="Adidas UAE" style={{ background: '#1c1d24' }}>Adidas UAE</option>
+                              <option value="Nike UAE" style={{ background: '#1c1d24' }}>Nike UAE</option>
+                              <option value="Apple UAE" style={{ background: '#1c1d24' }}>Apple UAE</option>
+                              <option value="Samsung UAE" style={{ background: '#1c1d24' }}>Samsung UAE</option>
+                            </select>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <h4 style={{ fontSize: '12px', color: '#8b92a5', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '6px', margin: 0 }}>ارزش موجودی بر اساس دسته‌بندی:</h4>
-                          
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                                <span>گوشی موبایل ({p1}%)</span>
-                                <span style={{ fontFamily: 'var(--font-vazirmatn)', fontWeight: 'bold', color: '#fff' }}>{formatToman(catVals.mobileVal)}</span>
-                              </div>
-                              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{ width: `${p1}%`, height: '100%', background: '#f87820' }}></div>
-                              </div>
-                            </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>قیمت به درهم (AED):</label>
+                            <input 
+                              type="number" 
+                              required
+                              min="0.1"
+                              step="any"
+                              value={editProductForm.priceAed}
+                              onChange={(e) => setEditProductForm({...editProductForm, priceAed: e.target.value})}
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                            />
+                          </div>
 
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                                <span>کیف و کفش ({p2}%)</span>
-                                <span style={{ fontFamily: 'var(--font-vazirmatn)', fontWeight: 'bold', color: '#fff' }}>{formatToman(catVals.shoesBagVal)}</span>
-                              </div>
-                              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{ width: `${p2}%`, height: '100%', background: '#2ecc71' }}></div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                                <span>ساعت و اکسسوری ({p3}%)</span>
-                                <span style={{ fontFamily: 'var(--font-vazirmatn)', fontWeight: 'bold', color: '#fff' }}>{formatToman(catVals.watchAccVal)}</span>
-                              </div>
-                              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{ width: `${p3}%`, height: '100%', background: '#3498db' }}></div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                                <span>سایر دسته‌ها ({p4}%)</span>
-                                <span style={{ fontFamily: 'var(--font-vazirmatn)', fontWeight: 'bold', color: '#fff' }}>{formatToman(catVals.otherVal)}</span>
-                              </div>
-                              <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{ width: `${p4}%`, height: '100%', background: '#9b59b6' }}></div>
-                              </div>
-                            </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>وزن (کیلوگرم):</label>
+                            <input 
+                              type="number" 
+                              required
+                              min="0.01"
+                              step="any"
+                              value={editProductForm.weight}
+                              onChange={(e) => setEditProductForm({...editProductForm, weight: e.target.value})}
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                            />
                           </div>
                         </div>
-                      </div>
 
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px' }}>
-                        <button onClick={() => setIsValuationModalOpen(false)} style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>بستن پنجره</button>
-                      </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>لینک اصلی محصول:</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={editProductForm.originalLink}
+                            onChange={(e) => setEditProductForm({...editProductForm, originalLink: e.target.value})}
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>تصویر محصول:</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={(e) => handleImageUploadLocal(e, 'edit')}
+                              style={{ display: 'none' }}
+                              id="edit-image-file-input"
+                            />
+                            <label 
+                              htmlFor="edit-image-file-input"
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '11px', cursor: 'pointer', textAlign: 'center', flex: 1 }}
+                            >
+                              📁 انتخاب فایل تصویر (آپلود دستی)
+                            </label>
+                            {editProductForm.image && (
+                              <img src={editProductForm.image} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                            )}
+                          </div>
+                          <input 
+                            type="text" 
+                            value={editProductForm.image}
+                            onChange={(e) => setEditProductForm({...editProductForm, image: e.target.value})}
+                            placeholder="یا آدرس اینترنتی تصویر را وارد کنید"
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', marginTop: '6px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>نمایش در دسته‌بندی‌های سایت:</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '8px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={editProductForm.gender === 'men'} 
+                                onChange={(e) => setEditProductForm({...editProductForm, gender: e.target.checked ? 'men' : ''})} 
+                              />
+                              مردانه (Men)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={editProductForm.gender === 'women'} 
+                                onChange={(e) => setEditProductForm({...editProductForm, gender: e.target.checked ? 'women' : ''})} 
+                              />
+                              زنانه (Women)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={editProductForm.gender === 'kids'} 
+                                onChange={(e) => setEditProductForm({...editProductForm, gender: e.target.checked ? 'kids' : ''})} 
+                              />
+                              بچگانه (Kids)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={editProductForm.category === 'bags'} 
+                                onChange={(e) => setEditProductForm({...editProductForm, category: e.target.checked ? 'bags' : ''})} 
+                              />
+                              کیف و اکسسوری
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={editProductForm.discountPercent > 0} 
+                                onChange={(e) => setEditProductForm({...editProductForm, discountPercent: e.target.checked ? 20 : 0})} 
+                              />
+                              تخفیف خورده (Sale)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={editProductForm.isBestSeller === true} 
+                                onChange={(e) => setEditProductForm({...editProductForm, isBestSeller: e.target.checked})} 
+                              />
+                              پرفروش‌ترین‌ها
+                            </label>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>وضعیت محصول:</label>
+                          <select 
+                            value={editProductForm.foreignStatus}
+                            onChange={(e) => setEditProductForm({...editProductForm, foreignStatus: e.target.value})}
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
+                          >
+                            <option value="active" style={{ background: '#1c1d24' }}>🟢 فعال</option>
+                            <option value="needs_update" style={{ background: '#1c1d24' }}>🟡 نیاز به بروزرسانی قیمت</option>
+                            <option value="broken_link" style={{ background: '#1c1d24' }}>🔴 لینک خراب</option>
+                            <option value="hidden" style={{ background: '#1c1d24' }}>⚫ مخفی</option>
+                          </select>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'flex-end' }}>
+                          <button type="button" onClick={() => setIsEditProductModalOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '11.5px' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '11.5px' }}>ذخیره تغییرات</button>
+                        </div>
+                      </form>
                     </div>
                   </div>
                 )}
 
-                {/* MODAL 2: Add Product */}
-                {isAddProductOpen && (
-                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
-                    <div style={{ background: 'var(--admin-card-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                {/* Add Product Manual Modal */}
+                {isAddProductManualOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
+                    <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
-                        <h2 style={{ fontSize: '15px', fontWeight: 'bold', margin: 0 }}>{AdminIcons.plus(16)} افزودن محصول جدید دبی خرید</h2>
-                        <button onClick={() => setIsAddProductOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
+                        <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0 }}>➕ افزودن دستی محصول خارجی</h2>
+                        <button onClick={() => setIsAddProductManualOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
                       </div>
                       
-                      <form onSubmit={handleAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      <form onSubmit={handleManualAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'right' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                          <label style={{ fontSize: '12px', color: '#c4c8d4' }}>نام محصول:</label>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام محصول:</label>
                           <input 
                             type="text" 
                             required
-                            value={newProductForm.name}
-                            onChange={(e) => setNewProductForm({...newProductForm, name: e.target.value})}
-                            placeholder="مثال: Nike Air Zoom Pegasus 39"
-                            style={{ padding: '8px 12px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px', outline: 'none' }}
+                            value={addProductManualForm.name}
+                            onChange={(e) => setAddProductManualForm({...addProductManualForm, name: e.target.value})}
+                            placeholder="مثال: Apple Watch Ultra 2"
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
                           />
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <label style={{ fontSize: '12px', color: '#c4c8d4' }}>برند:</label>
-                            <select 
-                              value={newProductForm.brand}
-                              onChange={(e) => setNewProductForm({...newProductForm, brand: e.target.value})}
-                              style={{ padding: '8px 12px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px', outline: 'none', cursor: 'pointer' }}
-                            >
-                              <option value="Nike">Nike</option>
-                              <option value="Adidas">Adidas</option>
-                              <option value="Apple">Apple</option>
-                              <option value="Samsung">Samsung</option>
-                              <option value="Michael Kors">Michael Kors</option>
-                              <option value="Shein">Shein</option>
-                              <option value="Ray-Ban">Ray-Ban</option>
-                            </select>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
+                            <input 
+                              type="text" 
+                              required
+                              value={addProductManualForm.brand}
+                              onChange={(e) => setAddProductManualForm({...addProductManualForm, brand: e.target.value})}
+                              placeholder="مثال: Apple"
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                            />
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <label style={{ fontSize: '12px', color: '#c4c8d4' }}>دسته‌بندی:</label>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>فروشگاه مبدا:</label>
                             <select 
-                              value={newProductForm.category}
-                              onChange={(e) => setNewProductForm({...newProductForm, category: e.target.value})}
-                              style={{ padding: '8px 12px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px', outline: 'none', cursor: 'pointer' }}
+                              value={addProductManualForm.sourceStore}
+                              onChange={(e) => setAddProductManualForm({...addProductManualForm, sourceStore: e.target.value})}
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
                             >
-                              <option value="کفش مردانه">کفش مردانه</option>
-                              <option value="کیف زنانه">کیف زنانه</option>
-                              <option value="گوشی موبایل">گوشی موبایل</option>
-                              <option value="لباس زنانه">لباس زنانه</option>
-                              <option value="ساعت هوشمند">ساعت هوشمند</option>
-                              <option value="عینک آفتابی">عینک آفتابی</option>
+                              <option value="Amazon.ae" style={{ background: '#1c1d24' }}>Amazon.ae</option>
+                              <option value="Noon" style={{ background: '#1c1d24' }}>Noon</option>
+                              <option value="Namshi" style={{ background: '#1c1d24' }}>Namshi</option>
+                              <option value="Adidas UAE" style={{ background: '#1c1d24' }}>Adidas UAE</option>
+                              <option value="Nike UAE" style={{ background: '#1c1d24' }}>Nike UAE</option>
+                              <option value="Apple UAE" style={{ background: '#1c1d24' }}>Apple UAE</option>
+                              <option value="Samsung UAE" style={{ background: '#1c1d24' }}>Samsung UAE</option>
                             </select>
                           </div>
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <label style={{ fontSize: '12px', color: '#c4c8d4' }}>قیمت خرید (تومان):</label>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>قیمت به درهم (AED):</label>
                             <input 
                               type="number" 
                               required
-                              min="0"
-                              value={newProductForm.price}
-                              onChange={(e) => setNewProductForm({...newProductForm, price: e.target.value})}
-                              placeholder="مثال: 8500000"
-                              style={{ padding: '8px 12px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px', outline: 'none' }}
+                              min="0.1"
+                              step="any"
+                              value={addProductManualForm.priceAed}
+                              onChange={(e) => setAddProductManualForm({...addProductManualForm, priceAed: e.target.value})}
+                              placeholder="مثال: 3199"
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
                             />
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <label style={{ fontSize: '12px', color: '#c4c8d4' }}>موجودی انبار:</label>
+                            <label style={{ fontSize: '11px', color: '#8b92a5' }}>وزن (کیلوگرم):</label>
                             <input 
                               type="number" 
                               required
-                              min="0"
-                              value={newProductForm.stock}
-                              onChange={(e) => setNewProductForm({...newProductForm, stock: e.target.value})}
-                              placeholder="مثال: 25"
-                              style={{ padding: '8px 12px', background: 'var(--admin-input-bg)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px', outline: 'none' }}
+                              min="0.01"
+                              step="any"
+                              value={addProductManualForm.weight}
+                              onChange={(e) => setAddProductManualForm({...addProductManualForm, weight: e.target.value})}
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
                             />
                           </div>
                         </div>
 
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>لینک اصلی محصول:</label>
+                          <input 
+                            type="text" 
+                            value={addProductManualForm.originalLink}
+                            onChange={(e) => setAddProductManualForm({...addProductManualForm, originalLink: e.target.value})}
+                            placeholder="مثال: https://www.amazon.ae/dp/..."
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>تصویر محصول:</label>
+                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              onChange={(e) => handleImageUploadLocal(e, 'add')}
+                              style={{ display: 'none' }}
+                              id="add-image-file-input"
+                            />
+                            <label 
+                              htmlFor="add-image-file-input"
+                              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '11px', cursor: 'pointer', textAlign: 'center', flex: 1 }}
+                            >
+                              📁 انتخاب فایل تصویر (آپلود دستی)
+                            </label>
+                            {addProductManualForm.image && (
+                              <img src={addProductManualForm.image} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                            )}
+                          </div>
+                          <input 
+                            type="text" 
+                            value={addProductManualForm.image}
+                            onChange={(e) => setAddProductManualForm({...addProductManualForm, image: e.target.value})}
+                            placeholder="یا آدرس اینترنتی تصویر را وارد کنید"
+                            style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', marginTop: '6px' }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>نمایش در دسته‌بندی‌های سایت:</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '8px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={addProductManualForm.gender === 'men'} 
+                                onChange={(e) => setAddProductManualForm({...addProductManualForm, gender: e.target.checked ? 'men' : ''})} 
+                              />
+                              مردانه (Men)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={addProductManualForm.gender === 'women'} 
+                                onChange={(e) => setAddProductManualForm({...addProductManualForm, gender: e.target.checked ? 'women' : ''})} 
+                              />
+                              زنانه (Women)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={addProductManualForm.gender === 'kids'} 
+                                onChange={(e) => setAddProductManualForm({...addProductManualForm, gender: e.target.checked ? 'kids' : ''})} 
+                              />
+                              بچگانه (Kids)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={addProductManualForm.category === 'bags'} 
+                                onChange={(e) => setAddProductManualForm({...addProductManualForm, category: e.target.checked ? 'bags' : ''})} 
+                              />
+                              کیف و اکسسوری
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={addProductManualForm.discountPercent > 0} 
+                                onChange={(e) => setAddProductManualForm({...addProductManualForm, discountPercent: e.target.checked ? 20 : 0})} 
+                              />
+                              تخفیف خورده (Sale)
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={addProductManualForm.isBestSeller === true} 
+                                onChange={(e) => setAddProductManualForm({...addProductManualForm, isBestSeller: e.target.checked})} 
+                              />
+                              پرفروش‌ترین‌ها
+                            </label>
+                          </div>
+                        </div>
+
                         <div style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'flex-end' }}>
-                          <button type="button" onClick={() => setIsAddProductOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '12px' }}>انصراف</button>
-                          <button type="submit" style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>ثبت محصول</button>
+                          <button type="button" onClick={() => setIsAddProductManualOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '11.5px' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '11.5px' }}>ثبت محصول</button>
                         </div>
                       </form>
                     </div>
@@ -9580,62 +11911,819 @@ export default function AdminPanel() {
           })()}
 
           {/* TAB: SECURITY SETTINGS */}
-          {activeTab === 'settings' && (
-            <div>
-              <div className={styles.sectionHeader}>
-                <div>
-                  <h1>{AdminIcons.settings(20)} تنظیمات امنیتی پنل دبی خرید</h1>
-                  <p className={styles.sectionDesc}>تغییر رمز عبور ادمین و ریست کردن دیتابیس لوکال فروشگاه کارگو</p>
+          {activeTab === 'settings' && (() => {
+            const SETTINGS_TABS = [
+              { id: 'general', label: 'تنظیمات عمومی', icon: AdminIcons.settings(13) },
+              { id: 'contact', label: 'اطلاعات تماس', icon: AdminIcons.phone(13) },
+              { id: 'aed', label: 'نرخ درهم', icon: AdminIcons.dollar(13) },
+              { id: 'shipping', label: 'تنظیمات ارسال', icon: AdminIcons.truck(13) },
+              { id: 'site', label: 'مدیریت سایت', icon: AdminIcons.cloud(13) },
+              { id: 'security', label: 'امنیت و حساب کاربری', icon: AdminIcons.lock(13) },
+              { id: 'notifications', label: 'اعلان‌ها', icon: AdminIcons.bell(13) },
+            ];
+
+
+
+
+
+
+
+            return (
+              <div style={{ direction: 'rtl' }}>
+                {/* Page Title */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {AdminIcons.settings(22)} تنظیمات
+                  </h1>
+                  <p style={{ fontSize: '12px', color: '#8b92a5', margin: 0 }}>مدیریت تنظیمات کلی سیستم دبی خرید</p>
                 </div>
-              </div>
 
-              <div className={styles.securityCard}>
-                <h3>{AdminIcons.key(16)} تغییر رمز عبور ورود ادمین</h3>
-                {passwordChangeSuccess && <div className={styles.successNote}>رمز عبور پنل مدیریت با موفقیت تغییر یافت.</div>}
-                {passwordChangeError && <div className={styles.loginError} style={{ margin: '0 0 20px' }}>{passwordChangeError}</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '20px', alignItems: 'start' }}>
 
-                <form onSubmit={handlePasswordChange}>
-                  <div className={styles.formGroup} style={{ maxWidth: '350px', marginBottom: '14px' }}>
-                    <label>رمز عبور فعلی ادمین:</label>
-                    <input type="password" value={passForm.oldPass} onChange={e => setPassForm(prev => ({ ...prev, oldPass: e.target.value }))} placeholder="وارد کردن رمز عبور قدیمی..." className={styles.inputField} required />
+                  {/* Sidebar Tabs */}
+                  <div className={styles.cardPanel} style={{ padding: '8px', borderRadius: '14px' }}>
+                    {SETTINGS_TABS.map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setSettingsTab(tab.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+                          padding: '11px 14px', borderRadius: '10px', border: 'none',
+                          background: settingsTab === tab.id ? 'rgba(248,120,32,0.12)' : 'transparent',
+                          color: settingsTab === tab.id ? '#f87820' : '#8b92a5',
+                          fontSize: '12.5px', fontWeight: settingsTab === tab.id ? '700' : '500',
+                          cursor: 'pointer', marginBottom: '2px', textAlign: 'right', transition: 'all 0.15s',
+                          borderRight: settingsTab === tab.id ? '3px solid #f87820' : '3px solid transparent'
+                        }}
+                        onMouseOver={e => { if (settingsTab !== tab.id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                        onMouseOut={e => { if (settingsTab !== tab.id) e.currentTarget.style.background = 'transparent'; }}
+                      >
+                        <span>{tab.icon}</span> {tab.label}
+                      </button>
+                    ))}
                   </div>
-                  <div className={styles.formGroup} style={{ maxWidth: '350px', marginBottom: '14px' }}>
-                    <label>رمز عبور جدید:</label>
-                    <input type="password" value={passForm.newPass} onChange={e => setPassForm(prev => ({ ...prev, newPass: e.target.value }))} placeholder="رمز عبور جدید..." className={styles.inputField} required />
-                    {passForm.newPass && (
-                      <div className={styles.strengthMeter}>
-                        <div className={styles.strengthMeterLabelRow}>
-                          <span style={{ color: '#8b92a5' }}>پیچیدگی رمز عبور:</span>
-                          <span style={{ fontWeight: '750', color: passwordStrength.color }}>{passwordStrength.label}</span>
+
+                  {/* Content Panel */}
+                  <div className={styles.cardPanel} style={{ padding: '28px', borderRadius: '14px' }}>
+
+                    {/* ── تنظیمات عمومی ── */}
+                    {settingsTab === 'general' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          تنظیمات عمومی
+                        </h2>
+
+                        {saveGeneralSuccess && (
+                          <div style={{ padding: '12px 16px', background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '10px', color: '#2ecc71', fontSize: '12.5px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {AdminIcons.check(13)} تغییرات با موفقیت ذخیره شد و در سایت اصلی اعمال شد.
+                          </div>
+                        )}
+
+                        {/* Logo & Favicon Upload Row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '28px' }}>
+
+                          {/* Logo Upload */}
+                          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                            <div style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: '600', marginBottom: '14px' }}>لوگوی سایت</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                              <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                                <img src={logoPreview} alt="logo preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label
+                                  htmlFor="logoUpload"
+                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', borderRadius: '9px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.2s' }}
+                                  onMouseOver={e => e.currentTarget.style.background = 'rgba(248,120,32,0.15)'}
+                                  onMouseOut={e => e.currentTarget.style.background = 'rgba(248,120,32,0.08)'}
+                                >
+                                  {AdminIcons.upload(13)} آپلود لوگو
+                                </label>
+                                <input id="logoUpload" type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'siteLogoUrl', setLogoPreview)} />
+                                <div style={{ fontSize: '10px', color: '#8b92a5' }}>PNG، JPG یا SVG — حداکثر ۲ مگابایت</div>
+                                <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '3px' }}>ابعاد پیشنهادی: ۲۰۰×۶۰ پیکسل</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Favicon Upload */}
+                          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                            <div style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: '600', marginBottom: '14px' }}>فاوآیکون (Favicon)</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                              <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                                <img src={faviconPreview} alt="favicon preview" style={{ width: '32px', height: '32px', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label
+                                  htmlFor="faviconUpload"
+                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', borderRadius: '9px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.2s' }}
+                                  onMouseOver={e => e.currentTarget.style.background = 'rgba(248,120,32,0.15)'}
+                                  onMouseOut={e => e.currentTarget.style.background = 'rgba(248,120,32,0.08)'}
+                                >
+                                  {AdminIcons.upload(13)} آپلود فاوآیکون
+                                </label>
+                                <input id="faviconUpload" type="file" accept="image/*,.ico" style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'faviconUrl', setFaviconPreview)} />
+                                <div style={{ fontSize: '10px', color: '#8b92a5' }}>ICO، PNG — اندازه ۳۲×۳۲ یا ۶۴×۶۴</div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className={styles.strengthMeterTrack}>
-                          <div className={styles.strengthMeterFill} style={{ width: `${(passwordStrength.score / 5) * 100}%`, backgroundColor: passwordStrength.color }} />
+
+                        {/* Text Fields */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+                          <Field
+                            label="نام سایت"
+                            value={localGeneral.siteName}
+                            onChange={e => setLocalGeneral(p => ({ ...p, siteName: e.target.value }))}
+                            hint="نمایش داده می‌شود در تب مرورگر و هدر سایت"
+                          />
+                          <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>منطقه زمانی</label>
+                            <select
+                              value={localGeneral.timezone}
+                              onChange={e => setLocalGeneral(p => ({ ...p, timezone: e.target.value }))}
+                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                              onFocus={e => e.target.style.borderColor = 'rgba(248,120,32,0.5)'}
+                              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+                            >
+                              <option value="Asia/Tehran" style={{ background: '#1a1d26' }}>تهران (UTC+3:30)</option>
+                              <option value="Asia/Dubai" style={{ background: '#1a1d26' }}>دبی (UTC+4)</option>
+                              <option value="Europe/London" style={{ background: '#1a1d26' }}>لندن (UTC+0)</option>
+                              <option value="America/New_York" style={{ background: '#1a1d26' }}>نیویورک (UTC-5)</option>
+                            </select>
+                          </div>
+                          <Field
+                            label="نام مدیر"
+                            value={localGeneral.adminName}
+                            onChange={e => setLocalGeneral(p => ({ ...p, adminName: e.target.value }))}
+                          />
+                          <Field
+                            label="ایمیل مدیر"
+                            value={localGeneral.adminEmail}
+                            onChange={e => setLocalGeneral(p => ({ ...p, adminEmail: e.target.value }))}
+                            type="email"
+                          />
+                          <Field
+                            label="شماره تماس مدیر"
+                            value={localGeneral.adminPhone}
+                            onChange={e => setLocalGeneral(p => ({ ...p, adminPhone: e.target.value }))}
+                            type="tel"
+                            hint="نمایش داده نمی‌شود برای کاربران"
+                          />
+                          
+                          {/* Google OAuth Configuration Area */}
+                          <div style={{ marginBottom: '20px', gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(248, 120, 32, 0.05)', border: '1px dashed rgba(248, 120, 32, 0.2)', padding: '16px', borderRadius: '12px', marginTop: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <label style={{ display: 'block', fontSize: '12px', color: '#f87820', fontWeight: '800' }}>تنظیمات ورود با گوگل (Google OAuth)</label>
+                              <select
+                                value={localGeneral.googleAuthMode}
+                                onChange={e => setLocalGeneral(p => ({ ...p, googleAuthMode: e.target.value }))}
+                                style={{ padding: '8px 12px', background: '#1c1926', border: '1px solid rgba(248,120,32,0.3)', borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                              >
+                                <option value="simulated">شبیه‌سازی‌شده (Simulation Mode)</option>
+                                <option value="real">واقعی (Real OAuth API Mode)</option>
+                              </select>
+                            </div>
+                            <div style={{ marginTop: '8px' }}>
+                              <label style={{ display: 'block', fontSize: '11px', color: '#8b92a5', marginBottom: '6px', fontWeight: '600' }}>شناسه کلاینت گوگل (Google OAuth Client ID):</label>
+                              <input
+                                type="text"
+                                value={localGeneral.googleClientId}
+                                onChange={e => setLocalGeneral(p => ({ ...p, googleClientId: e.target.value }))}
+                                style={{ width: '100%', padding: '10px 14px', background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', direction: 'ltr' }}
+                                placeholder="Enter your Client ID from Google Cloud Console"
+                              />
+                              <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block', marginTop: '6px', lineHeight: '1.5' }}>
+                                💡 <strong>نکته:</strong> برای استفاده از حالت واقعی، باید یک کلاینت وب (Web Application Client ID) در کنسول گوگل کلود خود ایجاد کرده و آدرس <code>http://localhost:4000</code> را در بخش Authorized JavaScript Origins قرار دهید.
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <div style={{ marginTop: '8px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <button
+                            onClick={handleSaveGeneral}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                            onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                            onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                          >
+                            {AdminIcons.check(14)} ذخیره تغییرات
+                          </button>
+                          <span style={{ fontSize: '11px', color: '#8b92a5' }}>تغییرات بلافاصله در سایت اصلی اعمال می‌شوند</span>
                         </div>
                       </div>
                     )}
-                  </div>
-                  <div className={styles.formGroup} style={{ maxWidth: '350px', marginBottom: '14px' }}>
-                    <label>تکرار رمز عبور جدید:</label>
-                    <input type="password" value={passForm.confirmPass} onChange={e => setPassForm(prev => ({ ...prev, confirmPass: e.target.value }))} placeholder="تکرار رمز عبور..." className={styles.inputField} required />
-                  </div>
-                  <button type="submit" className={styles.loginBtn} style={{ width: 'auto', padding: '10px 30px', margin: '15px 0 0' }}>تغییر رمز ورود</button>
-                </form>
-              </div>
 
-              <div className={styles.securityCard} style={{ border: '1px solid rgba(255, 77, 77, 0.2)', background: 'rgba(255, 77, 77, 0.01)' }}>
-                <h3 style={{ borderRightColor: '#ff4d4d', color: '#ff4d4d' }}>{AdminIcons.alert(14)} بازیابی داده‌های اولیه و ریست کامل</h3>
-                <p style={{ fontSize: '13px', color: '#c4c8d4', lineHeight: '1.6', marginBottom: '20px' }}>
-                  توجه: این عمل تمامی اطلاعات لیدها، محصولات آپلودی جدید و پیام‌ها را حذف کرده و داده‌های آزمایشی اولیه و رمز عبور پیش‌فرض پنل مدیریت (<strong>@Reza112233</strong>) را در لوکال استوریج بازیابی می‌کند.
-                </p>
-                <button onClick={handleRestoreDefaults} className={styles.logoutBtn} style={{ width: 'auto', padding: '12px 30px', margin: 0 }}>
-                  حذف داده‌های ثبت شده و بازگشت به تنظیمات کارخانه
-                </button>
+                    {/* ── اطلاعات تماس ── */}
+                    {settingsTab === 'contact' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>اطلاعات تماس</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+                          <Field label="شماره واتساپ" value={siteSettings.whatsapp || ''} onChange={e => setSiteSettings(p => ({ ...p, whatsapp: e.target.value }))} hint="مثال: +971501234567" />
+                          <Field label="شماره تماس" value={siteSettings.supportPhone || ''} onChange={e => setSiteSettings(p => ({ ...p, supportPhone: e.target.value }))} />
+                          <Field label="ایمیل" value={siteSettings.supportEmail || ''} onChange={e => setSiteSettings(p => ({ ...p, supportEmail: e.target.value }))} type="email" />
+                          <Field label="تلگرام" value={siteSettings.telegramId || ''} onChange={e => setSiteSettings(p => ({ ...p, telegramId: e.target.value }))} hint="مثال: @dubaykharid" />
+                          <Field label="اینستاگرام" value={siteSettings.instagramId || ''} onChange={e => setSiteSettings(p => ({ ...p, instagramId: e.target.value }))} hint="مثال: @dubaykharid" />
+                          <Field label="آدرس دفتر دبی" value={siteSettings.dubaiAddress || ''} onChange={e => setSiteSettings(p => ({ ...p, dubaiAddress: e.target.value }))} />
+                          <Field label="آدرس دفتر ایران" value={siteSettings.iranAddress || ''} onChange={e => setSiteSettings(p => ({ ...p, iranAddress: e.target.value }))} />
+                        </div>
+                        <SaveBtn onClick={() => { updateSiteCtxSettings(siteSettings); alert('اطلاعات تماس با موفقیت ذخیره شد.'); }} />
+                      </div>
+                    )}
+
+                    {/* ── نرخ درهم ── */}
+                    {settingsTab === 'aed' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>نرخ برابری درهم</h2>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '28px' }}>
+                          
+                          {/* Current Status Card */}
+                          <div style={{ background: 'rgba(248,120,32,0.06)', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '12px', padding: '20px' }}>
+                            <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '8px' }}>نرخ فعلی درهم امارات</div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                              <span style={{ fontSize: '38px', fontWeight: '900', color: '#f87820' }}>{Number(siteSettings.aedRate || 19500).toLocaleString()}</span>
+                              <span style={{ fontSize: '13px', color: '#8b92a5' }}>تومان / ۱ درهم</span>
+                            </div>
+                            <div style={{ fontSize: '10.5px', color: '#8b92a5', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div>آخرین بروزرسانی: <strong style={{ color: '#fff' }}>{siteSettings.aedLastUpdate || 'ثبت نشده'}</strong></div>
+                              <div>حالت بروزرسانی: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateMode === 'auto' ? 'خودکار' : 'دستی'}</strong></div>
+                            </div>
+                          </div>
+
+                          {/* Quick conversion list */}
+                          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px 20px' }}>
+                            <div style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: '600', marginBottom: '10px' }}>تبدیل سریع در بازار</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '11px', color: '#c0c8d8' }}>
+                              <div>۱۰۰ درهم: <span style={{ color: '#fff' }}>{(100 * Number(siteSettings.aedRate || 19500)).toLocaleString()} ت</span></div>
+                              <div>۵۰۰ درهم: <span style={{ color: '#fff' }}>{(500 * Number(siteSettings.aedRate || 19500)).toLocaleString()} ت</span></div>
+                              <div>۱,۰۰۰ درهم: <span style={{ color: '#fff' }}>{(1000 * Number(siteSettings.aedRate || 19500)).toLocaleString()} ت</span></div>
+                              <div>۵,۰۰۰ درهم: <span style={{ color: '#fff' }}>{(5000 * Number(siteSettings.aedRate || 19500)).toLocaleString()} ت</span></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Controls Form */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px', marginBottom: '24px' }}>
+                          <Field
+                            label="نرخ دستی درهم (تومان)"
+                            value={siteSettings.aedRate || ''}
+                            onChange={e => setSiteSettings(p => ({ ...p, aedRate: e.target.value }))}
+                            type="number"
+                            hint="در صورت خاموش بودن بروزرسانی خودکار استفاده می‌شود"
+                          />
+
+                          <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>حالت بروزرسانی</label>
+                            <select
+                              value={siteSettings.aedUpdateMode || 'manual'}
+                              onChange={e => setSiteSettings(p => ({ ...p, aedUpdateMode: e.target.value, aedAutoUpdate: e.target.value === 'auto' }))}
+                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                            >
+                              <option value="manual" style={{ background: '#1a1d26' }}>بروزرسانی دستی (Manual)</option>
+                              <option value="auto" style={{ background: '#1a1d26' }}>بروزرسانی خودکار (Automatic)</option>
+                            </select>
+                          </div>
+
+                          {(siteSettings.aedUpdateMode === 'auto' || siteSettings.aedAutoUpdate) && (
+                            <div style={{ marginBottom: '20px' }}>
+                              <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>بازه بروزرسانی خودکار</label>
+                              <select
+                                value={siteSettings.aedUpdateInterval || '1hr'}
+                                onChange={e => setSiteSettings(p => ({ ...p, aedUpdateInterval: e.target.value }))}
+                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                              >
+                                <option value="30min" style={{ background: '#1a1d26' }}>هر ۳۰ دقیقه</option>
+                                <option value="1hr" style={{ background: '#1a1d26' }}>هر ۱ ساعت</option>
+                                <option value="3hr" style={{ background: '#1a1d26' }}>هر ۳ ساعت</option>
+                                <option value="daily" style={{ background: '#1a1d26' }}>روزانه (۲۴ ساعت)</option>
+                              </select>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Buttons Row */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                          <button
+                            onClick={() => {
+                              updateSiteCtxSettings(siteSettings);
+                              alert('نرخ درهم و تنظیمات بروزرسانی ذخیره شد.');
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                            onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+                            onMouseOut={e => e.currentTarget.style.opacity = '1'}
+                          >
+                            {AdminIcons.check(14)} ذخیره نرخ
+                          </button>
+
+                          <button
+                            onClick={async () => {
+                              setIsUpdatingAedRate(true);
+                              const res = await updateAedRateAuto();
+                              setIsUpdatingAedRate(false);
+                              if (res) {
+                                setSiteSettings(p => ({ ...p, aedRate: res.aedRate, aedLastUpdate: res.aedLastUpdate }));
+                                alert(`نرخ درهم به صورت آنلاین بروزرسانی شد: ${Number(res.aedRate).toLocaleString()} تومان`);
+                              } else {
+                                alert('خطا در دریافت آنلاین نرخ درهم. از آخرین نرخ ذخیره شده استفاده گردید.');
+                              }
+                            }}
+                            disabled={isUpdatingAedRate}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 24px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'opacity 0.2s', opacity: isUpdatingAedRate ? 0.5 : 1 }}
+                          >
+                            {isUpdatingAedRate ? 'در حال بروزرسانی...' : 'بروزرسانی آنلاین نرخ'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── تنظیمات ارسال ── */}
+                    {settingsTab === 'shipping' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات ارسال و کارمزد</h2>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+                          <Field
+                            label="هزینه ارسال هر کیلوگرم (AED)"
+                            value={siteSettings.shippingPerKgAed || '40'}
+                            onChange={e => setSiteSettings(p => ({ ...p, shippingPerKgAed: e.target.value }))}
+                            type="number"
+                          />
+                          <Field
+                            label="درصد کارمزد خرید (%)"
+                            value={siteSettings.commissionPercent || '25'}
+                            onChange={e => setSiteSettings(p => ({ ...p, commissionPercent: e.target.value }))}
+                            type="number"
+                          />
+                          <Field
+                            label="حداقل وزن قابل محاسبه (کیلوگرم)"
+                            value={siteSettings.minWeightClass || '1'}
+                            onChange={e => setSiteSettings(p => ({ ...p, minWeightClass: e.target.value }))}
+                            type="number"
+                          />
+                          <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>روش گرد کردن وزن</label>
+                            <select
+                              value={siteSettings.roundingMethod || 'ceil'}
+                              onChange={e => setSiteSettings(p => ({ ...p, roundingMethod: e.target.value }))}
+                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                            >
+                              <option value="ceil" style={{ background: '#1a1d26' }}>رو به بالا (Ceil)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div style={{ marginTop: '8px', padding: '16px 20px', background: 'rgba(46,204,113,0.06)', border: '1px solid rgba(46,204,113,0.15)', borderRadius: '10px' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: '#2ecc71', marginBottom: '8px' }}>مثال‌های محاسبه ارسال (با نرخ {siteSettings.shippingPerKgAed || '40'} AED)</div>
+                          <div style={{ fontSize: '11.5px', color: '#c0c8d8', lineHeight: '1.8' }}>
+                            <div>کالای ۰.۳ کیلوگرم (گرد شده به ۱ کیلو) = <strong>{(1 * Number(siteSettings.shippingPerKgAed || 40))} AED</strong></div>
+                            <div>کالای ۱.۳ کیلوگرم (گرد شده به ۲ کیلو) = <strong>{(2 * Number(siteSettings.shippingPerKgAed || 40))} AED</strong></div>
+                            <div>کالای ۲.۱ کیلوگرم (گرد شده به ۳ کیلو) = <strong>{(3 * Number(siteSettings.shippingPerKgAed || 40))} AED</strong></div>
+                          </div>
+                        </div>
+
+                        <SaveBtn label="ذخیره تنظیمات" onClick={() => { updateSiteCtxSettings(siteSettings); alert('تنظیمات ارسال و کارمزد با موفقیت ذخیره شد.'); }} />
+                      </div>
+                    )}
+
+                    {/* ── مدیریت سایت ── */}
+                    {/* ── مدیریت سایت ── */}
+                    {settingsTab === 'site' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          مدیریت محتوای سایت
+                        </h2>
+
+                        {/* Sub tabs navigation inside Site Management */}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px', overflowX: 'auto', direction: 'rtl' }}>
+                          {[
+                            { id: 'banners', label: 'بنرها', icon: '🖼️' },
+                            { id: 'pages', label: 'صفحات اصلی', icon: '📄' },
+                            { id: 'faqs', label: 'سوالات متداول', icon: '❓' },
+                            { id: 'rules', label: 'قوانین سایت', icon: '⚖️' },
+                            { id: 'seo', label: 'تنظیمات سئو (SEO)', icon: '🔍' }
+                          ].map(sub => (
+                            <button
+                              key={sub.id}
+                              onClick={() => setSiteSubTab(sub.id)}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '8px 16px', borderRadius: '8px', border: 'none',
+                                background: siteSubTab === sub.id ? 'rgba(248,120,32,0.12)' : 'rgba(255,255,255,0.02)',
+                                color: siteSubTab === sub.id ? '#f87820' : '#8b92a5',
+                                borderRight: siteSubTab === sub.id ? '2px solid #f87820' : 'none',
+                                fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.15s',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              <span>{sub.icon}</span> {sub.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Sub-tab: Banners */}
+                        {siteSubTab === 'banners' && (
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', margin: 0 }}>لیست بنرهای صفحه اصلی</h3>
+                              <button
+                                onClick={() => {
+                                  const title = prompt('عنوان بنر:');
+                                  const subtitle = prompt('زیرعنوان بنر:');
+                                  const link = prompt('لینک هدایت دکمه:');
+                                  if (title) {
+                                    setBanners(prev => [...prev, { id: Date.now(), title, subtitle, link, status: 'فعال' }]);
+                                  }
+                                }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                              >
+                                {AdminIcons.plus(11)} افزودن بنر جدید
+                              </button>
+                            </div>
+
+                            <div style={{ overflowX: 'auto', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'right' }}>
+                                <thead>
+                                  <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>تصویر</th>
+                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>عنوان</th>
+                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>زیرعنوان</th>
+                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>لینک هدایت</th>
+                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>وضعیت</th>
+                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>عملیات</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {banners.map(banner => (
+                                    <tr key={banner.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }}>
+                                      <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ width: '60px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🖼️</div>
+                                      </td>
+                                      <td style={{ padding: '12px 16px', fontWeight: '700', color: '#fff' }}>{banner.title}</td>
+                                      <td style={{ padding: '12px 16px', color: '#c0c8d8' }}>{banner.subtitle}</td>
+                                      <td style={{ padding: '12px 16px', color: '#8b92a5', direction: 'ltr' }}>{banner.link}</td>
+                                      <td style={{ padding: '12px 16px' }}>
+                                        <span style={{ padding: '2px 8px', borderRadius: '4px', background: banner.status === 'فعال' ? 'rgba(46,204,113,0.1)' : 'rgba(239,68,68,0.1)', color: banner.status === 'فعال' ? '#2ecc71' : '#ef4444', fontSize: '11px', fontWeight: '700' }}>
+                                          {banner.status}
+                                        </span>
+                                      </td>
+                                      <td style={{ padding: '12px 16px' }}>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                          <button
+                                            onClick={() => setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, status: b.status === 'فعال' ? 'غیرفعال' : 'فعال' } : b))}
+                                            style={{ padding: '4px 8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px' }}
+                                          >
+                                            تغییر وضعیت
+                                          </button>
+                                          <button
+                                            onClick={() => setBanners(prev => prev.filter(b => b.id !== banner.id))}
+                                            style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '11px' }}
+                                          >
+                                            حذف
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            <SaveBtn onClick={() => alert('تغییرات بنرها با موفقیت در دیتابیس لوکال ذخیره شد.')} />
+                          </div>
+                        )}
+
+                        {/* Sub-tab: Pages */}
+                        {siteSubTab === 'pages' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                              <label style={{ display: 'block', fontSize: '12.5px', color: '#fff', fontWeight: '700', marginBottom: '10px' }}>صفحه درباره ما (About Us)</label>
+                              <textarea
+                                value={sitePages.about}
+                                onChange={e => setSitePages(p => ({ ...p, about: e.target.value }))}
+                                rows="3"
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                              />
+                            </div>
+
+                            <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                              <label style={{ display: 'block', fontSize: '12.5px', color: '#fff', fontWeight: '700', marginBottom: '10px' }}>قوانین و مقررات خرید (Terms of Service)</label>
+                              <textarea
+                                value={sitePages.terms}
+                                onChange={e => setSitePages(p => ({ ...p, terms: e.target.value }))}
+                                rows="4"
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                              />
+                            </div>
+
+                            <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                              <label style={{ display: 'block', fontSize: '12.5px', color: '#fff', fontWeight: '700', marginBottom: '10px' }}>سیاست حریم خصوصی (Privacy Policy)</label>
+                              <textarea
+                                value={sitePages.privacy}
+                                onChange={e => setSitePages(p => ({ ...p, privacy: e.target.value }))}
+                                rows="3"
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                              />
+                            </div>
+                            <SaveBtn onClick={() => alert('محتوای صفحات با موفقیت ذخیره شد.')} />
+                          </div>
+                        )}
+
+                        {/* Sub-tab: FAQs */}
+                        {siteSubTab === 'faqs' && (
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', margin: 0 }}>لیست سوالات متداول کاربران</h3>
+                              <button
+                                onClick={() => {
+                                  const question = prompt('صورت سوال:');
+                                  const answer = prompt('پاسخ سوال:');
+                                  if (question && answer) {
+                                    setFaqs(prev => [...prev, { id: Date.now(), question, answer }]);
+                                  }
+                                }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                              >
+                                {AdminIcons.plus(11)} افزودن سوال جدید
+                              </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              {faqs.map(faq => (
+                                <div key={faq.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', position: 'relative' }}>
+                                  <button
+                                    onClick={() => setFaqs(prev => prev.filter(f => f.id !== faq.id))}
+                                    style={{ position: 'absolute', top: '16px', left: '16px', border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '14px' }}
+                                    title="حذف سوال"
+                                  >
+                                    ✕
+                                  </button>
+                                  <div style={{ fontWeight: '700', color: '#fff', fontSize: '13px', marginBottom: '8px', paddingLeft: '24px' }}>{faq.question}</div>
+                                  <div style={{ color: '#8b92a5', fontSize: '12.5px', lineHeight: '1.6' }}>{faq.answer}</div>
+                                </div>
+                              ))}
+                            </div>
+                            <SaveBtn onClick={() => alert('سوالات متداول با موفقیت ذخیره شدند.')} />
+                          </div>
+                        )}
+
+                        {/* Sub-tab: Rules */}
+                        {siteSubTab === 'rules' && (
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', margin: 0 }}>قوانین و مقررات خرید و ارسال کالا</h3>
+                              <button
+                                onClick={() => {
+                                  const title = prompt('عنوان قانون:');
+                                  const desc = prompt('شرح قانون:');
+                                  if (title && desc) {
+                                    setRules(prev => [...prev, { id: Date.now(), title, desc }]);
+                                  }
+                                }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                              >
+                                {AdminIcons.plus(11)} افزودن قانون جدید
+                              </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                              {rules.map(rule => (
+                                <div key={rule.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', position: 'relative' }}>
+                                  <button
+                                    onClick={() => setRules(prev => prev.filter(r => r.id !== rule.id))}
+                                    style={{ position: 'absolute', top: '16px', left: '16px', border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '14px' }}
+                                    title="حذف قانون"
+                                  >
+                                    ✕
+                                  </button>
+                                  <div style={{ fontWeight: '700', color: '#fff', fontSize: '13px', marginBottom: '8px', paddingLeft: '24px' }}>{rule.title}</div>
+                                  <div style={{ color: '#8b92a5', fontSize: '12.5px', lineHeight: '1.6' }}>{rule.desc}</div>
+                                </div>
+                              ))}
+                            </div>
+                            <SaveBtn onClick={() => alert('قوانین سایت با موفقیت ذخیره شدند.')} />
+                          </div>
+                        )}
+
+                        {/* Sub-tab: SEO */}
+                        {siteSubTab === 'seo' && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+                            <Field
+                              label="عنوان پیش‌فرض سایت (Meta Title)"
+                              value={seo.title}
+                              onChange={e => setSeo(p => ({ ...p, title: e.target.value }))}
+                            />
+                            <Field
+                              label="کد گوگل آنالیتیکس (Google Analytics ID)"
+                              value={seo.googleAnalytics}
+                              onChange={e => setSeo(p => ({ ...p, googleAnalytics: e.target.value }))}
+                              dir="ltr"
+                              hint="مثال: G-XXXXXXXXXX"
+                            />
+                            <div style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
+                              <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>کلمات کلیدی سایت (Meta Keywords)</label>
+                              <input
+                                value={seo.keywords}
+                                onChange={e => setSeo(p => ({ ...p, keywords: e.target.value }))}
+                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                              />
+                              <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '5px' }}>کلمات کلیدی را با کاما (,) جدا کنید</div>
+                            </div>
+                            <div style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
+                              <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>توضیحات پیش‌فرض سایت (Meta Description)</label>
+                              <textarea
+                                value={seo.desc}
+                                onChange={e => setSeo(p => ({ ...p, desc: e.target.value }))}
+                                rows="3"
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                              />
+                            </div>
+                            <div style={{ gridColumn: '1 / -1' }}>
+                              <SaveBtn onClick={() => alert('تنظیمات SEO با موفقیت ذخیره شد.')} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* ── امنیت و حساب کاربری ── */}
+                    {settingsTab === 'security' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                          امنیت و حساب کاربری
+                        </h2>
+
+                        {/* Change Password */}
+                        <div style={{ marginBottom: '32px' }}>
+                          <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '7px' }}>{AdminIcons.lock(13)} تغییر رمز عبور ادمین</h3>
+                          {passwordChangeSuccess && <div style={{ padding: '10px 14px', background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.2)', borderRadius: '8px', color: '#2ecc71', fontSize: '12px', marginBottom: '16px' }}>رمز عبور با موفقیت تغییر یافت.</div>}
+                          {passwordChangeError && <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '12px', marginBottom: '16px' }}>{passwordChangeError}</div>}
+                          <form onSubmit={handlePasswordChange} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0 24px' }}>
+                            <Field label="رمز عبور فعلی" value={passForm.oldPass} onChange={e => setPassForm(p => ({ ...p, oldPass: e.target.value }))} type="password" />
+                            <Field label="رمز عبور جدید" value={passForm.newPass} onChange={e => setPassForm(p => ({ ...p, newPass: e.target.value }))} type="password" />
+                            <Field label="تکرار رمز عبور جدید" value={passForm.confirmPass} onChange={e => setPassForm(p => ({ ...p, confirmPass: e.target.value }))} type="password" />
+                            <div style={{ gridColumn: '1 / -1' }}>
+                              <button type="submit" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 24px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
+                                {AdminIcons.check(13)} تغییر رمز عبور
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+
+                        {/* Security Options */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+                          
+                          {/* 2FA Option */}
+                          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '12px' }}>🛡️ ورود دو مرحله‌ای (2FA)</h3>
+                            <Toggle
+                              label="فعال‌سازی ورود دو مرحله‌ای"
+                              desc="ارسال رمز یکبار مصرف به تلفن همراه ادمین هنگام ورود"
+                              value={twoFactorEnabled}
+                              onChange={v => { setTwoFactorEnabled(v); alert(`ورود دو مرحله‌ای ${v ? 'فعال' : 'غیرفعال'} گردید.`); }}
+                            />
+                          </div>
+
+                          {/* Terminate Sessions */}
+                          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                            <div>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>💻 خروج از دستگاه‌های دیگر</h3>
+                              <p style={{ fontSize: '11.5px', color: '#8b92a5', margin: '0 0 16px 0', lineHeight: '1.6' }}>اتمام کلیه جلسات فعال در سایر مرورگرها و دستگاه‌ها</p>
+                            </div>
+                            <button
+                              onClick={() => alert('با موفقیت از تمام دستگاه‌های دیگر خارج شدید.')}
+                              style={{ width: 'max-content', padding: '8px 16px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px', color: '#ef4444', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                              خروج از همه دستگاه‌ها
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Last Login Info & System Reset */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+                          <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '14px' }}>📌 اطلاعات آخرین ورود</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#c0c8d8' }}>
+                              <div>آخرین ورود: <strong style={{ color: '#fff' }}>{lastLoginTime}</strong></div>
+                              <div>IP آخرین ورود: <strong style={{ color: '#fff', direction: 'ltr', display: 'inline-block' }}>{lastLoginIp}</strong></div>
+                            </div>
+                          </div>
+
+                          <div style={{ padding: '20px', background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '12px' }}>
+                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#ef4444', marginBottom: '8px' }}>⚠️ ابزارهای احیا (توسعه‌دهنده)</h3>
+                            <p style={{ fontSize: '11.5px', color: '#8b92a5', lineHeight: '1.6', margin: '0 0 16px 0' }}>حذف اطلاعات آزمایشی و بازگشت به تنظیمات کارخانه</p>
+                            <button
+                              onClick={handleRestoreDefaults}
+                              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                              onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+                              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                              {AdminIcons.sync(12)} بازگشت به تنظیمات کارخانه
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── اعلان‌ها ── */}
+                    {settingsTab === 'notifications' && (
+                      <div>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات اعلان‌ها</h2>
+                        <Toggle
+                          label="اعلان‌های خودکار"
+                          desc="ارسال پیام اتوماتیک به مشتری پس از هر تغییر وضعیت"
+                          value={siteSettings.autoNotify}
+                          onChange={v => setSiteSettings(p => ({ ...p, autoNotify: v }))}
+                        />
+                        <Toggle
+                          label="اعلان سفارش جدید"
+                          desc="ارسال پیام تأیید دریافت سفارش به مشتری"
+                          value={siteSettings.notifyNewOrder}
+                          onChange={v => setSiteSettings(p => ({ ...p, notifyNewOrder: v }))}
+                        />
+                        <Toggle
+                          label="اعلان پرداخت"
+                          desc="ارسال رسید پرداخت به مشتری پس از تأیید"
+                          value={siteSettings.notifyPayment}
+                          onChange={v => setSiteSettings(p => ({ ...p, notifyPayment: v }))}
+                        />
+                        <Toggle
+                          label="اعلان ارسال بسته"
+                          desc="اطلاع‌رسانی به مشتری هنگام ارسال بسته"
+                          value={siteSettings.notifyShipment}
+                          onChange={v => setSiteSettings(p => ({ ...p, notifyShipment: v }))}
+                        />
+                        <SaveBtn onClick={() => { updateSiteCtxSettings(siteSettings); alert('تنظیمات اعلان‌ها با موفقیت ذخیره شد.'); }} />
+                      </div>
+                    )}
+
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
         </main>
       </div>
     </div>
   );
 }
+
+// Top-level setting input field component to prevent focus unmounting bugs
+const Field = ({ label, value, onChange, type = 'text', hint, readOnly }) => (
+  <div style={{ marginBottom: '20px' }}>
+    <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>{label}</label>
+    <input
+      type={type}
+      value={value}
+      onChange={onChange}
+      readOnly={readOnly}
+      style={{
+        width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
+        color: readOnly ? '#8b92a5' : '#fff', fontSize: '13px', outline: 'none',
+        direction: 'rtl', transition: 'border-color 0.2s', boxSizing: 'border-box'
+      }}
+      onFocus={e => e.target.style.borderColor = 'rgba(248,120,32,0.5)'}
+      onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+    />
+    {hint && <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '5px' }}>{hint}</div>}
+  </div>
+);
+
+// Top-level setting toggle component
+const Toggle = ({ label, desc, value, onChange }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+    <div>
+      <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>{label}</div>
+      {desc && <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '3px' }}>{desc}</div>}
+    </div>
+    <div
+      onClick={() => onChange(!value)}
+      style={{
+        width: '44px', height: '24px', borderRadius: '12px', cursor: 'pointer',
+        background: value ? '#f87820' : 'rgba(255,255,255,0.1)',
+        position: 'relative', transition: 'background 0.2s', flexShrink: 0
+      }}
+    >
+      <div style={{
+        width: '18px', height: '18px', borderRadius: '50%', background: '#fff',
+        position: 'absolute', top: '3px', transition: 'right 0.2s',
+        right: value ? '3px' : '23px'
+      }} />
+    </div>
+  </div>
+);
+
+// Top-level setting save button component
+const SaveBtn = ({ onClick, label = 'ذخیره تغییرات' }) => (
+  <button
+    onClick={onClick}
+    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 24px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '24px', transition: 'opacity 0.2s' }}
+    onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+    onMouseOut={e => e.currentTarget.style.opacity = '1'}
+  >
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    {label}
+  </button>
+);

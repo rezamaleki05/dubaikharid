@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -8,10 +9,11 @@ import CheckoutModal from '@/components/CheckoutModal';
 import { useCart } from '@/context/CartContext';
 import styles from './Cart.module.css';
 
-const EXCHANGE_RATE = 19500;
+// EXCHANGE_RATE replaced dynamically
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 export default function CartPage() {
+  const { settings } = useSiteSettings();
   const { cartItems, addToCart, decrementQuantity, removeFromCart, clearCart, cartCount } = useCart();
   
   // Checkout Modal state
@@ -19,10 +21,10 @@ export default function CartPage() {
   const [modalOrderData, setModalOrderData] = useState(null);
 
   // Calculate original and discounted subtotals
-  const originalSubtotalToman = cartItems.reduce((acc, item) => acc + (item.priceAed * EXCHANGE_RATE * item.quantity), 0);
+  const originalSubtotalToman = cartItems.reduce((acc, item) => acc + (getProductTomanPrice(item, settings) * item.quantity), 0);
   
   const discountedSubtotalToman = cartItems.reduce((acc, item) => {
-    const itemOriginalPrice = item.priceAed * EXCHANGE_RATE;
+    const itemOriginalPrice = getProductTomanPrice(item, settings);
     const finalPrice = item.discountPercent && item.discountPercent > 0 
       ? itemOriginalPrice * (1 - item.discountPercent / 100) 
       : itemOriginalPrice;
@@ -52,6 +54,7 @@ export default function CartPage() {
       category: 'shopping_cart_checkout',
       name: `سبد خرید دبی خرید شامل ${cartItems.length} محصول`,
       brand: 'دبی خرید',
+      totalToman: totalToman,
       items: cartItems.map(item => ({
         name: item.name,
         brand: item.brand,
@@ -95,7 +98,7 @@ export default function CartPage() {
               {/* Items List */}
               <div className={styles.cartItems}>
                 {cartItems.map((item) => {
-                  const tomanPrice = item.priceAed * EXCHANGE_RATE;
+                  const tomanPrice = getProductTomanPrice(item, settings);
                   return (
                     <div key={item.cartItemId} className={styles.cartItem}>
                       <img src={item.image || item.img} alt={item.name} className={styles.itemImage} />

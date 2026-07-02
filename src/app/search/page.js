@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -8,7 +9,7 @@ import { getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Search.module.css';
 
-const EXCHANGE_RATE = 19500;
+// Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 // Brands database
@@ -58,6 +59,23 @@ function SearchContent() {
     }
     setAllProducts(merged);
   }, []);
+
+  useEffect(() => {
+    if (query) {
+      try {
+        const savedHistory = localStorage.getItem('dubaiKharidSearchHistory');
+        let historyList = savedHistory ? JSON.parse(savedHistory) : [];
+        const cleanQuery = query.toLowerCase().trim();
+        if (cleanQuery && !historyList.includes(cleanQuery)) {
+          historyList.push(cleanQuery);
+          if (historyList.length > 50) historyList.shift();
+          localStorage.setItem('dubaiKharidSearchHistory', JSON.stringify(historyList));
+        }
+      } catch (e) {
+        console.error('Error saving search query to history:', e);
+      }
+    }
+  }, [query]);
 
   // 1. Search in Brand Catalog
   const brandResults = qLower
@@ -140,7 +158,7 @@ function SearchContent() {
                 <h2 className={styles.sectionTitle}>محصولات یافت شده</h2>
                 <div className={styles.productsGrid}>
                   {productResults.map(product => {
-                    const tomanPrice = product.priceAed * EXCHANGE_RATE;
+                    const tomanPrice = getProductTomanPrice(product, settings);
                     return (
                       <div 
                         key={product.id} 
@@ -219,6 +237,7 @@ function SearchContent() {
 }
 
 export default function SearchPage() {
+  const { settings } = useSiteSettings();
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال جستجو...</div>}>
       <SearchContent />

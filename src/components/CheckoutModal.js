@@ -1,9 +1,11 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect } from 'react';
 import styles from './CheckoutModal.module.css';
 
 export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrement }) {
+  const { settings } = useSiteSettings();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -178,7 +180,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               </div>
               <div className={styles.summaryPriceRow}>
                 <span>مبلغ قابل پرداخت:</span>
-                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * 19500))} تومان</span>
+                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * (orderData.category === 'laptops' ? 19500 : (parseFloat(settings.aedRate) || 19500))))} تومان</span>
               </div>
             </div>
 
@@ -266,7 +268,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             <div className={styles.summaryCard} style={{ marginBottom: '20px' }}>
               <div className={styles.summaryPriceRow}>
                 <span>مبلغ قابل پرداخت سفارش:</span>
-                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * 19500))} تومان</span>
+                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * (orderData.category === 'laptops' ? 19500 : (parseFloat(settings.aedRate) || 19500))))} تومان</span>
               </div>
             </div>
 
@@ -372,7 +374,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               <div className={styles.bankRow}>
                 <span className={styles.bankLabel}>مبلغ واریزی:</span>
                 <span className={styles.bankValue} style={{ color: '#4ade80', fontSize: '1rem' }}>
-                  {formatPrice(orderData.totalToman || (orderData.price * 19500))} تومان
+                  {formatPrice(orderData.totalToman || (orderData.price * (orderData.category === 'laptops' ? 19500 : (parseFloat(settings.aedRate) || 19500))))} تومان
                 </span>
               </div>
             </div>

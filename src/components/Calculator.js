@@ -1,11 +1,13 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './Calculator.module.css';
 
 export default function Calculator({ initialValues, onOrderSubmit }) {
+  const { settings } = useSiteSettings();
   // Exchange Rate (1 AED = 19,500 Toman)
-  const EXCHANGE_RATE = 19500;
+  const EXCHANGE_RATE = parseFloat(settings.aedRate) || 19500;
 
   // State Variables
   const [link, setLink] = useState('');
@@ -151,11 +153,31 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
   const numPrice = parseFloat(priceAed) || 0;
   const weightVal = weightValues[weightClass];
   
-  const productPriceToman = numPrice * EXCHANGE_RATE;
-  const shippingToman = weightVal * currentCategoryConfig.cargoRate;
-  const customsToman = productPriceToman * currentCategoryConfig.customsRate;
-  const commissionToman = productPriceToman * 0.08;
-  const totalToman = productPriceToman + shippingToman + customsToman + commissionToman;
+  // Apply weight rounding rules dynamically based on settings
+  const minWeight = parseFloat(settings.minWeightClass) || 1.0;
+  const roundingMethod = settings.roundingMethod || 'ceil';
+  
+  let roundedWeight = weightVal;
+  if (roundingMethod === 'ceil') {
+    roundedWeight = Math.ceil(weightVal);
+  } else if (roundingMethod === 'floor') {
+    roundedWeight = Math.floor(weightVal);
+  } else if (roundingMethod === 'round') {
+    roundedWeight = Math.round(weightVal);
+  }
+  
+  if (roundedWeight < minWeight) {
+    roundedWeight = minWeight;
+  }
+  
+  const shippingPerKgAed = parseFloat(settings.shippingPerKgAed) || 40;
+  const commissionPercent = parseFloat(settings.commissionPercent) || 25;
+  
+  const shippingAed = roundedWeight * shippingPerKgAed;
+  const commissionAed = numPrice * (commissionPercent / 100);
+  
+  // Formula: (قیمت محصول + هزینه ارسال + کارمزد) * نرخ درهم
+  const totalToman = (numPrice + shippingAed + commissionAed) * EXCHANGE_RATE;
 
   const formatNumber = (num) => {
     return Math.round(num).toLocaleString('fa-IR');

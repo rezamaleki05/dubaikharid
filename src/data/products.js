@@ -310,6 +310,35 @@ export const getAllProducts = () => {
 
 export const getProductById = (id) => getAllProducts().find(p => p.id === id);
 
+// Dynamic product_type assignment on load
+try {
+  laptops.forEach(p => { if (!p.product_type) p.product_type = 'stock_laptop'; });
+  trendingProducts.forEach(p => { if (!p.product_type) p.product_type = 'external_product'; });
+  menProducts.forEach(p => { if (!p.product_type) p.product_type = 'external_product'; });
+  womenProducts.forEach(p => { if (!p.product_type) p.product_type = 'external_product'; });
+  kidsProducts.forEach(p => { if (!p.product_type) p.product_type = 'external_product'; });
+  bagsAndAccessoriesProducts.forEach(p => { if (!p.product_type) p.product_type = 'external_product'; });
+} catch (e) {
+  console.error('Error assigning product types dynamically:', e);
+}
+
+// Product Type helper
+export function getProductType(product) {
+  if (!product) return 'external_product';
+  if (product.product_type) return product.product_type;
+  
+  // Fallbacks:
+  if (product.id && (product.id.startsWith('lap') || product.id.startsWith('uploaded-') || product.category === 'electronics' || product.category === 'laptops')) {
+    return 'stock_laptop';
+  }
+  
+  if (product.store === 'انبار ایران' || (product.id && product.id.startsWith('DK-INV'))) {
+    return 'iran_inventory';
+  }
+  
+  return 'external_product';
+}
+
 // Self-executing localStorage dynamic product injector
 if (typeof window !== 'undefined') {
   try {
@@ -328,6 +357,10 @@ if (typeof window !== 'undefined') {
             ...bagsAndAccessoriesProducts
           ];
           if (!all.some(p => p.id === prod.id)) {
+            // Assign type based on category
+            if (!prod.product_type) {
+              prod.product_type = getProductType(prod);
+            }
             // Route dynamically based on gender or category tags
             if (prod.gender === 'men') {
               menProducts.push(prod);
@@ -350,4 +383,5 @@ if (typeof window !== 'undefined') {
     console.error('Error loading dynamic uploaded products:', e);
   }
 }
+
 

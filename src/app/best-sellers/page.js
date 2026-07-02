@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,12 +9,13 @@ import { trendingProducts, getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
 
-const EXCHANGE_RATE = 19500;
+// Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 function BestSellersContent() {
   const router = useRouter();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { settings } = useSiteSettings();
 
   // Sorting state
   const [sortOption, setSortOption] = useState('');
@@ -51,10 +53,51 @@ function BestSellersContent() {
       console.error('Error merging uploaded products for best sellers:', e);
     }
 
-    const filteredBest = merged.filter((p, index, self) => 
-      (p.isBestSeller === true || trendingProducts.some(t => t.id === p.id)) &&
-      self.findIndex(t => t.id === p.id) === index
-    );
+    // 3. Load actually sold products from orders/leads
+    let soldProductNames = [];
+    try {
+      const leadsSaved = localStorage.getItem('dubaiKharidLeads');
+      if (leadsSaved) {
+        const leads = JSON.parse(leadsSaved);
+        soldProductNames = leads.map(l => l.productName?.toLowerCase().trim()).filter(Boolean);
+      }
+    } catch (e) {
+      console.error('Error loading sold products for best sellers:', e);
+    }
+
+    // 4. Load actually searched queries
+    let searchHistory = [];
+    try {
+      const historySaved = localStorage.getItem('dubaiKharidSearchHistory');
+      if (historySaved) {
+        searchHistory = JSON.parse(historySaved).filter(Boolean);
+      }
+    } catch (e) {
+      console.error('Error loading search history for best sellers:', e);
+    }
+
+    const filteredBest = merged.filter((p, index, self) => {
+      // Condition A: marked as best seller or trending manually
+      const isManualBest = p.isBestSeller === true || trendingProducts.some(t => t.id === p.id);
+      
+      // Condition B: matches actually sold order names
+      const isSold = soldProductNames.some(name => 
+        p.name.toLowerCase().includes(name) || name.includes(p.name.toLowerCase())
+      );
+      
+      // Condition C: matches searched queries
+      const isSearched = searchHistory.some(query => 
+        p.name.toLowerCase().includes(query) || 
+        p.brand.toLowerCase().includes(query) || 
+        (p.category && p.category.toLowerCase().includes(query))
+      );
+
+      const matchesAny = isManualBest || isSold || isSearched;
+      const isUnique = self.findIndex(t => t.id === p.id) === index;
+      
+      return matchesAny && isUnique;
+    });
+
     setBestSellersList(filteredBest);
   }, []);
 
@@ -78,12 +121,12 @@ function BestSellersContent() {
 
   // Sort products based on sort select option
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = a.priceAed * EXCHANGE_RATE;
+    const origPriceA = getProductTomanPrice(a, settings);
     const salePriceA = a.discountPercent && a.discountPercent > 0 
       ? origPriceA * (1 - a.discountPercent / 100) 
       : origPriceA;
 
-    const origPriceB = b.priceAed * EXCHANGE_RATE;
+    const origPriceB = getProductTomanPrice(b, settings);
     const salePriceB = b.discountPercent && b.discountPercent > 0 
       ? origPriceB * (1 - b.discountPercent / 100) 
       : origPriceB;
@@ -162,7 +205,7 @@ function BestSellersContent() {
             ) : (
               <div className={styles.grid}>
                 {sortedProducts.map(product => {
-                  const tomanPrice = product.priceAed * EXCHANGE_RATE;
+                  const tomanPrice = getProductTomanPrice(product, settings);
                   return (
                     <div 
                       key={product.id} 
@@ -236,6 +279,7 @@ function BestSellersContent() {
 }
 
 export default function BestSellersPage() {
+  const { settings } = useSiteSettings();
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری...</div>}>
       <BestSellersContent />

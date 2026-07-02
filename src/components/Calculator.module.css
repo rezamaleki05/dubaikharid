@@ -194,7 +194,7 @@
   padding: 12px 14px;
   font-size: 13px;
   color: #fff;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', system-ui, sans-serif;
 }
 
 .inputContainer select {
@@ -273,7 +273,7 @@
   border-radius: 6px;
   font-size: 11px;
   color: #fff;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
   font-weight: 600;
 }
 
@@ -398,7 +398,7 @@
   font-size: 24px;
   font-weight: 800;
   color: #f87820;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', system-ui, sans-serif;
   letter-spacing: -0.5px;
 }
 
@@ -420,14 +420,15 @@
   gap: 8px;
   background: linear-gradient(135deg, #f87820, #e06a10);
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 0 30px;
-  border-radius: 10px;
+  padding: 12px 24px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 8px 24px rgba(248, 120, 32, 0.3);
+  align-self: center;
 }
 
 .submitBtn:hover {

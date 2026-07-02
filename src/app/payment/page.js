@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import styles from './Payment.module.css';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 
 // Bank details with logo text/color indicators
 const BANK_CARD_PREFIXES = [
@@ -27,6 +28,7 @@ export default function PaymentGateway() {
 }
 
 function PaymentContent() {
+  const { settings } = useSiteSettings();
   const searchParams = useSearchParams();
 
   // Search parameters
@@ -199,18 +201,102 @@ function PaymentContent() {
     setStep(2);
 
     setTimeout(() => {
-      // Find order in dubaiKharidLeads and update status to 'paid' (پرداخت شده)
+      // Find order in dubaiKharidLeads, update status to 'processing' and paymentStatus to 'paid'
       try {
         const saved = localStorage.getItem('dubaiKharidLeads');
         if (saved) {
           const list = JSON.parse(saved);
-          const updated = list.map(l => {
-            if (l.id === trackingCode) {
-              return { ...l, status: 'paid' };
+          const order = list.find(l => l.id === trackingCode);
+          
+          if (order) {
+            // Update order status and paymentStatus
+            const updated = list.map(l => {
+              if (l.id === trackingCode) {
+                return { ...l, status: 'processing', paymentStatus: 'paid' };
+              }
+              return l;
+            });
+            localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+
+            // 1. Decrement warehouse products stock (for iran_inventory)
+            try {
+              const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
+              if (savedWarehouse) {
+                const warehouseList = JSON.parse(savedWarehouse);
+                let warehouseUpdated = false;
+                
+                const updatedWarehouse = warehouseList.map(wp => {
+                  const matchedItem = (order.items || []).find(item => 
+                    item.sku === wp.sku || 
+                    item.id === wp.id || 
+                    (item.name && wp.name && (
+                      item.name.toLowerCase().includes(wp.name.toLowerCase()) ||
+                      wp.name.toLowerCase().includes(item.name.toLowerCase())
+                    ))
+                  );
+                  
+                  if (matchedItem) {
+                    warehouseUpdated = true;
+                    return {
+                      ...wp,
+                      stock: Math.max(0, wp.stock - (matchedItem.quantity || 1)),
+                      history: [
+                        ...(wp.history || []),
+                        {
+                          action: 'decrease',
+                          qty: matchedItem.quantity || 1,
+                          user: 'سیستم (پرداخت آنلاین)',
+                          date: new Date().toLocaleDateString('fa-IR'),
+                          reason: `فروش آنلاین سفارش ${order.id}`
+                        }
+                      ]
+                    };
+                  }
+                  return wp;
+                });
+                
+                if (warehouseUpdated) {
+                  localStorage.setItem('dubaiKharidWarehouseProducts', JSON.stringify(updatedWarehouse));
+                }
+              }
+            } catch (err) {
+              console.error('Failed to update warehouse stock:', err);
             }
-            return l;
-          });
-          localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
+            
+            // 2. Decrement uploaded products (laptops) stock status (for stock_laptop)
+            try {
+              const savedUploaded = localStorage.getItem('dubaiKharidUploadedProducts');
+              if (savedUploaded) {
+                const uploadedList = JSON.parse(savedUploaded);
+                let uploadedUpdated = false;
+                
+                const updatedUploaded = uploadedList.map(up => {
+                  const matchedItem = (order.items || []).find(item => 
+                    item.id === up.id || 
+                    (item.name && up.name && (
+                      item.name.toLowerCase().includes(up.name.toLowerCase()) ||
+                      up.name.toLowerCase().includes(item.name.toLowerCase())
+                    ))
+                  );
+                  
+                  if (matchedItem) {
+                    uploadedUpdated = true;
+                    return {
+                      ...up,
+                      stockStatus: 'sold'
+                    };
+                  }
+                  return up;
+                });
+                
+                if (uploadedUpdated) {
+                  localStorage.setItem('dubaiKharidUploadedProducts', JSON.stringify(updatedUploaded));
+                }
+              }
+            } catch (err) {
+              console.error('Failed to update uploaded laptops stock:', err);
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to update payment status in Admin leads:', err);
@@ -232,7 +318,7 @@ function PaymentContent() {
       {/* Dynamic Shetab Header */}
       <header className={styles.header}>
         <div className={styles.logoWrap}>
-          <img src="/images/logo dubai kharid.png" alt="Shaparak Logo" className={styles.shaparakLogo} style={{ filter: 'brightness(0) invert(1)' }} onError={(e) => { e.target.style.display = 'none'; }} />
+          <img src={settings.siteLogoUrl} alt={settings.siteName} className={styles.shaparakLogo} style={{ filter: 'brightness(0) invert(1)' }} onError={(e) => { e.target.style.display = 'none'; }} />
           <div className={styles.headerText}>
             <h1>درگاه پرداخت الکترونیک شاپرک</h1>
             <span>سامانه شبکه الکترونیکی پرداخت کارت‌های عضو شتاب</span>
@@ -468,8 +554,8 @@ function PaymentContent() {
             <div className={styles.merchantHeader}>
               <div className={styles.merchantAvatar}>✈️</div>
               <div>
-                <h2>پذیرنده: دبی خرید</h2>
-                <span>dubaikharid.com</span>
+                <h2>پذیرنده: {settings.siteName}</h2>
+                <span>{settings.siteUrl}</span>
               </div>
             </div>
             
@@ -520,13 +606,13 @@ function PaymentContent() {
             <div className={styles.receiptBanner}>
               <div className={styles.successCircle}>✓</div>
               <h2>تراکنش شتاب با موفقیت انجام شد!</h2>
-              <p style={{ fontSize: '12px', opacity: 0.8, marginTop: '6px' }}>پرداخت پیش‌فاکتور لپ‌تاپ دبی خرید تایید گردید.</p>
+              <p style={{ fontSize: '12px', opacity: 0.8, marginTop: '6px' }}>پرداخت پیش‌فاکتور لپ‌تاپ {settings.siteName} تایید گردید.</p>
             </div>
 
             <div className={styles.receiptBody}>
               <div className={styles.receiptRow}>
                 <label>پذیرنده فروشگاهی:</label>
-                <span>دبی خرید (DUBAI KHARID)</span>
+                <span>{settings.siteName} ({settings.siteUrl.toUpperCase()})</span>
               </div>
               <div className={styles.receiptRow}>
                 <label>مبلغ پرداخت شده:</label>
@@ -552,7 +638,7 @@ function PaymentContent() {
               </div>
 
               <div style={{ marginTop: '20px', background: '#f8f9fc', border: '1px solid #e1e4ed', borderRadius: '10px', padding: '16px', fontSize: '11.5px', color: '#7e8b9b', lineHeight: '1.7', textAlign: 'right' }}>
-                📦 <strong>پیام کارگو دبی خرید:</strong> سفارش خرید لپ‌تاپ شما با موفقیت ثبت قطعی شد. کارشناسان ما جهت هماهنگی بسته‌بندی، کارگو اختصاصی هوایی و شماره بیمه‌نامه تا حداکثر <strong>۳۰ دقیقه آینده</strong> با شماره همراه شما تماس خواهند گرفت.
+                📦 <strong>پیام کارگو {settings.siteName}:</strong> سفارش خرید لپ‌تاپ شما با موفقیت ثبت قطعی شد. کارشناسان ما جهت هماهنگی بسته‌بندی، کارگو اختصاصی هوایی و شماره بیمه‌نامه تا حداکثر <strong>۳۰ دقیقه آینده</strong> با شماره همراه شما تماس خواهند گرفت.
               </div>
 
               <button 

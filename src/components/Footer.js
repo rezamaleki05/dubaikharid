@@ -1,6 +1,11 @@
+'use client';
+
+import { useSiteSettings } from '@/context/SiteSettingsContext';
 import styles from './Footer.module.css';
 
 export default function Footer() {
+  const { settings } = useSiteSettings();
+
   return (
     <footer className={styles.footer}>
       {/* Top Section */}
@@ -9,15 +14,15 @@ export default function Footer() {
           <div className={styles.footerTopInner}>
             <div className={styles.aboutCol}>
               <div className={styles.logo}>
-                <img src="/images/logo dubai kharid.png" alt="دبی خرید" className={styles.logoImg} />
+                <img src={settings.siteLogoUrl} alt={settings.siteName} className={styles.logoImg} />
               </div>
               <p className={styles.aboutText}>
-                دبی خرید به عنوان معتبرترین کارگزار خرید مستقیم از بازارهای بین‌المللی امارات و دبی، به شما امکان می‌دهد کالاهای اصل را از آمازون، نون، شین و... خریداری کرده و با کارگو اختصاصی هوایی با کمترین هزینه در ایران درب منزل دریافت کنید.
+                {settings.siteName} به عنوان معتبرترین کارگزار خرید مستقیم از بازارهای بین‌المللی امارات و دبی، به شما امکان می‌دهد کالاهای اصل را از آمازون، نون، شین و... خریداری کرده و با کارگو اختصاصی هوایی با کمترین هزینه در ایران درب منزل دریافت کنید.
               </p>
               <div className={styles.socials}>
-                <a href="#" aria-label="اینستاگرام">📸</a>
-                <a href="#" aria-label="تلگرام">✈️</a>
-                <a href="#" aria-label="واتساپ">💬</a>
+                <a href={`https://instagram.com/${settings.instagramId?.replace('@', '')}`} target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام">📸</a>
+                <a href={`https://t.me/${settings.telegramId?.replace('@', '')}`} target="_blank" rel="noopener noreferrer" aria-label="تلگرام">✈️</a>
+                <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="واتساپ">💬</a>
                 <a href="#" aria-label="توییتر">🐦</a>
               </div>
             </div>
@@ -44,15 +49,15 @@ export default function Footer() {
               </div>
 
               <div className={styles.linksCol}>
-                <h4>تماس با دبی خرید</h4>
+                <h4>تماس با {settings.siteName}</h4>
                 <p className={styles.contactItem}>
-                  📍 <strong>دفتر شیراز:</strong> شیراز، شهرک گلستان، خیابان گل آرا
+                  📍 <strong>دفتر ایران:</strong> {settings.iranAddress}
                 </p>
                 <p className={styles.contactItem}>
-                  📍 <strong>دفتر دبی:</strong> امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور
+                  📍 <strong>دفتر دبی:</strong> {settings.dubaiAddress}
                 </p>
                 <p className={styles.contactItem}>
-                  📞 <strong>تلفن پشتیبانی:</strong> ۰۹۱۷۶۱۶۸۳۸۱
+                  📞 <strong>تلفن پشتیبانی:</strong> {settings.supportPhone}
                 </p>
               </div>
             </div>
@@ -65,7 +70,7 @@ export default function Footer() {
         <div className="container">
           <div className={styles.footerBottomInner}>
             <p className={styles.copyright}>
-              © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>دبی خرید (DUBAI KHARID)</strong> می‌باشد.
+              © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>{settings.siteName} ({settings.siteUrl})</strong> می‌باشد.
               <a href="/admin" style={{ opacity: 0.3, textDecoration: 'none', color: '#fff', fontSize: '10px', marginRight: '10px' }} title="ورود به پنل مدیریت">🔑 ورود ادمین</a>
             </p>
             <div className={styles.trustLogos}>

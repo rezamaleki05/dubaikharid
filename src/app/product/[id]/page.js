@@ -1,13 +1,15 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { use, useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getProductById } from '@/data/products';
+import { getProductById, getProductType } from '@/data/products';
 import { useCart } from '@/context/CartContext';
+import CheckoutModal from '@/components/CheckoutModal';
 import styles from './Product.module.css';
 
-const EXCHANGE_RATE = 19500;
+// Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 // Colors to Hex mapping for circular swatches
@@ -39,6 +41,7 @@ const colorMap = {
 };
 
 export default function ProductPage({ params }) {
+  const { settings } = useSiteSettings();
   // Unwrap params using React.use() to avoid Next.js sync params warning
   const unwrappedParams = use(params);
   const { id } = unwrappedParams;
@@ -54,6 +57,136 @@ export default function ProductPage({ params }) {
   // Validation state
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
+
+  // Direct checkout and inquiry modal states
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [directOrderData, setDirectOrderData] = useState(null);
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
+  const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', notes: '' });
+  const [inquiryQty, setInquiryQty] = useState(1);
+  const [inquiryColor, setInquiryColor] = useState('');
+  const [inquirySize, setInquirySize] = useState('');
+
+  useEffect(() => {
+    if (isInquiryOpen && product) {
+      setInquiryColor(selectedColor || (product.colors ? product.colors[0] : ''));
+      setInquirySize(selectedSize || (product.sizes ? product.sizes[0] : ''));
+    }
+  }, [isInquiryOpen, product, selectedColor, selectedSize]);
+
+  const handleDirectPayment = () => {
+    if (product.colors && !selectedColor) {
+      setWarningMessage('لطفاً رنگ مورد نظر خود را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+    if (product.sizes && !selectedSize) {
+      setWarningMessage('لطفاً سایز مورد نظر خود را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+    
+    setShowWarning(false);
+    
+    const finalTomanPrice = product.discountPercent && product.discountPercent > 0
+      ? tomanPrice * (1 - product.discountPercent / 100)
+      : tomanPrice;
+
+    const orderData = {
+      price: product.priceAed,
+      weight: product.weight || 0.5,
+      category: product.category,
+      name: product.name,
+      brand: product.brand,
+      totalToman: finalTomanPrice,
+      productName: product.name,
+      items: [{
+        name: product.name,
+        brand: product.brand,
+        quantity: 1,
+        color: selectedColor || '',
+        size: selectedSize || '',
+        priceAed: product.priceAed,
+        discountPercent: product.discountPercent || 0
+      }]
+    };
+
+    setDirectOrderData(orderData);
+    setIsCheckoutOpen(true);
+  };
+
+  const handleInquirySubmit = (e) => {
+    e.preventDefault();
+    if (!inquiryForm.name.trim() || !inquiryForm.phone.trim()) {
+      alert('لطفاً نام و شماره تماس خود را وارد کنید.');
+      return;
+    }
+    
+    // Convert to english digits
+    const toEnglishDigits = (str) => {
+      const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      return str
+        .replace(/[۰-۹]/g, (w) => farsiDigits.indexOf(w))
+        .replace(/[٠-٩]/g, (w) => arabicDigits.indexOf(w));
+    };
+
+    const cleanPhone = toEnglishDigits(inquiryForm.phone.trim().replace(/\s+/g, ''));
+    if (!/^(?:09|\+989|989|00989)\d{9}$/.test(cleanPhone)) {
+      alert('شماره موبایل وارد شده معتبر نیست. (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)');
+      return;
+    }
+
+    const randNum = Math.floor(10000 + Math.random() * 90000);
+    const tracking = `DKHARID-REQ-${randNum}`;
+
+    const newLead = {
+      id: tracking,
+      customerName: inquiryForm.name.trim(),
+      phone: cleanPhone,
+      address: 'استعلام قیمت (بدون آدرس اولیه)',
+      notes: inquiryForm.notes.trim() || 'درخواست استعلام قیمت محصول خارجی',
+      productName: product.name,
+      brand: product.brand,
+      weight: product.weight || 0.5,
+      totalToman: 0,
+      priceAed: product.priceAed,
+      date: new Date().toISOString(),
+      status: 'pending',
+      paymentMethod: 'gateway',
+      paymentStatus: 'pending',
+      img: product.image,
+      store: product.store,
+      color: inquiryColor || '',
+      size: inquirySize || '',
+      qty: inquiryQty,
+      isRequest: true,
+      items: [{
+        name: product.name,
+        brand: product.brand,
+        quantity: inquiryQty,
+        color: inquiryColor || '',
+        size: inquirySize || '',
+        priceAed: product.priceAed,
+        discountPercent: product.discountPercent || 0
+      }]
+    };
+
+    try {
+      const existingLeads = JSON.parse(localStorage.getItem('dubaiKharidLeads') || '[]');
+      existingLeads.unshift(newLead);
+      localStorage.setItem('dubaiKharidLeads', JSON.stringify(existingLeads));
+      
+      setIsInquiryOpen(false);
+      setInquiryForm({ name: '', phone: '', notes: '' });
+      setInquiryQty(1);
+
+      alert(`درخواست شما ثبت شد. پس از بررسی قیمت نهایی، وزن واقعی، هزینه ارسال و نرخ روز درهم، قیمت دقیق از طریق واتساپ یا تماس به شما اعلام میشود.\nشناسه درخواست: ${tracking}`);
+    } catch (err) {
+      console.error(err);
+      alert('خطا در ثبت درخواست. لطفاً مجدداً تلاش کنید.');
+    }
+  };
 
   // Extract uploader or static technical specs
   const getLaptopSpecs = (prod) => {
@@ -190,7 +323,7 @@ export default function ProductPage({ params }) {
     alert(`«${product.name}» با موفقیت به سبد خرید افزوده شد.\n${selectedColor ? `رنگ: ${selectedColor}` : ''} ${selectedSize ? `| سایز: ${selectedSize}` : ''}`);
   };
 
-  const tomanPrice = product.priceAed * EXCHANGE_RATE;
+  const tomanPrice = getProductTomanPrice(product, settings);
 
   return (
     <div className={styles.pageWrapper}>
@@ -306,39 +439,89 @@ export default function ProductPage({ params }) {
             </div>
 
             <div className={styles.priceSection}>
-              <div className={styles.priceLabel}>قیمت نهایی با احتساب هزینه‌های ارسال:</div>
-              {product.discountPercent && product.discountPercent > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '18px', textDecoration: 'line-through', color: '#8b92a5' }}>
-                      {fmtToman(tomanPrice)} تومان
-                    </span>
-                    <span style={{ background: '#ff3333', color: '#fff', fontSize: '14px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333' }}>
-                      {product.discountPercent}% تخفیف
-                    </span>
+              {getProductType(product) === 'external_product' ? (
+                <div>
+                  <div className={styles.priceLabel}>قیمت نهایی محصول:</div>
+                  <div className={styles.priceValue} style={{ fontSize: '20px', color: '#f87820', fontWeight: 'bold' }}>
+                    قیمت نهایی پس از بررسی اعلام می‌شود
                   </div>
-                  <div className={styles.priceValue} style={{ color: '#ff3333' }}>
-                    {fmtToman(tomanPrice * (1 - product.discountPercent / 100))}
-                    <span className={styles.priceUnit} style={{ color: '#ff3333' }}>تومان</span>
+                  <div style={{ fontSize: '12px', color: '#8b92a5', marginTop: '6px' }}>
+                    (قیمت تقریبی مبدا: {product.priceAed} درهم)
                   </div>
                 </div>
               ) : (
-                <div className={styles.priceValue}>
-                  {fmtToman(tomanPrice)}
-                  <span className={styles.priceUnit}>تومان</span>
-                </div>
+                <>
+                  <div className={styles.priceLabel}>قیمت نهایی با احتساب هزینه‌های ارسال:</div>
+                  {product.discountPercent && product.discountPercent > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '18px', textDecoration: 'line-through', color: '#8b92a5' }}>
+                          {fmtToman(tomanPrice)} تومان
+                        </span>
+                        <span style={{ background: '#ff3333', color: '#fff', fontSize: '14px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333' }}>
+                          {product.discountPercent}% تخفیف
+                        </span>
+                      </div>
+                      <div className={styles.priceValue} style={{ color: '#ff3333' }}>
+                        {fmtToman(tomanPrice * (1 - product.discountPercent / 100))}
+                        <span className={styles.priceUnit} style={{ color: '#ff3333' }}>تومان</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.priceValue}>
+                      {fmtToman(tomanPrice)}
+                      <span className={styles.priceUnit}>تومان</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
             <div className={styles.actionSection}>
-              <button 
-                type="button"
-                className={styles.addToCartBtn}
-                onClick={handleAddToCart}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                افزودن به سبد خرید
-              </button>
+              {getProductType(product) === 'external_product' ? (
+                <div style={{ display: 'flex', gap: '12px', width: '100%', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                    <button 
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={() => setIsInquiryOpen(true)}
+                      style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', flex: 1 }}
+                    >
+                      ثبت درخواست خرید
+                    </button>
+                    <button 
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={() => setIsInquiryOpen(true)}
+                      style={{ background: 'transparent', border: '1.5px solid #f87820', color: '#f87820', flex: 1 }}
+                    >
+                      استعلام قیمت
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                    <button 
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={handleAddToCart}
+                      style={{ flex: 1 }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                      افزودن به سبد خرید
+                    </button>
+                    <button 
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={handleDirectPayment}
+                      style={{ background: '#2ecc71', color: '#fff', flex: 1 }}
+                    >
+                      💳 پرداخت آنلاین
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className={styles.storeInfo}>
                 <span className={styles.storeLabel}>فروشگاه مبدا (دبی):</span>
@@ -427,7 +610,243 @@ export default function ProductPage({ params }) {
         <ReviewsSection productId={product.id} productName={product.name} />
       </main>
 
-      <Footer />
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        orderData={directOrderData}
+        onClose={() => setIsCheckoutOpen(false)}
+        onCartIncrement={() => {
+          setIsCheckoutOpen(false);
+        }}
+      />
+
+      {isInquiryOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#11131a',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '100%',
+            color: '#fff',
+            direction: 'rtl',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#f87820' }}>استعلام قیمت و ثبت درخواست خرید</h2>
+              <button 
+                onClick={() => setIsInquiryOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#8b92a5', fontSize: '18px', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: '12px',
+              padding: '12px',
+              marginBottom: '20px'
+            }}>
+              <img src={product.image} alt={product.name} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+              <div>
+                <h4 style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 4px 0' }}>{product.name}</h4>
+                <p style={{ fontSize: '11px', color: '#8b92a5', margin: 0 }}>فروشگاه مبدا: {product.store} | قیمت تقریبی: {product.priceAed} درهم</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleInquirySubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>نام و نام خانوادگی:</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={inquiryForm.name}
+                    onChange={(e) => setInquiryForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="مثال: رضا محمدی"
+                    style={{
+                      width: '100%',
+                      background: '#1a1d26',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>شماره تماس (جهت هماهنگی):</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={inquiryForm.phone}
+                    onChange={(e) => setInquiryForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹"
+                    style={{
+                      width: '100%',
+                      background: '#1a1d26',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      direction: 'ltr',
+                      textAlign: 'right'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>تعداد:</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={inquiryQty}
+                      onChange={(e) => setInquiryQty(parseInt(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        background: '#1a1d26',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>رنگ:</label>
+                    <input 
+                      type="text" 
+                      value={inquiryColor}
+                      onChange={(e) => setInquiryColor(e.target.value)}
+                      placeholder="اختیاری"
+                      style={{
+                        width: '100%',
+                        background: '#1a1d26',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>سایز:</label>
+                    <input 
+                      type="text" 
+                      value={inquirySize}
+                      onChange={(e) => setInquirySize(e.target.value)}
+                      placeholder="اختیاری"
+                      style={{
+                        width: '100%',
+                        background: '#1a1d26',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>توضیحات مشتری:</label>
+                  <textarea 
+                    rows="3" 
+                    value={inquiryForm.notes}
+                    onChange={(e) => setInquiryForm(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="توضیحات رنگ، سایز یا مشخصات مورد نظر خود را بنویسید..."
+                    style={{
+                      width: '100%',
+                      background: '#1a1d26',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      resize: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button 
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  ثبت درخواست استعلام
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsInquiryOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '8px',
+                    padding: '12px 20px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  انصراف
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

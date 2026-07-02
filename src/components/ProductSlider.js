@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,6 +9,7 @@ import { laptops, trendingProducts } from '@/data/products';
 import styles from './ProductSlider.module.css';
 
 export default function ProductSlider({ onSelectProduct }) {
+  const { settings } = useSiteSettings();
   const [wishlist, setWishlist] = useState({});
   const router = useRouter();
   const { addToCart } = useCart();
@@ -42,7 +44,7 @@ export default function ProductSlider({ onSelectProduct }) {
     setAllTrending(mergedTrending);
   }, []);
 
-  const EXCHANGE_RATE = 19500;
+  // Replaced hardcoded exchange rate
 
   const handleSelect = (product) => {
     router.push(`/product/${product.id}`);
@@ -52,7 +54,7 @@ export default function ProductSlider({ onSelectProduct }) {
   const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
   const ProductCard = ({ product, showStore }) => {
-    const tomanPrice = product.priceAed * EXCHANGE_RATE;
+    const tomanPrice = getProductTomanPrice(product, settings);
     return (
       <div 
         className={styles.productCard} 

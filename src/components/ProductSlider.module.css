@@ -139,7 +139,7 @@
   font-weight: 800;
   padding: 3px 7px;
   border-radius: 4px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
 }
 
 /* Card body */
@@ -182,14 +182,14 @@
   font-size: 13.5px;
   font-weight: 800;
   color: #f87820;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
   line-height: 1;
 }
 .priceAedUnit { font-size: 10px; color: #f87820; font-weight: 600; }
 .priceToman {
   font-size: 11.5px;
   color: rgba(255, 255, 255, 0.6);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-vazirmatn), 'Inter', sans-serif;
 }
 
 /* CTA Button */

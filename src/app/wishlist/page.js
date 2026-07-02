@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -7,10 +8,11 @@ import Footer from '@/components/Footer';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Wishlist.module.css';
 
-const EXCHANGE_RATE = 19500;
+// Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 export default function WishlistPage() {
+  const { settings } = useSiteSettings();
   const router = useRouter();
   const { wishlistItems, toggleWishlist } = useWishlist();
 
@@ -40,7 +42,7 @@ export default function WishlistPage() {
             {/* Favorites Grid */}
             <div className={styles.grid}>
               {wishlistItems.map((item) => {
-                const tomanPrice = item.priceAed * EXCHANGE_RATE;
+                const tomanPrice = getProductTomanPrice(item, settings);
                 return (
                   <div 
                     key={item.id} 

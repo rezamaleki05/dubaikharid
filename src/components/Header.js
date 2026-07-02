@@ -3,9 +3,13 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { useAuth } from '@/context/AuthContext';
 import styles from './Header.module.css';
 
 export default function Header() {
+  const { settings } = useSiteSettings();
+  const { currentUser, isLoggedIn, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -90,10 +94,25 @@ export default function Header() {
             </div>
             {/* Left: login */}
             <div className={styles.topBarLeft}>
-              <a href="/login" className={styles.topBarLogin}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                ورود / ثبت نام
-              </a>
+              {isLoggedIn && currentUser ? (
+                <div className={styles.userMenuContainer}>
+                  <button className={styles.userMenuTrigger}>
+                    <img src={currentUser.avatar} alt="avatar" className={styles.userAvatar} />
+                    <span style={{ fontSize: '11px', fontWeight: 'bold' }}>{currentUser.name}</span>
+                    <span style={{ fontSize: '9px', opacity: 0.7 }}>▼</span>
+                  </button>
+                  <div className={styles.userDropdown}>
+                    <a href="/profile">👤 پنل کاربری</a>
+                    <a href="/profile?sub=orders">📦 سفارشات من</a>
+                    <button onClick={logout} className={styles.logoutBtn}>🚪 خروج از حساب</button>
+                  </div>
+                </div>
+              ) : (
+                <a href="/login" className={styles.topBarLogin}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  ورود / ثبت نام
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -106,7 +125,7 @@ export default function Header() {
 
             {/* Logo */}
             <a href="/" className={styles.logo}>
-              <img src="/images/logo dubai kharid.png" alt="دبی خرید" className={styles.logoImg} />
+              <img src={settings.siteLogoUrl} alt={settings.siteName} className={styles.logoImg} />
             </a>
 
             {/* Search — CENTER */}
@@ -241,7 +260,7 @@ export default function Header() {
               </ul>
             </li>
             <li><a href="/bags-accessories" className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</a></li>
-            <li><a href="#">الکترونیک</a></li>
+            <li><a href="/other-products" className={pathname === '/other-products' ? styles.navActive : ''}>سایر محصولات</a></li>
             <li><a href="/best-sellers" className={pathname === '/best-sellers' ? `${styles.navActive} ${styles.navBestSellers}` : styles.navBestSellers}>پرفروش‌ها</a></li>
             <li><a href="/sale" className={pathname === '/sale' ? `${styles.navActive} ${styles.navSale}` : styles.navSale}>تخفیف‌ها</a></li>
           </ul>

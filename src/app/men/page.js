@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,7 +9,7 @@ import { menProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Men.module.css';
 
-const EXCHANGE_RATE = 19500;
+// Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 function MenContent() {
@@ -17,6 +18,7 @@ function MenContent() {
   const initialSub = searchParams.get('sub') || 'all';
 
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { settings } = useSiteSettings();
 
   // Active category filter state
   const [activeTab, setActiveTab] = useState(initialSub);
@@ -51,12 +53,12 @@ function MenContent() {
 
   // Sort products based on sort select option
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = a.priceAed * EXCHANGE_RATE;
+    const origPriceA = getProductTomanPrice(a, settings);
     const salePriceA = a.discountPercent && a.discountPercent > 0 
       ? origPriceA * (1 - a.discountPercent / 100) 
       : origPriceA;
 
-    const origPriceB = b.priceAed * EXCHANGE_RATE;
+    const origPriceB = getProductTomanPrice(b, settings);
     const salePriceB = b.discountPercent && b.discountPercent > 0 
       ? origPriceB * (1 - b.discountPercent / 100) 
       : origPriceB;
@@ -168,7 +170,7 @@ function MenContent() {
             ) : (
               <div className={styles.grid}>
                 {sortedProducts.map(product => {
-                  const tomanPrice = product.priceAed * EXCHANGE_RATE;
+                  const tomanPrice = getProductTomanPrice(product, settings);
                   return (
                     <div 
                       key={product.id} 
@@ -242,6 +244,7 @@ function MenContent() {
 }
 
 export default function MenPage() {
+  const { settings } = useSiteSettings();
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری...</div>}>
       <MenContent />

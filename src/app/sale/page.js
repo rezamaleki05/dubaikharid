@@ -1,4 +1,5 @@
 'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,12 +9,13 @@ import { getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Sale.module.css';
 
-const EXCHANGE_RATE = 19500;
+// Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 function SaleContent() {
   const router = useRouter();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { settings } = useSiteSettings();
 
   // Active category filter tab
   const [activeTab, setActiveTab] = useState('all');
@@ -58,10 +60,10 @@ function SaleContent() {
 
   // Sort products based on sort select option
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = a.priceAed * EXCHANGE_RATE;
+    const origPriceA = getProductTomanPrice(a, settings);
     const salePriceA = origPriceA * (1 - a.discountPercent / 100);
 
-    const origPriceB = b.priceAed * EXCHANGE_RATE;
+    const origPriceB = getProductTomanPrice(b, settings);
     const salePriceB = origPriceB * (1 - b.discountPercent / 100);
 
     if (sortOption === 'discount') {
@@ -149,7 +151,7 @@ function SaleContent() {
         ) : (
           <div className={styles.grid}>
             {sortedProducts.map(product => {
-              const originalPriceToman = product.priceAed * EXCHANGE_RATE;
+              const originalPriceToman = getProductTomanPrice(product, settings);
               const salePriceToman = originalPriceToman * (1 - product.discountPercent / 100);
               
               return (
@@ -209,6 +211,7 @@ function SaleContent() {
 }
 
 export default function SalePage() {
+  const { settings } = useSiteSettings();
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری تخفیف‌ها...</div>}>
       <SaleContent />
