@@ -4312,9 +4312,9 @@ export default function AdminPanel() {
                     <button onClick={() => setActiveTab('leads')} style={{ padding: '5px 14px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(248,120,32,0.4)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: '700' }}>مشاهده همه</button>
                   </div>
                   {[
-                    { label: 'منتظر قیمت‌گذاری', count: leads.filter(l => l.status === 'pending').length + 4, color: '#f59e0b', desc: 'درخواست ارسال شده، قیمت‌گذاری نشده', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
-                    { label: 'قیمت ارسال شده', count: leads.filter(l => l.status === 'price_tagged').length + 2, color: '#a855f7', desc: 'در انتظار تایید مشتری', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('price_tagged'); } },
-                    { label: 'منتظر تایید مشتری', count: leads.filter(l => l.status === 'approved').length + 1, color: '#06b6d4', desc: 'قیمت اعلام شده، تایید نشده', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('approved'); } },
+                    { label: 'منتظر قیمت‌گذاری', count: leads.filter(l => l.status === 'pending').length, color: '#f59e0b', desc: 'درخواست ارسال شده، قیمت‌گذاری نشده', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); } },
+                    { label: 'قیمت ارسال شده', count: leads.filter(l => l.status === 'price_tagged').length, color: '#a855f7', desc: 'در انتظار تایید مشتری', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('price_tagged'); } },
+                    { label: 'منتظر تایید مشتری', count: leads.filter(l => l.status === 'approved').length, color: '#06b6d4', desc: 'قیمت اعلام شده، تایید نشده', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('approved'); } },
                     { label: 'تبدیل به سفارش', count: leads.filter(l => ['purchased','warehouse_dubai','shipped','delivered'].includes(l.status)).length, color: '#2ecc71', desc: 'پرداخت شده و در جریان', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); } },
                   ].map((stage, i) => (
                     <div key={i} onClick={stage.onClick}
@@ -4341,16 +4341,16 @@ export default function AdminPanel() {
                     <button onClick={() => setActiveTab('payments')} style={{ padding: '5px 14px', fontSize: '10px', borderRadius: '8px', border: '1px solid rgba(248,120,32,0.4)', background: 'transparent', color: '#f87820', cursor: 'pointer', fontWeight: '700' }}>مشاهده همه</button>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {[
-                      { id: 'DK-1256', label: 'پرداخت سفارش', amount: '28,450,000', type: 'success' },
-                      { id: 'DK-1255', label: 'پرداخت سفارش', amount: '65,300,000', type: 'success' },
-                      { id: 'DK-1254', label: 'پرداخت سفارش', amount: '12,750,000', type: 'success' },
-                      { id: 'DK-1253', label: 'پرداخت در انتظار', amount: '9,800,000', type: 'pending' },
-                      { id: 'DK-1249', label: 'بازگشت وجه', amount: '42,200,000', type: 'refund' },
-                    ].map((tx, i) => {
-                      const ts = { success: { color: '#2ecc71', bg: 'rgba(46,204,113,0.08)', label: 'موفق', icon: AdminIcons.check(11) }, pending: { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', label: 'در انتظار', icon: AdminIcons.clock(11) }, refund: { color: '#ef4444', bg: 'rgba(239,68,68,0.08)', label: 'برگشتی', icon: AdminIcons.sync(11) } }[tx.type];
+                    {getMergedPayments().slice(0, 5).map((tx, i) => {
+                      const typeKey = tx.status === 'success' ? 'success' : tx.status === 'pending' ? 'pending' : 'refund';
+                      const ts = { 
+                        success: { color: '#2ecc71', bg: 'rgba(46,204,113,0.08)', label: 'موفق', icon: AdminIcons.check(11) }, 
+                        pending: { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', label: 'در انتظار', icon: AdminIcons.clock(11) }, 
+                        refund: { color: '#ef4444', bg: 'rgba(239,68,68,0.08)', label: 'برگشتی', icon: AdminIcons.sync(11) } 
+                      }[typeKey] || { color: '#8b92a5', bg: 'rgba(139,146,165,0.08)', label: tx.status, icon: AdminIcons.info(11) };
+
                       return (
-                        <div key={i} onClick={() => { setActiveTab('leads'); setSelectedOrderId(tx.id); }}
+                        <div key={tx.id || i} onClick={() => { setActiveTab('payments'); }}
                           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
                           onMouseOver={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.15)'; }}
                           onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
@@ -4358,14 +4358,17 @@ export default function AdminPanel() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: ts.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ts.color }}>{ts.icon}</div>
                             <div>
-                              <div style={{ fontWeight: '700', fontSize: '11.5px', color: '#fff' }}>{tx.label} #{tx.id}</div>
-                              <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '1px' }}>{tx.amount} تومان</div>
+                              <div style={{ fontWeight: '700', fontSize: '11.5px', color: '#fff' }}>{tx.type} #{tx.orderId || tx.id}</div>
+                              <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '1px' }}>{(Number(tx.amount) || 0).toLocaleString('fa-IR')} تومان</div>
                             </div>
                           </div>
                           <span style={{ fontSize: '9.5px', padding: '3px 8px', borderRadius: '6px', background: ts.bg, color: ts.color, fontWeight: '700' }}>{ts.label}</span>
                         </div>
                       );
                     })}
+                    {getMergedPayments().length === 0 && (
+                      <p style={{ color: '#8b92a5', fontSize: '11px', textAlign: 'center', padding: '10px' }}>تراکنی ثبت نشده است.</p>
+                    )}
                   </div>
                 </div>
 
@@ -9140,7 +9143,8 @@ export default function AdminPanel() {
 
           {/* TAB: SHIPMENTS REDESIGN VIEW (100% High Parity Mockup) */}
           {activeTab === 'shipments' && (() => {
-            const filteredShips = shipments.filter(s => {
+            const allShips = getMergedShipments();
+            const filteredShips = allShips.filter(s => {
               const matchSearch = !shipmentSearchQuery || 
                 s.id.toLowerCase().includes(shipmentSearchQuery.toLowerCase()) ||
                 s.recipient.toLowerCase().includes(shipmentSearchQuery.toLowerCase());
@@ -9153,14 +9157,29 @@ export default function AdminPanel() {
             });
 
             // Unique recipients for select filter
-            const uniqueRecipients = Array.from(new Set(shipments.map(s => s.recipient)));
+            const uniqueRecipients = Array.from(new Set(allShips.map(s => s.recipient)));
 
-            // Calculate dynamic KPI metrics with mockup base offsets
-            const totalCount = 1238 + shipments.length;
-            const transitCount = 26 + shipments.filter(s => s.status === 'transit').length;
-            const customsCount = 12 + shipments.filter(s => s.status === 'customs').length;
-            const iranCount = 18 + shipments.filter(s => s.status === 'iran').length;
-            const deliveredCount = 1152 + shipments.filter(s => s.status === 'delivered').length;
+            // Calculate dynamic KPI metrics
+            const totalCount = allShips.length;
+            const transitCount = allShips.filter(s => s.status === 'transit').length;
+            const customsCount = allShips.filter(s => s.status === 'customs').length;
+            const iranCount = allShips.filter(s => s.status === 'iran').length;
+            const deliveredCount = allShips.filter(s => s.status === 'delivered').length;
+            const problemCount = allShips.filter(s => s.status === 'problem').length;
+
+            const pct = (val) => {
+              if (totalCount === 0) return '0%';
+              return ((val / totalCount) * 100).toFixed(1) + '%';
+            };
+
+            // SVG Stroke offsets helper
+            const getStrokeProps = (count, accumBefore) => {
+              if (totalCount === 0) return { dashOffset: 314, rotation: -90 };
+              const share = count / totalCount;
+              const dashOffset = 314 - (314 * share);
+              const rotation = -90 + (accumBefore / totalCount) * 360;
+              return { dashOffset, rotation };
+            };
 
             return (
               <div>
@@ -9485,25 +9504,50 @@ export default function AdminPanel() {
                                 {/* Background Track Circle */}
                                 <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="12" />
                                 
-                                {/* Segment 1: Delivered (green circle, ~93.3% = 293 stroke) */}
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="#10b981" strokeWidth="12" 
-                                        strokeDasharray="314" strokeDashoffset="21" transform="rotate(-90 60 60)" />
+                                {/* Segment 1: Delivered (green circle) */}
+                                {deliveredCount > 0 && (() => {
+                                  const { dashOffset, rotation } = getStrokeProps(deliveredCount, 0);
+                                  return (
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#10b981" strokeWidth="12" 
+                                            strokeDasharray="314" strokeDashoffset={dashOffset} transform={`rotate(${rotation} 60 60)`} />
+                                  );
+                                })()}
 
-                                {/* Segment 2: In transit (blue segment, ~2.9% = 9 stroke) */}
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="#3b82f6" strokeWidth="12" 
-                                        strokeDasharray="314" strokeDashoffset="305" transform="rotate(245 60 60)" />
+                                {/* Segment 2: In transit (blue segment) */}
+                                {transitCount > 0 && (() => {
+                                  const { dashOffset, rotation } = getStrokeProps(transitCount, deliveredCount);
+                                  return (
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#3b82f6" strokeWidth="12" 
+                                            strokeDasharray="314" strokeDashoffset={dashOffset} transform={`rotate(${rotation} 60 60)`} />
+                                  );
+                                })()}
 
-                                {/* Segment 3: In Iran (purple segment, ~2.2% = 7 stroke) */}
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="#a855f7" strokeWidth="12" 
-                                        strokeDasharray="314" strokeDashoffset="307" transform="rotate(255 60 60)" />
+                                {/* Segment 3: Customs (orange segment) */}
+                                {customsCount > 0 && (() => {
+                                  const { dashOffset, rotation } = getStrokeProps(customsCount, deliveredCount + transitCount);
+                                  return (
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#f59e0b" strokeWidth="12" 
+                                            strokeDasharray="314" strokeDashoffset={dashOffset} transform={`rotate(${rotation} 60 60)`} />
+                                  );
+                                })()}
 
-                                {/* Segment 4: Customs (orange segment, ~1.8% = 5 stroke) */}
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="#f59e0b" strokeWidth="12" 
-                                        strokeDasharray="314" strokeDashoffset="309" transform="rotate(263 60 60)" />
+                                {/* Segment 4: In Iran (purple segment) */}
+                                {iranCount > 0 && (() => {
+                                  const { dashOffset, rotation } = getStrokeProps(iranCount, deliveredCount + transitCount + customsCount);
+                                  return (
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#a855f7" strokeWidth="12" 
+                                            strokeDasharray="314" strokeDashoffset={dashOffset} transform={`rotate(${rotation} 60 60)`} />
+                                  );
+                                })()}
 
-                                {/* Segment 5: Problem (red segment, ~0.6% = 2 stroke) */}
-                                <circle cx="60" cy="60" r="50" fill="none" stroke="#ef4444" strokeWidth="12" 
-                                        strokeDasharray="314" strokeDashoffset="312" transform="rotate(269 60 60)" />
+                                {/* Segment 5: Problem (red segment) */}
+                                {problemCount > 0 && (() => {
+                                  const { dashOffset, rotation } = getStrokeProps(problemCount, deliveredCount + transitCount + customsCount + iranCount);
+                                  return (
+                                    <circle cx="60" cy="60" r="50" fill="none" stroke="#ef4444" strokeWidth="12" 
+                                            strokeDasharray="314" strokeDashoffset={dashOffset} transform={`rotate(${rotation} 60 60)`} />
+                                  );
+                                })()}
                               </svg>
                               
                               <div className={styles.doughnutCenterText}>
@@ -9521,7 +9565,7 @@ export default function AdminPanel() {
                                 </div>
                                 <div className={styles.legendValBlock}>
                                   <span className={styles.legendCount}>{transitCount}</span>
-                                  <span className={styles.legendPct}>(2.9%)</span>
+                                  <span className={styles.legendPct}>({pct(transitCount)})</span>
                                 </div>
                               </div>
 
@@ -9532,7 +9576,7 @@ export default function AdminPanel() {
                                 </div>
                                 <div className={styles.legendValBlock}>
                                   <span className={styles.legendCount}>{customsCount}</span>
-                                  <span className={styles.legendPct}>(1.8%)</span>
+                                  <span className={styles.legendPct}>({pct(customsCount)})</span>
                                 </div>
                               </div>
 
@@ -9543,7 +9587,7 @@ export default function AdminPanel() {
                                 </div>
                                 <div className={styles.legendValBlock}>
                                   <span className={styles.legendCount}>{iranCount}</span>
-                                  <span className={styles.legendPct}>(2.2%)</span>
+                                  <span className={styles.legendPct}>({pct(iranCount)})</span>
                                 </div>
                               </div>
 
@@ -9554,7 +9598,7 @@ export default function AdminPanel() {
                                 </div>
                                 <div className={styles.legendValBlock}>
                                   <span className={styles.legendCount}>{deliveredCount}</span>
-                                  <span className={styles.legendPct}>(93.3%)</span>
+                                  <span className={styles.legendPct}>({pct(deliveredCount)})</span>
                                 </div>
                               </div>
 
@@ -9564,8 +9608,8 @@ export default function AdminPanel() {
                                   <span className={styles.legendText}>مشکل</span>
                                 </div>
                                 <div className={styles.legendValBlock}>
-                                  <span className={styles.legendCount}>8</span>
-                                  <span className={styles.legendPct}>(0.6%)</span>
+                                  <span className={styles.legendCount}>{problemCount}</span>
+                                  <span className={styles.legendPct}>({pct(problemCount)})</span>
                                 </div>
                               </div>
                             </div>
@@ -9581,31 +9625,28 @@ export default function AdminPanel() {
                           <h3 className={styles.shipmentsCardTitle}>آخرین به‌روزرسانی‌ها</h3>
                           
                           <div className={styles.timelineList}>
-                            <div className={styles.timelineItem}>
-                              <span className={styles.timelineItemDot} style={{ backgroundColor: '#10b981' }} />
-                              <span className={styles.timelineTime}>۲ ساعت پیش</span>
-                              <span className={styles.timelineDesc}><strong>TRK-784509</strong> با موفقیت تحویل شد.</span>
-                            </div>
-                            <div className={styles.timelineItem}>
-                              <span className={styles.timelineItemDot} style={{ backgroundColor: '#3b82f6' }} />
-                              <span className={styles.timelineTime}>۳ ساعت پیش</span>
-                              <span className={styles.timelineDesc}><strong>TRK-784512</strong> وارد مرز کشور شد.</span>
-                            </div>
-                            <div className={styles.timelineItem}>
-                              <span className={styles.timelineItemDot} style={{ backgroundColor: '#f59e0b' }} />
-                              <span className={styles.timelineTime}>۵ ساعت پیش</span>
-                              <span className={styles.timelineDesc}><strong>TRK-784511</strong> به گمرک رسید.</span>
-                            </div>
-                            <div className={styles.timelineItem}>
-                              <span className={styles.timelineItemDot} style={{ backgroundColor: '#a855f7' }} />
-                              <span className={styles.timelineTime}>۱ روز پیش</span>
-                              <span className={styles.timelineDesc}><strong>TRK-784510</strong> وارد انبار ایران شد.</span>
-                            </div>
-                            <div className={styles.timelineItem}>
-                              <span className={styles.timelineItemDot} style={{ backgroundColor: '#ef4444' }} />
-                              <span className={styles.timelineTime}>۱ روز پیش</span>
-                              <span className={styles.timelineDesc}>مشکل در ارسال <strong>TRK-784507</strong> گزارش شد.</span>
-                            </div>
+                            {allShips.slice(0, 5).map((ship, idx) => {
+                              const dotColor = ship.status === 'delivered' ? '#10b981' :
+                                               ship.status === 'transit' ? '#3b82f6' :
+                                               ship.status === 'customs' ? '#f59e0b' :
+                                               ship.status === 'iran' ? '#a855f7' : '#ef4444';
+                              
+                              const statusDesc = ship.status === 'delivered' ? 'با موفقیت تحویل شد.' :
+                                                 ship.status === 'transit' ? 'به مسیر ارسال انتقال یافت.' :
+                                                 ship.status === 'customs' ? 'به گمرک رسید.' :
+                                                 ship.status === 'iran' ? 'وارد انبار ایران شد.' : 'مشکل در ارسال گزارش شد.';
+                              
+                              return (
+                                <div key={ship.id || idx} className={styles.timelineItem}>
+                                  <span className={styles.timelineItemDot} style={{ backgroundColor: dotColor }} />
+                                  <span className={styles.timelineTime}>{ship.dateUpdated || 'اخیراً'}</span>
+                                  <span className={styles.timelineDesc}><strong>{ship.id}</strong> {statusDesc}</span>
+                                </div>
+                              );
+                            })}
+                            {allShips.length === 0 && (
+                              <p style={{ color: '#8b92a5', fontSize: '11px', textAlign: 'center', padding: '10px' }}>به‌روزرسانی جدیدی ثبت نشده است.</p>
+                            )}
                           </div>
                         </div>
 
@@ -9617,40 +9658,30 @@ export default function AdminPanel() {
                           </div>
                           
                           <div className={styles.trackingList}>
-                            <div className={styles.trackingBoxItem}>
-                              <div className={styles.trackingBoxHeader}>
-                                <span className={styles.trackingBoxCode}>TRK-784512</span>
-                                <span className={styles.badgeActive} style={{ fontSize: '8.5px', padding: '1px 6px' }}>در حال ارسال</span>
-                              </div>
-                              <div className={styles.trackingBoxRoute}>
-                                <div className={styles.trackingBoxRouteDetails}>
-                                  <span>دبی</span>
-                                  <span style={{ fontSize: '10px', color: '#f87820' }}>↔</span>
-                                  <span>تهران</span>
+                            {allShips.filter(s => s.status === 'transit').slice(0, 3).map((ship, idx) => (
+                              <div key={ship.id || idx} className={styles.trackingBoxItem}>
+                                <div className={styles.trackingBoxHeader}>
+                                  <span className={styles.trackingBoxCode}>{ship.id}</span>
+                                  <span className={styles.badgeActive} style={{ fontSize: '8.5px', padding: '1px 6px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>در حال ارسال</span>
                                 </div>
-                                <span className={styles.trackingBoxRouteEst}>تاریخ تخمینی: 1403/03/22</span>
-                              </div>
-                            </div>
-
-                            <div className={styles.trackingBoxItem}>
-                              <div className={styles.trackingBoxHeader}>
-                                <span className={styles.trackingBoxCode}>TRK-784508</span>
-                                <span className={styles.badgeActive} style={{ fontSize: '8.5px', padding: '1px 6px' }}>در حال ارسال</span>
-                              </div>
-                              <div className={styles.trackingBoxRoute}>
-                                <div className={styles.trackingBoxRouteDetails}>
-                                  <span>دبی</span>
-                                  <span style={{ fontSize: '10px', color: '#f87820' }}>↔</span>
-                                  <span>تبریز</span>
+                                <div className={styles.trackingBoxRoute}>
+                                  <div className={styles.trackingBoxRouteDetails}>
+                                    <span>دبی</span>
+                                    <span style={{ fontSize: '10px', color: '#f87820' }}>↔</span>
+                                    <span>{ship.recipient || 'ایران'}</span>
+                                  </div>
+                                  <span className={styles.trackingBoxRouteEst}>تاریخ: {ship.dateUpdated}</span>
                                 </div>
-                                <span className={styles.trackingBoxRouteEst}>تاریخ تخمینی: 1403/03/22</span>
                               </div>
-                            </div>
+                            ))}
+                            {allShips.filter(s => s.status === 'transit').length === 0 && (
+                              <p style={{ color: '#8b92a5', fontSize: '11px', textAlign: 'center', padding: '10px' }}>مرسوله در حال ارسالی وجود ندارد.</p>
+                            )}
                           </div>
                         </div>
                       </>
                     ) : (() => {
-                      const selectedShip = shipments.find(s => s.id === selectedShipmentId);
+                      const selectedShip = allShips.find(s => s.id === selectedShipmentId);
                       if (!selectedShip) return <p style={{ color: '#8b92a5', textAlign: 'center', padding: '20px' }}>مرسوله مورد نظر یافت نشد.</p>;
                       
                       // Format price to Persian Currency
