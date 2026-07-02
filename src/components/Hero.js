@@ -67,7 +67,7 @@ export default function Hero() {
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f8a320" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                 </div>
                 <div className={styles.statText}>
-                  <span className={styles.statNum}>۷ تا ۱۲ روز</span>
+                  <span className={styles.statNum}>۱۰ تا ۱۵ روز</span>
                   <span className={styles.statLabel}>تحویل</span>
                 </div>
               </div>
