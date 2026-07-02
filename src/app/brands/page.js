@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import styles from './Brands.module.css';
@@ -52,11 +52,41 @@ const storesData = [
 ];
 
 export default function BrandsPage() {
+  const [brands, setBrands] = useState([]);
+  const [stores, setStores] = useState([]);
   const [activeCat, setActiveCat] = useState('همه برندها');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState('');
 
-  const filteredBrands = brandsData.filter(brand => {
+  useEffect(() => {
+    try {
+      const savedBrands = localStorage.getItem('dubaiKharidBrands');
+      if (savedBrands) {
+        setBrands(JSON.parse(savedBrands));
+      } else {
+        localStorage.setItem('dubaiKharidBrands', JSON.stringify(brandsData));
+        setBrands(brandsData);
+      }
+    } catch (e) {
+      console.error('Error loading brands:', e);
+      setBrands(brandsData);
+    }
+
+    try {
+      const savedStores = localStorage.getItem('dubaiKharidStores');
+      if (savedStores) {
+        setStores(JSON.parse(savedStores));
+      } else {
+        localStorage.setItem('dubaiKharidStores', JSON.stringify(storesData));
+        setStores(storesData);
+      }
+    } catch (e) {
+      console.error('Error loading stores:', e);
+      setStores(storesData);
+    }
+  }, []);
+
+  const filteredBrands = brands.filter(brand => {
     const query = searchQuery.toLowerCase().trim();
     if (query) {
       return (
@@ -231,7 +261,7 @@ export default function BrandsPage() {
         {/* ── ONLINE STORES ── */}
         <h2 className={styles.sectionTitle} style={{textAlign: 'right', fontSize: '1.2rem', marginBottom: '20px', marginTop: '50px'}}>فروشگاه‌های آنلاین دبی</h2>
         <div className={styles.grid} style={{marginBottom: '40px'}}>
-          {storesData.map(store => (
+          {stores.map(store => (
             <div key={store.id} className={styles.card}>
               <div className={styles.logoWrap}>
                 {store.hasImage ? (

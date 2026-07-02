@@ -369,6 +369,40 @@ const INITIAL_SHIPMENTS_SEED = [];
 const INITIAL_WAREHOUSE_PRODUCTS_SEED = [];
 const INITIAL_ADMIN_PRODUCTS_SEED = [];
 
+const DEFAULT_BRANDS_SEED = [
+  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI', url: 'https://www.gucci.com/ae/en/' },
+  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV', url: 'https://ae.louisvuitton.com/eng-ae/homepage' },
+  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL', url: 'https://www.chanel.com/ae/' },
+  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
+  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
+  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
+  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
+  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
+  { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
+  { id: 'fendi', name: 'Fendi', faName: 'فندی', cat: 'مد و پوشاک', hasImage: false, fallback: 'FENDI', url: 'https://www.fendi.com/ae-en/' },
+  { id: 'balenciaga', name: 'Balenciaga', faName: 'بالنسیاگا', cat: 'مد و پوشاک', hasImage: false, fallback: 'BALENCIAGA', url: 'https://www.balenciaga.com/en-ae' },
+  { id: 'saintlaurent', name: 'Saint Laurent', faName: 'سن لورن', cat: 'مد و پوشاک', hasImage: false, fallback: 'YSL', url: 'https://www.ysl.com/en-ae' },
+  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg', url: 'https://www.nike.com/ae/' },
+  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png', url: 'https://www.adidas.ae' },
+  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png', url: 'https://m.shein.com/ae' },
+  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '', url: 'https://www.apple.com/ae/' },
+  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG', url: 'https://www.samsung.com/ae/' },
+  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA', url: 'https://www.sephora.ae' },
+  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' },
+  { id: 'zara', name: 'Zara', faName: 'زارا', cat: 'مد و پوشاک', hasImage: false, fallback: 'ZARA', url: 'https://www.zara.com/ae/en/' },
+  { id: 'mango', name: 'Mango', faName: 'مانگو', cat: 'مد و پوشاک', hasImage: false, fallback: 'MANGO', url: 'https://shop.mango.com/ae' },
+  { id: 'hm', name: 'H&M', faName: 'اچ اند ام', cat: 'مد و پوشاک', hasImage: false, fallback: 'H&M', url: 'https://ae.hm.com/en/' }
+];
+
+const DEFAULT_STORES_SEED = [
+  { id: 'noon', name: 'Noon', desc: 'فروشگاه آنلاین چندمنظوره با ارسال سریع در دبی', url: 'https://www.noon.com/uae-en/', hasImage: true, img: '/images/logo/Noon.webp' },
+  { id: 'namshi', name: 'Namshi', desc: 'مد و پوشاک، کیف، کفش و اکسسوری', url: 'https://www.namshi.com/uae-en/', hasImage: false, fallback: 'NAMSHI' },
+  { id: 'ounass', name: 'Ounass', desc: 'فروشگاه لوکس برندهای جهانی', url: 'https://www.ounass.ae', hasImage: false, fallback: 'OUNASS' },
+  { id: 'amazon', name: 'Amazon.ae', desc: 'خرید انواع کالا با ارسال سریع به امارات و دبی', url: 'https://www.amazon.ae', hasImage: true, img: '/images/logo/amazon.png' },
+  { id: '6thstreet', name: '6thStreet', desc: 'مد و فشن با بهترین برندها', url: 'https://www.6thstreet.com/ae/en/', hasImage: false, fallback: '6thSTREET' },
+  { id: 'modanisa', name: 'Modanisa', desc: 'فروشگاه آنلاین پوشاک مناسب بانوان', url: 'https://www.modanisa.com/en/', hasImage: false, fallback: 'modanisa' }
+];
+
 export default function AdminPanel() {
   // Site settings context
   const { settings: siteCtxSettings, updateSettings: updateSiteCtxSettings, updateAedRateAuto } = useSiteSettings();
@@ -443,6 +477,33 @@ export default function AdminPanel() {
   const [warehouseProducts, setWarehouseProducts] = useState([]);
   const [selectedWarehouseProductId, setSelectedWarehouseProductId] = useState('');
   const [warehouseSearchQuery, setWarehouseSearchQuery] = useState('');
+
+  // Brands & Stores management states
+  const [brands, setBrands] = useState([]);
+  const [stores, setStores] = useState([]);
+  const [brandsSubTab, setBrandsSubTab] = useState('official'); // official, online_stores
+  const [brandSearchQuery, setBrandSearchQuery] = useState('');
+  const [storeSearchQuery, setStoreSearchQuery] = useState('');
+
+  // Add/Edit brand modal states
+  const [isAddBrandOpen, setIsAddBrandOpen] = useState(false);
+  const [isEditBrandOpen, setIsEditBrandOpen] = useState(false);
+  const [editBrandForm, setEditBrandForm] = useState({
+    id: '', name: '', faName: '', cat: 'مد و پوشاک', url: '', img: '', fallback: '', hasImage: false
+  });
+  const [addBrandForm, setAddBrandForm] = useState({
+    name: '', faName: '', cat: 'مد و پوشاک', url: '', img: '', fallback: '', hasImage: false
+  });
+
+  // Add/Edit store modal states
+  const [isAddStoreOpen, setIsAddStoreOpen] = useState(false);
+  const [isEditStoreOpen, setIsEditStoreOpen] = useState(false);
+  const [editStoreForm, setEditStoreForm] = useState({
+    id: '', name: '', desc: '', url: '', img: '', fallback: '', hasImage: false
+  });
+  const [addStoreForm, setAddStoreForm] = useState({
+    name: '', desc: '', url: '', img: '', fallback: '', hasImage: false
+  });
   const [warehouseCategoryFilter, setWarehouseCategoryFilter] = useState('همه');
   const [warehouseBrandFilter, setWarehouseBrandFilter] = useState('همه');
   const [warehouseStatusFilter, setWarehouseStatusFilter] = useState('همه');
@@ -1107,6 +1168,24 @@ export default function AdminPanel() {
       if (INITIAL_WAREHOUSE_PRODUCTS_SEED.length > 0) {
         setSelectedWarehouseProductId(INITIAL_WAREHOUSE_PRODUCTS_SEED[0].id);
       }
+    }
+
+    // Brands seed
+    const savedBrands = localStorage.getItem('dubaiKharidBrands');
+    if (savedBrands) {
+      setBrands(JSON.parse(savedBrands));
+    } else {
+      localStorage.setItem('dubaiKharidBrands', JSON.stringify(DEFAULT_BRANDS_SEED));
+      setBrands(DEFAULT_BRANDS_SEED);
+    }
+
+    // Stores seed
+    const savedStores = localStorage.getItem('dubaiKharidStores');
+    if (savedStores) {
+      setStores(JSON.parse(savedStores));
+    } else {
+      localStorage.setItem('dubaiKharidStores', JSON.stringify(DEFAULT_STORES_SEED));
+      setStores(DEFAULT_STORES_SEED);
     }
 
     // Load deleted static laptop IDs
@@ -2024,13 +2103,131 @@ export default function AdminPanel() {
     localStorage.removeItem('dubaiKharidUploadedProducts');
     localStorage.setItem('dubaiKharidAdminProducts', JSON.stringify(INITIAL_ADMIN_PRODUCTS_SEED));
     localStorage.setItem('dubaiKharidPassword', '@Reza112233');
+    localStorage.setItem('dubaiKharidBrands', JSON.stringify(DEFAULT_BRANDS_SEED));
+    localStorage.setItem('dubaiKharidStores', JSON.stringify(DEFAULT_STORES_SEED));
 
     setLeads(INITIAL_LEADS_SEED);
     setReviews([]);
     setUploadedProducts([]);
     setAdminProducts(INITIAL_ADMIN_PRODUCTS_SEED);
+    setBrands(DEFAULT_BRANDS_SEED);
+    setStores(DEFAULT_STORES_SEED);
     setAllProductsCount(getAllProducts().length);
     alert('اطلاعات آزمایشی با موفقیت بازیابی شد.');
+  };
+
+  const handleAddBrand = (e) => {
+    if (e) e.preventDefault();
+    if (!addBrandForm.name.trim()) {
+      alert('لطفا نام انگلیسی برند را وارد کنید.');
+      return;
+    }
+    const id = addBrandForm.name.trim().toLowerCase().replace(/\s+/g, '-');
+    if (brands.some(b => b.id === id)) {
+      alert('این برند قبلا اضافه شده است.');
+      return;
+    }
+    const newBrand = {
+      id,
+      name: addBrandForm.name.trim(),
+      faName: addBrandForm.faName.trim() || addBrandForm.name.trim(),
+      cat: addBrandForm.cat || 'مد و پوشاک',
+      url: addBrandForm.url.trim(),
+      img: addBrandForm.img.trim() || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=60&q=80',
+      fallback: addBrandForm.fallback.trim() || '🏷️',
+      hasImage: !!addBrandForm.img.trim()
+    };
+    const updated = [...brands, newBrand];
+    setBrands(updated);
+    localStorage.setItem('dubaiKharidBrands', JSON.stringify(updated));
+    setIsAddBrandOpen(false);
+    setAddBrandForm({
+      name: '', faName: '', cat: 'مد و پوشاک', url: '', img: '', fallback: '', hasImage: false
+    });
+    alert('برند جدید با موفقیت ذخیره شد.');
+  };
+
+  const handleEditBrand = (e) => {
+    if (e) e.preventDefault();
+    if (!editBrandForm.name.trim()) return;
+    const updated = brands.map(b => b.id === editBrandForm.id ? {
+      ...b,
+      name: editBrandForm.name.trim(),
+      faName: editBrandForm.faName.trim() || editBrandForm.name.trim(),
+      cat: editBrandForm.cat || 'مد و پوشاک',
+      url: editBrandForm.url.trim(),
+      img: editBrandForm.img.trim() || b.img,
+      fallback: editBrandForm.fallback.trim() || b.fallback,
+      hasImage: !!editBrandForm.img.trim()
+    } : b);
+    setBrands(updated);
+    localStorage.setItem('dubaiKharidBrands', JSON.stringify(updated));
+    setIsEditBrandOpen(false);
+    alert('برند با موفقیت ویرایش شد.');
+  };
+
+  const handleDeleteBrand = (id) => {
+    if (!confirm('آیا از حذف این برند اطمینان دارید؟')) return;
+    const updated = brands.filter(b => b.id !== id);
+    setBrands(updated);
+    localStorage.setItem('dubaiKharidBrands', JSON.stringify(updated));
+    alert('برند با موفقیت حذف شد.');
+  };
+
+  const handleAddStore = (e) => {
+    if (e) e.preventDefault();
+    if (!addStoreForm.name.trim()) {
+      alert('لطفا نام انگلیسی فروشگاه را وارد کنید.');
+      return;
+    }
+    const id = addStoreForm.name.trim().toLowerCase().replace(/\s+/g, '-');
+    if (stores.some(s => s.id === id)) {
+      alert('این فروشگاه قبلا اضافه شده است.');
+      return;
+    }
+    const newStore = {
+      id,
+      name: addStoreForm.name.trim(),
+      desc: addStoreForm.desc.trim() || addStoreForm.name.trim(),
+      url: addStoreForm.url.trim(),
+      img: addStoreForm.img.trim() || 'https://images.unsplash.com/photo-1523474253046-8cd2748b5fd2?w=60&q=80',
+      fallback: addStoreForm.fallback.trim() || '🏬',
+      hasImage: !!addStoreForm.img.trim()
+    };
+    const updated = [...stores, newStore];
+    setStores(updated);
+    localStorage.setItem('dubaiKharidStores', JSON.stringify(updated));
+    setIsAddStoreOpen(false);
+    setAddStoreForm({
+      name: '', desc: '', url: '', img: '', fallback: '', hasImage: false
+    });
+    alert('فروشگاه جدید با موفقیت ذخیره شد.');
+  };
+
+  const handleEditStore = (e) => {
+    if (e) e.preventDefault();
+    if (!editStoreForm.name.trim()) return;
+    const updated = stores.map(s => s.id === editStoreForm.id ? {
+      ...s,
+      name: editStoreForm.name.trim(),
+      desc: editStoreForm.desc.trim() || editStoreForm.name.trim(),
+      url: editStoreForm.url.trim(),
+      img: editStoreForm.img.trim() || s.img,
+      fallback: editStoreForm.fallback.trim() || s.fallback,
+      hasImage: !!editStoreForm.img.trim()
+    } : s);
+    setStores(updated);
+    localStorage.setItem('dubaiKharidStores', JSON.stringify(updated));
+    setIsEditStoreOpen(false);
+    alert('فروشگاه با موفقیت ویرایش شد.');
+  };
+
+  const handleDeleteStore = (id) => {
+    if (!confirm('آیا از حذف این فروشگاه اطمینان دارید؟')) return;
+    const updated = stores.filter(s => s.id !== id);
+    setStores(updated);
+    localStorage.setItem('dubaiKharidStores', JSON.stringify(updated));
+    alert('فروشگاه با موفقیت حذف شد.');
   };
 
   // Form calculations
@@ -2247,7 +2444,19 @@ export default function AdminPanel() {
               </button>
             </li>
 
-            {/* 11. تنظیمات */}
+            {/* 11. برندها و فروشگاه‌ها */}
+            <li className={styles.navMenuItem}>
+              <button onClick={() => setActiveTab('brands_manager')} className={`${styles.navMenuLink} ${activeTab === 'brands_manager' ? styles.navMenuLinkActive : ''}`}>
+                <span className={styles.navIcon}>
+                  <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                  </svg>
+                </span> برندها و فروشگاه‌ها
+              </button>
+            </li>
+
+            {/* 12. تنظیمات */}
             <li className={styles.navMenuItem}>
               <button onClick={() => setActiveTab('settings')} className={`${styles.navMenuLink} ${activeTab === 'settings' ? styles.navMenuLinkActive : ''}`}>
                 <span className={styles.navIcon}>
@@ -10907,6 +11116,328 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
+              </div>
+            );
+          })()}
+
+          {/* TAB: BRANDS & STORES MANAGER */}
+          {activeTab === 'brands_manager' && (() => {
+            return (
+              <div style={{ direction: 'rtl' }}>
+                {/* Page Title */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                      <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    مدیریت برندها و فروشگاه‌ها
+                  </h1>
+                  <p style={{ fontSize: '12px', color: '#8b92a5', margin: 0 }}>افزودن، ویرایش و حذف برندهای کالا و فروشگاه‌های مرجع امارات</p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+                  
+                  {/* BRANDS PANEL */}
+                  <div className={styles.cardPanel} style={{ padding: '24px', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px' }}>
+                      <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        👟 برندهای تعریف‌شده
+                        <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: '#f87820', fontWeight: '700' }}>{brands.length} برند</span>
+                      </h2>
+                      <button
+                        onClick={() => {
+                          setAddBrandForm({ name: '', faName: '', cat: 'مد و پوشاک', url: '', img: '', fallback: '🏷️', hasImage: false });
+                          setIsAddBrandOpen(true);
+                        }}
+                        style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}
+                      >
+                        + افزودن برند جدید
+                      </button>
+                    </div>
+
+                    {/* Brand Search */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <input
+                        type="text"
+                        placeholder="جستجو در برندها..."
+                        value={brandSearchQuery}
+                        onChange={e => setBrandSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px',
+                          color: '#fff', fontSize: '12.5px', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '450px', overflowY: 'auto', paddingLeft: '4px' }}>
+                      {brands.filter(b => 
+                        b.name.toLowerCase().includes(brandSearchQuery.toLowerCase()) || 
+                        (b.faName && b.faName.includes(brandSearchQuery))
+                      ).map(brand => (
+                        <div key={brand.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '18px', overflow: 'hidden' }}>
+                              {brand.img && brand.img.startsWith('http') ? (
+                                <img src={brand.img} alt={brand.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              ) : (
+                                <span>{brand.fallback || '🏷️'}</span>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{brand.name}</div>
+                              <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px' }}>{brand.faName} • {brand.cat}</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => {
+                                setEditBrandForm(brand);
+                                setIsEditBrandOpen(true);
+                              }}
+                              style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#c0c8d8', cursor: 'pointer' }}
+                            >
+                              ویرایش
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBrand(brand.id)}
+                              style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                            >
+                              حذف
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {brands.length === 0 && (
+                        <div style={{ padding: '30px', textAlign: 'center', color: '#8b92a5', fontSize: '12px' }}>برندی تعریف نشده است.</div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* STORES PANEL */}
+                  <div className={styles.cardPanel} style={{ padding: '24px', borderRadius: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px' }}>
+                      <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        🏬 فروشگاه‌های مرجع (امارات)
+                        <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: '#f87820', fontWeight: '700' }}>{stores.length} فروشگاه</span>
+                      </h2>
+                      <button
+                        onClick={() => {
+                          setAddStoreForm({ name: '', desc: '', url: '', img: '', fallback: '🏬', hasImage: false });
+                          setIsAddStoreOpen(true);
+                        }}
+                        style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}
+                      >
+                        + افزودن فروشگاه جدید
+                      </button>
+                    </div>
+
+                    {/* Store Search */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <input
+                        type="text"
+                        placeholder="جستجو در فروشگاه‌ها..."
+                        value={storeSearchQuery}
+                        onChange={e => setStoreSearchQuery(e.target.value)}
+                        style={{
+                          width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px',
+                          color: '#fff', fontSize: '12.5px', outline: 'none'
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '450px', overflowY: 'auto', paddingLeft: '4px' }}>
+                      {stores.filter(s => 
+                        s.name.toLowerCase().includes(storeSearchQuery.toLowerCase()) || 
+                        (s.desc && s.desc.includes(storeSearchQuery))
+                      ).map(store => (
+                        <div key={store.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '18px', overflow: 'hidden' }}>
+                              {store.img && store.img.startsWith('http') ? (
+                                <img src={store.img} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              ) : (
+                                <span>{store.fallback || '🏬'}</span>
+                              )}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{store.name}</div>
+                              <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px' }}>{store.desc} • <a href={store.url} target="_blank" rel="noopener noreferrer" style={{ color: '#f87820', textDecoration: 'none' }}>مشاهده سایت ↗</a></div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              onClick={() => {
+                                setEditStoreForm(store);
+                                setIsEditStoreOpen(true);
+                              }}
+                              style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#c0c8d8', cursor: 'pointer' }}
+                            >
+                              ویرایش
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStore(store.id)}
+                              style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                            >
+                              حذف
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {stores.length === 0 && (
+                        <div style={{ padding: '30px', textAlign: 'center', color: '#8b92a5', fontSize: '12px' }}>فروشگاهی تعریف نشده است.</div>
+                      )}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* MODALS */}
+                {/* 1. Add Brand Modal */}
+                {isAddBrandOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                    <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>➕ افزودن برند جدید</h3>
+                      <form onSubmit={handleAddBrand}>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام انگلیسی برند *</label>
+                          <input type="text" required value={addBrandForm.name} onChange={e => setAddBrandForm({...addBrandForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام فارسی برند</label>
+                          <input type="text" value={addBrandForm.faName} onChange={e => setAddBrandForm({...addBrandForm, faName: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>دسته‌بندی</label>
+                          <select value={addBrandForm.cat} onChange={e => setAddBrandForm({...addBrandForm, cat: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}>
+                            <option value="مد و پوشاک">مد و پوشاک</option>
+                            <option value="لوازم آرایشی و بهداشتی">لوازم آرایشی و بهداشتی</option>
+                            <option value="لوازم الکترونیکی">لوازم الکترونیکی</option>
+                            <option value="خانه و آشپزخانه">خانه و آشپزخانه</option>
+                            <option value="سایر">سایر</option>
+                          </select>
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
+                          <input type="url" value={addBrandForm.url} onChange={e => setAddBrandForm({...addBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="https://www.nike.com/ae/" />
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
+                          <input type="url" value={addBrandForm.img} onChange={e => setAddBrandForm({...addBrandForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                          <button type="button" onClick={() => setIsAddBrandOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره برند</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Edit Brand Modal */}
+                {isEditBrandOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                    <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>✏️ ویرایش برند {editBrandForm.name}</h3>
+                      <form onSubmit={handleEditBrand}>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام انگلیسی برند *</label>
+                          <input type="text" required value={editBrandForm.name} onChange={e => setEditBrandForm({...editBrandForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام فارسی برند</label>
+                          <input type="text" value={editBrandForm.faName} onChange={e => setEditBrandForm({...editBrandForm, faName: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>دسته‌بندی</label>
+                          <select value={editBrandForm.cat} onChange={e => setEditBrandForm({...editBrandForm, cat: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}>
+                            <option value="مد و پوشاک">مد و پوشاک</option>
+                            <option value="لوازم آرایشی و بهداشتی">لوازم آرایشی و بهداشتی</option>
+                            <option value="لوازم الکترونیکی">لوازم الکترونیکی</option>
+                            <option value="خانه و آشپزخانه">خانه و آشپزخانه</option>
+                            <option value="سایر">سایر</option>
+                          </select>
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
+                          <input type="url" value={editBrandForm.url} onChange={e => setEditBrandForm({...editBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
+                          <input type="url" value={editBrandForm.img} onChange={e => setEditBrandForm({...editBrandForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                          <button type="button" onClick={() => setIsEditBrandOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Add Store Modal */}
+                {isAddStoreOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                    <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>➕ افزودن فروشگاه جدید</h3>
+                      <form onSubmit={handleAddStore}>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام انگلیسی فروشگاه *</label>
+                          <input type="text" required value={addStoreForm.name} onChange={e => setAddStoreForm({...addStoreForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام فارسی/توضیح کوتاه</label>
+                          <input type="text" value={addStoreForm.desc} onChange={e => setAddStoreForm({...addStoreForm, desc: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت فروشگاه (امارات)</label>
+                          <input type="url" value={addStoreForm.url} onChange={e => setAddStoreForm({...addStoreForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="https://www.amazon.ae/" />
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
+                          <input type="url" value={addStoreForm.img} onChange={e => setAddStoreForm({...addStoreForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                          <button type="button" onClick={() => setIsAddStoreOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره فروشگاه</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Edit Store Modal */}
+                {isEditStoreOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                    <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>✏️ ویرایش فروشگاه {editStoreForm.name}</h3>
+                      <form onSubmit={handleEditStore}>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام انگلیسی فروشگاه *</label>
+                          <input type="text" required value={editStoreForm.name} onChange={e => setEditStoreForm({...editStoreForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام فارسی/توضیح کوتاه</label>
+                          <input type="text" value={editStoreForm.desc} onChange={e => setEditStoreForm({...editStoreForm, desc: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت فروشگاه (امارات)</label>
+                          <input type="url" value={editStoreForm.url} onChange={e => setEditStoreForm({...editStoreForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس تصویر لوگو (URL)</label>
+                          <input type="url" value={editStoreForm.img} onChange={e => setEditStoreForm({...editStoreForm, img: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                          <button type="button" onClick={() => setIsEditStoreOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })()}
