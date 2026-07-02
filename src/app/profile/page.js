@@ -502,6 +502,14 @@ function ProfileContent() {
     }
   };
 
+  const handleResetForm = () => {
+    setReqUrl('');
+    setReqProductName('');
+    setReqImg('');
+    setReqNotes('');
+    setReqQty(1);
+  };
+
   // Cancel purchase request
   const handleCancelRequest = (reqId) => {
     if (!window.confirm('آیا از لغو این درخواست خرید مطمئن هستید؟')) return;
