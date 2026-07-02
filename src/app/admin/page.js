@@ -11019,11 +11019,142 @@ export default function AdminPanel() {
 
           {/* TAB: FINANCIAL REPORTS (Brand New Comprehensive View) */}
           {activeTab === 'financial_reports' && (() => {
-            // Overall statistics
-            const totalIncomes = 2145500000;
-            const totalOutgoings = 1245300000;
+            const allPayments = getMergedPayments();
+
+            // Overall statistics calculated dynamically
+            const successfulIncomes = allPayments.filter(p => p.type === 'دریافتی' && p.status === 'success');
+            const totalIncomes = successfulIncomes.reduce((sum, p) => sum + Math.abs(p.amount), 0);
+            const totalOutgoings = allPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
             const netProfit = totalIncomes - totalOutgoings;
-            const averageOrderVal = 7750000;
+            const averageOrderVal = successfulIncomes.length > 0 ? Math.round(totalIncomes / successfulIncomes.length) : 0;
+
+            // Shetab gateway share calculation
+            const onlineIncome = successfulIncomes.filter(p => p.method === 'درگاه بانکی' || p.method === 'درگاه آنلاین').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+            const shetabShare = totalIncomes > 0 ? (onlineIncome / totalIncomes) * 100 : 45.6;
+
+            // Expense breakdown dynamic calculation
+            const expensePayments = allPayments.filter(p => p.type === 'پرداختی');
+            const totalExp = expensePayments.reduce((sum, p) => sum + Math.abs(p.amount), 0);
+
+            const supplyAmt = expensePayments.filter(p => 
+              p.notes?.includes('خرید') || p.notes?.includes('تامین') || p.notes?.includes('کالا') || p.notes?.includes('لپتاپ') || p.notes?.includes('محصول') ||
+              p.productName?.includes('خرید') || p.productName?.includes('تامین') || p.productName?.includes('کالا') || p.productName?.includes('لپتاپ')
+            ).reduce((sum, p) => sum + Math.abs(p.amount), 0);
+
+            const cargoAmt = expensePayments.filter(p => 
+              p.notes?.includes('حمل') || p.notes?.includes('ترخیص') || p.notes?.includes('کارگو') || p.notes?.includes('ارسال') || p.notes?.includes('پست') ||
+              p.productName?.includes('حمل') || p.productName?.includes('ترخیص') || p.productName?.includes('کارگو') || p.productName?.includes('ارسال')
+            ).reduce((sum, p) => sum + Math.abs(p.amount), 0);
+
+            const promoAmt = expensePayments.filter(p => 
+              p.notes?.includes('تبلیغات') || p.notes?.includes('مارکتینگ') || p.notes?.includes('گوگل') || p.notes?.includes('اینستاگرام') ||
+              p.productName?.includes('تبلیغات') || p.productName?.includes('مارکتینگ')
+            ).reduce((sum, p) => sum + Math.abs(p.amount), 0);
+
+            const officeAmt = totalExp - (supplyAmt + cargoAmt + promoAmt);
+
+            const supplyPct = totalExp > 0 ? (supplyAmt / totalExp) * 100 : 55;
+            const cargoPct = totalExp > 0 ? (cargoAmt / totalExp) * 100 : 25.2;
+            const promoPct = totalExp > 0 ? (promoAmt / totalExp) * 100 : 8;
+            const officePct = totalExp > 0 ? (officeAmt / totalExp) * 100 : 11.8;
+
+            const grossMargin = totalIncomes > 0 ? (netProfit / totalIncomes) * 100 : 41.9;
+
+            // Persian Date month-based grouping
+            const getJalaliMonthName = (monthNum) => {
+              const months = [
+                'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+                'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+              ];
+              return months[monthNum - 1] || '';
+            };
+
+            const getJalaliDateParts = (dStr) => {
+              if (!dStr) return null;
+              if (dStr.includes('/') && !dStr.includes('T')) {
+                const parts = dStr.split(' ')[0].split('/');
+                if (parts.length === 3) {
+                  return {
+                    y: parseInt(parts[0]),
+                    m: parseInt(parts[1]),
+                    d: parseInt(parts[2])
+                  };
+                }
+              }
+              try {
+                const date = new Date(dStr);
+                if (isNaN(date.getTime())) return null;
+                const jalaliStr = new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
+                  year: 'numeric',
+                  month: 'numeric',
+                  day: 'numeric'
+                }).format(date);
+                const parts = jalaliStr.split('/');
+                if (parts.length === 3) {
+                  return {
+                    y: parseInt(parts[0]),
+                    m: parseInt(parts[1]),
+                    d: parseInt(parts[2])
+                  };
+                }
+              } catch (e) {}
+              return null;
+            };
+
+            const currentParts = getJalaliDateParts(new Date().toISOString()) || { y: 1403, m: 3, d: 15 };
+            const curY = currentParts.y;
+            const curM = currentParts.m;
+
+            const monthsList = [];
+            for (let i = 3; i >= 0; i--) {
+              let m = curM - i;
+              let y = curY;
+              if (m <= 0) {
+                m += 12;
+                y -= 1;
+              }
+              monthsList.push({ y, m, name: `${getJalaliMonthName(m)} ${y}` });
+            }
+
+            const monthlyData = monthsList.map(item => {
+              const monthPayments = allPayments.filter(p => {
+                const parts = getJalaliDateParts(p.date || p.dateShipped);
+                return parts && parts.y === item.y && parts.m === item.m;
+              });
+
+              const inc = monthPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+              const exp = monthPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+              return {
+                ...item,
+                income: inc,
+                expense: exp,
+                profit: inc - exp
+              };
+            });
+
+            // Trend visualization dataset (use fallback mock dataset if completely empty)
+            const hasData = monthlyData.some(d => d.income > 0 || d.expense > 0);
+            const finalMonthlyData = hasData ? monthlyData : [
+              { ...monthsList[0], income: 1620000000, expense: 880000000, profit: 740000000 },
+              { ...monthsList[1], income: 1750000000, expense: 950000000, profit: 800000000 },
+              { ...monthsList[2], income: 1980000000, expense: 1120000000, profit: 860000000 },
+              { ...monthsList[3], income: 2145500000, expense: 1245300000, profit: 900200000 }
+            ];
+
+            const maxVal = Math.max(
+              ...finalMonthlyData.map(d => Math.max(d.income, d.expense)),
+              10000000
+            );
+
+            const scaleY = (val) => {
+              const share = val / maxVal;
+              return 150 - (share * 120);
+            };
+
+            const getBarHeight = (val) => {
+              const share = val / maxVal;
+              return share * 120;
+            };
 
             return (
               <div>
@@ -11040,7 +11171,7 @@ export default function AdminPanel() {
                   <div className={styles.titleActionBtns} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <button 
                       type="button" 
-                      onClick={() => alert('گزارش عملکرد مالی دوره خرداد ماه به صورت فایل PDF دانلود گردید.')} 
+                      onClick={() => alert(`گزارش عملکرد مالی دوره ${monthsList[3].name} به صورت فایل PDF دانلود گردید.`)} 
                       className={styles.advFilterBtn} 
                       style={{ padding: '10px 15px', color: '#fff' }}
                     >
@@ -11065,7 +11196,9 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '18px', fontWeight: '900', color: '#10b981', fontFamily: 'var(--font-vazirmatn)' }}>
                         {totalIncomes.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#10b981', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>۴۵.۶٪ سهم درگاه شتاب</span>
+                      <span style={{ fontSize: '9px', color: '#10b981', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
+                        {shetabShare.toFixed(1)}٪ سهم درگاه شتاب
+                      </span>
                     </div>
                     <span style={{ fontSize: '24px', color: '#10b981' }}>{AdminIcons.trendingUp(24)}</span>
                   </div>
@@ -11076,7 +11209,9 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '18px', fontWeight: '900', color: '#ef4444', fontFamily: 'var(--font-vazirmatn)' }}>
                         {totalOutgoings.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#ef4444', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>۲۵.۲٪ بابت ترخیص و گمرک</span>
+                      <span style={{ fontSize: '9px', color: '#ef4444', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
+                        {cargoPct.toFixed(1)}٪ بابت ترخیص و گمرک
+                      </span>
                     </div>
                     <span style={{ fontSize: '24px', color: '#ef4444' }}>{AdminIcons.trendingDown(24)}</span>
                   </div>
@@ -11087,7 +11222,9 @@ export default function AdminPanel() {
                       <span style={{ fontSize: '18px', fontWeight: '900', color: '#3b82f6', fontFamily: 'var(--font-vazirmatn)' }}>
                         {netProfit.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#10b981', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>حاشیه سود ناخالص: ۴۱.۹٪ +</span>
+                      <span style={{ fontSize: '9px', color: netProfit >= 0 ? '#10b981' : '#ef4444', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
+                        حاشیه سود خالص: {grossMargin.toFixed(1)}٪ {netProfit >= 0 ? '+' : ''}
+                      </span>
                     </div>
                     <span style={{ fontSize: '24px', color: '#f59e0b' }}>{AdminIcons.dollar(24)}</span>
                   </div>
@@ -11120,42 +11257,42 @@ export default function AdminPanel() {
                         <line x1="40" y1="150" x2="390" y2="150" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
                         
                         {/* Y axis labels */}
-                        <text x="5" y="34" fill="#6c7284" fontSize="8">240M</text>
-                        <text x="5" y="74" fill="#6c7284" fontSize="8">160M</text>
-                        <text x="5" y="114" fill="#6c7284" fontSize="8">80M</text>
+                        <text x="5" y="34" fill="#6c7284" fontSize="8">{(maxVal / 1000000).toFixed(0)}M</text>
+                        <text x="5" y="74" fill="#6c7284" fontSize="8">{((maxVal * 2/3) / 1000000).toFixed(0)}M</text>
+                        <text x="5" y="114" fill="#6c7284" fontSize="8">{((maxVal * 1/3) / 1000000).toFixed(0)}M</text>
                         <text x="5" y="154" fill="#6c7284" fontSize="8">0</text>
                         
-                        {/* March Bars (اسفند) */}
-                        <rect x="80" y="70" width="16" height="80" fill="#10b981" rx="2" />
-                        <rect x="100" y="100" width="16" height="50" fill="#ef4444" rx="2" />
+                        {/* Month 1 */}
+                        <rect x="70" y={scaleY(finalMonthlyData[0].income)} width="16" height={getBarHeight(finalMonthlyData[0].income)} fill="#10b981" rx="2" />
+                        <rect x="90" y={scaleY(finalMonthlyData[0].expense)} width="16" height={getBarHeight(finalMonthlyData[0].expense)} fill="#ef4444" rx="2" />
                         
-                        {/* April Bars (فروردین) */}
-                        <rect x="160" y="50" width="16" height="100" fill="#10b981" rx="2" />
-                        <rect x="180" y="90" width="16" height="60" fill="#ef4444" rx="2" />
+                        {/* Month 2 */}
+                        <rect x="150" y={scaleY(finalMonthlyData[1].income)} width="16" height={getBarHeight(finalMonthlyData[1].income)} fill="#10b981" rx="2" />
+                        <rect x="170" y={scaleY(finalMonthlyData[1].expense)} width="16" height={getBarHeight(finalMonthlyData[1].expense)} fill="#ef4444" rx="2" />
                         
-                        {/* May Bars (اردیبهشت) */}
-                        <rect x="240" y="35" width="16" height="115" fill="#10b981" rx="2" />
-                        <rect x="260" y="80" width="16" height="70" fill="#ef4444" rx="2" />
+                        {/* Month 3 */}
+                        <rect x="230" y={scaleY(finalMonthlyData[2].income)} width="16" height={getBarHeight(finalMonthlyData[2].income)} fill="#10b981" rx="2" />
+                        <rect x="250" y={scaleY(finalMonthlyData[2].expense)} width="16" height={getBarHeight(finalMonthlyData[2].expense)} fill="#ef4444" rx="2" />
                         
-                        {/* June Bars (خرداد) */}
-                        <rect x="320" y="25" width="16" height="125" fill="#10b981" rx="2" />
-                        <rect x="340" y="75" width="16" height="75" fill="#ef4444" rx="2" />
+                        {/* Month 4 */}
+                        <rect x="310" y={scaleY(finalMonthlyData[3].income)} width="16" height={getBarHeight(finalMonthlyData[3].income)} fill="#10b981" rx="2" />
+                        <rect x="330" y={scaleY(finalMonthlyData[3].expense)} width="16" height={getBarHeight(finalMonthlyData[3].expense)} fill="#ef4444" rx="2" />
                         
-                        {/* Profit trend line overlay - Blue */}
-                        <path d="M 98 120 L 178 110 L 258 105 L 338 100" fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
-                        <circle cx="98" cy="120" r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
-                        <circle cx="178" cy="110" r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
-                        <circle cx="258" cy="105" r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
-                        <circle cx="338" cy="100" r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                        {/* Profit trend line overlay */}
+                        <path d={`M 88 ${scaleY(finalMonthlyData[0].profit)} L 168 ${scaleY(finalMonthlyData[1].profit)} L 248 ${scaleY(finalMonthlyData[2].profit)} L 328 ${scaleY(finalMonthlyData[3].profit)}`} fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
+                        <circle cx="88" cy={scaleY(finalMonthlyData[0].profit)} r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                        <circle cx="168" cy={scaleY(finalMonthlyData[1].profit)} r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                        <circle cx="248" cy={scaleY(finalMonthlyData[2].profit)} r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
+                        <circle cx="328" cy={scaleY(finalMonthlyData[3].profit)} r="4" fill="#fff" stroke="#3b82f6" strokeWidth="2" />
                       </svg>
                     </div>
                     
                     {/* X axis labels */}
                     <div style={{ display: 'flex', justifyContent: 'space-around', paddingLeft: '40px', marginTop: '8px', fontSize: '10px', color: '#8b92a5' }}>
-                      <span>اسفند ۱۴۰۲</span>
-                      <span>فروردین ۱۴۰۳</span>
-                      <span>اردیبهشت ۱۴۰۳</span>
-                      <span>خرداد ۱۴۰۳</span>
+                      <span>{finalMonthlyData[0].name}</span>
+                      <span>{finalMonthlyData[1].name}</span>
+                      <span>{finalMonthlyData[2].name}</span>
+                      <span>{finalMonthlyData[3].name}</span>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '16px' }}>
@@ -11182,10 +11319,10 @@ export default function AdminPanel() {
                           <span className={styles.finBreakdownName}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f87820' }} /> تامین کالا و خرید
                           </span>
-                          <span className={styles.finBreakdownVal}>۵۵٪</span>
+                          <span className={styles.finBreakdownVal}>{supplyPct.toFixed(0)}٪</span>
                         </div>
                         <div className={styles.progressBarTrack}>
-                          <div className={styles.progressBarFill} style={{ width: '55%', backgroundColor: '#f87820' }} />
+                          <div className={styles.progressBarFill} style={{ width: `${supplyPct}%`, backgroundColor: '#f87820' }} />
                         </div>
                       </div>
 
@@ -11195,10 +11332,10 @@ export default function AdminPanel() {
                           <span className={styles.finBreakdownName}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }} /> حمل و نقل و ترخیص (کارگو)
                           </span>
-                          <span className={styles.finBreakdownVal}>۲۵٪</span>
+                          <span className={styles.finBreakdownVal}>{cargoPct.toFixed(0)}٪</span>
                         </div>
                         <div className={styles.progressBarTrack}>
-                          <div className={styles.progressBarFill} style={{ width: '25%', backgroundColor: '#10b981' }} />
+                          <div className={styles.progressBarFill} style={{ width: `${cargoPct}%`, backgroundColor: '#10b981' }} />
                         </div>
                       </div>
 
@@ -11208,10 +11345,10 @@ export default function AdminPanel() {
                           <span className={styles.finBreakdownName}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6' }} /> ملزومات اداری و دفتری
                           </span>
-                          <span className={styles.finBreakdownVal}>۱۲٪</span>
+                          <span className={styles.finBreakdownVal}>{officePct.toFixed(0)}٪</span>
                         </div>
                         <div className={styles.progressBarTrack}>
-                          <div className={styles.progressBarFill} style={{ width: '12%', backgroundColor: '#3b82f6' }} />
+                          <div className={styles.progressBarFill} style={{ width: `${officePct}%`, backgroundColor: '#3b82f6' }} />
                         </div>
                       </div>
 
@@ -11221,10 +11358,10 @@ export default function AdminPanel() {
                           <span className={styles.finBreakdownName}>
                             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#a855f7' }} /> تبلیغات و مارکتینگ
                           </span>
-                          <span className={styles.finBreakdownVal}>۸٪</span>
+                          <span className={styles.finBreakdownVal}>{promoPct.toFixed(0)}٪</span>
                         </div>
                         <div className={styles.progressBarTrack}>
-                          <div className={styles.progressBarFill} style={{ width: '8%', backgroundColor: '#a855f7' }} />
+                          <div className={styles.progressBarFill} style={{ width: `${promoPct}%`, backgroundColor: '#a855f7' }} />
                         </div>
                       </div>
                     </div>
@@ -11251,70 +11388,40 @@ export default function AdminPanel() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td style={{ fontWeight: 'bold', color: '#fff' }}>خرداد ۱۴۰۳ (جاری)</td>
-                          <td style={{ color: '#10b981', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۲,۱۴۵,۵۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۱,۲۴۵,۳۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۹۰۰,۲۰۰,۰۰۰ تومان</td>
-                          <td>
-                            <span style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontSize: '9px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
-                              در حال محاسبه
-                            </span>
-                          </td>
-                          <td>
-                            <span onClick={() => alert('گزارش کامل خرداد ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
-                              {AdminIcons.download(11)} دانلود گزارش (CSV)
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style={{ fontWeight: 'bold', color: '#fff' }}>اردیبهشت ۱۴۰۳</td>
-                          <td style={{ color: '#10b981', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۱,۹۸۰,۰۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۱,۱۲۰,۰۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۸۶۰,۰۰۰,۰۰۰ تومان</td>
-                          <td>
-                            <span style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '9px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
-                              بسته شده
-                            </span>
-                          </td>
-                          <td>
-                            <span onClick={() => alert('گزارش کامل اردیبهشت ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
-                              {AdminIcons.download(11)} دانلود گزارش (CSV)
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style={{ fontWeight: 'bold', color: '#fff' }}>فروردین ۱۴۰۳</td>
-                          <td style={{ color: '#10b981', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۱,۷۵۰,۰۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۹۵۰,۰۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۸۰۰,۰۰۰,۰۰۰ تومان</td>
-                          <td>
-                            <span style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '9px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
-                              بسته شده
-                            </span>
-                          </td>
-                          <td>
-                            <span onClick={() => alert('گزارش کامل فروردین ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
-                              {AdminIcons.download(11)} دانلود گزارش (CSV)
-                            </span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td style={{ fontWeight: 'bold', color: '#fff' }}>اسفند ۱۴۰۲</td>
-                          <td style={{ color: '#10b981', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۱,۶۲۰,۰۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۸۸۰,۰۰۰,۰۰۰ تومان</td>
-                          <td style={{ color: '#3b82f6', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>۷۴۰,۰۰۰,۰۰۰ تومان</td>
-                          <td>
-                            <span style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '9px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
-                              بسته شده
-                            </span>
-                          </td>
-                          <td>
-                            <span onClick={() => alert('گزارش کامل اسفند ماه دانلود شد.')} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
-                              {AdminIcons.download(11)} دانلود گزارش (CSV)
-                            </span>
-                          </td>
-                        </tr>
+                        {[...monthlyData].reverse().map((mItem, idx) => {
+                          const isCurrent = idx === 0;
+                          return (
+                            <tr key={idx}>
+                              <td style={{ fontWeight: 'bold', color: '#fff' }}>{mItem.name} {isCurrent ? '(جاری)' : ''}</td>
+                              <td style={{ color: '#10b981', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
+                                {mItem.income.toLocaleString('fa-IR')} تومان
+                              </td>
+                              <td style={{ color: '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
+                                {mItem.expense.toLocaleString('fa-IR')} تومان
+                              </td>
+                              <td style={{ color: mItem.profit >= 0 ? '#3b82f6' : '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
+                                {mItem.profit.toLocaleString('fa-IR')} تومان
+                              </td>
+                              <td>
+                                <span style={{ 
+                                  backgroundColor: isCurrent ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', 
+                                  color: isCurrent ? '#f59e0b' : '#10b981', 
+                                  fontSize: '9px', 
+                                  padding: '3px 8px', 
+                                  borderRadius: '12px', 
+                                  fontWeight: 'bold' 
+                                }}>
+                                  {isCurrent ? 'در حال محاسبه' : 'بسته شده'}
+                                </span>
+                              </td>
+                              <td>
+                                <span onClick={() => alert(`گزارش کامل ${mItem.name} دانلود شد.`)} className={styles.downloadActionLink} style={{ fontSize: '11.5px' }}>
+                                  {AdminIcons.download(11)} دانلود گزارش (CSV)
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
