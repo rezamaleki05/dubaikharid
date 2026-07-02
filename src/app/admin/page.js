@@ -1829,6 +1829,67 @@ export default function AdminPanel() {
     setLaptopViewMode('add');
   };
 
+  // Compile full list of customers by merging manual entries and website registered users
+  const getMergedCustomers = () => {
+    let list = [...customers];
+    let websiteUsers = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const usersSaved = localStorage.getItem('dubaiKharidUsers');
+        if (usersSaved) {
+          websiteUsers = JSON.parse(usersSaved);
+        }
+      } catch (e) {
+        console.error('Error reading website users:', e);
+      }
+    }
+
+    websiteUsers.forEach(user => {
+      const idx = list.findIndex(c => c.phone === user.phone);
+      
+      // Calculate order count and total spend dynamically from leads
+      const userLeads = leads.filter(l => l.phone === user.phone);
+      const orderCount = userLeads.length;
+      const totalToman = userLeads.reduce((acc, curr) => acc + (parseFloat(curr.totalToman) || 0), 0);
+      const maxOrder = userLeads.reduce((max, curr) => Math.max(max, parseFloat(curr.totalToman) || 0), 0);
+      const avgOrder = orderCount > 0 ? Math.round(totalToman / orderCount) : 0;
+
+      const mappedUser = {
+        id: user.id || `CUST-WEB-${user.phone}`,
+        name: user.name,
+        phone: user.phone,
+        email: user.email || 'نامشخص',
+        city: user.city || 'تهران',
+        totalToman: totalToman,
+        orderCount: orderCount,
+        status: user.status || 'active',
+        dateReg: user.dateRegistered || user.dateReg || '1403/01/01',
+        group: user.group || 'سایت',
+        notes: user.notes || 'کاربر ثبت‌نامی سایت',
+        avatar: user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=f87820&textColor=ffffff`,
+        performance: {
+          avgOrder: avgOrder || 0,
+          lastOrder: userLeads[0]?.date || user.dateRegistered || '1403/01/01',
+          firstOrder: userLeads[userLeads.length - 1]?.date || user.dateRegistered || '1403/01/01',
+          maxOrder: maxOrder || 0
+        }
+      };
+
+      if (idx !== -1) {
+        list[idx] = {
+          ...mappedUser,
+          ...list[idx],
+          totalToman: totalToman > 0 ? totalToman : (list[idx].totalToman || 0),
+          orderCount: orderCount > 0 ? orderCount : (list[idx].orderCount || 0)
+        };
+      } else {
+        list.push(mappedUser);
+      }
+    });
+
+    return list;
+  };
+
   // Compile full catalog of static and dynamic stock laptops reactively
   const getMergedAdminLaptops = () => {
     let merged = [...laptops];
@@ -4062,7 +4123,7 @@ export default function AdminPanel() {
                   { label: 'سفارشات فعال', value: String(activeOrders), unit: 'سفارش', trend: 'فعال در جریان', trendUp: true, iconColor: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('all'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
                   { label: 'درخواست‌های فعال', value: String(pendingLeadsCount), unit: 'درخواست', trend: `${pendingLeadsCount} منتظر قیمت`, trendUp: false, iconColor: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', onClick: () => { setActiveTab('leads'); setActiveStatusFilter('pending'); }, icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg> },
                   { label: 'پرداخت‌های در انتظار', value: String(payments.filter(p => p.status === 'pending').length), unit: 'تراکنش', trend: 'نیاز به تایید', trendUp: false, iconColor: '#a855f7', iconBg: 'rgba(168,85,247,0.1)', onClick: () => setActiveTab('payments'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
-                  { label: 'مشتریان فعال', value: String(customers.length), unit: 'مشتری', trend: 'ثبت‌شده در سیستم', trendUp: true, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.1)', onClick: () => setActiveTab('customers'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+                  { label: 'مشتریان فعال', value: String(getMergedCustomers().length), unit: 'مشتری', trend: 'ثبت‌شده در سیستم', trendUp: true, iconColor: '#eab308', iconBg: 'rgba(234,179,8,0.1)', onClick: () => setActiveTab('customers'), icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
                 ].map((card, i) => (
                   <div key={i} className={styles.cardPanel} onClick={card.onClick}
                     style={{ padding: '16px', borderRadius: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -8090,7 +8151,8 @@ export default function AdminPanel() {
 
           {/* TAB: CUSTOMERS REDESIGN VIEW (100% High Parity Mockup) */}
           {activeTab === 'customers' && (() => {
-            const filteredCusts = customers.filter(c => {
+            const allCusts = getMergedCustomers();
+            const filteredCusts = allCusts.filter(c => {
               const matchSearch = !customerSearchQuery || 
                 c.name.toLowerCase().includes(customerSearchQuery.toLowerCase()) ||
                 c.phone.includes(customerSearchQuery) ||
@@ -8111,10 +8173,10 @@ export default function AdminPanel() {
               return matchSearch && matchGroup && matchStatus && matchCity;
             });
 
-            const selCust = customers.find(c => c.id === selectedCustomerId) || customers[0] || null;
+            const selCust = allCusts.find(c => c.id === selectedCustomerId) || allCusts[0] || null;
 
             // Unique cities for select filter
-            const uniqueCities = Array.from(new Set(customers.map(c => c.city)));
+            const uniqueCities = Array.from(new Set(allCusts.map(c => c.city)));
 
             // Inline states inside tab render for dynamic notes editor (referred to top-level state)
 
@@ -8129,11 +8191,16 @@ export default function AdminPanel() {
             };
 
             // Calculate reactive KPI metrics
-            const totalCount = 1240 + customers.length;
-            const activeCount = 834 + customers.filter(c => c.status === 'active').length;
-            const newCount = 59 + customers.filter(c => c.status === 'active' || c.status === 'vip').length;
-            const vipCount = 34 + customers.filter(c => c.status === 'vip').length;
-            const avgPurchase = 28450000;
+            const totalCount = allCusts.length;
+            const activeCount = allCusts.filter(c => c.status === 'active').length;
+            const newCount = allCusts.filter(c => c.group === 'سایت' || c.group === 'جدید' || c.status === 'active').length;
+            const vipCount = allCusts.filter(c => c.status === 'vip' || c.group === 'VIP').length;
+            
+            let totalAvg = 0;
+            allCusts.forEach(c => {
+              totalAvg += parseFloat(c.performance?.avgOrder || c.avgOrder) || 0;
+            });
+            const avgPurchase = allCusts.length > 0 ? Math.round(totalAvg / allCusts.length) : 0;
 
             return (
               <div>
@@ -9727,10 +9794,10 @@ export default function AdminPanel() {
                               onChange={(e) => setNewShipmentForm(prev => ({ ...prev, recipient: e.target.value }))}
                               className={styles.inputField}
                             >
-                              {customers.map(c => (
+                              {getMergedCustomers().map(c => (
                                 <option key={c.id} value={c.name}>{c.name} ({c.city})</option>
                               ))}
-                              {customers.length === 0 && (
+                              {getMergedCustomers().length === 0 && (
                                 <>
                                   <option value="علی محمدی">علی محمدی</option>
                                   <option value="سمیرا احمدی">سمیرا احمدی</option>
@@ -10547,7 +10614,7 @@ export default function AdminPanel() {
                                   className={styles.addressVal} 
                                   style={{ cursor: 'pointer', textDecoration: 'underline', color: '#f87820', fontWeight: 'bold' }}
                                   onClick={() => {
-                                    const matchingCust = customers.find(c => c.name === selectedTxn.recipient);
+                                    const matchingCust = getMergedCustomers().find(c => c.name === selectedTxn.recipient);
                                     if (matchingCust) {
                                       setSelectedCustomerId(matchingCust.id);
                                     }
