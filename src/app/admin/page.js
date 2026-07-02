@@ -1887,69 +1887,42 @@ export default function AdminPanel() {
   };
 
   const getReactiveMetrics = () => {
-    let totalOffset = 0;
-    let availableOffset = 0;
-    let reservedOffset = 0;
-    let soldOffset = 0;
-    let profitOffset = 0;
+    const list = getMergedAdminLaptops();
+    let total = list.length;
+    let available = 0;
+    let reserved = 0;
+    let sold = 0;
+    let profit = 0;
 
-    // 1. Account for deleted static laptops (which were all 'available' and had zero profit by default)
-    deletedStaticIds.forEach(id => {
-      const orig = laptops.find(l => l.id === id);
-      if (orig) {
-        availableOffset -= 1;
-        totalOffset -= 1;
-      }
-    });
-
-    // 2. Account for uploaded products (both new additions and static overrides)
-    uploadedProducts.filter(p => p.category === 'electronics').forEach(p => {
-      const isStatic = laptops.some(l => l.id === p.id);
+    list.forEach(p => {
       const statusValue = p.stockStatus || 'available';
+      if (statusValue === 'available') {
+        available += 1;
+      } else if (statusValue === 'reserved') {
+        reserved += 1;
+      } else if (statusValue === 'sold') {
+        sold += 1;
+      }
 
-      // Parse specs to calculate actual profit
+      // Calculate cost and profit dynamically
       const parsed = parseProductToForm(p);
       const priceToman = p.rawSpecs?.sellingPrice ? parseFloat(p.rawSpecs.sellingPrice) : (p.priceAed * 19500);
       const buyingVal = parseFloat(parsed.buyingPrice) || 0;
       const extraVal = parseFloat(parsed.extraCosts) || 0;
       const costToman = (buyingVal + extraVal) * 16100;
-      const profit = Math.max(0, priceToman - costToman);
+      const singleProfit = Math.max(0, priceToman - costToman);
 
-      if (isStatic) {
-        // Skip if deleted
-        if (deletedStaticIds.includes(p.id)) return;
-
-        // Static is 'available' by default. We subtract 1 from 'available' contribution,
-        // then add back its new status contribution.
-        availableOffset -= 1;
-        if (statusValue === 'available') {
-          availableOffset += 1;
-        } else if (statusValue === 'reserved') {
-          reservedOffset += 1;
-        } else if (statusValue === 'sold') {
-          soldOffset += 1;
-          profitOffset += profit;
-        }
-      } else {
-        // Completely new dynamic laptop addition
-        totalOffset += 1;
-        if (statusValue === 'available') {
-          availableOffset += 1;
-        } else if (statusValue === 'reserved') {
-          reservedOffset += 1;
-        } else if (statusValue === 'sold') {
-          soldOffset += 1;
-          profitOffset += profit;
-        }
+      if (statusValue === 'sold') {
+        profit += singleProfit;
       }
     });
 
     return {
-      total: Math.max(0, 128 + totalOffset),
-      available: Math.max(0, 68 + availableOffset),
-      reserved: Math.max(0, 15 + reservedOffset),
-      sold: Math.max(0, 45 + soldOffset),
-      profit: Math.max(0, 2145500000 + profitOffset)
+      total,
+      available,
+      reserved,
+      sold,
+      profit
     };
   };
 
