@@ -3138,13 +3138,13 @@ export default function AdminPanel() {
       {/* ── SIDEBAR NAVIGATION PANEL ── */}
       <aside className={styles.sidebar}>
         <div>
-          <div className={styles.sidebarLogoArea}>
+          <Link href="/" className={styles.sidebarLogoArea} style={{ textDecoration: 'none', display: 'flex' }}>
             <span className={styles.sidebarLogoIcon}>{AdminIcons.plane(20)}</span>
             <div className={styles.sidebarLogoText}>
               <span className={styles.logoDubai}>Dubai</span>
               <span className={styles.logoKharid}>Kharid</span>
             </div>
-          </div>
+          </Link>
 
           <ul className={styles.navMenuList}>
             {/* 1. داشبورد */}
