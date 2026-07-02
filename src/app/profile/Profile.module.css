@@ -1027,3 +1027,298 @@
   flex-shrink: 0;
 }
 
+/* ── HORIZONTAL GUIDE STEPPER ── */
+.guideStepsRow {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  margin: 30px 0;
+  direction: rtl; /* RTL order since layout reads from right to left */
+}
+
+.guideStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.guideStepIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #150f28;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: #8b92a5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.guideStepActive .guideStepIcon {
+  border-color: #f87820;
+  background: #f87820;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(248, 120, 32, 0.45);
+}
+
+.guideStepLabel {
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8b92a5;
+  text-align: center;
+  max-width: 90px;
+  line-height: 1.4;
+}
+
+.guideStepActive .guideStepLabel {
+  color: #fff;
+}
+
+.guideStepLine {
+  position: absolute;
+  top: 18px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 1;
+}
+
+/* ── FETCH BUTTON & LAYOUT ── */
+.linkInputContainer {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  width: 100%;
+}
+
+.fetchBtnInline {
+  background: #f87820;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-size: 11.5px;
+  font-weight: 750;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.fetchBtnInline:hover {
+  background: #e06512;
+}
+
+/* ── 3-COLUMN DETAILED VIEW ── */
+.detailsGrid3Cols {
+  display: grid;
+  grid-template-columns: 340px 1fr 310px;
+  gap: 20px;
+  align-items: start;
+}
+
+.detailCard {
+  background: rgba(13, 8, 28, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.detailTitle {
+  font-size: 14px;
+  font-weight: 850;
+  color: #fff;
+  margin: 0 0 20px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
+  text-align: right;
+}
+
+/* Table specs */
+.detailTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.detailTable td {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.detailTable tr:last-child td {
+  border-bottom: none;
+}
+
+.detailLabel {
+  color: #8b92a5;
+  text-align: right;
+  width: 40%;
+}
+
+.detailVal {
+  color: #fff;
+  text-align: left;
+  font-weight: bold;
+}
+
+/* Invoice breakdown items */
+.priceItemRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+}
+
+.priceItemLabel {
+  color: #8b92a5;
+}
+
+.priceItemVal {
+  color: #fff;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.totalPriceContainer {
+  margin-top: 16px;
+  text-align: right;
+}
+
+.totalPriceLabel {
+  font-size: 13px;
+  color: #f87820;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.totalPriceVal {
+  font-size: 26px;
+  font-weight: 900;
+  color: #f87820;
+  font-family: monospace;
+  display: block;
+}
+
+.exchangeRateSubCard {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 16px;
+  text-align: center;
+  font-size: 11px;
+  color: #8b92a5;
+  line-height: 1.5;
+}
+
+/* ── VERTICAL TIMELINE ── */
+.verticalTimeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-right: 20px;
+  margin-right: 10px;
+}
+
+.verticalLine {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 6px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 1;
+}
+
+.verticalStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 22px;
+}
+
+.verticalStep:last-child {
+  margin-bottom: 0;
+}
+
+.verticalIcon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #150f28;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: #8b92a5;
+  margin-top: 4px;
+  margin-right: -7px; /* center it on the line */
+  transition: all 0.3s;
+}
+
+.verticalStepCompleted .verticalIcon {
+  border-color: #10b981;
+  background: #10b981;
+  color: #fff;
+}
+
+.verticalStepActive .verticalIcon {
+  border-color: #f87820;
+  background: #f87820;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(248, 120, 32, 0.6);
+}
+
+.verticalStepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.verticalStepTitle {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #8b92a5;
+}
+
+.verticalStepCompleted .verticalStepTitle {
+  color: #fff;
+}
+
+.verticalStepActive .verticalStepTitle {
+  color: #f87820;
+  font-weight: 850;
+}
+
+.verticalStepDate {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+@media (max-width: 1100px) {
+  .detailsGrid3Cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+
