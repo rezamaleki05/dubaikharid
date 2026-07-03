@@ -4373,27 +4373,35 @@ export default function AdminPanel() {
                 </div>
 
                 {/* موجودی لپ‌تاپ‌های استوک */}
-                <div className={styles.cardPanel} onClick={() => setActiveTab('stock_laptops')}
-                  style={{ padding: '20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.2s' }}
-                  onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(248,120,32,0.3)'; e.currentTarget.style.backgroundColor = 'rgba(248,120,32,0.03)'; }}
-                  onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
-                >
-                  <div>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(248,120,32,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87820', marginBottom: '14px' }}>{AdminIcons.laptop(20)}</div>
-                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>موجودی لپ‌تاپ‌های استوک</div>
-                    <div style={{ fontSize: '52px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>68</div>
-                    <div style={{ fontSize: '12px', color: '#8b92a5', marginTop: '4px' }}>دستگاه</div>
-                  </div>
-                  <div style={{ marginTop: '16px' }}>
-                    {[['موجود', '52 دستگاه', '#2ecc71'], ['رزرو شده', '11 دستگاه', '#f59e0b'], ['فروخته شده', '5 دستگاه', '#8b92a5']].map(([k, v, c]) => (
-                      <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '10px', color: '#8b92a5' }}>{k}</span>
-                        <span style={{ fontSize: '10px', color: c, fontWeight: '700' }}>{v}</span>
+                {(() => {
+                  const allLaptops = getMergedAdminLaptops();
+                  const availableCount = allLaptops.filter(l => (l.stockStatus || 'available') === 'available').length;
+                  const reservedCount = allLaptops.filter(l => l.stockStatus === 'reserved').length;
+                  const soldCount = allLaptops.filter(l => l.stockStatus === 'sold').length;
+                  return (
+                    <div className={styles.cardPanel} onClick={() => setActiveTab('stock_laptops')}
+                      style={{ padding: '20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'all 0.2s' }}
+                      onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(248,120,32,0.3)'; e.currentTarget.style.backgroundColor = 'rgba(248,120,32,0.03)'; }}
+                      onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.backgroundColor = 'var(--admin-card-bg)'; }}
+                    >
+                      <div>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(248,120,32,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87820', marginBottom: '14px' }}>{AdminIcons.laptop(20)}</div>
+                        <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '6px' }}>موجودی لپ‌تاپ‌های استوک</div>
+                        <div style={{ fontSize: '52px', fontWeight: '900', color: '#fff', lineHeight: 1 }}>{allLaptops.length}</div>
+                        <div style={{ fontSize: '12px', color: '#8b92a5', marginTop: '4px' }}>دستگاه</div>
                       </div>
-                    ))}
-                    <div style={{ marginTop: '12px', textAlign: 'center', padding: '8px', borderRadius: '8px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.15)', color: '#f87820', fontSize: '11px', fontWeight: '700' }}>مشاهده کاتالوگ ↩</div>
-                  </div>
-                </div>
+                      <div style={{ marginTop: '16px' }}>
+                        {[['موجود', `${availableCount} دستگاه`, '#2ecc71'], ['رزرو شده', `${reservedCount} دستگاه`, '#f59e0b'], ['فروخته شده', `${soldCount} دستگاه`, '#8b92a5']].map(([k, v, c]) => (
+                          <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                            <span style={{ fontSize: '10px', color: '#8b92a5' }}>{k}</span>
+                            <span style={{ fontSize: '10px', color: c, fontWeight: '700' }}>{v}</span>
+                          </div>
+                        ))}
+                        <div style={{ marginTop: '12px', textAlign: 'center', padding: '8px', borderRadius: '8px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.15)', color: '#f87820', fontSize: '11px', fontWeight: '700' }}>مشاهده کاتالوگ ↩</div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
               </div>
             </div>
@@ -8266,6 +8274,56 @@ export default function AdminPanel() {
             });
             const avgPurchase = allCusts.length > 0 ? Math.round(totalAvg / allCusts.length) : 0;
 
+            // Dynamic growth comparison (30-day vs previous 30-day)
+            const custParseDate = (dStr) => {
+              if (!dStr) return new Date(0);
+              if (dStr.includes('T') || dStr.includes('-')) return new Date(dStr);
+              const parts = dStr.split('/');
+              if (parts.length === 3) {
+                const y = parseInt(parts[0]);
+                return new Date(y + 621, parseInt(parts[1]) - 1, parseInt(parts[2]));
+              }
+              return new Date(0);
+            };
+            const custNow = new Date();
+            const cust30 = new Date(custNow.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const cust60 = new Date(custNow.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+            const custCurPeriod = allCusts.filter(c => custParseDate(c.firstOrder || c.joinDate) >= cust30);
+            const custPrevPeriod = allCusts.filter(c => {
+              const d = custParseDate(c.firstOrder || c.joinDate);
+              return d >= cust60 && d < cust30;
+            });
+
+            const custGetGrowth = (cur, prev) => {
+              if (prev === 0) return cur > 0 ? 100 : 0;
+              return ((cur - prev) / prev) * 100;
+            };
+
+            const totalCustGrowth = custGetGrowth(custCurPeriod.length, custPrevPeriod.length);
+            const activeCustGrowth = custGetGrowth(
+              custCurPeriod.filter(c => c.status === 'active').length,
+              custPrevPeriod.filter(c => c.status === 'active').length
+            );
+            const newCustGrowth = custGetGrowth(
+              custCurPeriod.filter(c => c.group === 'سایت' || c.group === 'جدید').length,
+              custPrevPeriod.filter(c => c.group === 'سایت' || c.group === 'جدید').length
+            );
+            const vipCustGrowth = custGetGrowth(
+              custCurPeriod.filter(c => c.status === 'vip' || c.group === 'VIP').length,
+              custPrevPeriod.filter(c => c.status === 'vip' || c.group === 'VIP').length
+            );
+
+            const custRenderGrowth = (gVal) => {
+              if (gVal === 0) return <span className={styles.metricSubText} style={{ color: '#8b92a5', marginTop: '2px' }}>بدون تغییر</span>;
+              const isUp = gVal > 0;
+              return (
+                <span className={`${styles.metricSubText} ${isUp ? styles.up : ''}`} style={{ color: isUp ? '#10b981' : '#ef4444', marginTop: '2px' }}>
+                  {isUp ? '+' : ''}{gVal.toFixed(1)}% نسبت به ماه قبل
+                </span>
+              );
+            };
+
             return (
               <div>
                 {/* Header Title Row */}
@@ -8311,7 +8369,7 @@ export default function AdminPanel() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>کل مشتریان</span>
                       <span className={styles.metricValue}>{totalCount.toLocaleString()}</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`}>+12.5% نسبت به ماه قبل</span>
+                      {custRenderGrowth(totalCustGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
                       {AdminIcons.users(18)}
@@ -8323,7 +8381,7 @@ export default function AdminPanel() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>مشتریان فعال</span>
                       <span className={styles.metricValue}>{activeCount.toLocaleString()}</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`}>+8.5% نسبت به ماه قبل</span>
+                      {custRenderGrowth(activeCustGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                       {AdminIcons.user(18)}
@@ -8335,7 +8393,7 @@ export default function AdminPanel() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>مشتریان جدید (ماه)</span>
                       <span className={styles.metricValue}>{newCount.toLocaleString()}</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`}>+15.7% نسبت به ماه قبل</span>
+                      {custRenderGrowth(newCustGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
                       {AdminIcons.lock(18)}
@@ -8347,7 +8405,7 @@ export default function AdminPanel() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>مشتریان VIP</span>
                       <span className={styles.metricValue}>{vipCount.toLocaleString()}</span>
-                      <span className={`${styles.metricSubText} ${styles.up}`}>+4.6% نسبت به ماه قبل</span>
+                      {custRenderGrowth(vipCustGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
                       {AdminIcons.crown(18)}
@@ -11030,7 +11088,7 @@ export default function AdminPanel() {
 
             // Shetab gateway share calculation
             const onlineIncome = successfulIncomes.filter(p => p.method === 'درگاه بانکی' || p.method === 'درگاه آنلاین').reduce((sum, p) => sum + Math.abs(p.amount), 0);
-            const shetabShare = totalIncomes > 0 ? (onlineIncome / totalIncomes) * 100 : 45.6;
+            const shetabShare = totalIncomes > 0 ? (onlineIncome / totalIncomes) * 100 : 0;
 
             // Expense breakdown dynamic calculation
             const expensePayments = allPayments.filter(p => p.type === 'پرداختی');
@@ -11053,12 +11111,12 @@ export default function AdminPanel() {
 
             const officeAmt = totalExp - (supplyAmt + cargoAmt + promoAmt);
 
-            const supplyPct = totalExp > 0 ? (supplyAmt / totalExp) * 100 : 55;
-            const cargoPct = totalExp > 0 ? (cargoAmt / totalExp) * 100 : 25.2;
-            const promoPct = totalExp > 0 ? (promoAmt / totalExp) * 100 : 8;
-            const officePct = totalExp > 0 ? (officeAmt / totalExp) * 100 : 11.8;
+            const supplyPct = totalExp > 0 ? (supplyAmt / totalExp) * 100 : 0;
+            const cargoPct = totalExp > 0 ? (cargoAmt / totalExp) * 100 : 0;
+            const promoPct = totalExp > 0 ? (promoAmt / totalExp) * 100 : 0;
+            const officePct = totalExp > 0 ? (officeAmt / totalExp) * 100 : 0;
 
-            const grossMargin = totalIncomes > 0 ? (netProfit / totalIncomes) * 100 : 41.9;
+            const grossMargin = totalIncomes > 0 ? (netProfit / totalIncomes) * 100 : 0;
 
             // Persian Date month-based grouping
             const getJalaliMonthName = (monthNum) => {
@@ -11134,12 +11192,7 @@ export default function AdminPanel() {
 
             // Trend visualization dataset (use fallback mock dataset if completely empty)
             const hasData = monthlyData.some(d => d.income > 0 || d.expense > 0);
-            const finalMonthlyData = hasData ? monthlyData : [
-              { ...monthsList[0], income: 1620000000, expense: 880000000, profit: 740000000 },
-              { ...monthsList[1], income: 1750000000, expense: 950000000, profit: 800000000 },
-              { ...monthsList[2], income: 1980000000, expense: 1120000000, profit: 860000000 },
-              { ...monthsList[3], income: 2145500000, expense: 1245300000, profit: 900200000 }
-            ];
+            const finalMonthlyData = monthlyData;
 
             const maxVal = Math.max(
               ...finalMonthlyData.map(d => Math.max(d.income, d.expense)),
