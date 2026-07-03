@@ -480,6 +480,7 @@ export default function AdminPanel() {
 
   // Brands & Stores management states
   const [brands, setBrands] = useState([]);
+  const [brandDropdownOpen, setBrandDropdownOpen] = useState(null); // 'addWarehouse', 'editWarehouse', 'addProductManual', 'editProduct'
   const [stores, setStores] = useState([]);
   const [brandsSubTab, setBrandsSubTab] = useState('official'); // official, online_stores
   const [brandSearchQuery, setBrandSearchQuery] = useState('');
@@ -3461,19 +3462,69 @@ export default function AdminPanel() {
                     </div>
 
                     <div className={styles.formFieldsGrid4}>
-                      <div className={styles.formGroup}>
+                      <div className={styles.formGroup} style={{ position: 'relative' }}>
                         <label>برند <span className={styles.requiredStar}>*</span></label>
-                        <select 
-                          value={laptopForm.brand} 
-                          onChange={(e) => handleBrandChange(e.target.value)}
-                          className={styles.selectField}
-                        >
-                          <option value="Apple">Apple</option>
-                          <option value="Dell">Dell</option>
-                          <option value="Lenovo">Lenovo</option>
-                          <option value="HP">HP</option>
-                          <option value="ASUS">ASUS</option>
-                        </select>
+                        <input
+                          type="text"
+                          required
+                          value={laptopForm.brand}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLaptopForm(prev => ({ ...prev, brand: val }));
+                            setBrandDropdownOpen('laptopForm');
+                          }}
+                          onFocus={() => setBrandDropdownOpen('laptopForm')}
+                          onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
+                          className={styles.inputField}
+                        />
+                        {brandDropdownOpen === 'laptopForm' && (() => {
+                          const searchVal = laptopForm.brand || '';
+                          const filtered = brands.filter(b => 
+                            !searchVal || 
+                            b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
+                            (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                          );
+                          if (filtered.length === 0) return null;
+                          return (
+                            <div style={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: 0,
+                              right: 0,
+                              background: '#141622',
+                              border: '1px solid rgba(255,255,255,0.1)',
+                              borderRadius: '8px',
+                              maxHeight: '180px',
+                              overflowY: 'auto',
+                              zIndex: 1000,
+                              boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                              marginTop: '4px'
+                            }}>
+                              {filtered.map(b => (
+                                <div
+                                  key={b.id}
+                                  onMouseDown={() => {
+                                    handleBrandChange(b.name);
+                                    setBrandDropdownOpen(null);
+                                  }}
+                                  style={{
+                                    padding: '8px 12px',
+                                    cursor: 'pointer',
+                                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                    fontSize: '12px',
+                                    color: '#fff',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    background: 'rgba(255,255,255,0.01)'
+                                  }}
+                                >
+                                  <span style={{ fontWeight: 'bold' }}>{b.name}</span>
+                                  <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <div className={styles.formGroup}>
@@ -6536,15 +6587,68 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div>
+                          <div style={{ position: 'relative' }}>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
                             <input
                               type="text"
                               required
                               value={addWarehouseForm.brand}
-                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, brand: e.target.value }))}
+                              onChange={e => {
+                                setAddWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
+                                setBrandDropdownOpen('addWarehouse');
+                              }}
+                              onFocus={() => setBrandDropdownOpen('addWarehouse')}
+                              onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
                               style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
                             />
+                            {brandDropdownOpen === 'addWarehouse' && (() => {
+                              const searchVal = addWarehouseForm.brand || '';
+                              const filtered = brands.filter(b => 
+                                !searchVal || 
+                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  left: 0,
+                                  right: 0,
+                                  background: '#141622',
+                                  border: '1px solid rgba(255,255,255,0.1)',
+                                  borderRadius: '8px',
+                                  maxHeight: '180px',
+                                  overflowY: 'auto',
+                                  zIndex: 1000,
+                                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                                  marginTop: '4px'
+                                }}>
+                                  {filtered.map(b => (
+                                    <div
+                                      key={b.id}
+                                      onMouseDown={() => {
+                                        setAddWarehouseForm(prev => ({ ...prev, brand: b.name }));
+                                        setBrandDropdownOpen(null);
+                                      }}
+                                      style={{
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        background: 'rgba(255,255,255,0.01)'
+                                      }}
+                                    >
+                                      <span style={{ fontWeight: 'bold' }}>{b.name}</span>
+                                      <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
                           <div>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
@@ -6703,15 +6807,68 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div>
+                          <div style={{ position: 'relative' }}>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
                             <input
                               type="text"
                               required
                               value={editWarehouseForm.brand}
-                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, brand: e.target.value }))}
+                              onChange={e => {
+                                setEditWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
+                                setBrandDropdownOpen('editWarehouse');
+                              }}
+                              onFocus={() => setBrandDropdownOpen('editWarehouse')}
+                              onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
                               style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
                             />
+                            {brandDropdownOpen === 'editWarehouse' && (() => {
+                              const searchVal = editWarehouseForm.brand || '';
+                              const filtered = brands.filter(b => 
+                                !searchVal || 
+                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  left: 0,
+                                  right: 0,
+                                  background: '#141622',
+                                  border: '1px solid rgba(255,255,255,0.1)',
+                                  borderRadius: '8px',
+                                  maxHeight: '180px',
+                                  overflowY: 'auto',
+                                  zIndex: 1000,
+                                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                                  marginTop: '4px'
+                                }}>
+                                  {filtered.map(b => (
+                                    <div
+                                      key={b.id}
+                                      onMouseDown={() => {
+                                        setEditWarehouseForm(prev => ({ ...prev, brand: b.name }));
+                                        setBrandDropdownOpen(null);
+                                      }}
+                                      style={{
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        background: 'rgba(255,255,255,0.01)'
+                                      }}
+                                    >
+                                      <span style={{ fontWeight: 'bold' }}>{b.name}</span>
+                                      <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
                           <div>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
@@ -7788,15 +7945,68 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', position: 'relative' }}>
                             <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
                             <input 
                               type="text" 
                               required
                               value={editProductForm.brand}
-                              onChange={(e) => setEditProductForm({...editProductForm, brand: e.target.value})}
+                              onChange={(e) => {
+                                setEditProductForm({...editProductForm, brand: e.target.value});
+                                setBrandDropdownOpen('editProduct');
+                              }}
+                              onFocus={() => setBrandDropdownOpen('editProduct')}
+                              onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
                               style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
                             />
+                            {brandDropdownOpen === 'editProduct' && (() => {
+                              const searchVal = editProductForm.brand || '';
+                              const filtered = brands.filter(b => 
+                                !searchVal || 
+                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  left: 0,
+                                  right: 0,
+                                  background: '#141622',
+                                  border: '1px solid rgba(255,255,255,0.1)',
+                                  borderRadius: '8px',
+                                  maxHeight: '180px',
+                                  overflowY: 'auto',
+                                  zIndex: 1000,
+                                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                                  marginTop: '4px'
+                                }}>
+                                  {filtered.map(b => (
+                                    <div
+                                      key={b.id}
+                                      onMouseDown={() => {
+                                        setEditProductForm(prev => ({ ...prev, brand: b.name }));
+                                        setBrandDropdownOpen(null);
+                                      }}
+                                      style={{
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        background: 'rgba(255,255,255,0.01)'
+                                      }}
+                                    >
+                                      <span style={{ fontWeight: 'bold' }}>{b.name}</span>
+                                      <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -7985,16 +8195,69 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', position: 'relative' }}>
                             <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
                             <input 
                               type="text" 
                               required
                               value={addProductManualForm.brand}
-                              onChange={(e) => setAddProductManualForm({...addProductManualForm, brand: e.target.value})}
+                              onChange={(e) => {
+                                setAddProductManualForm({...addProductManualForm, brand: e.target.value});
+                                setBrandDropdownOpen('addProductManual');
+                              }}
+                              onFocus={() => setBrandDropdownOpen('addProductManual')}
+                              onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
                               placeholder="مثال: Apple"
                               style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
                             />
+                            {brandDropdownOpen === 'addProductManual' && (() => {
+                              const searchVal = addProductManualForm.brand || '';
+                              const filtered = brands.filter(b => 
+                                !searchVal || 
+                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                              );
+                              if (filtered.length === 0) return null;
+                              return (
+                                <div style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  left: 0,
+                                  right: 0,
+                                  background: '#141622',
+                                  border: '1px solid rgba(255,255,255,0.1)',
+                                  borderRadius: '8px',
+                                  maxHeight: '180px',
+                                  overflowY: 'auto',
+                                  zIndex: 1000,
+                                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                                  marginTop: '4px'
+                                }}>
+                                  {filtered.map(b => (
+                                    <div
+                                      key={b.id}
+                                      onMouseDown={() => {
+                                        setAddProductManualForm(prev => ({ ...prev, brand: b.name }));
+                                        setBrandDropdownOpen(null);
+                                      }}
+                                      style={{
+                                        padding: '8px 12px',
+                                        cursor: 'pointer',
+                                        borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                        fontSize: '12px',
+                                        color: '#fff',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        background: 'rgba(255,255,255,0.01)'
+                                      }}
+                                    >
+                                      <span style={{ fontWeight: 'bold' }}>{b.name}</span>
+                                      <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
