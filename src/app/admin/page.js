@@ -2565,7 +2565,7 @@ export default function AdminPanel() {
         {/* Sidebar Bottom Profile Card */}
         <div className={styles.sidebarProfileCard}>
           <div className={styles.profileInfoRow}>
-            <img src="/admin-avatar.png" alt="Admin Avatar" className={styles.profileAvatar} />
+            <div className={styles.profileAvatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(248,120,32,0.15)', color: '#f87820' }}>{AdminIcons.user(20)}</div>
             <div className={styles.profileMeta}>
               <h3>مدیر سایت</h3>
               <span>مدیر سیستم</span>
@@ -2704,7 +2704,7 @@ export default function AdminPanel() {
             </div>
             
             <div className={styles.headerProfileBadge}>
-              <img src="/admin-avatar.png" alt="Avatar" style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px', objectFit: 'cover' }} />
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(248,120,32,0.15)', color: '#f87820' }}>{AdminIcons.user(16)}</div>
               <span>مدیر سایت</span>
             </div>
           </div>
@@ -10162,6 +10162,70 @@ export default function AdminPanel() {
             const payStartJalali = payDateRangeStart.toLocaleDateString('fa-IR-u-nu-latn');
             const payEndJalali = payNow.toLocaleDateString('fa-IR-u-nu-latn');
 
+            // --- Widget: توزیع پرداخت‌ها (Doughnut) ---
+            const distIncome = allPayments.filter(p => p.type === 'دریافتی' && p.status === 'success');
+            const distExpense = allPayments.filter(p => p.type === 'پرداختی');
+            const distPending = allPayments.filter(p => p.status === 'pending');
+            const distTotal = distIncome.length + distExpense.length + distPending.length || 1;
+            const distIncomePct = Math.round((distIncome.length / distTotal) * 100);
+            const distExpensePct = Math.round((distExpense.length / distTotal) * 100);
+            const distPendingPct = 100 - distIncomePct - distExpensePct;
+            const doughnutCircum = 2 * Math.PI * 38; // ~238.76
+            const doughnutIncomeLen = (distIncomePct / 100) * doughnutCircum;
+            const doughnutExpenseLen = (distExpensePct / 100) * doughnutCircum;
+            const doughnutPendingLen = (distPendingPct / 100) * doughnutCircum;
+            const doughnutIncomeOffset = doughnutCircum - doughnutIncomeLen;
+            const doughnutExpenseOffset = doughnutCircum - doughnutExpenseLen;
+            const doughnutPendingOffset = doughnutCircum - doughnutPendingLen;
+            const doughnutExpenseRotate = -90 + (distIncomePct / 100) * 360;
+            const doughnutPendingRotate = doughnutExpenseRotate + (distExpensePct / 100) * 360;
+
+            // --- Widget: خلاصه روش‌های پرداخت ---
+            const knownMethods = ['درگاه بانکی', 'کارت به کارت', 'حواله بانکی'];
+            const methodIcons = { 'درگاه بانکی': 'card', 'کارت به کارت': 'phone', 'حواله بانکی': 'bank' };
+            const methodColors = { 'درگاه بانکی': '#f59e0b', 'کارت به کارت': '#3b82f6', 'حواله بانکی': '#c4c8d4' };
+            const methodTotals = {};
+            let methodGrandTotal = 0;
+            knownMethods.forEach(m => {
+              const total = allPayments.filter(p => p.method === m).reduce((s, p) => s + Math.abs(p.amount), 0);
+              methodTotals[m] = total;
+              methodGrandTotal += total;
+            });
+            const otherMethodTotal = allPayments.filter(p => !knownMethods.includes(p.method)).reduce((s, p) => s + Math.abs(p.amount), 0);
+            methodGrandTotal += otherMethodTotal;
+            const safeGrandTotal = methodGrandTotal || 1;
+
+            // --- Widget: نمودار جریان مالی (SVG line chart) ---
+            // Build weekly data for the current month
+            const flowChartStart = new Date(payNow.getFullYear(), payNow.getMonth(), 1);
+            const flowMonthDays = new Date(payNow.getFullYear(), payNow.getMonth() + 1, 0).getDate();
+            const flowWeeks = [];
+            for (let w = 0; w < 5; w++) {
+              const wStart = new Date(flowChartStart.getTime() + w * 7 * 24 * 60 * 60 * 1000);
+              const wEnd = new Date(wStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+              if (wStart.getDate() > flowMonthDays && w > 0) break;
+              const weekPayments = allPayments.filter(p => {
+                const d = payParseDate(p.date);
+                return d >= wStart && d < wEnd;
+              });
+              const wIncome = weekPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((s, p) => s + Math.abs(p.amount), 0);
+              const wExpense = weekPayments.filter(p => p.type === 'پرداختی').reduce((s, p) => s + Math.abs(p.amount), 0);
+              flowWeeks.push({ income: wIncome, expense: wExpense, profit: wIncome - wExpense, label: `هفته ${(w + 1).toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d])}` });
+            }
+            if (flowWeeks.length === 0) flowWeeks.push({ income: 0, expense: 0, profit: 0, label: 'هفته ۱' });
+
+            const flowMaxVal = Math.max(...flowWeeks.map(w => Math.max(w.income, w.expense, w.profit)), 1);
+            const flowToY = (val) => 110 - (val / flowMaxVal) * 90;
+            const flowXStep = flowWeeks.length > 1 ? 250 / (flowWeeks.length - 1) : 0;
+            const flowMakePath = (key) => flowWeeks.map((w, i) => `${i === 0 ? 'M' : 'L'} ${40 + i * flowXStep} ${flowToY(w[key])}`).join(' ');
+            const flowYLabels = [flowMaxVal, Math.round(flowMaxVal * 0.66), Math.round(flowMaxVal * 0.33), 0];
+            const flowFormatLabel = (v) => {
+              if (v >= 1e9) return (v / 1e9).toFixed(1) + 'B';
+              if (v >= 1e6) return (v / 1e6).toFixed(0) + 'M';
+              if (v >= 1e3) return (v / 1e3).toFixed(0) + 'K';
+              return v.toString();
+            };
+
             return (
               <div>
                 {/* Header Title Row */}
@@ -10557,7 +10621,7 @@ export default function AdminPanel() {
                             </select>
                           </div>
                           
-                          {/* Rich visual SVG double-line graph */}
+                          {/* Rich visual SVG double-line graph - DYNAMIC */}
                           <div style={{ height: '140px', position: 'relative', marginTop: '10px' }}>
                             <svg width="100%" height="100%" viewBox="0 0 300 130" preserveAspectRatio="none">
                               {/* Grid lines */}
@@ -10567,34 +10631,35 @@ export default function AdminPanel() {
                               <line x1="30" y1="110" x2="300" y2="110" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
                               
                               {/* Y-Axis Labels */}
-                              <text x="0" y="24" fill="#6c7284" fontSize="8" textAnchor="start">160M</text>
-                              <text x="0" y="54" fill="#6c7284" fontSize="8" textAnchor="start">120M</text>
-                              <text x="0" y="84" fill="#6c7284" fontSize="8" textAnchor="start">80M</text>
-                              <text x="0" y="114" fill="#6c7284" fontSize="8" textAnchor="start">0</text>
+                              {flowYLabels.map((v, i) => (
+                                <text key={i} x="0" y={24 + i * 30} fill="#6c7284" fontSize="8" textAnchor="start">{flowFormatLabel(v)}</text>
+                              ))}
                               
                               {/* Income Line - Green */}
-                              <path d="M 40 90 L 90 75 L 140 60 L 190 40 L 240 45 L 290 25" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
+                              <path d={flowMakePath('income')} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
                               
                               {/* Expense Line - Red */}
-                              <path d="M 40 105 L 90 95 L 140 85 L 190 70 L 240 78 L 290 55" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
+                              <path d={flowMakePath('expense')} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
                               
                               {/* Net Profit Line - Blue */}
-                              <path d="M 40 115 L 90 110 L 140 100 L 190 90 L 240 95 L 290 75" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3,3" strokeLinecap="round" />
+                              <path d={flowMakePath('profit')} fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3,3" strokeLinecap="round" />
                               
-                              {/* Points */}
-                              <circle cx="290" cy="25" r="4" fill="#10b981" />
-                              <circle cx="290" cy="55" r="4" fill="#ef4444" />
-                              <circle cx="290" cy="75" r="3" fill="#3b82f6" />
+                              {/* End Points */}
+                              {flowWeeks.length > 0 && (
+                                <>
+                                  <circle cx={40 + (flowWeeks.length - 1) * flowXStep} cy={flowToY(flowWeeks[flowWeeks.length - 1].income)} r="4" fill="#10b981" />
+                                  <circle cx={40 + (flowWeeks.length - 1) * flowXStep} cy={flowToY(flowWeeks[flowWeeks.length - 1].expense)} r="4" fill="#ef4444" />
+                                  <circle cx={40 + (flowWeeks.length - 1) * flowXStep} cy={flowToY(flowWeeks[flowWeeks.length - 1].profit)} r="3" fill="#3b82f6" />
+                                </>
+                              )}
                             </svg>
                           </div>
                           
-                          {/* Legend / Axis */}
+                          {/* Legend / Axis - Dynamic week labels */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 30px 0', fontSize: '9px', color: '#8b92a5', borderBottom: '1px solid rgba(255,255,255,0.05)', pb: '8px' }}>
-                            <span>1 فروردین</span>
-                            <span>7 فروردین</span>
-                            <span>13 فروردین</span>
-                            <span>25 فروردین</span>
-                            <span>31 فروردین</span>
+                            {flowWeeks.map((w, i) => (
+                              <span key={i}>{w.label}</span>
+                            ))}
                           </div>
                           
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '10px' }}>
@@ -10610,7 +10675,7 @@ export default function AdminPanel() {
                           </div>
                         </div>
 
-                        {/* Widget 2: توزیع پرداخت‌ها (Doughnut Chart SVG matching mockup) */}
+                        {/* Widget 2: توزیع پرداخت‌ها (Doughnut Chart SVG - DYNAMIC) */}
                         <div className={styles.shipmentsDoughnutCard}>
                           <h3 className={styles.shipmentsCardTitle}>توزیع پرداخت ها</h3>
                           
@@ -10619,14 +10684,13 @@ export default function AdminPanel() {
                               <svg width="110" height="110" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="11" />
                                 
-                                {/* 62% Income (green), 35% Cost (red), 3% Pending (yellow) */}
-                                {/* circumference is 2 * pi * 38 = 238.76 */}
+                                {/* Dynamic arcs */}
                                 <circle cx="50" cy="50" r="38" fill="none" stroke="#10b981" strokeWidth="11" 
-                                        strokeDasharray="238.76" strokeDashoffset="90.72" transform="rotate(-90 50 50)" />
-                                <circle cx="50" cy="50" r="38" fill="none" stroke="#ef4444" strokeWidth="11" 
-                                        strokeDasharray="238.76" strokeDashoffset="155.19" transform="rotate(133.2 50 50)" />
-                                <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" strokeWidth="11" 
-                                        strokeDasharray="238.76" strokeDashoffset="231.59" transform="rotate(259.2 50 50)" />
+                                        strokeDasharray={`${doughnutIncomeLen} ${doughnutCircum - doughnutIncomeLen}`} strokeDashoffset="0" transform="rotate(-90 50 50)" />
+                                {distExpensePct > 0 && <circle cx="50" cy="50" r="38" fill="none" stroke="#ef4444" strokeWidth="11" 
+                                        strokeDasharray={`${doughnutExpenseLen} ${doughnutCircum - doughnutExpenseLen}`} strokeDashoffset="0" transform={`rotate(${doughnutExpenseRotate} 50 50)`} />}
+                                {distPendingPct > 0 && <circle cx="50" cy="50" r="38" fill="none" stroke="#f59e0b" strokeWidth="11" 
+                                        strokeDasharray={`${doughnutPendingLen} ${doughnutCircum - doughnutPendingLen}`} strokeDashoffset="0" transform={`rotate(${doughnutPendingRotate} 50 50)`} />}
                               </svg>
                               <div className={styles.doughnutCenterText} style={{ width: '100%' }}>
                                 <span className={styles.doughnutCenterNum} style={{ fontSize: '15px' }}>
@@ -10648,8 +10712,8 @@ export default function AdminPanel() {
                                   <span className={styles.legendText}>دریافتی</span>
                                 </div>
                                 <div className={styles.legendValBlock}>
-                                  <span className={styles.legendCount}>۲۲۷</span>
-                                  <span className={styles.legendPct}>۶۲٪</span>
+                                  <span className={styles.legendCount}>{distIncome.length.toLocaleString('fa-IR')}</span>
+                                  <span className={styles.legendPct}>{distIncomePct.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d])}٪</span>
                                 </div>
                               </div>
                               <div 
@@ -10663,8 +10727,8 @@ export default function AdminPanel() {
                                   <span className={styles.legendText}>پرداختی</span>
                                 </div>
                                 <div className={styles.legendValBlock}>
-                                  <span className={styles.legendCount}>۱۲۹</span>
-                                  <span className={styles.legendPct}>۳۵٪</span>
+                                  <span className={styles.legendCount}>{distExpense.length.toLocaleString('fa-IR')}</span>
+                                  <span className={styles.legendPct}>{distExpensePct.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d])}٪</span>
                                 </div>
                               </div>
                               <div 
@@ -10678,8 +10742,8 @@ export default function AdminPanel() {
                                   <span className={styles.legendText}>در انتظار</span>
                                 </div>
                                 <div className={styles.legendValBlock}>
-                                  <span className={styles.legendCount}>۱۱</span>
-                                  <span className={styles.legendPct}>۳٪</span>
+                                  <span className={styles.legendCount}>{distPending.length.toLocaleString('fa-IR')}</span>
+                                  <span className={styles.legendPct}>{distPendingPct.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d])}٪</span>
                                 </div>
                               </div>
                             </div>
@@ -10691,81 +10755,60 @@ export default function AdminPanel() {
                           <h3 className={styles.shipmentsCardTitle}>خلاصه روش های پرداخت</h3>
                           
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
-                            {/* Option 1 */}
-                            <div 
-                              onClick={() => setPaymentMethodFilter('درگاه بانکی')} 
-                              style={{ cursor: 'pointer' }} 
-                              title="فیلتر درگاه آنلاین"
-                            >
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
-                                  <span>{AdminIcons.card(12)}</span> درگاه بانکی
-                                </span>
-                                <span style={{ fontWeight: 'bold' }}>
-                                  ۱,۴۷۰,۰۰۰,۰۰۰ تومان <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>(۴۵٪)</span>
-                                </span>
-                              </div>
-                              <div className={styles.progressBarTrack}>
-                                <div className={styles.progressBarFill} style={{ width: '45%', backgroundColor: '#f59e0b' }} />
-                              </div>
-                            </div>
+                            {/* Dynamic method bars */}
+                            {knownMethods.map((m) => {
+                              const mTotal = methodTotals[m] || 0;
+                              const mPct = Math.round((mTotal / safeGrandTotal) * 100);
+                              const mIcon = methodIcons[m];
+                              const mColor = methodColors[m];
+                              const formatted = mTotal.toLocaleString('fa-IR') + ' تومان';
+                              const pctStr = mPct.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+                              return (
+                                <div key={m}
+                                  onClick={() => setPaymentMethodFilter(m)} 
+                                  style={{ cursor: 'pointer' }} 
+                                  title={`فیلتر ${m}`}
+                                >
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
+                                      <span>{AdminIcons[mIcon] ? AdminIcons[mIcon](12) : AdminIcons.card(12)}</span> {m}
+                                    </span>
+                                    <span style={{ fontWeight: 'bold' }}>
+                                      {formatted} <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>({pctStr}٪)</span>
+                                    </span>
+                                  </div>
+                                  <div className={styles.progressBarTrack}>
+                                    <div className={styles.progressBarFill} style={{ width: `${mPct}%`, backgroundColor: mColor }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
 
-                            {/* Option 2 */}
-                            <div 
-                              onClick={() => setPaymentMethodFilter('کارت به کارت')} 
-                              style={{ cursor: 'pointer' }} 
-                              title="فیلتر کارت به کارت"
-                            >
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
-                                  <span>{AdminIcons.phone(12)}</span> کارت به کارت
-                                </span>
-                                <span style={{ fontWeight: 'bold' }}>
-                                  ۹۸۰,۰۰۰,۰۰۰ تومان <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>(۳۰٪)</span>
-                                </span>
-                              </div>
-                              <div className={styles.progressBarTrack}>
-                                <div className={styles.progressBarFill} style={{ width: '30%', backgroundColor: '#3b82f6' }} />
-                              </div>
-                            </div>
-
-                            {/* Option 3 */}
-                            <div 
-                              onClick={() => setPaymentMethodFilter('حواله بانکی')} 
-                              style={{ cursor: 'pointer' }} 
-                              title="فیلتر حواله بانکی"
-                            >
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
-                                  <span>{AdminIcons.bank(12)}</span> حواله بانکی
-                                </span>
-                                <span style={{ fontWeight: 'bold' }}>
-                                  ۶۵۰,۰۰۰,۰۰۰ تومان <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>(۲۰٪)</span>
-                                </span>
-                              </div>
-                              <div className={styles.progressBarTrack}>
-                                <div className={styles.progressBarFill} style={{ width: '20%', backgroundColor: '#c4c8d4' }} />
-                              </div>
-                            </div>
-
-                            {/* Option 4 */}
-                            <div 
-                              onClick={() => setPaymentMethodFilter('همه')} 
-                              style={{ cursor: 'pointer' }} 
-                              title="حذف فیلتر روش"
-                            >
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
-                                  {AdminIcons.folder(12)} سایر روش‌ها
-                                </span>
-                                <span style={{ fontWeight: 'bold' }}>
-                                  ۱۶۰,۰۰۰,۰۰۰ تومان <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>(۵٪)</span>
-                                </span>
-                              </div>
-                              <div className={styles.progressBarTrack}>
-                                <div className={styles.progressBarFill} style={{ width: '5%', backgroundColor: '#8b92a5' }} />
-                              </div>
-                            </div>
+                            {/* Other methods */}
+                            {(() => {
+                              const oPct = Math.round((otherMethodTotal / safeGrandTotal) * 100);
+                              const oFormatted = otherMethodTotal.toLocaleString('fa-IR') + ' تومان';
+                              const oPctStr = oPct.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+                              return (
+                                <div
+                                  onClick={() => setPaymentMethodFilter('همه')} 
+                                  style={{ cursor: 'pointer' }} 
+                                  title="حذف فیلتر روش"
+                                >
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
+                                      {AdminIcons.folder(12)} سایر روش‌ها
+                                    </span>
+                                    <span style={{ fontWeight: 'bold' }}>
+                                      {oFormatted} <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>({oPctStr}٪)</span>
+                                    </span>
+                                  </div>
+                                  <div className={styles.progressBarTrack}>
+                                    <div className={styles.progressBarFill} style={{ width: `${oPct}%`, backgroundColor: '#8b92a5' }} />
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
                       </>
