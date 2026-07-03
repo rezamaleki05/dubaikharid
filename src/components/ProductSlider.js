@@ -40,6 +40,33 @@ export default function ProductSlider({ onSelectProduct }) {
     } catch (e) {
       console.error('Error merging uploaded products for ProductSlider:', e);
     }
+
+    try {
+      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
+      if (savedWarehouse) {
+        const warehouse = JSON.parse(savedWarehouse);
+        warehouse.forEach(p => {
+          if (p && !p.isArchived) {
+            const finalProduct = {
+              ...p,
+              store: p.store || 'انبار ایران',
+              product_type: p.product_type || 'iran_inventory'
+            };
+            if (finalProduct.category === 'electronics' || finalProduct.category === 'laptops') {
+              if (!mergedLaptops.some(m => m.id === finalProduct.id)) {
+                mergedLaptops.unshift(finalProduct);
+              }
+            } else {
+              if (!mergedTrending.some(m => m.id === finalProduct.id)) {
+                mergedTrending.unshift(finalProduct);
+              }
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging warehouse products for ProductSlider:', e);
+    }
     setAllLaptops(mergedLaptops);
     setAllTrending(mergedTrending);
   }, []);

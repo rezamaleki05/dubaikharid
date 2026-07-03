@@ -403,6 +403,64 @@ const DEFAULT_STORES_SEED = [
   { id: 'modanisa', name: 'Modanisa', desc: 'فروشگاه آنلاین پوشاک مناسب بانوان', url: 'https://www.modanisa.com/en/', hasImage: false, fallback: 'modanisa' }
 ];
 
+const DEFAULT_CATEGORIES_SEED = [
+  { id: 'cat-1', name: 'لپ‌تاپ', icon: '💻', count: '۵ مدل پرفروش', query: 'لپ تاپ' },
+  { id: 'cat-2', name: 'موبایل', icon: '📱', count: '۱۲ مدل پرفروش', query: 'موبایل' },
+  { id: 'cat-3', name: 'لوازم الکترونیک', icon: '🎧', count: '۸ مدل پرفروش', query: 'الکترونیک' },
+  { id: 'cat-4', name: 'ساعت مچی', icon: '⌚', count: '۷ مدل پرفروش', query: 'ساعت' },
+  { id: 'cat-5', name: 'کفش ورزشی', icon: '👟', count: '۱۵ مدل پرفروش', query: 'کفش' },
+  { id: 'cat-6', name: 'کیف و اکسسوری', icon: '👜', count: '۱۰ مدل پرفروش', query: 'کیف' },
+  { id: 'cat-7', name: 'زیبایی و سلامت', icon: '🧴', count: '۹ مدل پرفروش', query: 'آرایشی' },
+  { id: 'cat-8', name: 'پوشاک و لباس', icon: '👕', count: '۱۴ مدل پرفروش', query: 'لباس' },
+  { id: 'cat-9', name: 'کودک و سرگرمی', icon: '🧸', count: '۶ مدل پرفروش', query: 'کودک' }
+];
+
+const getCategorySelectValue = (category, gender) => {
+  if (gender === 'men') {
+    if (category === 'clothing') return 'men_clothing';
+    if (category === 'pants') return 'men_pants';
+    if (category === 'shoes') return 'men_shoes';
+    if (category === 'accessories') return 'men_accessories';
+  }
+  if (gender === 'women') {
+    if (category === 'clothing') return 'women_clothing';
+    if (category === 'pants') return 'women_pants';
+    if (category === 'shoes') return 'women_shoes';
+    if (category === 'accessories') return 'women_accessories';
+  }
+  if (gender === 'kids') {
+    if (category === 'clothing') return 'kids_clothing';
+    if (category === 'pants') return 'kids_pants';
+    if (category === 'shoes') return 'kids_shoes';
+  }
+  if (category === 'electronics') return 'electronics';
+  if (category === 'bags') return 'bags';
+  if (category === 'watches_glasses') return 'watches_glasses';
+  if (category === 'wallets_belts') return 'wallets_belts';
+  return 'trending';
+};
+
+const parseCategorySelectValue = (value) => {
+  switch (value) {
+    case 'electronics': return { category: 'electronics', gender: '' };
+    case 'men_clothing': return { category: 'clothing', gender: 'men' };
+    case 'men_pants': return { category: 'pants', gender: 'men' };
+    case 'men_shoes': return { category: 'shoes', gender: 'men' };
+    case 'men_accessories': return { category: 'accessories', gender: 'men' };
+    case 'women_clothing': return { category: 'clothing', gender: 'women' };
+    case 'women_pants': return { category: 'pants', gender: 'women' };
+    case 'women_shoes': return { category: 'shoes', gender: 'women' };
+    case 'women_accessories': return { category: 'accessories', gender: 'women' };
+    case 'kids_clothing': return { category: 'clothing', gender: 'kids' };
+    case 'kids_pants': return { category: 'pants', gender: 'kids' };
+    case 'kids_shoes': return { category: 'shoes', gender: 'kids' };
+    case 'bags': return { category: 'bags', gender: '' };
+    case 'watches_glasses': return { category: 'watches_glasses', gender: '' };
+    case 'wallets_belts': return { category: 'wallets_belts', gender: '' };
+    default: return { category: 'trending', gender: '' };
+  }
+};
+
 export default function AdminPanel() {
   // Site settings context
   const { settings: siteCtxSettings, updateSettings: updateSiteCtxSettings, updateAedRateAuto } = useSiteSettings();
@@ -470,7 +528,7 @@ export default function AdminPanel() {
   const [isAddProductManualOpen, setIsAddProductManualOpen] = useState(false);
   const [addProductManualForm, setAddProductManualForm] = useState({
     name: '', brand: 'Nike', priceAed: '', weight: '1.0', sourceStore: 'Amazon.ae', originalLink: '', image: '',
-    category: '', gender: '', discountPercent: 0, isBestSeller: false
+    category: 'clothing', gender: 'men', discountPercent: 0, hasDiscount: false, isBestSeller: false
   });
 
   // Local warehouse states
@@ -481,10 +539,13 @@ export default function AdminPanel() {
   // Brands & Stores management states
   const [brands, setBrands] = useState([]);
   const [brandDropdownOpen, setBrandDropdownOpen] = useState(null); // 'addWarehouse', 'editWarehouse', 'addProductManual', 'editProduct'
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(null); // 'addWarehouse', 'editWarehouse'
   const [stores, setStores] = useState([]);
-  const [brandsSubTab, setBrandsSubTab] = useState('official'); // official, online_stores
+  const [categories, setCategories] = useState([]);
+  const [brandsSubTab, setBrandsSubTab] = useState('official'); // official, online_stores, categories
   const [brandSearchQuery, setBrandSearchQuery] = useState('');
   const [storeSearchQuery, setStoreSearchQuery] = useState('');
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
   // Add/Edit brand modal states
   const [isAddBrandOpen, setIsAddBrandOpen] = useState(false);
@@ -505,6 +566,17 @@ export default function AdminPanel() {
   const [addStoreForm, setAddStoreForm] = useState({
     name: '', desc: '', url: '', img: '', fallback: '', hasImage: false
   });
+
+  // Add/Edit category modal states
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isEditCategoryOpen, setIsEditCategoryOpen] = useState(false);
+  const [editCategoryForm, setEditCategoryForm] = useState({
+    id: '', name: '', icon: '', count: '', query: ''
+  });
+  const [addCategoryForm, setAddCategoryForm] = useState({
+    name: '', icon: '', count: '', query: ''
+  });
+
   const [warehouseCategoryFilter, setWarehouseCategoryFilter] = useState('همه');
   const [warehouseBrandFilter, setWarehouseBrandFilter] = useState('همه');
   const [warehouseStatusFilter, setWarehouseStatusFilter] = useState('همه');
@@ -514,7 +586,7 @@ export default function AdminPanel() {
   const [isAddWarehouseOpen, setIsAddWarehouseOpen] = useState(false);
   const [isEditWarehouseOpen, setIsEditWarehouseOpen] = useState(false);
   const [editWarehouseForm, setEditWarehouseForm] = useState({
-    id: '', name: '', brand: '', category: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: ''
+    id: '', name: '', brand: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   
   const [warehouseAdjustStockOpen, setWarehouseAdjustStockOpen] = useState(false);
@@ -527,7 +599,7 @@ export default function AdminPanel() {
   const [warehouseReportOpen, setWarehouseReportOpen] = useState(false);
   const [activeWarehouseMenuId, setActiveWarehouseMenuId] = useState(null);
   const [addWarehouseForm, setAddWarehouseForm] = useState({
-    name: '', brand: '', category: 'موبایل', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: ''
+    name: '', brand: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   const [warehousePage, setWarehousePage] = useState(1);
   const [warehouseLimit, setWarehouseLimit] = useState(10);
@@ -635,6 +707,8 @@ export default function AdminPanel() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('همه');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('همه');
   const [paymentCategoryFilter, setPaymentCategoryFilter] = useState('همه');
+  const [paymentStartDate, setPaymentStartDate] = useState('');
+  const [paymentEndDate, setPaymentEndDate] = useState('');
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
   const [newPaymentForm, setNewPaymentForm] = useState({
@@ -1187,6 +1261,15 @@ export default function AdminPanel() {
     } else {
       localStorage.setItem('dubaiKharidStores', JSON.stringify(DEFAULT_STORES_SEED));
       setStores(DEFAULT_STORES_SEED);
+    }
+
+    // Categories seed
+    const savedCategories = localStorage.getItem('dubaiKharidCategories');
+    if (savedCategories) {
+      setCategories(JSON.parse(savedCategories));
+    } else {
+      localStorage.setItem('dubaiKharidCategories', JSON.stringify(DEFAULT_CATEGORIES_SEED));
+      setCategories(DEFAULT_CATEGORIES_SEED);
     }
 
     // Load deleted static laptop IDs
@@ -2324,6 +2407,52 @@ export default function AdminPanel() {
     setStores(updated);
     localStorage.setItem('dubaiKharidStores', JSON.stringify(updated));
     alert('فروشگاه با موفقیت حذف شد.');
+  };
+
+  const handleAddCategory = (e) => {
+    if (e) e.preventDefault();
+    if (!addCategoryForm.name.trim()) {
+      alert('لطفا نام دسته‌بندی را وارد کنید.');
+      return;
+    }
+    const id = 'cat-' + Date.now();
+    const newCat = {
+      id,
+      name: addCategoryForm.name.trim(),
+      icon: addCategoryForm.icon.trim() || '🏷️',
+      count: addCategoryForm.count.trim() || '۰ مدل پرفروش',
+      query: addCategoryForm.query.trim() || addCategoryForm.name.trim()
+    };
+    const updated = [...categories, newCat];
+    setCategories(updated);
+    localStorage.setItem('dubaiKharidCategories', JSON.stringify(updated));
+    setIsAddCategoryOpen(false);
+    setAddCategoryForm({ name: '', icon: '', count: '', query: '' });
+    alert('دسته‌بندی جدید با موفقیت ذخیره شد.');
+  };
+
+  const handleEditCategory = (e) => {
+    if (e) e.preventDefault();
+    if (!editCategoryForm.name.trim()) return;
+    const updated = categories.map(c => c.id === editCategoryForm.id ? {
+      ...c,
+      name: editCategoryForm.name.trim(),
+      icon: editCategoryForm.icon.trim() || c.icon,
+      count: editCategoryForm.count.trim() || c.count,
+      query: editCategoryForm.query.trim() || c.query
+    } : c);
+    setCategories(updated);
+    localStorage.setItem('dubaiKharidCategories', JSON.stringify(updated));
+    setIsEditCategoryOpen(false);
+    alert('دسته‌بندی با موفقیت ویرایش شد.');
+  };
+
+  const handleDeleteCategory = (id) => {
+    if (!confirm('آیا از حذف این دسته‌بندی اطمینان دارید؟')) return;
+    const updated = categories.filter(c => c.id !== id);
+    setCategories(updated);
+    localStorage.setItem('dubaiKharidCategories', JSON.stringify(updated));
+    alert('دسته‌بندی با موفقیت حذف شد.');
   };
 
   // Form calculations
@@ -3481,8 +3610,8 @@ export default function AdminPanel() {
                           const searchVal = laptopForm.brand || '';
                           const filtered = brands.filter(b => 
                             !searchVal || 
-                            b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
-                            (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                            b?.name?.toLowerCase().includes(searchVal.toLowerCase()) || 
+                            b?.faName?.toLowerCase().includes(searchVal.toLowerCase())
                           );
                           if (filtered.length === 0) return null;
                           return (
@@ -3500,9 +3629,9 @@ export default function AdminPanel() {
                               boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                               marginTop: '4px'
                             }}>
-                              {filtered.map(b => (
+                              {filtered.map((b, idx) => (
                                 <div
-                                  key={b.id}
+                                  key={`${b.id || idx}-${idx}`}
                                   onMouseDown={() => {
                                     handleBrandChange(b.name);
                                     setBrandDropdownOpen(null);
@@ -5505,7 +5634,7 @@ export default function AdminPanel() {
 
             // Categories & Brands for filters
             const categories = ['همه', ...new Set(activeProds.map(p => p.category))];
-            const brands = ['همه', ...new Set(activeProds.map(p => p.brand))];
+            const warehouseFilterBrands = ['همه', ...new Set(activeProds.map(p => p.brand))];
 
             // Filter products
             const filteredProds = activeProds.filter(p => {
@@ -5657,12 +5786,16 @@ export default function AdminPanel() {
                 name: addWarehouseForm.name,
                 brand: addWarehouseForm.brand,
                 category: addWarehouseForm.category,
+                gender: addWarehouseForm.gender || '',
                 sku: addWarehouseForm.sku || ('SKU-' + Date.now().toString().slice(-6)),
                 price: parseInt(addWarehouseForm.price) || 0,
                 stock: parseInt(addWarehouseForm.stock) || 0,
                 reserved: parseInt(addWarehouseForm.reserved) || 0,
                 location: addWarehouseForm.location || 'ثبت نشده',
                 minStock: parseInt(addWarehouseForm.minStock) || 5,
+                isBestSeller: !!addWarehouseForm.isBestSeller,
+                hasDiscount: !!addWarehouseForm.hasDiscount,
+                discountPercent: parseInt(addWarehouseForm.discountPercent) || 0,
                 lastUpdated: new Date().toLocaleDateString('fa-IR') + ' - ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
                 image: addWarehouseForm.image || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=200&auto=format&fit=crop',
                 isArchived: false,
@@ -5685,7 +5818,7 @@ export default function AdminPanel() {
               setSelectedWarehouseProductId(newId);
               setIsAddWarehouseOpen(false);
               setAddWarehouseForm({
-                name: '', brand: '', category: 'موبایل', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: ''
+                name: '', brand: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
               });
               alert('کالا با موفقیت اضافه شد.');
             };
@@ -5702,12 +5835,16 @@ export default function AdminPanel() {
                     name: editWarehouseForm.name,
                     brand: editWarehouseForm.brand,
                     category: editWarehouseForm.category,
+                    gender: editWarehouseForm.gender || '',
                     sku: editWarehouseForm.sku,
                     price: parseInt(editWarehouseForm.price) || 0,
                     stock: parseInt(editWarehouseForm.stock) || 0,
                     reserved: parseInt(editWarehouseForm.reserved) || 0,
                     location: editWarehouseForm.location,
                     minStock: parseInt(editWarehouseForm.minStock) || 5,
+                    isBestSeller: !!editWarehouseForm.isBestSeller,
+                    hasDiscount: !!editWarehouseForm.hasDiscount,
+                    discountPercent: parseInt(editWarehouseForm.discountPercent) || 0,
                     image: editWarehouseForm.image,
                     lastUpdated: new Date().toLocaleDateString('fa-IR') + ' - ' + new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
                   };
@@ -5997,7 +6134,7 @@ export default function AdminPanel() {
                       }}
                     >
                       <option value="همه" style={{ background: '#0c0d12' }}>برند: همه</option>
-                      {brands.filter(b => b !== 'همه').map(br => (
+                      {warehouseFilterBrands.filter(b => b !== 'همه').map(br => (
                         <option key={br} value={br} style={{ background: '#0c0d12' }}>{br}</option>
                       ))}
                     </select>
@@ -6233,7 +6370,13 @@ export default function AdminPanel() {
                                           </div>
                                           <div
                                             onClick={() => {
-                                              setEditWarehouseForm(prod);
+                                              setEditWarehouseForm({
+                                                ...prod,
+                                                category: prod.category || '',
+                                                isBestSeller: !!prod.isBestSeller,
+                                                hasDiscount: !!prod.hasDiscount,
+                                                discountPercent: prod.discountPercent || 0
+                                              });
                                               setIsEditWarehouseOpen(true);
                                               setActiveWarehouseMenuId(null);
                                             }}
@@ -6451,7 +6594,13 @@ export default function AdminPanel() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                           <button
                             onClick={() => {
-                              setEditWarehouseForm(selectedProduct);
+                              setEditWarehouseForm({
+                                ...selectedProduct,
+                                category: selectedProduct.category || '',
+                                isBestSeller: !!selectedProduct.isBestSeller,
+                                hasDiscount: !!selectedProduct.hasDiscount,
+                                discountPercent: selectedProduct.discountPercent || 0
+                              });
                               setIsEditWarehouseOpen(true);
                             }}
                             style={{
@@ -6587,26 +6736,41 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div style={{ position: 'relative' }}>
+                          <div>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
-                            <input
-                              type="text"
-                              required
-                              value={addWarehouseForm.brand}
-                              onChange={e => {
-                                setAddWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
-                                setBrandDropdownOpen('addWarehouse');
-                              }}
-                              onFocus={() => setBrandDropdownOpen('addWarehouse')}
-                              onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
-                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                            />
-                            {brandDropdownOpen === 'addWarehouse' && (() => {
+                            <div style={{ position: 'relative' }}>
+                              <input
+                                type="text"
+                                required
+                                value={addWarehouseForm.brand}
+                                onChange={e => {
+                                  setAddWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
+                                  setBrandDropdownOpen('addWarehouse');
+                                }}
+                                onFocus={() => setBrandDropdownOpen('addWarehouse')}
+                                onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
+                                style={{ width: '100%', padding: '8px 12px 8px 32px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                              />
+                              <div style={{
+                                position: 'absolute',
+                                left: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                pointerEvents: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b92a5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </div>
+                              {brandDropdownOpen === 'addWarehouse' && (() => {
                               const searchVal = addWarehouseForm.brand || '';
                               const filtered = brands.filter(b => 
                                 !searchVal || 
-                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
-                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                                b?.name?.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                b?.faName?.toLowerCase().includes(searchVal.toLowerCase())
                               );
                               if (filtered.length === 0) return null;
                               return (
@@ -6624,9 +6788,9 @@ export default function AdminPanel() {
                                   boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                                   marginTop: '4px'
                                 }}>
-                                  {filtered.map(b => (
+                                  {filtered.map((b, idx) => (
                                     <div
-                                      key={b.id}
+                                      key={`${b.id || idx}-${idx}`}
                                       onMouseDown={() => {
                                         setAddWarehouseForm(prev => ({ ...prev, brand: b.name }));
                                         setBrandDropdownOpen(null);
@@ -6649,16 +6813,39 @@ export default function AdminPanel() {
                                 </div>
                               );
                             })()}
+                            </div>
                           </div>
                           <div>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
-                            <input
-                              type="text"
+                            <select
                               required
-                              value={addWarehouseForm.category}
-                              onChange={e => setAddWarehouseForm(prev => ({ ...prev, category: e.target.value }))}
-                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                            />
+                              value={getCategorySelectValue(addWarehouseForm.category, addWarehouseForm.gender)}
+                              onChange={e => {
+                                const parsed = parseCategorySelectValue(e.target.value);
+                                setAddWarehouseForm(prev => ({
+                                  ...prev,
+                                  category: parsed.category,
+                                  gender: parsed.gender
+                                }));
+                              }}
+                              style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            >
+                              <option value="men_clothing">پوشاک مردانه</option>
+                              <option value="men_pants">شلوار مردانه</option>
+                              <option value="men_shoes">کفش مردانه</option>
+                              <option value="men_accessories">اکسسوری مردانه</option>
+                              <option value="women_clothing">پوشاک زنانه</option>
+                              <option value="women_pants">شلوار زنانه</option>
+                              <option value="women_shoes">کفش زنانه</option>
+                              <option value="women_accessories">اکسسوری زنانه</option>
+                              <option value="kids_clothing">پوشاک بچگانه</option>
+                              <option value="kids_pants">شلوار و سرهمی بچگانه</option>
+                              <option value="kids_shoes">کفش بچگانه</option>
+                              <option value="electronics">لپ‌تاپ و الکترونیک</option>
+                              <option value="bags">کیف و کوله عمومی</option>
+                              <option value="watches_glasses">ساعت و عینک</option>
+                              <option value="wallets_belts">کیف پول و کمربند</option>
+                            </select>
                           </div>
                         </div>
 
@@ -6769,6 +6956,71 @@ export default function AdminPanel() {
                           )}
                         </div>
 
+                        {/* Best-seller & Discount toggles */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
+                          <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>تنظیمات نمایش در وبسایت</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {/* isBestSeller */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddWarehouseForm(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}>
+                              <div style={{
+                                width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
+                                background: addWarehouseForm.isBestSeller ? 'linear-gradient(135deg, #f87820, #d4590c)' : 'rgba(255,255,255,0.1)',
+                                position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
+                              }}>
+                                <div style={{
+                                  width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+                                  position: 'absolute', top: '3px',
+                                  left: addWarehouseForm.isBestSeller ? '19px' : '3px',
+                                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                }} />
+                              </div>
+                              <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🔥 پرفروش (Best Seller) — نمایش در بخش پرفروش‌های سایت</span>
+                            </div>
+
+                            {/* hasDiscount */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddWarehouseForm(prev => ({ ...prev, hasDiscount: !prev.hasDiscount, discountPercent: !prev.hasDiscount ? prev.discountPercent : 0 }))}>
+                              <div style={{
+                                width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
+                                background: addWarehouseForm.hasDiscount ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.1)',
+                                position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
+                              }}>
+                                <div style={{
+                                  width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+                                  position: 'absolute', top: '3px',
+                                  left: addWarehouseForm.hasDiscount ? '19px' : '3px',
+                                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                }} />
+                              </div>
+                              <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🏷️ دارای تخفیف — نمایش برچسب تخفیف روی کالا</span>
+                            </div>
+
+                            {/* discountPercent — shown only when hasDiscount is on */}
+                            {addWarehouseForm.hasDiscount && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', paddingRight: '46px' }}>
+                                <label style={{ color: '#8b92a5', fontSize: '11px', whiteSpace: 'nowrap' }}>درصد تخفیف:</label>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    value={addWarehouseForm.discountPercent}
+                                    onChange={e => setAddWarehouseForm(prev => ({ ...prev, discountPercent: e.target.value }))}
+                                    placeholder="مثال: 20"
+                                    style={{
+                                      width: '100%', padding: '7px 32px 7px 12px',
+                                      background: 'rgba(16, 185, 129, 0.07)',
+                                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                                      borderRadius: '8px', color: '#10b981', fontSize: '13px',
+                                      fontWeight: 'bold', outline: 'none'
+                                    }}
+                                  />
+                                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', fontSize: '12px', fontWeight: 'bold', pointerEvents: 'none' }}>%</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
                         <button
                           type="submit"
                           style={{
@@ -6807,26 +7059,43 @@ export default function AdminPanel() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <div style={{ position: 'relative' }}>
+                          <div>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
-                            <input
-                              type="text"
-                              required
-                              value={editWarehouseForm.brand}
-                              onChange={e => {
-                                setEditWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
-                                setBrandDropdownOpen('editWarehouse');
-                              }}
-                              onFocus={() => setBrandDropdownOpen('editWarehouse')}
-                              onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
-                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                            />
-                            {brandDropdownOpen === 'editWarehouse' && (() => {
+                            <div style={{ position: 'relative' }}>
+                              <input
+                                type="text"
+                                required
+                                value={editWarehouseForm.brand}
+                                onChange={e => {
+                                  setEditWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
+                                  setBrandDropdownOpen('editWarehouse');
+                                }}
+                                onFocus={() => setBrandDropdownOpen('editWarehouse')}
+                                onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
+                                style={{ width: '100%', padding: '8px 32px 8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                              />
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  right: '10px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  pointerEvents: 'none',
+                                  opacity: 0.5,
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M6 9l6 6 6-6" />
+                                </svg>
+                              </div>
+                              {brandDropdownOpen === 'editWarehouse' && (() => {
                               const searchVal = editWarehouseForm.brand || '';
                               const filtered = brands.filter(b => 
                                 !searchVal || 
-                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
-                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                                b?.name?.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                b?.faName?.toLowerCase().includes(searchVal.toLowerCase())
                               );
                               if (filtered.length === 0) return null;
                               return (
@@ -6844,9 +7113,9 @@ export default function AdminPanel() {
                                   boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                                   marginTop: '4px'
                                 }}>
-                                  {filtered.map(b => (
+                                  {filtered.map((b, idx) => (
                                     <div
-                                      key={b.id}
+                                      key={`${b.id || idx}-${idx}`}
                                       onMouseDown={() => {
                                         setEditWarehouseForm(prev => ({ ...prev, brand: b.name }));
                                         setBrandDropdownOpen(null);
@@ -6869,16 +7138,39 @@ export default function AdminPanel() {
                                 </div>
                               );
                             })()}
+                            </div>
                           </div>
                           <div>
                             <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
-                            <input
-                              type="text"
+                            <select
                               required
-                              value={editWarehouseForm.category}
-                              onChange={e => setEditWarehouseForm(prev => ({ ...prev, category: e.target.value }))}
-                              style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                            />
+                              value={getCategorySelectValue(editWarehouseForm.category, editWarehouseForm.gender)}
+                              onChange={e => {
+                                const parsed = parseCategorySelectValue(e.target.value);
+                                setEditWarehouseForm(prev => ({
+                                  ...prev,
+                                  category: parsed.category,
+                                  gender: parsed.gender
+                                }));
+                              }}
+                              style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
+                            >
+                              <option value="men_clothing">پوشاک مردانه</option>
+                              <option value="men_pants">شلوار مردانه</option>
+                              <option value="men_shoes">کفش مردانه</option>
+                              <option value="men_accessories">اکسسوری مردانه</option>
+                              <option value="women_clothing">پوشاک زنانه</option>
+                              <option value="women_pants">شلوار زنانه</option>
+                              <option value="women_shoes">کفش زنانه</option>
+                              <option value="women_accessories">اکسسوری زنانه</option>
+                              <option value="kids_clothing">پوشاک بچگانه</option>
+                              <option value="kids_pants">شلوار و سرهمی بچگانه</option>
+                              <option value="kids_shoes">کفش بچگانه</option>
+                              <option value="electronics">لپ‌تاپ و الکترونیک</option>
+                              <option value="bags">کیف و کوله عمومی</option>
+                              <option value="watches_glasses">ساعت و عینک</option>
+                              <option value="wallets_belts">کیف پول و کمربند</option>
+                            </select>
                           </div>
                         </div>
 
@@ -6985,6 +7277,71 @@ export default function AdminPanel() {
                               style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}
                             />
                           )}
+                        </div>
+
+                        {/* Best-seller & Discount toggles */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
+                          <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>تنظیمات نمایش در وبسایت</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {/* isBestSeller */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setEditWarehouseForm(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}>
+                              <div style={{
+                                width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
+                                background: editWarehouseForm.isBestSeller ? 'linear-gradient(135deg, #f87820, #d4590c)' : 'rgba(255,255,255,0.1)',
+                                position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
+                              }}>
+                                <div style={{
+                                  width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+                                  position: 'absolute', top: '3px',
+                                  left: editWarehouseForm.isBestSeller ? '19px' : '3px',
+                                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                }} />
+                              </div>
+                              <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🔥 پرفروش (Best Seller) — نمایش در بخش پرفروش‌های سایت</span>
+                            </div>
+
+                            {/* hasDiscount */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setEditWarehouseForm(prev => ({ ...prev, hasDiscount: !prev.hasDiscount, discountPercent: !prev.hasDiscount ? prev.discountPercent : 0 }))}>
+                              <div style={{
+                                width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
+                                background: editWarehouseForm.hasDiscount ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.1)',
+                                position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
+                              }}>
+                                <div style={{
+                                  width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+                                  position: 'absolute', top: '3px',
+                                  left: editWarehouseForm.hasDiscount ? '19px' : '3px',
+                                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                }} />
+                              </div>
+                              <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🏷️ دارای تخفیف — نمایش برچسب تخفیف روی کالا</span>
+                            </div>
+
+                            {/* discountPercent — shown only when hasDiscount is on */}
+                            {editWarehouseForm.hasDiscount && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', paddingRight: '46px' }}>
+                                <label style={{ color: '#8b92a5', fontSize: '11px', whiteSpace: 'nowrap' }}>درصد تخفیف:</label>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    value={editWarehouseForm.discountPercent}
+                                    onChange={e => setEditWarehouseForm(prev => ({ ...prev, discountPercent: e.target.value }))}
+                                    placeholder="مثال: 20"
+                                    style={{
+                                      width: '100%', padding: '7px 32px 7px 12px',
+                                      background: 'rgba(16, 185, 129, 0.07)',
+                                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                                      borderRadius: '8px', color: '#10b981', fontSize: '13px',
+                                      fontWeight: 'bold', outline: 'none'
+                                    }}
+                                  />
+                                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', fontSize: '12px', fontWeight: 'bold', pointerEvents: 'none' }}>%</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <button
@@ -7481,7 +7838,8 @@ export default function AdminPanel() {
                 foreignStatus: 'active',
                 gender: addProductManualForm.gender || '',
                 category: addProductManualForm.category || '',
-                discountPercent: parseFloat(addProductManualForm.discountPercent) || 0,
+                hasDiscount: !!addProductManualForm.hasDiscount,
+                discountPercent: addProductManualForm.hasDiscount ? (parseFloat(addProductManualForm.discountPercent) || 0) : 0,
                 isBestSeller: addProductManualForm.isBestSeller || false,
                 lastUpdated: 'امروز'
               };
@@ -7963,8 +8321,8 @@ export default function AdminPanel() {
                               const searchVal = editProductForm.brand || '';
                               const filtered = brands.filter(b => 
                                 !searchVal || 
-                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
-                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                                b?.name?.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                b?.faName?.toLowerCase().includes(searchVal.toLowerCase())
                               );
                               if (filtered.length === 0) return null;
                               return (
@@ -7982,9 +8340,9 @@ export default function AdminPanel() {
                                   boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                                   marginTop: '4px'
                                 }}>
-                                  {filtered.map(b => (
+                                  {filtered.map((b, idx) => (
                                     <div
-                                      key={b.id}
+                                      key={`${b.id || idx}-${idx}`}
                                       onMouseDown={() => {
                                         setEditProductForm(prev => ({ ...prev, brand: b.name }));
                                         setBrandDropdownOpen(null);
@@ -8214,8 +8572,8 @@ export default function AdminPanel() {
                               const searchVal = addProductManualForm.brand || '';
                               const filtered = brands.filter(b => 
                                 !searchVal || 
-                                b.name.toLowerCase().includes(searchVal.toLowerCase()) || 
-                                (b.faName && b.faName.toLowerCase().includes(searchVal.toLowerCase()))
+                                b?.name?.toLowerCase().includes(searchVal.toLowerCase()) || 
+                                b?.faName?.toLowerCase().includes(searchVal.toLowerCase())
                               );
                               if (filtered.length === 0) return null;
                               return (
@@ -8233,9 +8591,9 @@ export default function AdminPanel() {
                                   boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
                                   marginTop: '4px'
                                 }}>
-                                  {filtered.map(b => (
+                                  {filtered.map((b, idx) => (
                                     <div
-                                      key={b.id}
+                                      key={`${b.id || idx}-${idx}`}
                                       onMouseDown={() => {
                                         setAddProductManualForm(prev => ({ ...prev, brand: b.name }));
                                         setBrandDropdownOpen(null);
@@ -8347,57 +8705,100 @@ export default function AdminPanel() {
                           />
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>نمایش در دسته‌بندی‌های سایت:</label>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '8px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={addProductManualForm.gender === 'men'} 
-                                onChange={(e) => setAddProductManualForm({...addProductManualForm, gender: e.target.checked ? 'men' : ''})} 
-                              />
-                              مردانه (Men)
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={addProductManualForm.gender === 'women'} 
-                                onChange={(e) => setAddProductManualForm({...addProductManualForm, gender: e.target.checked ? 'women' : ''})} 
-                              />
-                              زنانه (Women)
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={addProductManualForm.gender === 'kids'} 
-                                onChange={(e) => setAddProductManualForm({...addProductManualForm, gender: e.target.checked ? 'kids' : ''})} 
-                              />
-                              بچگانه (Kids)
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={addProductManualForm.category === 'bags'} 
-                                onChange={(e) => setAddProductManualForm({...addProductManualForm, category: e.target.checked ? 'bags' : ''})} 
-                              />
-                              کیف و اکسسوری
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={addProductManualForm.discountPercent > 0} 
-                                onChange={(e) => setAddProductManualForm({...addProductManualForm, discountPercent: e.target.checked ? 20 : 0})} 
-                              />
-                              تخفیف خورده (Sale)
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={addProductManualForm.isBestSeller === true} 
-                                onChange={(e) => setAddProductManualForm({...addProductManualForm, isBestSeller: e.target.checked})} 
-                              />
-                              پرفروش‌ترین‌ها
-                            </label>
+                        {/* Category select - warehouse style */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <label style={{ fontSize: '11px', color: '#8b92a5' }}>دسته‌بندی (ضروری):</label>
+                          <select
+                            required
+                            value={getCategorySelectValue(addProductManualForm.category, addProductManualForm.gender)}
+                            onChange={e => {
+                              const parsed = parseCategorySelectValue(e.target.value);
+                              setAddProductManualForm(prev => ({ ...prev, category: parsed.category, gender: parsed.gender }));
+                            }}
+                            style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
+                          >
+                            <option value="men_clothing" style={{ background: '#1c1f2a' }}>پوشاک مردانه</option>
+                            <option value="men_pants" style={{ background: '#1c1f2a' }}>شلوار مردانه</option>
+                            <option value="men_shoes" style={{ background: '#1c1f2a' }}>کفش مردانه</option>
+                            <option value="men_accessories" style={{ background: '#1c1f2a' }}>اکسسوری مردانه</option>
+                            <option value="women_clothing" style={{ background: '#1c1f2a' }}>پوشاک زنانه</option>
+                            <option value="women_pants" style={{ background: '#1c1f2a' }}>شلوار زنانه</option>
+                            <option value="women_shoes" style={{ background: '#1c1f2a' }}>کفش زنانه</option>
+                            <option value="women_accessories" style={{ background: '#1c1f2a' }}>اکسسوری زنانه</option>
+                            <option value="kids_clothing" style={{ background: '#1c1f2a' }}>پوشاک بچگانه</option>
+                            <option value="kids_pants" style={{ background: '#1c1f2a' }}>شلوار و سرهمی بچگانه</option>
+                            <option value="kids_shoes" style={{ background: '#1c1f2a' }}>کفش بچگانه</option>
+                            <option value="electronics" style={{ background: '#1c1f2a' }}>لپ‌تاپ و الکترونیک</option>
+                            <option value="bags" style={{ background: '#1c1f2a' }}>کیف و کوله عمومی</option>
+                            <option value="watches_glasses" style={{ background: '#1c1f2a' }}>ساعت و عینک</option>
+                            <option value="wallets_belts" style={{ background: '#1c1f2a' }}>کیف پول و کمربند</option>
+                          </select>
+                        </div>
+
+                        {/* Best-seller & Discount toggles - warehouse style */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
+                          <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>تنظیمات نمایش در وبسایت</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+                            {/* isBestSeller */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddProductManualForm(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}>
+                              <div style={{
+                                width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
+                                background: addProductManualForm.isBestSeller ? 'linear-gradient(135deg, #f87820, #d4590c)' : 'rgba(255,255,255,0.1)',
+                                position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
+                              }}>
+                                <div style={{
+                                  width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+                                  position: 'absolute', top: '3px',
+                                  left: addProductManualForm.isBestSeller ? '19px' : '3px',
+                                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                }} />
+                              </div>
+                              <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🔥 پرفروش (Best Seller) — نمایش در بخش پرفروش‌های سایت</span>
+                            </div>
+
+                            {/* hasDiscount */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddProductManualForm(prev => ({ ...prev, hasDiscount: !prev.hasDiscount, discountPercent: !prev.hasDiscount ? prev.discountPercent : 0 }))}>
+                              <div style={{
+                                width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
+                                background: addProductManualForm.hasDiscount ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.1)',
+                                position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
+                              }}>
+                                <div style={{
+                                  width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
+                                  position: 'absolute', top: '3px',
+                                  left: addProductManualForm.hasDiscount ? '19px' : '3px',
+                                  transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                                }} />
+                              </div>
+                              <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🏷️ دارای تخفیف — نمایش برچسب تخفیف روی کالا</span>
+                            </div>
+
+                            {/* discountPercent — shown only when hasDiscount is on */}
+                            {addProductManualForm.hasDiscount && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', paddingRight: '46px' }}>
+                                <label style={{ color: '#8b92a5', fontSize: '11px', whiteSpace: 'nowrap' }}>درصد تخفیف:</label>
+                                <div style={{ position: 'relative', flex: 1 }}>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max="99"
+                                    value={addProductManualForm.discountPercent}
+                                    onChange={e => setAddProductManualForm(prev => ({ ...prev, discountPercent: e.target.value }))}
+                                    placeholder="مثال: 20"
+                                    style={{
+                                      width: '100%', padding: '7px 32px 7px 12px',
+                                      background: 'rgba(16, 185, 129, 0.07)',
+                                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                                      borderRadius: '8px', color: '#10b981', fontSize: '13px',
+                                      fontWeight: 'bold', outline: 'none'
+                                    }}
+                                  />
+                                  <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', fontSize: '12px', fontWeight: 'bold', pointerEvents: 'none' }}>%</span>
+                                </div>
+                              </div>
+                            )}
+
                           </div>
                         </div>
 
@@ -10342,8 +10743,21 @@ export default function AdminPanel() {
 
           {/* TAB: PAYMENTS MANAGEMENT (Premium Redesign with 100% Interactive parity) */}
           {activeTab === 'payments' && (() => {
-            // Apply filters
+            // Helper for parsing mixed Jalali/Gregorian dates
+            const payParseDate = (dStr) => {
+              if (!dStr) return new Date(0);
+              if (dStr.includes('T') || dStr.includes('-')) return new Date(dStr);
+              const parts = dStr.split('/');
+              if (parts.length === 3) {
+                const y = parseInt(parts[0]);
+                return new Date(y + 621, parseInt(parts[1]) - 1, parseInt(parts[2]));
+              }
+              return new Date(0);
+            };
+
             const allPayments = getMergedPayments();
+
+            // Apply filters including interactive dates
             const filteredPayments = allPayments.filter(p => {
               const matchSearch = !paymentSearchQuery || 
                 p.id.toLowerCase().includes(paymentSearchQuery.toLowerCase()) ||
@@ -10359,27 +10773,30 @@ export default function AdminPanel() {
               const matchMethod = paymentMethodFilter === 'همه' || p.method === paymentMethodFilter;
               const matchCategory = paymentCategoryFilter === 'همه' || p.category === paymentCategoryFilter;
 
-              return matchSearch && matchStatus && matchMethod && matchCategory;
+              const pDate = payParseDate(p.date);
+              const startLimit = paymentStartDate ? new Date(paymentStartDate + 'T00:00:00') : null;
+              const endLimit = paymentEndDate ? new Date(paymentEndDate + 'T23:59:59') : null;
+              const matchDate = (!startLimit || pDate >= startLimit) && (!endLimit || pDate <= endLimit);
+
+              return matchSearch && matchStatus && matchMethod && matchCategory && matchDate;
             });
 
-            // Dynamic KPI numbers based on allPayments
-            const displayIncome = allPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((sum, p) => sum + Math.abs(p.amount), 0);
-            const displayExpenses = allPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
-            const displayProfit = displayIncome - displayExpenses;
-            const displayTxnCount = allPayments.length;
-            const displayBalance = displayIncome - displayExpenses;
+            // Date-filtered payments for KPI calculations
+            const dateFilteredPayments = allPayments.filter(p => {
+              const pDate = payParseDate(p.date);
+              const startLimit = paymentStartDate ? new Date(paymentStartDate + 'T00:00:00') : null;
+              const endLimit = paymentEndDate ? new Date(paymentEndDate + 'T23:59:59') : null;
+              return (!startLimit || pDate >= startLimit) && (!endLimit || pDate <= endLimit);
+            });
 
-            // Dynamic growth comparison (30-day vs previous 30-day)
-            const payParseDate = (dStr) => {
-              if (!dStr) return new Date(0);
-              if (dStr.includes('T') || dStr.includes('-')) return new Date(dStr);
-              const parts = dStr.split('/');
-              if (parts.length === 3) {
-                const y = parseInt(parts[0]);
-                return new Date(y + 621, parseInt(parts[1]) - 1, parseInt(parts[2]));
-              }
-              return new Date(0);
-            };
+            // Dynamic KPI numbers based on date-filtered payments
+            const displayIncome = dateFilteredPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+            const displayExpenses = dateFilteredPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+            const displayProfit = displayIncome - displayExpenses;
+            const displayTxnCount = dateFilteredPayments.length;
+            const displayBalance = allPayments.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((sum, p) => sum + Math.abs(p.amount), 0) - allPayments.filter(p => p.type === 'پرداختی').reduce((sum, p) => sum + Math.abs(p.amount), 0);
+
+            // Dynamic growth comparison (30-day vs previous 30-day) based on sliding window
             const payNow = new Date();
             const pay30 = new Date(payNow.getTime() - 30 * 24 * 60 * 60 * 1000);
             const pay60 = new Date(payNow.getTime() - 60 * 24 * 60 * 60 * 1000);
@@ -10419,11 +10836,6 @@ export default function AdminPanel() {
                 </span>
               );
             };
-
-            // Dynamic date range display
-            const payDateRangeStart = new Date(payNow.getFullYear(), payNow.getMonth(), 1);
-            const payStartJalali = payDateRangeStart.toLocaleDateString('fa-IR-u-nu-latn');
-            const payEndJalali = payNow.toLocaleDateString('fa-IR-u-nu-latn');
 
             // --- Widget: توزیع پرداخت‌ها (Doughnut) ---
             const distIncome = allPayments.filter(p => p.type === 'دریافتی' && p.status === 'success');
@@ -10703,9 +11115,33 @@ export default function AdminPanel() {
                       <option value="هزینه ها">هزینه‌ها</option>
                     </select>
 
-                    {/* Dynamic date range display */}
-                    <div className={styles.advFilterBtn} style={{ cursor: 'default', direction: 'ltr', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>{AdminIcons.calendar(12)}</span> {payStartJalali} - {payEndJalali}
+                    {/* Date filter inputs */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#11131a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '4px 10px', height: '38px' }}>
+                      <span style={{ color: '#8b92a5', fontSize: '11.5px', display: 'flex', alignItems: 'center' }}>{AdminIcons.calendar(12)}</span>
+                      <input 
+                        type="date" 
+                        value={paymentStartDate} 
+                        onChange={(e) => setPaymentStartDate(e.target.value)} 
+                        style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '11px', outline: 'none', fontFamily: 'inherit', colorScheme: 'dark' }} 
+                        title="تاریخ شروع"
+                      />
+                      <span style={{ color: '#8b92a5', fontSize: '10px' }}>تا</span>
+                      <input 
+                        type="date" 
+                        value={paymentEndDate} 
+                        onChange={(e) => setPaymentEndDate(e.target.value)} 
+                        style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '11px', outline: 'none', fontFamily: 'inherit', colorScheme: 'dark' }} 
+                        title="تاریخ پایان"
+                      />
+                      {(paymentStartDate || paymentEndDate) && (
+                        <button 
+                          onClick={() => { setPaymentStartDate(''); setPaymentEndDate(''); }}
+                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '11px', padding: '0 4px', fontWeight: 'bold' }}
+                          title="حذف فیلتر تاریخ"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -12326,6 +12762,68 @@ export default function AdminPanel() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                           <button type="button" onClick={() => setIsEditStoreOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Add Category Modal */}
+                {isAddCategoryOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                    <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)', direction: 'rtl' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>➕ افزودن دسته‌بندی جدید</h3>
+                      <form onSubmit={handleAddCategory}>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام دسته‌بندی *</label>
+                          <input type="text" required value={addCategoryForm.name} onChange={e => setAddCategoryForm({...addCategoryForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>ایموجی / آیکون دسته‌بندی</label>
+                          <input type="text" value={addCategoryForm.icon} onChange={e => setAddCategoryForm({...addCategoryForm, icon: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="🏷️ یا 👟" />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>توضیحات / تعداد (مثلا: ۱۲ مدل پرفروش)</label>
+                          <input type="text" value={addCategoryForm.count} onChange={e => setAddCategoryForm({...addCategoryForm, count: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="۰ مدل پرفروش" />
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>فیلتر کوئری جستجو در آمازون/سایت (نام انگلیسی دسته)</label>
+                          <input type="text" value={addCategoryForm.query} onChange={e => setAddCategoryForm({...addCategoryForm, query: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="shoes" />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                          <button type="button" onClick={() => setIsAddCategoryOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                          <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره دسته‌بندی</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* 6. Edit Category Modal */}
+                {isEditCategoryOpen && (
+                  <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
+                    <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)', direction: 'rtl' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>✏️ ویرایش دسته‌بندی {editCategoryForm.name}</h3>
+                      <form onSubmit={handleEditCategory}>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام دسته‌بندی *</label>
+                          <input type="text" required value={editCategoryForm.name} onChange={e => setEditCategoryForm({...editCategoryForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>ایموجی / آیکون دسته‌بندی</label>
+                          <input type="text" value={editCategoryForm.icon} onChange={e => setEditCategoryForm({...editCategoryForm, icon: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>توضیحات / تعداد (مثلا: ۱۲ مدل پرفروش)</label>
+                          <input type="text" value={editCategoryForm.count} onChange={e => setEditCategoryForm({...editCategoryForm, count: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>فیلتر کوئری جستجو در آمازون/سایت (نام انگلیسی دسته)</label>
+                          <input type="text" value={editCategoryForm.query} onChange={e => setEditCategoryForm({...editCategoryForm, query: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                          <button type="button" onClick={() => setIsEditCategoryOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
                           <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
                         </div>
                       </form>

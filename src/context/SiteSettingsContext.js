@@ -162,6 +162,11 @@ export function useSiteSettings() {
 
 // Global price calculation helper
 export function getProductTomanPrice(product, settings) {
+  // Iran inventory warehouse products are already priced in Toman
+  if (product.store === 'انبار ایران' || (product.id && product.id.startsWith('DK-INV')) || product.product_type === 'iran_inventory') {
+    return product.price || 0;
+  }
+  
   // Laptops (electronics category starting with 'lap') are completely independent of exchange rate
   if (product.id && (product.id.startsWith('lap') || product.category === 'laptops')) {
     const fixedRate = 19500;

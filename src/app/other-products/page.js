@@ -53,6 +53,27 @@ function OtherProductsContent() {
     } catch (e) {
       console.error('Error loading uploaded products:', e);
     }
+
+    try {
+      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
+      if (savedWarehouse) {
+        const warehouse = JSON.parse(savedWarehouse);
+        warehouse.forEach(p => {
+          if (p && !p.isArchived) {
+            const finalProduct = {
+              ...p,
+              store: p.store || 'انبار ایران',
+              product_type: p.product_type || 'iran_inventory'
+            };
+            if (!merged.some(m => m.id === finalProduct.id)) {
+              merged.unshift(finalProduct);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging warehouse products for other products:', e);
+    }
     setAllProducts(merged);
   }, []);
 

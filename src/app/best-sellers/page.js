@@ -53,6 +53,31 @@ function BestSellersContent() {
       console.error('Error merging uploaded products for best sellers:', e);
     }
 
+    // Load warehouse products & apply overrides
+    try {
+      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
+      if (savedWarehouse) {
+        const warehouse = JSON.parse(savedWarehouse);
+        warehouse.forEach(p => {
+          if (p && !p.isArchived) {
+            const finalProduct = {
+              ...p,
+              store: p.store || 'انبار ایران',
+              product_type: p.product_type || 'iran_inventory'
+            };
+            const index = merged.findIndex(m => m.id === finalProduct.id);
+            if (index !== -1) {
+              merged[index] = finalProduct; // Apply edit override
+            } else {
+              merged.unshift(finalProduct); // Prepend new warehouse product
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error merging warehouse products for best sellers:', e);
+    }
+
     // 3. Load actually sold products from orders/leads
     let soldProductNames = [];
     try {

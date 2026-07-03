@@ -50,6 +50,31 @@ export default function StockLaptopsPage() {
     } catch (e) {
       console.error('Error loading uploaded laptops:', e);
     }
+
+    try {
+      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
+      if (savedWarehouse) {
+        const warehouse = JSON.parse(savedWarehouse);
+        const warehouseLaptops = warehouse.filter(p => p.category === 'electronics' || p.category === 'laptops');
+        warehouseLaptops.forEach(p => {
+          if (p && !p.isArchived) {
+            const finalProduct = {
+              ...p,
+              store: p.store || 'انبار ایران',
+              product_type: p.product_type || 'iran_inventory'
+            };
+            const index = merged.findIndex(m => m.id === finalProduct.id);
+            if (index !== -1) {
+              merged[index] = finalProduct; // Apply edit override
+            } else {
+              merged.unshift(finalProduct); // Prepend new warehouse product
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error loading warehouse laptops:', e);
+    }
     setAllLaptops(merged);
   }, []);
 

@@ -274,6 +274,19 @@ export default function ProductPage({ params }) {
       }
     }
 
+    // Check localStorage warehouse next
+    if (!found && typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('dubaiKharidWarehouseProducts');
+        if (saved) {
+          const list = JSON.parse(saved);
+          found = list.find(p => p.id === id);
+        }
+      } catch (e) {
+        console.error('Error fetching warehouse product:', e);
+      }
+    }
+
     // Fallback to static lists
     if (!found) {
       found = getProductById(id);

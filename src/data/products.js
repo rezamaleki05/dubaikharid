@@ -91,4 +91,49 @@ if (typeof window !== 'undefined') {
   } catch (e) {
     console.error('Error loading dynamic uploaded products:', e);
   }
+
+  try {
+    const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
+    if (savedWarehouse) {
+      const warehouse = JSON.parse(savedWarehouse);
+      warehouse.forEach(prod => {
+        if (prod && prod.id && !prod.isArchived) {
+          // Flatten standard lists to check duplicates
+          const all = [
+            ...laptops,
+            ...trendingProducts,
+            ...menProducts,
+            ...womenProducts,
+            ...kidsProducts,
+            ...bagsAndAccessoriesProducts
+          ];
+          if (!all.some(p => p.id === prod.id)) {
+            // Assign type based on category
+            if (!prod.product_type) {
+              prod.product_type = 'iran_inventory';
+            }
+            if (!prod.store) {
+              prod.store = 'انبار ایران';
+            }
+            // Route dynamically based on gender or category tags
+            if (prod.gender === 'men') {
+              menProducts.push(prod);
+            } else if (prod.gender === 'women') {
+              womenProducts.push(prod);
+            } else if (prod.gender === 'kids') {
+              kidsProducts.push(prod);
+            } else if (prod.category === 'electronics' || prod.category === 'laptops') {
+              laptops.push(prod);
+            } else if (prod.category === 'bags' || prod.category === 'accessories' || prod.category === 'watches_glasses' || prod.category === 'wallets_belts') {
+              bagsAndAccessoriesProducts.push(prod);
+            } else {
+              trendingProducts.push(prod);
+            }
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Error loading dynamic warehouse products in catalog:', e);
+  }
 }
