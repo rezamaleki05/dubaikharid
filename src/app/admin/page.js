@@ -10106,6 +10106,62 @@ export default function AdminPanel() {
             const displayTxnCount = allPayments.length;
             const displayBalance = displayIncome - displayExpenses;
 
+            // Dynamic growth comparison (30-day vs previous 30-day)
+            const payParseDate = (dStr) => {
+              if (!dStr) return new Date(0);
+              if (dStr.includes('T') || dStr.includes('-')) return new Date(dStr);
+              const parts = dStr.split('/');
+              if (parts.length === 3) {
+                const y = parseInt(parts[0]);
+                return new Date(y + 621, parseInt(parts[1]) - 1, parseInt(parts[2]));
+              }
+              return new Date(0);
+            };
+            const payNow = new Date();
+            const pay30 = new Date(payNow.getTime() - 30 * 24 * 60 * 60 * 1000);
+            const pay60 = new Date(payNow.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+            const payCurPeriod = allPayments.filter(p => payParseDate(p.date) >= pay30);
+            const payPrevPeriod = allPayments.filter(p => {
+              const d = payParseDate(p.date);
+              return d >= pay60 && d < pay30;
+            });
+
+            const payGetGrowth = (cur, prev) => {
+              if (prev === 0) return cur > 0 ? 100 : 0;
+              return ((cur - prev) / prev) * 100;
+            };
+
+            const curIncome = payCurPeriod.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((s, p) => s + Math.abs(p.amount), 0);
+            const prevIncome = payPrevPeriod.filter(p => p.type === 'دریافتی' && p.status === 'success').reduce((s, p) => s + Math.abs(p.amount), 0);
+            const incomeGrowth = payGetGrowth(curIncome, prevIncome);
+
+            const curExpenses = payCurPeriod.filter(p => p.type === 'پرداختی').reduce((s, p) => s + Math.abs(p.amount), 0);
+            const prevExpenses = payPrevPeriod.filter(p => p.type === 'پرداختی').reduce((s, p) => s + Math.abs(p.amount), 0);
+            const expenseGrowth = payGetGrowth(curExpenses, prevExpenses);
+
+            const curProfit = curIncome - curExpenses;
+            const prevProfit = prevIncome - prevExpenses;
+            const profitGrowth = payGetGrowth(curProfit, prevProfit);
+
+            const txnGrowth = payGetGrowth(payCurPeriod.length, payPrevPeriod.length);
+
+            const payRenderGrowth = (gVal, defaultColor) => {
+              if (gVal === 0) return <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '4px' }}>بدون تغییر</span>;
+              const isUp = gVal > 0;
+              const color = isUp ? '#10b981' : '#ef4444';
+              return (
+                <span style={{ fontSize: '9.5px', color, marginTop: '4px', fontWeight: 'bold' }}>
+                  نسبت ماه قبل {Math.abs(gVal).toFixed(1).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d])}٪ {isUp ? '+' : '-'}
+                </span>
+              );
+            };
+
+            // Dynamic date range display
+            const payDateRangeStart = new Date(payNow.getFullYear(), payNow.getMonth(), 1);
+            const payStartJalali = payDateRangeStart.toLocaleDateString('fa-IR-u-nu-latn');
+            const payEndJalali = payNow.toLocaleDateString('fa-IR-u-nu-latn');
+
             return (
               <div>
                 {/* Header Title Row */}
@@ -10175,9 +10231,7 @@ export default function AdminPanel() {
                       <span className={styles.metricValue} style={{ fontSize: '15px', fontFamily: 'var(--font-vazirmatn)' }}>
                         {displayIncome.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9.5px', color: '#10b981', marginTop: '4px', fontWeight: 'bold' }}>
-                        نسبت ماه قبل ۱۲.۵٪ +
-                      </span>
+                      {payRenderGrowth(incomeGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '50%' }}>
                       {AdminIcons.download(18)}
@@ -10200,9 +10254,7 @@ export default function AdminPanel() {
                       <span className={styles.metricValue} style={{ fontSize: '15px', fontFamily: 'var(--font-vazirmatn)' }}>
                         {displayExpenses.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9.5px', color: '#ef4444', marginTop: '4px', fontWeight: 'bold' }}>
-                        نسبت ماه قبل ۸.۳٪ -
-                      </span>
+                      {payRenderGrowth(expenseGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '50%' }}>
                       {AdminIcons.upload(18)}
@@ -10221,9 +10273,7 @@ export default function AdminPanel() {
                       <span className={styles.metricValue} style={{ fontSize: '15px', color: '#10b981', fontFamily: 'var(--font-vazirmatn)' }}>
                         {displayProfit.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9.5px', color: '#10b981', marginTop: '4px', fontWeight: 'bold' }}>
-                        نسبت ماه قبل ۱۵.۷٪ +
-                      </span>
+                      {payRenderGrowth(profitGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '50%' }}>
                       {AdminIcons.bank(18)}
@@ -10247,9 +10297,7 @@ export default function AdminPanel() {
                       <span className={styles.metricValue} style={{ fontSize: '15px', fontFamily: 'var(--font-vazirmatn)' }}>
                         {displayTxnCount.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9.5px', color: '#8b5cf6', marginTop: '4px', fontWeight: 'bold' }}>
-                        نسبت ماه قبل ۹.۲٪ +
-                      </span>
+                      {payRenderGrowth(txnGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', borderRadius: '50%' }}>
                       {AdminIcons.sync(18)}
@@ -10328,9 +10376,9 @@ export default function AdminPanel() {
                       <option value="هزینه ها">هزینه‌ها</option>
                     </select>
 
-                    {/* Date picker mock range */}
+                    {/* Dynamic date range display */}
                     <div className={styles.advFilterBtn} style={{ cursor: 'default', direction: 'ltr', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>{AdminIcons.calendar(12)}</span> 1403/03/01 - 1403/03/20
+                      <span>{AdminIcons.calendar(12)}</span> {payStartJalali} - {payEndJalali}
                     </div>
                   </div>
                 </div>
