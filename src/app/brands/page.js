@@ -23,6 +23,7 @@ const brandsData = [
   { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
   { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
   { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
+  { id: 'aldo', name: 'Aldo', faName: 'آلدو', cat: 'کیف و کفش', hasImage: true, img: '/images/logo/aldo.png', url: 'https://aldoshoes.me/ae/en/' },
   { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
   { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
   { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
@@ -62,7 +63,27 @@ export default function BrandsPage() {
     try {
       const savedBrands = localStorage.getItem('dubaiKharidBrands');
       if (savedBrands) {
-        setBrands(JSON.parse(savedBrands));
+        const parsed = JSON.parse(savedBrands);
+        let updated = [...parsed];
+        let hasChanges = false;
+        brandsData.forEach(defaultBrand => {
+          if (!parsed.some(b => b.id === defaultBrand.id)) {
+            updated.push(defaultBrand);
+            hasChanges = true;
+          } else {
+            const idx = updated.findIndex(b => b.id === defaultBrand.id);
+            if (idx !== -1 && (updated[idx].hasImage !== defaultBrand.hasImage || updated[idx].img !== defaultBrand.img)) {
+              updated[idx] = { ...updated[idx], hasImage: defaultBrand.hasImage, img: defaultBrand.img };
+              hasChanges = true;
+            }
+          }
+        });
+        if (hasChanges) {
+          localStorage.setItem('dubaiKharidBrands', JSON.stringify(updated));
+          setBrands(updated);
+        } else {
+          setBrands(parsed);
+        }
       } else {
         localStorage.setItem('dubaiKharidBrands', JSON.stringify(brandsData));
         setBrands(brandsData);

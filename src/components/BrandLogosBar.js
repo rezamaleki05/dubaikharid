@@ -27,6 +27,16 @@ const brands = [
     ),
   },
   {
+    id: 'aldo',
+    name: 'Aldo',
+    url: 'https://aldoshoes.me/ae/en/',
+    logo: (
+      <div className={styles.brandLogoWrap}>
+        <img src="/images/logo/aldo.png" alt="Aldo" style={{ filter: 'brightness(0) invert(1)', height: '18px', width: 'auto', objectFit: 'contain' }} />
+      </div>
+    ),
+  },
+  {
     id: 'lv',
     name: 'Louis Vuitton',
     url: 'https://me.louisvuitton.com/eng-ae/homepage',

@@ -376,6 +376,7 @@ const DEFAULT_BRANDS_SEED = [
   { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
   { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
   { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
+  { id: 'aldo', name: 'Aldo', faName: 'آلدو', cat: 'کیف و کفش', hasImage: true, img: '/images/logo/aldo.png', url: 'https://aldoshoes.me/ae/en/' },
   { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
   { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
   { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
@@ -1248,7 +1249,33 @@ export default function AdminPanel() {
     // Brands seed
     const savedBrands = localStorage.getItem('dubaiKharidBrands');
     if (savedBrands) {
-      setBrands(JSON.parse(savedBrands));
+      try {
+        const parsed = JSON.parse(savedBrands);
+        let updated = [...parsed];
+        let hasChanges = false;
+        DEFAULT_BRANDS_SEED.forEach(defaultBrand => {
+          if (!parsed.some(b => b.id === defaultBrand.id)) {
+            updated.push(defaultBrand);
+            hasChanges = true;
+          } else {
+            // Also update any attributes (like hasImage/img) if they changed
+            const idx = updated.findIndex(b => b.id === defaultBrand.id);
+            if (idx !== -1 && (updated[idx].hasImage !== defaultBrand.hasImage || updated[idx].img !== defaultBrand.img)) {
+              updated[idx] = { ...updated[idx], hasImage: defaultBrand.hasImage, img: defaultBrand.img };
+              hasChanges = true;
+            }
+          }
+        });
+        if (hasChanges) {
+          localStorage.setItem('dubaiKharidBrands', JSON.stringify(updated));
+          setBrands(updated);
+        } else {
+          setBrands(parsed);
+        }
+      } catch (e) {
+        console.error('Error parsing saved brands:', e);
+        setBrands(DEFAULT_BRANDS_SEED);
+      }
     } else {
       localStorage.setItem('dubaiKharidBrands', JSON.stringify(DEFAULT_BRANDS_SEED));
       setBrands(DEFAULT_BRANDS_SEED);
@@ -12467,9 +12494,12 @@ export default function AdminPanel() {
                           <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>دسته‌بندی</label>
                           <select value={addBrandForm.cat} onChange={e => setAddBrandForm({...addBrandForm, cat: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}>
                             <option value="مد و پوشاک">مد و پوشاک</option>
-                            <option value="لوازم آرایشی و بهداشتی">لوازم آرایشی و بهداشتی</option>
-                            <option value="لوازم الکترونیکی">لوازم الکترونیکی</option>
-                            <option value="خانه و آشپزخانه">خانه و آشپزخانه</option>
+                            <option value="کیف و کفش">کیف و کفش</option>
+                            <option value="ساعت و اکسسوری">ساعت و اکسسوری</option>
+                            <option value="عطر و آرایشی">عطر و آرایشی</option>
+                            <option value="تکنولوژی">تکنولوژی</option>
+                            <option value="خانه و دکوراسیون">خانه و دکوراسیون</option>
+                            <option value="ورزشی ( اسپورت )">ورزشی ( اسپورت )</option>
                             <option value="سایر">سایر</option>
                           </select>
                         </div>
@@ -12552,9 +12582,12 @@ export default function AdminPanel() {
                           <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>دسته‌بندی</label>
                           <select value={editBrandForm.cat} onChange={e => setEditBrandForm({...editBrandForm, cat: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}>
                             <option value="مد و پوشاک">مد و پوشاک</option>
-                            <option value="لوازم آرایشی و بهداشتی">لوازم آرایشی و بهداشتی</option>
-                            <option value="لوازم الکترونیکی">لوازم الکترونیکی</option>
-                            <option value="خانه و آشپزخانه">خانه و آشپزخانه</option>
+                            <option value="کیف و کفش">کیف و کفش</option>
+                            <option value="ساعت و اکسسوری">ساعت و اکسسوری</option>
+                            <option value="عطر و آرایشی">عطر و آرایشی</option>
+                            <option value="تکنولوژی">تکنولوژی</option>
+                            <option value="خانه و دکوراسیون">خانه و دکوراسیون</option>
+                            <option value="ورزشی ( اسپورت )">ورزشی ( اسپورت )</option>
                             <option value="سایر">سایر</option>
                           </select>
                         </div>
