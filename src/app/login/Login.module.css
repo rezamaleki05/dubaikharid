@@ -309,13 +309,18 @@
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
+  .mainContainer { align-items: flex-start; padding: 38px 12px 48px; }
   .authCard {
-    padding: 30px 20px;
-    border-radius: 12px;
+    padding: 28px 18px 30px;
+    border-radius: 14px;
     border-left: none;
     border-right: none;
   }
-  
+  .logoImg { height: 58px; }
+  .tabs { margin-bottom: 24px; }
+  .tab, .submitBtn { min-height: 46px; }
+  .form { gap: 17px; }
+
   .socialButtons {
     flex-direction: column;
   }

@@ -1,0 +1,396 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  pending
+  pricing
+  paid
+  processing
+  purchased
+  warehouse_dubai
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  POS
+  BANK_TRANSFER
+  ONLINE
+  OTHER
+}
+
+enum PaymentType {
+  INCOME
+  EXPENSE
+}
+
+enum PaymentCurrency {
+  TOMAN
+}
+
+enum ProductStatus {
+  active
+  hidden
+  needs_update
+  broken_link
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  OPERATIONS
+  FINANCE
+  CONTENT
+}
+
+enum AdminStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum InventoryMovementType {
+  INITIAL_STOCK
+  STOCK_IN
+  STOCK_OUT
+  CORRECTION
+  RESERVATION_ADJUSTMENT
+  ORDER_RESERVATION
+  ORDER_RELEASE
+  ORDER_FULFILLMENT
+  RETURN
+}
+
+model AdminUser {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  role         AdminRole   @default(ADMIN)
+  status       AdminStatus @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  activityLogs       AdminActivityLog[]
+  inventoryMovements InventoryMovement[]
+  warehouseNotes     WarehouseNote[]
+  confirmedPayments  Payment[]           @relation("PaymentConfirmedBy")
+
+  @@index([role])
+  @@index([status])
+}
+
+model AdminActivityLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  code            String?       @unique
+  name            String
+  slug            String        @unique
+  brandId         String?
+  storeId         String?
+  categoryId      String?
+  priceAed        Decimal       @db.Decimal(12, 2)
+  weight          Float         @default(1)
+  originalLink    String?
+  sourceUrlKey    String?       @unique
+  image           String?
+  gender          String?
+  discountPercent Int           @default(0)
+  hasDiscount     Boolean       @default(false)
+  isBestSeller    Boolean       @default(false)
+  status          ProductStatus @default(active)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  brand         Brand?         @relation(fields: [brandId], references: [id])
+  store         Store?         @relation(fields: [storeId], references: [id])
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  warehouseItem WarehouseItem?
+
+  @@index([status, createdAt])
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([storeId])
+  @@index([createdAt])
+}
+
+model WarehouseItem {
+  id              String   @id @default(cuid())
+  name            String
+  brandId         String?
+  categoryId      String?
+  categoryKey     String?
+  productId       String?  @unique
+  gender          String?
+  sku             String?  @unique
+  price           Float
+  stock           Int      @default(0)
+  reserved        Int      @default(0)
+  minStock        Int      @default(5)
+  location        String?
+  image           String?
+  isBestSeller    Boolean  @default(false)
+  hasDiscount     Boolean  @default(false)
+  discountPercent Int      @default(0)
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  brand     Brand?              @relation(fields: [brandId], references: [id])
+  category  Category?           @relation(fields: [categoryId], references: [id])
+  product   Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
+  movements InventoryMovement[]
+  notes     WarehouseNote[]
+
+  @@index([isArchived, createdAt])
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([categoryKey])
+  @@index([stock])
+}
+
+model InventoryMovement {
+  id              String                @id @default(cuid())
+  warehouseItemId String
+  type            InventoryMovementType
+  quantityChange  Int
+  quantityBefore  Int
+  quantityAfter   Int
+  reservedBefore  Int?
+  reservedAfter   Int?
+  reason          String?
+  orderId         String?
+  adminId         String?
+  createdAt       DateTime              @default(now())
+
+  warehouseItem WarehouseItem @relation(fields: [warehouseItemId], references: [id], onDelete: Restrict)
+  order         Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  admin         AdminUser?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([warehouseItemId, createdAt])
+  @@index([orderId])
+  @@index([adminId, createdAt])
+  @@index([type, createdAt])
+}
+
+model WarehouseNote {
+  id              String   @id @default(cuid())
+  warehouseItemId String
+  text            String
+  adminId         String?
+  createdAt       DateTime @default(now())
+
+  warehouseItem WarehouseItem @relation(fields: [warehouseItemId], references: [id], onDelete: Restrict)
+  admin         AdminUser?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([warehouseItemId, createdAt])
+  @@index([adminId, createdAt])
+}
+
+model Laptop {
+  id          String   @id @default(cuid())
+  name        String
+  brand       String?
+  model       String?
+  cpu         String?
+  ram         String?
+  storage     String?
+  gpu         String?
+  screen      String?
+  condition   String?
+  priceToman  Float?
+  stock       Int      @default(0)
+  image       String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PurchaseRequest {
+  id          String   @id @default(cuid())
+  customerId  String?
+  productUrl  String
+  productName String?
+  sourceStore String?
+  priceAed    Float?
+  weight      Float?
+  finalToman  Float?
+  status      String   @default("pending")
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer Customer? @relation(fields: [customerId], references: [id])
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  name            String
+  phone           String
+  normalizedPhone String?  @unique
+  email           String?
+  city            String?
+  group           String   @default("عادی")
+  code            String?
+  status          String   @default("active")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders   Order[]
+  requests PurchaseRequest[]
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  orderCode  String      @unique
+  customerId String?
+  status     OrderStatus @default(pending)
+  totalAed   Float?
+  totalToman Float?
+  notes      String?
+  adminNotes String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  customer           Customer?           @relation(fields: [customerId], references: [id])
+  items              OrderItem[]
+  payments           Payment[]
+  shipment           Shipment?
+  inventoryMovements InventoryMovement[]
+
+  @@index([status, createdAt])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id         String @id @default(cuid())
+  orderId    String
+  name       String
+  quantity   Int    @default(1)
+  priceAed   Float?
+  priceToman Float?
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model Payment {
+  id            String          @id @default(cuid())
+  orderId       String?
+  amount        Decimal         @db.Decimal(18, 0)
+  currency      PaymentCurrency @default(TOMAN)
+  method        PaymentMethod
+  type          PaymentType     @default(INCOME)
+  category      String?
+  status        PaymentStatus   @default(pending)
+  reference     String?
+  account       String?
+  counterparty  String?
+  notes         String?
+  paidAt        DateTime?
+  confirmedById String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  order       Order?     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  confirmedBy AdminUser? @relation("PaymentConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@index([status, createdAt])
+  @@index([type, createdAt])
+  @@index([method, createdAt])
+  @@index([confirmedById])
+}
+
+model Shipment {
+  id           String    @id @default(cuid())
+  orderId      String?   @unique
+  recipient    String
+  method       String?
+  status       String    @default("pending")
+  trackingCode String?
+  dateShipped  DateTime?
+  dateUpdated  DateTime?
+  createdAt    DateTime  @default(now())
+
+  order Order? @relation(fields: [orderId], references: [id])
+}
+
+model Brand {
+  id       String  @id @default(cuid())
+  name     String
+  faName   String?
+  cat      String?
+  url      String?
+  img      String?
+  fallback String?
+  hasImage Boolean @default(false)
+
+  products       Product[]
+  warehouseItems WarehouseItem[]
+}
+
+model Store {
+  id       String  @id @default(cuid())
+  name     String
+  desc     String?
+  url      String?
+  img      String?
+  fallback String?
+  hasImage Boolean @default(false)
+
+  products Product[]
+}
+
+model Category {
+  id        String  @id @default(cuid())
+  name      String
+  icon      String?
+  query     String?
+  countText String?
+
+  products       Product[]
+  warehouseItems WarehouseItem[]
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}

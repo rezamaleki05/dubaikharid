@@ -5,11 +5,11 @@
   background: transparent;
   transition: background 0.3s, box-shadow 0.2s;
 }
-.scrolled { 
+.scrolled {
   background: rgba(9, 3, 20, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 
 /* ── TOP BAR ── */
@@ -51,6 +51,19 @@
   display: flex;
   align-items: center;
   gap: 30px;
+}
+.searchArea {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.mobileMenuButton,
+.mobileMenuBackdrop,
+.mobileNavHeader,
+.mobileNavFooter {
+  display: none;
 }
 
 /* ── LOGO ── */
@@ -143,7 +156,7 @@
   display: flex;
   align-items: center;
 }
-.iconBtn:hover { 
+.iconBtn:hover {
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.15);
 }
@@ -311,11 +324,195 @@
 }
 
 @media (max-width: 768px) {
-  .logoDubi, .logoShop { font-size: 22px; }
-  .searchBox { order: 3; flex-basis: 100%; margin: 10px 0 0; }
-  .mainRowInner { flex-wrap: wrap; gap: 10px; }
-  .navList { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
-  .navList::-webkit-scrollbar { display: none; }
+  .header {
+    background: rgba(7, 8, 10, 0.96);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .topBar { display: none; }
+  .mainRow { padding: 8px 0 10px; }
+  .mainRowInner {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 8px 10px;
+  }
+  .mobileMenuButton {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: #fff;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    transition: background 0.25s, border-color 0.25s, transform 0.2s;
+  }
+  .mobileMenuButton:active { transform: scale(0.97); }
+  .mobileMenuButton span {
+    width: 20px;
+    height: 1.5px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform 0.25s, opacity 0.2s;
+  }
+  .mobileMenuButtonOpen span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .mobileMenuButtonOpen span:nth-child(2) { opacity: 0; }
+  .mobileMenuButtonOpen span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+  .logo { min-width: 0; justify-content: flex-start; }
+  .logoImg { width: auto; max-width: 132px; height: 42px; }
+  .logoDubi, .logoShop { font-size: 20px; }
+  .iconGroup { gap: 6px; }
+  .iconBtn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  .iconBtn svg { width: 20px; height: 20px; }
+  .searchArea {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+  }
+  .searchBox { margin: 0; max-width: none; border-radius: 10px; }
+  .searchInput { min-width: 0; height: 42px; padding: 9px 12px; font-size: 12px; }
+  .searchBtn { width: 44px; height: 42px; padding: 0; justify-content: center; }
+  .mobileMenuBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 101;
+    background: rgba(0, 0, 0, 0.64);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.28s, visibility 0.28s;
+  }
+  .mobileMenuBackdropVisible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .nav {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 102;
+    width: min(88vw, 360px);
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #0b0c0f;
+    border: 0;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    transform: translateX(105%);
+    visibility: hidden;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s;
+    box-shadow: -24px 0 60px rgba(0,0,0,0.45);
+  }
+  .navOpen { transform: translateX(0); visibility: visible; }
+  .nav > :global(.container) { padding: 0 18px; }
+  .mobileNavHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 82px;
+    padding: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(248,120,32,0.045);
+  }
+  .mobileNavHeader > div { display: flex; flex-direction: column; gap: 4px; }
+  .mobileNavHeader strong { color: #fff; font-size: 16px; }
+  .mobileNavHeader span { color: #858c9d; font-size: 11px; }
+  .mobileNavHeader button {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 27px;
+    line-height: 1;
+  }
+  .navList {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 10px 0 18px;
+  }
+  .navList > li { border-bottom: 1px solid rgba(255,255,255,0.055); }
+  .navList > li > a {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 12px 2px;
+    font-size: 13px;
+    color: #d6d8df;
+  }
+  .navActive::after {
+    width: 4px;
+    height: 20px;
+    inset: 50% auto auto -18px;
+    transform: translateY(-50%);
+    border-radius: 0 4px 4px 0;
+  }
+  .dropdownMenu,
+  .navDropdown:hover .dropdownMenu { display: none; }
+  .navBestSellers,
+  .navSale {
+    display: flex !important;
+    margin: 6px 0 !important;
+    padding: 10px 12px !important;
+    min-height: 44px !important;
+    border-radius: 8px;
+    animation: none;
+    box-shadow: none;
+  }
+  .mobileNavFooter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+    padding: 20px 18px calc(22px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255,255,255,0.08);
+    color: #7f8798;
+    font-size: 11px;
+  }
+  .mobileNavFooter a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    color: #fff;
+    font-weight: 700;
+    background: #e66f1d;
+    border-radius: 9px;
+  }
+}
+
+@media (max-width: 420px) {
+  .mainRowInner { grid-template-columns: 42px minmax(0, 1fr) auto; gap: 7px; }
+  .mobileMenuButton,
+  .iconBtn { width: 42px; height: 42px; }
+  .logoImg { max-width: 110px; height: 38px; }
+  .iconGroup { gap: 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .mobileMenuBackdrop,
+  .mobileMenuButton span { transition-duration: 0.01ms; }
+  .navSale { animation: none; }
 }
 
 /* User Profile Menu Dropdown */
