@@ -201,11 +201,11 @@
     padding: 24px;
     gap: 30px;
   }
-  
+
   .productName {
     font-size: 24px;
   }
-  
+
   .priceValue {
     font-size: 28px;
   }
@@ -682,22 +682,22 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .ratingAverage {
     border-left: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     padding-left: 0;
     padding-bottom: 20px;
   }
-  
+
   .formGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .formGroupFull {
     grid-column: span 1;
   }
-  
+
   .reviewsSection {
     padding: 24px;
   }
@@ -794,6 +794,24 @@
   }
 }
 
+@media (max-width: 480px) {
+  .mainContainer { margin: 24px auto; padding: 0 12px; }
+  .productGrid { padding: 14px; gap: 22px; border-radius: 16px; }
+  .imageSection { border-radius: 12px; }
+  .productName { font-size: 21px; line-height: 1.45; margin-bottom: 20px; }
+  .specsGrid { gap: 8px; margin-bottom: 24px; }
+  .specItem { min-width: 0; padding: 10px; }
+  .specValue { overflow-wrap: anywhere; }
+  .productDescription { padding: 16px 14px; font-size: 13px; }
+  .priceValue { flex-wrap: wrap; overflow-wrap: anywhere; }
+  .addToCartBtn { min-height: 48px; padding: 13px 16px; }
+  .reviewsSection,
+  .technicalPanel { padding: 18px 14px; border-radius: 16px; }
+  .techCard { padding: 16px 12px; }
+  .techList li { gap: 12px; align-items: flex-start; }
+  .techList li strong { text-align: left; overflow-wrap: anywhere; }
+}
+
 .checkItem {
   display: flex;
   align-items: center;
@@ -808,5 +826,4 @@
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(255, 255, 255, 0.06);
 }
-
 

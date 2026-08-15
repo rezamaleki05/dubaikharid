@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -14,6 +15,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
@@ -56,7 +58,7 @@ export default function Header() {
     setSearchQuery(val);
     if (val.trim()) {
       const queryLower = val.toLowerCase().trim();
-      const filtered = searchTerms.filter(term => 
+      const filtered = searchTerms.filter(term =>
         term.label.toLowerCase().includes(queryLower) ||
         term.query.includes(queryLower)
       ).slice(0, 6);
@@ -79,6 +81,25 @@ export default function Header() {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isMobileMenuOpen]);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
@@ -123,13 +144,26 @@ export default function Header() {
         <div className="container">
           <div className={styles.mainRowInner}>
 
+            <button
+              type="button"
+              className={`${styles.mobileMenuButton} ${isMobileMenuOpen ? styles.mobileMenuButtonOpen : ''}`}
+              aria-label={isMobileMenuOpen ? 'بستن منوی اصلی' : 'باز کردن منوی اصلی'}
+              aria-controls="store-navigation"
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
             {/* Logo */}
-            <a href="/" className={styles.logo}>
+            <Link href="/" className={styles.logo}>
               <img src={settings.siteLogoUrl} alt={settings.siteName} className={styles.logoImg} />
-            </a>
+            </Link>
 
             {/* Search — CENTER */}
-            <div style={{ position: 'relative', flex: 1, maxWidth: '600px', margin: '0 auto' }}>
+            <div className={styles.searchArea}>
               <div className={styles.searchBox}>
                 <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
                   <input
@@ -227,43 +261,63 @@ export default function Header() {
       </div>
 
       {/* ── NAV ── */}
-      <nav className={styles.nav}>
+      <button
+        type="button"
+        className={`${styles.mobileMenuBackdrop} ${isMobileMenuOpen ? styles.mobileMenuBackdropVisible : ''}`}
+        aria-label="بستن منوی اصلی"
+        tabIndex={isMobileMenuOpen ? 0 : -1}
+        onClick={closeMobileMenu}
+      />
+      <nav id="store-navigation" className={`${styles.nav} ${isMobileMenuOpen ? styles.navOpen : ''}`} aria-label="منوی اصلی فروشگاه">
+        <div className={styles.mobileNavHeader}>
+          <div>
+            <strong>منوی فروشگاه</strong>
+            <span>دسترسی سریع به دسته‌بندی‌ها</span>
+          </div>
+          <button type="button" onClick={closeMobileMenu} aria-label="بستن منو">×</button>
+        </div>
         <div className="container">
           <ul className={styles.navList}>
-            <li><a href="/" className={pathname === '/' ? styles.navActive : ''}>صفحه اصلی</a></li>
-            <li><a href="/brands" className={pathname === '/brands' ? styles.navActive : ''}>برندها</a></li>
-            <li><a href="/stock-laptops" className={pathname === '/stock-laptops' ? styles.navActive : ''}>لپتاپ استوک</a></li>
+            <li><Link href="/" onClick={closeMobileMenu} className={pathname === '/' ? styles.navActive : ''}>صفحه اصلی</Link></li>
+            <li><Link href="/brands" onClick={closeMobileMenu} className={pathname === '/brands' ? styles.navActive : ''}>برندها</Link></li>
+            <li><Link href="/stock-laptops" onClick={closeMobileMenu} className={pathname === '/stock-laptops' ? styles.navActive : ''}>لپتاپ استوک</Link></li>
             <li className={styles.navDropdown}>
-              <a href="/men" className={pathname === '/men' ? styles.navActive : ''}>مردانه</a>
+              <Link href="/men" onClick={closeMobileMenu} className={pathname === '/men' ? styles.navActive : ''}>مردانه</Link>
               <ul className={styles.dropdownMenu}>
-                <li><a href="/men?sub=clothing">لباس مردانه</a></li>
-                <li><a href="/men?sub=pants">شلوار مردانه</a></li>
-                <li><a href="/men?sub=shoes">کفش مردانه</a></li>
-                <li><a href="/men?sub=accessories">اکسسوری مردانه</a></li>
+                <li><Link href="/men?sub=clothing" onClick={closeMobileMenu}>لباس مردانه</Link></li>
+                <li><Link href="/men?sub=pants" onClick={closeMobileMenu}>شلوار مردانه</Link></li>
+                <li><Link href="/men?sub=shoes" onClick={closeMobileMenu}>کفش مردانه</Link></li>
+                <li><Link href="/men?sub=accessories" onClick={closeMobileMenu}>اکسسوری مردانه</Link></li>
               </ul>
             </li>
             <li className={styles.navDropdown}>
-              <a href="/women" className={pathname === '/women' ? styles.navActive : ''}>زنانه</a>
+              <Link href="/women" onClick={closeMobileMenu} className={pathname === '/women' ? styles.navActive : ''}>زنانه</Link>
               <ul className={styles.dropdownMenu}>
-                <li><a href="/women?sub=clothing">لباس زنانه</a></li>
-                <li><a href="/women?sub=pants">شلوار زنانه</a></li>
-                <li><a href="/women?sub=shoes">کفش زنانه</a></li>
-                <li><a href="/women?sub=accessories">اکسسوری زنانه</a></li>
+                <li><Link href="/women?sub=clothing" onClick={closeMobileMenu}>لباس زنانه</Link></li>
+                <li><Link href="/women?sub=pants" onClick={closeMobileMenu}>شلوار زنانه</Link></li>
+                <li><Link href="/women?sub=shoes" onClick={closeMobileMenu}>کفش زنانه</Link></li>
+                <li><Link href="/women?sub=accessories" onClick={closeMobileMenu}>اکسسوری زنانه</Link></li>
               </ul>
             </li>
             <li className={styles.navDropdown}>
-              <a href="/kids" className={pathname === '/kids' ? styles.navActive : ''}>کودک</a>
+              <Link href="/kids" onClick={closeMobileMenu} className={pathname === '/kids' ? styles.navActive : ''}>کودک</Link>
               <ul className={styles.dropdownMenu}>
-                <li><a href="/kids?sub=clothing">لباس بچگانه</a></li>
-                <li><a href="/kids?sub=pants">شلوار بچگانه</a></li>
-                <li><a href="/kids?sub=shoes">کفش بچگانه</a></li>
+                <li><Link href="/kids?sub=clothing" onClick={closeMobileMenu}>لباس بچگانه</Link></li>
+                <li><Link href="/kids?sub=pants" onClick={closeMobileMenu}>شلوار بچگانه</Link></li>
+                <li><Link href="/kids?sub=shoes" onClick={closeMobileMenu}>کفش بچگانه</Link></li>
               </ul>
             </li>
-            <li><a href="/bags-accessories" className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</a></li>
-            <li><a href="/other-products" className={pathname === '/other-products' ? styles.navActive : ''}>سایر محصولات</a></li>
-            <li><a href="/best-sellers" className={pathname === '/best-sellers' ? `${styles.navActive} ${styles.navBestSellers}` : styles.navBestSellers}>پرفروش‌ها</a></li>
-            <li><a href="/sale" className={pathname === '/sale' ? `${styles.navActive} ${styles.navSale}` : styles.navSale}>تخفیف‌ها</a></li>
+            <li><Link href="/bags-accessories" onClick={closeMobileMenu} className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</Link></li>
+            <li><Link href="/other-products" onClick={closeMobileMenu} className={pathname === '/other-products' ? styles.navActive : ''}>سایر محصولات</Link></li>
+            <li><Link href="/best-sellers" onClick={closeMobileMenu} className={pathname === '/best-sellers' ? `${styles.navActive} ${styles.navBestSellers}` : styles.navBestSellers}>پرفروش‌ها</Link></li>
+            <li><Link href="/sale" onClick={closeMobileMenu} className={pathname === '/sale' ? `${styles.navActive} ${styles.navSale}` : styles.navSale}>تخفیف‌ها</Link></li>
           </ul>
+        </div>
+        <div className={styles.mobileNavFooter}>
+          <span>خرید مستقیم از دبی، ارسال به سراسر ایران</span>
+          <Link href={isLoggedIn ? '/profile' : '/login'} onClick={closeMobileMenu}>
+            {isLoggedIn ? 'حساب کاربری من' : 'ورود یا ثبت‌نام'}
+          </Link>
         </div>
       </nav>
     </header>

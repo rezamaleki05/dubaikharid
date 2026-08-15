@@ -1,4 +1,63 @@
 import { NextResponse } from 'next/server';
+import {
+  assertPublicDestination,
+  isSupportedProductStore,
+  parseExternalHttpUrl,
+} from '@/lib/externalUrls';
+
+const MAX_HTML_BYTES = 2 * 1024 * 1024;
+
+async function readLimitedText(response) {
+  const contentLength = Number(response.headers.get('content-length') || 0);
+  if (contentLength > MAX_HTML_BYTES) throw new Error('RESPONSE_TOO_LARGE');
+  if (!response.body) return '';
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let size = 0;
+  let text = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_HTML_BYTES) {
+      await reader.cancel();
+      throw new Error('RESPONSE_TOO_LARGE');
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
+}
+
+async function fetchProductHtml(initialUrl, signal) {
+  let currentUrl = initialUrl;
+  for (let redirectCount = 0; redirectCount <= 3; redirectCount += 1) {
+    await assertPublicDestination(currentUrl);
+    if (!isSupportedProductStore(currentUrl)) throw new Error('UNSUPPORTED_STORE');
+
+    const response = await fetch(currentUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+      },
+      redirect: 'manual',
+      signal,
+    });
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location || redirectCount === 3) throw new Error('INVALID_REDIRECT');
+      const nextUrl = parseExternalHttpUrl(new URL(location, currentUrl).toString());
+      if (!nextUrl) throw new Error('INVALID_REDIRECT');
+      currentUrl = nextUrl;
+      continue;
+    }
+    if (!response.ok) throw new Error(`UPSTREAM_${response.status}`);
+    return { html: await readLimitedText(response), finalUrl: currentUrl };
+  }
+  throw new Error('TOO_MANY_REDIRECTS');
+}
 
 // Smart Persian translation dictionary for common e-commerce keywords
 const TRANSLATION_DICT = {
@@ -86,20 +145,20 @@ const TRANSLATION_DICT = {
 // Heuristic translation function
 function translateToPersian(title) {
   if (!title) return 'کالای درخواستی دبی';
-  
+
   // Clean special characters but keep spaces
   const cleanTitle = title.toLowerCase().replace(/[^a-zA-Z0-9\s]/g, ' ');
   const words = cleanTitle.split(/\s+/).filter(w => w.length > 1);
-  
+
   let translatedWords = [];
   let skipNext = false;
-  
+
   for (let i = 0; i < words.length; i++) {
     if (skipNext) {
       skipNext = false;
       continue;
     }
-    
+
     // Check two-word phrases first
     if (i < words.length - 1) {
       const phrase = `${words[i]} ${words[i + 1]}`;
@@ -109,7 +168,7 @@ function translateToPersian(title) {
         continue;
       }
     }
-    
+
     // Check single word
     const word = words[i];
     if (TRANSLATION_DICT[word]) {
@@ -121,11 +180,11 @@ function translateToPersian(title) {
       }
     }
   }
-  
+
   if (translatedWords.length === 0) {
     return title.split('|')[0].trim(); // Fallback to raw English title before pipe separator
   }
-  
+
   // De-duplicate consecutively repeated words to look extremely clean
   const uniqueWords = [];
   for (let i = 0; i < translatedWords.length; i++) {
@@ -133,7 +192,7 @@ function translateToPersian(title) {
       uniqueWords.push(translatedWords[i]);
     }
   }
-  
+
   // Format beautifully
   return uniqueWords.join(' ');
 }
@@ -141,33 +200,24 @@ function translateToPersian(title) {
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const targetUrl = searchParams.get('url');
-  
-  if (!targetUrl) {
-    return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+
+  const parsedTargetUrl = parseExternalHttpUrl(targetUrl);
+  if (!parsedTargetUrl) {
+    return NextResponse.json({ success: false, error: 'INVALID_URL' }, { status: 400 });
   }
-  
+  if (!isSupportedProductStore(parsedTargetUrl)) {
+    return NextResponse.json({ success: false, error: 'UNSUPPORTED_STORE' }, { status: 400 });
+  }
+
+  let timeoutId;
   try {
     // 1. Fetch HTML of the product URL
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
-    
-    const response = await fetch(targetUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache'
-      },
-      signal: controller.signal
-    });
-    
+    timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+
+    const { html, finalUrl } = await fetchProductHtml(parsedTargetUrl, controller.signal);
     clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch HTML. Status: ${response.status}`);
-    }
-    
-    const html = await response.text();
-    
+
     // 2. Extract OpenGraph and Title tags using regular expressions
     // Extract og:title
     const titleRegex = /<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i;
@@ -184,7 +234,7 @@ export async function GET(request) {
         rawTitle = match[1];
       }
     }
-    
+
     // Extract og:image
     const imageRegex = /<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i;
     const imageRegexAlt = /<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i;
@@ -193,17 +243,17 @@ export async function GET(request) {
     if (match && match[1]) {
       imageUrl = match[1];
     }
-    
+
     // 3. Extract price details (Amazon and Noon formats)
     let extractedPrice = null;
-    
+
     // Search for OpenGraph product price
     const ogPriceRegex = /<meta[^>]*property=["']product:price:amount["'][^>]*content=["']([^"']+)["']/i;
     match = html.match(ogPriceRegex);
     if (match && match[1]) {
       extractedPrice = parseFloat(match[1]);
     }
-    
+
     // If not found, look for Noon or Amazon specific price strings inside the HTML body
     if (!extractedPrice) {
       // Match price pattern like "AED 599.00" or "599 AED" or "Dh 599" or "599 Dhs"
@@ -214,7 +264,7 @@ export async function GET(request) {
         /([\d,.]+)\s*dhs/i,
         /price-amount[^>]*>([\d,.]+)/i
       ];
-      
+
       for (const pattern of priceTextPatterns) {
         match = html.match(pattern);
         if (match && match[1]) {
@@ -226,11 +276,6 @@ export async function GET(request) {
         }
       }
     }
-    
-    // Fallback if price could not be parsed
-    if (!extractedPrice) {
-      extractedPrice = Math.floor(190 + Math.random() * 410); // random fallback
-    }
 
     // 4. Translate English title to Persian
     // Clean raw title from HTML entities if any
@@ -240,9 +285,9 @@ export async function GET(request) {
       .replace(/&#39;/g, "'")
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>');
-      
+
     const translatedTitle = translateToPersian(cleanTitleStr);
-    
+
     // Determine category based on title
     let category = 'others';
     const titleLower = cleanTitleStr.toLowerCase();
@@ -257,7 +302,7 @@ export async function GET(request) {
     } else if (titleLower.includes('shirt') || titleLower.includes('pant') || titleLower.includes('dress') || titleLower.includes('jacket') || titleLower.includes('coat') || titleLower.includes('shein')) {
       category = 'clothing';
     }
-    
+
     // Determine weight based on category
     let weight = 0.5;
     if (category === 'bags') weight = 0.8;
@@ -265,13 +310,13 @@ export async function GET(request) {
     else if (category === 'electronics') weight = titleLower.includes('phone') || titleLower.includes('watch') ? 0.3 : 1.35;
     else if (category === 'beauty') weight = 0.55;
     else if (category === 'clothing') weight = 0.7;
-    
+
     // Determine brand
-    const urlObj = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
+    const urlObj = finalUrl;
     const domain = urlObj.hostname.replace('www.', '');
     let brand = domain.split('.')[0];
     brand = brand.charAt(0).toUpperCase() + brand.slice(1);
-    
+
     // Match common brands
     if (titleLower.includes('nike')) brand = 'Nike';
     else if (titleLower.includes('adidas')) brand = 'Adidas';
@@ -280,44 +325,39 @@ export async function GET(request) {
     else if (titleLower.includes('dior')) brand = 'Dior';
     else if (titleLower.includes('shein')) brand = 'Shein';
 
-    return NextResponse.json({
-      success: true,
+    const productData = {
       name: translatedTitle,
-      brand: brand,
+      brand,
       store: domain,
       priceAed: extractedPrice,
-      weight: weight,
-      category: category,
-      imageUrl: imageUrl
-    });
-    
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    
-    // If backend fetch fails (e.g. CORS block, server-side block, or incorrect URL), 
-    // we return a fallback response with a beautifully parsed brand/store so that it STILL works!
-    let domain = 'سفارشی';
-    try {
-      const urlObj = new URL(targetUrl.startsWith('http') ? targetUrl : `https://${targetUrl}`);
-      domain = urlObj.hostname.replace('www.', '');
-    } catch (e) {
-      domain = targetUrl.replace('https://', '').replace('http://', '').split('/')[0];
+      weight,
+      category,
+      imageUrl,
+      sourceUrl: finalUrl.toString(),
+    };
+
+    if (!extractedPrice) {
+      return NextResponse.json({
+        success: false,
+        error: 'PRICE_NOT_FOUND',
+        product: productData,
+      }, { status: 422 });
     }
-    
-    const brandName = domain.split('.')[0] || 'برند مبدا';
-    const brand = brandName.charAt(0).toUpperCase() + brandName.slice(1);
-    const category = targetUrl.toLowerCase().includes('shoe') || targetUrl.toLowerCase().includes('sneaker') ? 'shoes' : targetUrl.toLowerCase().includes('bag') ? 'bags' : 'others';
-    const name = `کالای سفارشی از ${brand}`;
-    
+
     return NextResponse.json({
       success: true,
-      name: name,
-      brand: brand,
-      store: domain,
-      priceAed: Math.floor(190 + Math.random() * 410),
-      weight: category === 'shoes' ? 0.9 : category === 'bags' ? 0.8 : 0.5,
-      category: category,
-      note: 'Processed via client fallback due to scraping constraint'
+      ...productData,
     });
+
+  } catch (error) {
+    console.error('Error fetching product:', error);
+
+    const knownClientError = ['INVALID_URL', 'PRIVATE_DESTINATION', 'UNSUPPORTED_STORE', 'INVALID_REDIRECT'].includes(error?.message);
+    return NextResponse.json({
+      success: false,
+      error: knownClientError ? error.message : 'PRODUCT_FETCH_FAILED',
+    }, { status: knownClientError ? 400 : 502 });
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
   }
 }

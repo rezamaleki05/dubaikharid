@@ -191,13 +191,16 @@
 }
 @media (max-width: 640px) {
   .hero { min-height: 420px; }
-  .inner { min-height: 420px; padding: 40px 0 60px 0; }
+  .inner { min-height: 420px; padding: 36px 0 48px; }
   .content { flex: 0 0 100%; max-width: 100%; }
   .spacer { display: none; }
   .overlay {
     background: linear-gradient(to bottom, rgba(11,14,20,0.6) 0%, #0b0e14 100%);
   }
-  .title { font-size: 28px; }
-  .desc { font-size: 13.5px; }
+  .breadcrumb { margin-bottom: 15px; padding: 6px 12px; }
+  .title { font-size: clamp(24px, 7.2vw, 28px); line-height: 1.35; text-wrap: balance; }
+  .desc { font-size: 13px; line-height: 1.85; margin-bottom: 24px; }
+  .btns { gap: 10px; margin-bottom: 32px; }
+  .btnPrimary, .btnSecondary { min-height: 44px; justify-content: center; }
   .stats { gap: 15px; flex-wrap: wrap; }
 }

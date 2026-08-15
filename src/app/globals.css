@@ -56,6 +56,25 @@ input, select, textarea { font-family: inherit; outline: none; }
   padding: 0 16px;
 }
 
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .container { padding-inline: 12px; }
+
+  main,
+  section,
+  article,
+  aside { min-width: 0; }
+
+  input,
+  select,
+  textarea { max-width: 100%; }
+}
+
 /* ── Range slider ── */
 input[type="range"] {
   -webkit-appearance: none;
@@ -119,5 +138,4 @@ input[type="range"]::-webkit-slider-thumb {
 .toman-price {
   font-family: var(--font-vazirmatn), Tahoma, sans-serif !important;
 }
-
 

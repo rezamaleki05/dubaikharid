@@ -212,6 +212,12 @@
 }
 @media (max-width: 768px) {
   .productGrid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .slider { padding: 22px 0; }
+  .sectionHeader { gap: 12px; }
+  .sectionTitle { min-width: 0; font-size: 14px; }
+  .seeAllBtn { min-height: 38px; flex-shrink: 0; }
+  .wishlistBtn { width: 36px; height: 36px; }
+  .cartBtn { min-height: 40px; }
 }
 @media (max-width: 400px) {
   .productGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }

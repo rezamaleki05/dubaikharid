@@ -1445,5 +1445,38 @@ select.inputField {
   }
 }
 
+@media (max-width: 768px) {
+  .mainContainer { padding: 22px 12px 44px; }
+  .dashboardGrid { gap: 18px; }
+  .sidebarCard { padding: 14px 12px; border-radius: 14px; }
+  .userProfileHeader {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: center;
+    text-align: right;
+    margin-bottom: 12px;
+    padding-bottom: 14px;
+  }
+  .profileAvatar { grid-row: 1 / 3; width: 54px; height: 54px; margin: 0; }
+  .profileName { margin: 0; align-self: end; }
+  .profileMeta { align-self: start; }
+  .sidebarMenu {
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .sidebarMenu::-webkit-scrollbar { display: none; }
+  .menuBtn { width: auto; min-width: max-content; min-height: 44px; padding: 10px 12px; }
+  .contentCard { min-height: 0; }
+  .welcomeTitle { font-size: 21px; }
+  .summaryGrid { gap: 10px; }
+  .summaryCard { min-width: 0; padding: 12px 10px; border-radius: 12px; }
+  .summaryValue { font-size: 17px; }
+  .iconWrapper { width: 36px; height: 36px; }
+  .dashboardCols { gap: 16px; }
+}
 
 
