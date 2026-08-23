@@ -7,6 +7,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import styles from './Profile.module.css';
 
 // ── SVG OUTLINE MONOCHROME ICONS ──
@@ -183,7 +184,7 @@ const getDashboardStep = (status) => {
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 function ProfileContent() {
-  const { currentUser, isLoggedIn, logout } = useAuth();
+  const { currentUser, isLoggedIn, authLoading, logout, refreshCurrentUser } = useAuth();
   const { settings, updateSettings } = useSiteSettings();
   const { wishlistItems, toggleWishlist } = useWishlist();
   const router = useRouter();
@@ -211,6 +212,7 @@ function ProfileContent() {
   const [editAddress, setEditAddress] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   
   // New Request Form
   const [reqUrl, setReqUrl] = useState('');
@@ -233,183 +235,59 @@ function ProfileContent() {
 
   // Load context on mount
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!authLoading && !isLoggedIn) {
       router.push('/login');
     }
-  }, [isLoggedIn, router]);
+  }, [authLoading, isLoggedIn, router]);
 
   useEffect(() => {
     if (currentUser) {
-      setEditName(currentUser.name || '');
-      setEditEmail(currentUser.email || '');
-      setEditPhone(currentUser.phone || '');
-      setEditAddress(currentUser.address || '');
+      Promise.resolve().then(() => {
+        setEditName(currentUser.name || '');
+        setEditEmail(currentUser.email || '');
+        setEditPhone(currentUser.phone || '');
+        setEditAddress(currentUser.address || '');
+      });
     }
   }, [currentUser]);
 
-  // Load and seed user orders, payments, notifications, tickets, and addresses
+  // Load server-backed order history and the customer's existing local preferences.
   useEffect(() => {
     if (!currentUser) return;
 
     try {
-      // 1. Seed & Load Leads/Orders
-      const savedLeads = localStorage.getItem('dubaiKharidLeads');
-      let leads = savedLeads ? JSON.parse(savedLeads) : [];
+      fetch('/api/account/orders?limit=50', { cache: 'no-store' }).then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'دریافت سوابق با خطا مواجه شد.');
+        setOrders(payload.data.orders || []);
+        setPurchaseRequests(payload.data.requests || []);
+      }).catch(error => console.error(error));
 
-      // Seed mock orders for رضا ملکی if empty
-      const isReza = currentUser.phone === '09123456789' || currentUser.email === 'reza.mohammadi@gmail.com';
-      const rezaLeads = leads.filter(l => l.phone === currentUser.phone);
-      
-      if (isReza && rezaLeads.length === 0) {
-        const mockLeads = [
-          {
-            id: '1258',
-            customerName: currentUser.name,
-            phone: currentUser.phone,
-            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
-            totalToman: 42680000,
-            status: 'price_tagged', // قیمت اعلام شده
-            paymentStatus: 'pending',
-            paymentMethod: 'gateway',
-            date: '2024-07-05T11:30:00Z', // 1403/04/15 11:30
-            productName: "Apple Watch Series 9 45mm",
-            img: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?w=200&q=80",
-            store: 'Amazon.ae',
-            isRequest: true,
-            details: 'رنگ: Midnight\nسایز: 45mm\nگارانتی: بین‌المللی',
-            originalUrl: 'https://www.amazon.ae/dp/B0CHX5765R',
-            priceBreakdown: {
-              product: 1499,
-              shipping: 85,
-              commission: 150,
-              rate: 28150
-            }
-          },
-          {
-            id: '1257',
-            customerName: currentUser.name,
-            phone: currentUser.phone,
-            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
-            totalToman: 0,
-            status: 'pending', // در انتظار بررسی
-            paymentStatus: 'pending',
-            paymentMethod: 'gateway',
-            date: '2024-07-04T10:20:00Z', // 1403/04/14 10:20
-            productName: "Adidas Samba OG",
-            img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80",
-            store: 'Noon',
-            isRequest: true,
-            details: 'رنگ: سفید-مشکی\nسایز: 42\nگارانتی: بدون گارانتی',
-            originalUrl: 'https://www.noon.com/uae-en/samba-og-shoes/N53351996A/p/'
-          },
-          {
-            id: '1256',
-            customerName: currentUser.name,
-            phone: currentUser.phone,
-            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
-            totalToman: 4500000,
-            status: 'purchased', // در حال خرید
-            paymentStatus: 'paid',
-            paymentMethod: 'gateway',
-            date: '2024-07-03T09:15:00Z', // 1403/04/13 09:15
-            productName: "Nike Air Force 1 '07",
-            img: "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=200&q=80",
-            store: 'Namshi',
-            isRequest: true,
-            details: 'رنگ: سفید\nسایز: 43\nگارانتی: بین‌المللی',
-            originalUrl: 'https://www.namshi.com'
-          },
-          {
-            id: '1255',
-            customerName: currentUser.name,
-            phone: currentUser.phone,
-            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
-            totalToman: 18500000,
-            status: 'shipped', // در حال ارسال از امارات
-            paymentStatus: 'paid',
-            paymentMethod: 'gateway',
-            date: '2024-07-02T15:45:00Z', // 1403/04/12 15:45
-            productName: "Dyson Airwrap Complete",
-            img: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80",
-            store: 'Amazon.ae',
-            isRequest: true,
-            details: 'مدل: Complete\nرنگ: مسی-سرمه‌ای\nگارانتی: بین‌المللی',
-            originalUrl: 'https://www.amazon.ae'
-          },
-          {
-            id: '1254',
-            customerName: currentUser.name,
-            phone: currentUser.phone,
-            address: currentUser.address || 'تهران، خیابان ولیعصر، برج نیایش، واحد ۵',
-            totalToman: 54000000,
-            status: 'customs', // ترخیص
-            paymentStatus: 'paid',
-            paymentMethod: 'gateway',
-            date: '2024-07-01T12:05:00Z', // 1403/04/11 12:05
-            productName: "iPhone 15 Pro Max 256GB",
-            img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&q=80",
-            store: 'Noon',
-            isRequest: true,
-            details: 'رنگ: Natural Titanium\nظرفیت: 256 گیگابایت\nگارانتی: رسمی',
-            originalUrl: 'https://www.noon.com'
-          }
-        ];
-        leads = [...mockLeads, ...leads];
-        localStorage.setItem('dubaiKharidLeads', JSON.stringify(leads));
-      }
-
-      // Filter user leads
-      const userLeads = leads.filter(l => l.phone === currentUser.phone);
-      setOrders(userLeads);
-      
-      // Separate purchase requests (requests are leads marked as isRequest = true)
-      setPurchaseRequests(userLeads.filter(l => l.isRequest));
-
-      // 2. Seed & Load Addresses
+      // 2. Load Addresses (address persistence still needs a server-backed phase)
       const savedAddr = localStorage.getItem(`dubaiKharidAddress_${currentUser.phone}`);
       let userAddrList = savedAddr ? JSON.parse(savedAddr) : [];
-      if (userAddrList.length === 0) {
-        userAddrList = [
-          { id: 1, title: 'دفتر کار تهران', text: 'تهران، میدان ونک، خیابان ملاصدرا، ساختمان نگین، واحد ۱۲', phone: '02188442211' },
-          { id: 2, title: 'منزل شیراز', text: 'شیراز، شهرک گلستان، خیابان گل آرا، کوچه ۴، پلاک ۱۲', phone: '09176168381' }
-        ];
+      if (!Array.isArray(userAddrList)) userAddrList = [];
+      const seededAddressTitles = new Set(['دفتر کار تهران', 'منزل شیراز']);
+      const cleanedAddressList = userAddrList.filter(address => !seededAddressTitles.has(address?.title));
+      if (cleanedAddressList.length !== userAddrList.length) {
+        userAddrList = cleanedAddressList;
         localStorage.setItem(`dubaiKharidAddress_${currentUser.phone}`, JSON.stringify(userAddrList));
       }
-      setAddresses(userAddrList);
+      Promise.resolve().then(() => setAddresses(userAddrList));
 
-      // 3. Seed & Load Support Tickets
+      // 3. Load locally cached tickets, excluding the former demo record.
       const savedTickets = localStorage.getItem(`dubaiKharidTickets_${currentUser.phone}`);
       let userTickets = savedTickets ? JSON.parse(savedTickets) : [];
-      if (userTickets.length === 0) {
-        userTickets = [
-          {
-            id: 'TCK-8721',
-            title: 'سوال در مورد ترخیص سفارش ۱۲۵۵',
-            msg: 'سلام، زمان حدودی ترخیص بار کارگو سفارش ۱۲۵۵ چه زمانی است؟',
-            priority: 'high',
-            date: '۱۴۰۳/۰۳/۲۱',
-            status: 'answered',
-            reply: 'با سلام، محموله این سفارش در حال حاضر در گمرک امام خمینی قرار دارد و فرآیند ترخیص آن حداکثر تا ۲ روز کاری دیگر تکمیل شده و به پست ایران تحویل خواهد شد.'
-          }
-        ];
+      if (!Array.isArray(userTickets)) userTickets = [];
+      const cleanedTickets = userTickets.filter(ticket => ticket?.id !== 'TCK-8721');
+      if (cleanedTickets.length !== userTickets.length) {
+        userTickets = cleanedTickets;
         localStorage.setItem(`dubaiKharidTickets_${currentUser.phone}`, JSON.stringify(userTickets));
       }
-      setTickets(userTickets);
-
-      // 4. Seed & Load Notifications
-      const savedNotifs = localStorage.getItem(`dubaiKharidNotifs_${currentUser.phone}`);
-      let userNotifs = savedNotifs ? JSON.parse(savedNotifs) : [];
-      if (userNotifs.length === 0) {
-        userNotifs = [
-          { id: 1, text: 'قیمت نهایی سفارش شماره ۱۲۵۶ اعلام شد.', date: '۱۰ دقیقه پیش', read: false },
-          { id: 2, text: 'سفارش شماره ۱۲۵۵ برای شما ارسال شد.', date: '۲ ساعت پیش', read: true },
-          { id: 3, text: 'پرداخت سفارش شماره ۱۲۵۴ تایید شد.', date: '۵ ساعت پیش', read: true },
-          { id: 4, text: 'درخواست خرید شما ثبت شد.', date: 'دیروز', read: true },
-          { id: 5, text: 'سفارش شماره ۱۲۵۲ تحویل شد.', date: '۲ روز پیش', read: true }
-        ];
-        localStorage.setItem(`dubaiKharidNotifs_${currentUser.phone}`, JSON.stringify(userNotifs));
-      }
-      setNotifications(userNotifs);
+      Promise.resolve().then(() => {
+        setTickets(userTickets);
+        setNotifications([]);
+      });
 
     } catch (e) {
       console.error(e);
@@ -422,7 +300,7 @@ function ProfileContent() {
   };
 
   // Submit New Purchase Request
-  const handleSubmitRequest = (e) => {
+  const handleSubmitRequest = async (e) => {
     e.preventDefault();
     if (!reqUrl || !reqProductName) {
       alert('لطفاً آدرس کالا و نام کالا را وارد کنید.');
@@ -430,40 +308,18 @@ function ProfileContent() {
     }
 
     try {
-      const savedLeads = localStorage.getItem('dubaiKharidLeads');
-      const leads = savedLeads ? JSON.parse(savedLeads) : [];
-
-      const newId = `DK-${Math.floor(1000 + Math.random() * 9000)}`;
-      const newRequest = {
-        id: newId,
-        customerName: currentUser.name,
-        phone: currentUser.phone,
-        address: currentUser.address || '',
-        totalToman: 0, // Admin calculates this
-        status: 'pending',
-        paymentStatus: 'pending',
-        paymentMethod: 'gateway',
-        date: new Date().toISOString(),
-        productName: reqProductName,
-        img: reqImg || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=200&q=80',
-        store: reqSite,
-        isRequest: true,
-        details: reqNotes,
-        originalUrl: reqUrl
-      };
-
-      const updated = [newRequest, ...leads];
-      localStorage.setItem('dubaiKharidLeads', JSON.stringify(updated));
-
-      // Reload
-      const userLeads = updated.filter(l => l.phone === currentUser.phone);
-      setOrders(userLeads);
-      setPurchaseRequests(userLeads.filter(l => l.isRequest));
+      const response = await fetch('/api/purchase-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({ customer: { name: currentUser.name, phone: currentUser.phone, email: currentUser.email || '', address: currentUser.address || '' }, productUrl: reqUrl, productName: reqProductName, sourceStore: reqSite, priceAed: 0, weight: 0, quantity: reqQty, notes: reqNotes }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'ثبت درخواست با خطا مواجه شد.');
+      setPurchaseRequests(previous => [{ id: payload.data.id, requestCode: payload.data.requestCode, productName: reqProductName, originalUrl: reqUrl, store: reqSite, qty: reqQty, details: reqNotes, status: payload.data.status, totalToman: 0, date: new Date().toISOString(), isRequest: true }, ...previous]);
 
       // Add Notification
       const currentNotifs = [...notifications];
       const newNotif = { id: Date.now(), text: `درخواست خرید برای "${reqProductName}" با موفقیت ثبت شد.`, date: 'هم‌اکنون', read: false };
-      localStorage.setItem(`dubaiKharidNotifs_${currentUser.phone}`, JSON.stringify([newNotif, ...currentNotifs]));
       setNotifications([newNotif, ...currentNotifs]);
 
       // Reset Form fields but keep success flag active
@@ -476,6 +332,7 @@ function ProfileContent() {
       setRequestSuccessMessage(true);
     } catch (err) {
       console.error(err);
+      alert(err.message || 'ثبت درخواست با خطا مواجه شد.');
     }
   };
 
@@ -488,23 +345,17 @@ function ProfileContent() {
   };
 
   // Cancel purchase request
-  const handleCancelRequest = (reqId) => {
+  const handleCancelRequest = async (reqId) => {
     if (!window.confirm('آیا از لغو این درخواست خرید مطمئن هستید؟')) return;
 
     try {
-      const savedLeads = localStorage.getItem('dubaiKharidLeads');
-      let leads = savedLeads ? JSON.parse(savedLeads) : [];
-
-      // Update state to cancelled
-      leads = leads.map(l => l.id === reqId ? { ...l, status: 'cancelled' } : l);
-      localStorage.setItem('dubaiKharidLeads', JSON.stringify(leads));
-
-      // Reload
-      const userLeads = leads.filter(l => l.phone === currentUser.phone);
-      setOrders(userLeads);
-      setPurchaseRequests(userLeads.filter(l => l.isRequest));
+      const response = await fetch(`/api/purchase-requests/${encodeURIComponent(reqId)}/cancel`, { method: 'POST' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'لغو درخواست با خطا مواجه شد.');
+      setPurchaseRequests(previous => previous.map(item => item.id === reqId ? { ...item, status: 'cancelled' } : item));
     } catch (err) {
       console.error(err);
+      alert(err.message || 'لغو درخواست با خطا مواجه شد.');
     }
   };
 
@@ -571,46 +422,11 @@ function ProfileContent() {
       return;
     }
 
-    try {
-      const newTicket = {
-        id: `TCK-${Math.floor(1000 + Math.random() * 9000)}`,
-        title: ticketTitle,
-        msg: ticketMsg,
-        priority: ticketPriority,
-        date: new Date().toLocaleDateString('fa-IR'),
-        status: 'pending',
-        reply: ''
-      };
-
-      const updated = [newTicket, ...tickets];
-      localStorage.setItem(`dubaiKharidTickets_${currentUser.phone}`, JSON.stringify(updated));
-      setTickets(updated);
-
-      setTicketTitle('');
-      setTicketMsg('');
-      setTicketPriority('medium');
-
-      alert('تیکت شما با موفقیت ثبت شد و پاسخ آن به زودی در همین بخش قرار خواهد گرفت.');
-      
-      // Auto reply simulation in 5 seconds
-      setTimeout(() => {
-        const freshTickets = JSON.parse(localStorage.getItem(`dubaiKharidTickets_${currentUser.phone}`) || '[]');
-        const updatedWithReply = freshTickets.map(t => t.id === newTicket.id ? { 
-          ...t, 
-          status: 'answered', 
-          reply: 'سلام خدمت شما کاربر گرامی، درخواست شما به بخش فنی/مالی ارجاع داده شد و همکاران ما در حال پیگیری این موضوع هستند. پیشاپیش از شکیبایی شما سپاسگزاریم.' 
-        } : t);
-        localStorage.setItem(`dubaiKharidTickets_${currentUser.phone}`, JSON.stringify(updatedWithReply));
-        setTickets(updatedWithReply);
-      }, 5000);
-
-    } catch (err) {
-      console.error(err);
-    }
+    alert('سامانه تیکت هنوز به سرور پشتیبانی متصل نشده است؛ برای پیگیری لطفاً از راه‌های تماس پشتیبانی استفاده کنید.');
   };
 
   // Profile info editor
-  const handleUpdateProfile = (e) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
     if (!editName) {
       alert('وارد کردن نام الزامی است.');
@@ -618,37 +434,29 @@ function ProfileContent() {
     }
 
     try {
-      const usersSaved = localStorage.getItem('dubaiKharidUsers');
-      let usersList = usersSaved ? JSON.parse(usersSaved) : [];
-
-      const updatedUser = {
-        ...currentUser,
-        name: editName,
-        email: editEmail,
-        address: editAddress
-      };
-
-      const idx = usersList.findIndex(u => u.phone === currentUser.phone);
-      if (idx !== -1) {
-        usersList[idx] = updatedUser;
-      } else {
-        usersList.push(updatedUser);
-      }
-
-      localStorage.setItem('dubaiKharidUsers', JSON.stringify(usersList));
-      localStorage.setItem('dubaiKharidCurrentUser', JSON.stringify(updatedUser));
-      
+      const response = await fetch('/api/account/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, email: editEmail, defaultAddress: editAddress }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'ذخیره مشخصات با خطا مواجه شد.');
+      await refreshCurrentUser();
       alert('مشخصات حساب شما با موفقیت ذخیره شد.');
     } catch (err) {
-      console.error(err);
+      alert(err.message || 'ذخیره مشخصات با خطا مواجه شد.');
     }
   };
 
   // Password editor
-  const handleChangePassword = (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (!newPassword || newPassword.length < 6) {
-      alert('رمز عبور باید حداقل ۶ کاراکتر باشد.');
+    if (!currentPassword) {
+      alert('رمز عبور فعلی را وارد کنید.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 8) {
+      alert('رمز عبور باید حداقل ۸ کاراکتر باشد.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -657,27 +465,21 @@ function ProfileContent() {
     }
 
     try {
-      const usersSaved = localStorage.getItem('dubaiKharidUsers');
-      let usersList = usersSaved ? JSON.parse(usersSaved) : [];
-
-      const updatedUser = {
-        ...currentUser,
-        password: newPassword
-      };
-
-      const idx = usersList.findIndex(u => u.phone === currentUser.phone);
-      if (idx !== -1) {
-        usersList[idx] = updatedUser;
-      }
-
-      localStorage.setItem('dubaiKharidUsers', JSON.stringify(usersList));
-      localStorage.setItem('dubaiKharidCurrentUser', JSON.stringify(updatedUser));
-
+      const response = await fetch('/api/account/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'تغییر رمز عبور با خطا مواجه شد.');
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      alert('رمز عبور شما با موفقیت تغییر یافت.');
+      alert('رمز عبور شما با موفقیت تغییر یافت. لطفاً دوباره وارد شوید.');
+      await logout();
+      router.replace('/login');
     } catch (err) {
-      console.error(err);
+      alert(err.message || 'تغییر رمز عبور با خطا مواجه شد.');
     }
   };
 
@@ -727,7 +529,7 @@ function ProfileContent() {
   };
 
   // Main UI Render
-  if (!currentUser) {
+  if (authLoading || !currentUser) {
     return (
       <div className={styles.pageWrapper}>
         <Header />
@@ -886,7 +688,9 @@ function ProfileContent() {
               <div>
                 <div className={styles.welcomeHeader}>
                   <h1 className={styles.welcomeTitle}>داشبورد</h1>
-                  <p className={styles.welcomeSubtitle}>{currentUser.name} عزیز، خوش آمدید 👋</p>
+                  <p className={styles.welcomeSubtitle} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {currentUser.name} عزیز، خوش آمدید <MinimalIcon name="smile" size={17} />
+                  </p>
                 </div>
 
                 {/* Stats row cards */}
@@ -986,7 +790,7 @@ function ProfileContent() {
                               return (
                                 <div key={s.step} className={`${styles.stepperStep} ${isCompleted ? styles.stepCompleted : ''} ${isActive ? styles.stepActive : ''}`}>
                                   <div className={styles.stepIconDot}>
-                                    {isCompleted ? '✓' : isActive ? '●' : ProfileIcons.lock(12)}
+                                    {isCompleted ? <MinimalIcon name="check" size={12} weight="bold" /> : isActive ? <MinimalIcon name="circle" size={9} weight="fill" /> : ProfileIcons.lock(12)}
                                   </div>
                                   <span className={styles.stepLabelText}>{s.text}</span>
                                 </div>
@@ -1090,7 +894,7 @@ function ProfileContent() {
                         {notifications.slice(0, 5).map(n => (
                           <div key={n.id} className={styles.activityItem}>
                             <div className={styles.activityIcon} style={{ background: 'rgba(248,120,32,0.1)', color: '#f87820' }}>
-                              ⚡
+                              <MinimalIcon name="lightning" size={18} />
                             </div>
                             <div className={styles.activityText}>
                               <p className={styles.activityDesc}>{n.text}</p>
@@ -1225,7 +1029,8 @@ function ProfileContent() {
 
                               {o.status === 'cancelled' ? (
                                 <div style={{ color: '#ef4444', background: 'rgba(239,68,68,0.06)', border: '1px dashed rgba(239,68,68,0.2)', padding: '16px', borderRadius: '10px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold' }}>
-                                  ❌ این سفارش به علت انصراف شما یا مغایرت قوانین گمرکی لغو شده است.
+                                  <MinimalIcon name="xCircle" size={16} style={{ marginLeft: '6px' }} />
+                                  این سفارش به علت انصراف شما یا مغایرت قوانین گمرکی لغو شده است.
                                 </div>
                               ) : (
                                 <div className={styles.detailedTimeline}>
@@ -1242,7 +1047,7 @@ function ProfileContent() {
                                     return (
                                       <div key={s.id} className={`${styles.detailedStep} ${isCompleted ? styles.detailedStepCompleted : ''} ${isActive ? styles.detailedStepActive : ''}`}>
                                         <div className={styles.detailedStepIcon}>
-                                          {isCompleted ? '✓' : isActive ? '●' : ProfileIcons.lock(10)}
+                                          {isCompleted ? <MinimalIcon name="check" size={11} weight="bold" /> : isActive ? <MinimalIcon name="smile" size={9} weight="fill" /> : ProfileIcons.lock(10)}
                                         </div>
                                         <span className={styles.detailedStepLabel}>{s.text}</span>
                                       </div>
@@ -1264,7 +1069,11 @@ function ProfileContent() {
                                 <div style={{ textAlign: 'left' }}>
                                   <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>وضعیت پرداخت:</span>
                                   <span style={{ fontSize: '12px', fontWeight: 'bold', color: o.paymentStatus === 'paid' ? '#10b981' : '#f97316' }}>
-                                    {o.paymentStatus === 'paid' ? '💳 تایید شده آنلاین' : '⏳ در انتظار پرداخت'}
+                                    {o.paymentStatus === 'paid' ? (
+                                      <><MinimalIcon name="creditCard" size={14} style={{ marginLeft: '5px' }} /> تایید شده آنلاین</>
+                                    ) : (
+                                      <><MinimalIcon name="hourglass" size={14} style={{ marginLeft: '5px' }} /> در انتظار پرداخت</>
+                                    )}
                                   </span>
                                   {o.status === 'price_tagged' && o.paymentStatus !== 'paid' && (
                                     <button 
@@ -1364,7 +1173,7 @@ function ProfileContent() {
                                   style={{ width: '100%', marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
                                   onClick={() => handlePayOrder(req.id)}
                                 >
-                                  <span>💳 پرداخت آنلاین</span>
+                                  <span><MinimalIcon name="creditCard" size={15} style={{ marginLeft: '6px' }} /> پرداخت آنلاین</span>
                                 </button>
                               )}
                             </div>
@@ -1388,7 +1197,7 @@ function ProfileContent() {
                                   className={`${styles.verticalStep} ${isCompleted ? styles.verticalStepCompleted : ''} ${isActive ? styles.verticalStepActive : ''}`}
                                 >
                                   <div className={styles.verticalIcon}>
-                                    {isCompleted ? '✓' : isActive ? '●' : ''}
+                                    {isCompleted ? <MinimalIcon name="check" size={12} weight="bold" /> : isActive ? <MinimalIcon name="circle" size={9} weight="fill" /> : null}
                                   </div>
                                   <div className={styles.verticalStepText}>
                                     <span className={styles.verticalStepTitle}>{s.text}</span>
@@ -1419,11 +1228,15 @@ function ProfileContent() {
                           
                           <h3 className={styles.detailTitle} style={{ paddingLeft: '60px' }}>اطلاعات کالا</h3>
                           
-                          <img 
-                            src={req.img || "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=200&q=80"} 
-                            alt="product" 
-                            style={{ width: '100%', height: '180px', objectFit: 'contain', borderRadius: '12px', background: '#fff', marginBottom: '16px', padding: '10px', boxSizing: 'border-box' }} 
-                          />
+                          {req.img ? (
+                            <img
+                              src={req.img}
+                              alt={req.productName || 'محصول'}
+                              style={{ width: '100%', height: '180px', objectFit: 'contain', borderRadius: '12px', background: '#fff', marginBottom: '16px', padding: '10px', boxSizing: 'border-box' }}
+                            />
+                          ) : (
+                            <div role="img" aria-label={req.productName || 'محصول بدون تصویر'} style={{ width: '100%', height: '180px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', marginBottom: '16px' }} />
+                          )}
 
                           <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                             <strong style={{ fontSize: '13.5px', color: '#fff', display: 'block', marginBottom: '8px', lineHeight: '1.4' }}>{req.productName}</strong>
@@ -1433,7 +1246,7 @@ function ProfileContent() {
                               rel="noreferrer" 
                               style={{ color: '#f87820', textDecoration: 'none', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                             >
-                              <span>🔗 مشاهده محصول در سایت اصلی</span>
+                              <span><MinimalIcon name="link" size={14} style={{ marginLeft: '5px' }} /> مشاهده محصول در سایت اصلی</span>
                             </a>
                           </div>
 
@@ -1484,7 +1297,7 @@ function ProfileContent() {
                         </p>
                       </div>
                       <button className={styles.tableActionBtn} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>❓ راهنمای ثبت درخواست</span>
+                        <span><MinimalIcon name="question" size={14} style={{ marginLeft: '5px' }} /> راهنمای ثبت درخواست</span>
                       </button>
                     </div>
 
@@ -1493,18 +1306,18 @@ function ProfileContent() {
                       <strong style={{ fontSize: '12.5px', color: '#fff', display: 'block', marginBottom: '16px', textAlign: 'center' }}>مراحل انجام سفارش</strong>
                       <div className={styles.guideStepsRow}>
                         {[
-                          { step: 1, label: 'لینک محصول را وارد کنید', icon: '🔗' },
-                          { step: 2, label: 'درخواست ثبت می‌شود', icon: '📄' },
-                          { step: 3, label: 'کارشناسان نهایی را بررسی می‌کنند', icon: '🔍' },
-                          { step: 4, label: 'قیمت نهایی برای شما ارسال می‌شود', icon: '🏷️' },
-                          { step: 5, label: 'بعد از تایید، پرداخت انجام می‌شود', icon: '💳' },
-                          { step: 6, label: 'خرید از امارات انجام می‌شود', icon: '🛍️' },
-                          { step: 7, label: 'کالا به ایران ارسال می‌شود', icon: '✈️' }
+                          { step: 1, label: 'لینک محصول را وارد کنید', icon: 'link' },
+                          { step: 2, label: 'درخواست ثبت می‌شود', icon: 'file' },
+                          { step: 3, label: 'کارشناسان نهایی را بررسی می‌کنند', icon: 'search' },
+                          { step: 4, label: 'قیمت نهایی برای شما ارسال می‌شود', icon: 'tag' },
+                          { step: 5, label: 'بعد از تایید، پرداخت انجام می‌شود', icon: 'creditCard' },
+                          { step: 6, label: 'خرید از امارات انجام می‌شود', icon: 'shoppingBag' },
+                          { step: 7, label: 'کالا به ایران ارسال می‌شود', icon: 'airplane' }
                         ].map((s) => (
                           <div key={s.step} className={`${styles.guideStep} ${s.step === 1 ? styles.guideStepActive : ''}`}>
                             <div className={styles.guideStepLine}></div>
                             <div className={styles.guideStepIcon}>
-                              {s.step === 1 ? s.icon : s.step}
+                              {s.step === 1 ? <MinimalIcon name={s.icon} size={17} /> : s.step}
                             </div>
                             <span className={styles.guideStepLabel}>{s.label}</span>
                           </div>
@@ -1515,7 +1328,7 @@ function ProfileContent() {
                     {/* Success notification overlay */}
                     {requestSuccessMessage ? (
                       <div className={styles.panelCard} style={{ textAlign: 'center', padding: '40px', border: '1px solid rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.02)', marginBottom: '24px' }}>
-                        <span style={{ fontSize: '42px', display: 'block', marginBottom: '16px' }}>✓</span>
+                        <MinimalIcon name="checkCircle" size={42} weight="thin" style={{ display: 'block', margin: '0 auto 16px' }} />
                         <strong style={{ fontSize: '15px', color: '#10b981', display: 'block', marginBottom: '8px' }}>درخواست شما با موفقیت ثبت شد.</strong>
                         <p style={{ fontSize: '12px', color: '#8b92a5', maxWidth: '600px', margin: '0 auto 20px auto', lineHeight: '1.6' }}>
                           کارشناسان ما پس از بررسی وزن، قیمت روز، هزینه ارسال و نرخ درهم، قیمت نهایی را برای شما ارسال خواهند کرد.
@@ -1554,7 +1367,7 @@ function ProfileContent() {
                                 }
                               }}
                             >
-                              <span>🔗 دریافت اطلاعات محصول از لینک</span>
+                              <span><MinimalIcon name="link" size={14} style={{ marginLeft: '5px' }} /> دریافت اطلاعات محصول از لینک</span>
                             </button>
                           </div>
                         </div>
@@ -1618,10 +1431,10 @@ function ProfileContent() {
                               style={{ padding: '8px 16px' }}
                             >
                               <div className={styles.uploaderLeft}>
-                                <div className={styles.uploaderIcon}>📁</div>
+                                <div className={styles.uploaderIcon}><MinimalIcon name="folder" size={22} /></div>
                                 <div className={styles.uploaderText}>
                                   <span className={styles.uploaderTitle}>
-                                    {reqImg ? '✓ عکس اضافه شد' : 'فایل را بکشید و رها کنید'}
+                                    {reqImg ? <><MinimalIcon name="check" size={13} style={{ marginLeft: '5px' }} /> عکس اضافه شد</> : 'فایل را بکشید و رها کنید'}
                                   </span>
                                   <span className={styles.uploaderDesc}>یا برای انتخاب فایل کلیک کنید. (JPG, PNG, WEBP حداکثر 5MB)</span>
                                 </div>
@@ -1643,10 +1456,10 @@ function ProfileContent() {
 
                         <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
                           <button type="submit" className={styles.saveBtn} style={{ background: '#f87820', borderColor: '#f87820', display: 'flex', alignItems: 'center', gap: '8px', flex: 7 }}>
-                            <span>🚀 ثبت درخواست خرید</span>
+                            <span><MinimalIcon name="rocket" size={16} style={{ marginLeft: '6px' }} /> ثبت درخواست خرید</span>
                           </button>
                           <button type="button" className={styles.tableActionBtn} style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 3, justifyContent: 'center' }} onClick={handleResetForm}>
-                            <span>🗑️ پاک کردن فرم</span>
+                            <span><MinimalIcon name="trash" size={16} style={{ marginLeft: '6px' }} /> پاک کردن فرم</span>
                           </button>
                         </div>
                       </form>
@@ -1688,7 +1501,7 @@ function ProfileContent() {
                                   </td>
                                   <td>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      🌐 {r.store}
+                                      <MinimalIcon name="globe" size={14} /> {r.store}
                                     </span>
                                   </td>
                                   <td>
@@ -1762,7 +1575,7 @@ function ProfileContent() {
                             onClick={() => toggleWishlist(item)}
                             style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
                           >
-                            ❤️ حذف
+                            <MinimalIcon name="heart" size={15} weight="fill" style={{ marginLeft: '5px' }} /> حذف
                           </button>
                         </div>
                       </div>
@@ -1781,7 +1594,7 @@ function ProfileContent() {
                     {notifications.map(n => (
                       <div key={n.id} className={styles.activityItem} style={{ padding: '16px 0' }}>
                         <div className={styles.activityIcon} style={{ background: n.read ? 'rgba(255,255,255,0.03)' : 'rgba(248,120,32,0.1)', color: n.read ? '#8b92a5' : '#f87820' }}>
-                          🔔
+                          <MinimalIcon name="bell" size={18} />
                         </div>
                         <div className={styles.activityText}>
                           <p className={styles.activityDesc} style={{ fontWeight: n.read ? 'normal' : 'bold' }}>{n.text}</p>
@@ -1814,21 +1627,15 @@ function ProfileContent() {
                       <tbody>
                         {orders.filter(o => o.paymentStatus === 'paid').map(o => (
                           <tr key={o.id}>
-                            <td style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>TRX-{Math.floor(100000 + Math.random() * 900000)}</td>
+                            <td style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{o.transactionId || 'ثبت نشده'}</td>
                             <td>{o.productName}</td>
                             <td>{new Date(o.date).toLocaleDateString('fa-IR')}</td>
                             <td style={{ fontWeight: 'bold', color: '#10b981' }}>{fmtToman(o.totalToman)} تومان</td>
                             <td>
-                              <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 'bold' }}>✓ پرداخت موفق</span>
+                              <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 'bold' }}><MinimalIcon name="check" size={13} style={{ marginLeft: '5px' }} /> پرداخت موفق</span>
                             </td>
                             <td>
-                              <a 
-                                href={`#download-invoice-${o.id}`}
-                                onClick={(e) => { e.preventDefault(); alert('دانلود رسید پرداخت آغاز شد (فایل شبیه‌سازی شده PDF)...'); }}
-                                style={{ fontSize: '11.5px', color: '#f87820', fontWeight: 'bold', textDecoration: 'none' }}
-                              >
-                                📥 دانلود رسید
-                              </a>
+                              <span style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: 'bold' }}>رسید ثبت نشده</span>
                             </td>
                           </tr>
                         ))}
@@ -1881,7 +1688,7 @@ function ProfileContent() {
                     />
                   </div>
                   <button type="submit" className={styles.saveBtn}>
-                    {editingAddrId ? '✓ بروزرسانی آدرس' : '➕ ثبت آدرس جدید'}
+                    {editingAddrId ? <><MinimalIcon name="check" size={15} style={{ marginLeft: '6px' }} /> بروزرسانی آدرس</> : <><MinimalIcon name="plus" size={15} style={{ marginLeft: '6px' }} /> ثبت آدرس جدید</>}
                   </button>
                   {editingAddrId && (
                     <button 
@@ -1911,7 +1718,7 @@ function ProfileContent() {
                         </div>
                       </div>
                       <p style={{ fontSize: '12px', color: '#c9ccd8', margin: '0 0 8px 0', lineHeight: '1.5', textAlign: 'right' }}>{a.text}</p>
-                      {a.phone && <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', textAlign: 'right' }}>📞 تلفن: {a.phone}</span>}
+                      {a.phone && <span style={{ fontSize: '11px', color: '#8b92a5', display: 'flex', alignItems: 'center', gap: '5px', textAlign: 'right' }}><MinimalIcon name="phone" size={13} /> تلفن: {a.phone}</span>}
                     </div>
                   ))}
                 </div>
@@ -1973,6 +1780,19 @@ function ProfileContent() {
                 <div className={styles.panelCard}>
                   <h3 className={styles.sectionTitle} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>تغییر رمز عبور ورود به پنل</h3>
                   <form onSubmit={handleChangePassword}>
+                    <div className={styles.formRowFull}>
+                      <label className={styles.label}>رمز عبور فعلی:</label>
+                      <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className={styles.inputField}
+                        placeholder="رمز عبور فعلی"
+                        autoComplete="current-password"
+                        dir="ltr"
+                        style={{ textAlign: 'right' }}
+                      />
+                    </div>
                     <div className={styles.formRow}>
                       <div className={styles.inputGroup}>
                         <label className={styles.label}>رمز عبور جدید:</label>
@@ -1981,7 +1801,8 @@ function ProfileContent() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           className={styles.inputField} 
-                          placeholder="حداقل ۶ کاراکتر"
+                          placeholder="حداقل ۸ کاراکتر"
+                          autoComplete="new-password"
                           dir="ltr"
                           style={{ textAlign: 'right' }}
                         />
@@ -1994,6 +1815,7 @@ function ProfileContent() {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className={styles.inputField} 
                           placeholder="تکرار رمز عبور"
+                          autoComplete="new-password"
                           dir="ltr"
                           style={{ textAlign: 'right' }}
                         />
@@ -2103,7 +1925,7 @@ function ProfileContent() {
                     />
                   </div>
                   <button type="submit" className={styles.saveBtn}>
-                    ✉️ ارسال تیکت پشتیبانی
+                    <MinimalIcon name="envelope" size={16} style={{ marginLeft: '6px' }} /> ارسال تیکت پشتیبانی
                   </button>
                 </form>
 

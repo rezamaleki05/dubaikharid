@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { trendingProducts, getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
@@ -24,23 +25,12 @@ function BestSellersContent() {
   useEffect(() => {
     let merged = getAllProducts();
     
-    // 1. Filter out deleted static laptops
-    try {
-      const deletedSaved = localStorage.getItem('dubaiKharidDeletedStaticLaptops');
-      if (deletedSaved) {
-        const deletedIds = JSON.parse(deletedSaved);
-        merged = merged.filter(p => !deletedIds.includes(p.id));
-      }
-    } catch (e) {
-      console.error('Error loading deleted static laptops:', e);
-    }
-
-    // 2. Load dynamic uploads & apply overrides
+    // Load non-laptop legacy uploads; laptop stock is sourced only from PostgreSQL.
     try {
       const saved = localStorage.getItem('dubaiKharidUploadedProducts');
       if (saved) {
         const uploaded = JSON.parse(saved);
-        uploaded.forEach(p => {
+        uploaded.filter(p => p.category !== 'electronics' && p.category !== 'laptops').forEach(p => {
           const index = merged.findIndex(m => m.id === p.id);
           if (index !== -1) {
             merged[index] = p; // Apply edit override
@@ -58,7 +48,7 @@ function BestSellersContent() {
       const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
       if (savedWarehouse) {
         const warehouse = JSON.parse(savedWarehouse);
-        warehouse.forEach(p => {
+        warehouse.filter(p => p.category !== 'electronics' && p.category !== 'laptops').forEach(p => {
           if (p && !p.isArchived) {
             const finalProduct = {
               ...p,
@@ -78,17 +68,8 @@ function BestSellersContent() {
       console.error('Error merging warehouse products for best sellers:', e);
     }
 
-    // 3. Load actually sold products from orders/leads
-    let soldProductNames = [];
-    try {
-      const leadsSaved = localStorage.getItem('dubaiKharidLeads');
-      if (leadsSaved) {
-        const leads = JSON.parse(leadsSaved);
-        soldProductNames = leads.map(l => l.productName?.toLowerCase().trim()).filter(Boolean);
-      }
-    } catch (e) {
-      console.error('Error loading sold products for best sellers:', e);
-    }
+    // Sales ranking is database-backed; no browser-only order history is used here.
+    const soldProductNames = [];
 
     // 4. Load actually searched queries
     let searchHistory = [];
@@ -123,7 +104,7 @@ function BestSellersContent() {
       return matchesAny && isUnique;
     });
 
-    setBestSellersList(filteredBest);
+    queueMicrotask(() => setBestSellersList(filteredBest));
   }, []);
 
   // Extract unique brands present in best sellers list
@@ -224,7 +205,7 @@ function BestSellersContent() {
             {/* Catalog Grid */}
             {sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
-                <div className={styles.noProductsIcon}>🔥</div>
+                <div className={styles.noProductsIcon}><MinimalIcon name="fire" size={50} weight="thin" /></div>
                 <p>هیچ محصولی با فیلترهای انتخاب شده یافت نشد.</p>
               </div>
             ) : (

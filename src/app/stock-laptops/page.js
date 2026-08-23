@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { laptops } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './StockLaptops.module.css';
 
-const EXCHANGE_RATE = 19500;
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 export default function StockLaptopsPage() {
@@ -17,65 +15,24 @@ export default function StockLaptopsPage() {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const [allLaptops, setAllLaptops] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    let merged = [...laptops];
-    
-    // 1. Filter out deleted static laptops
-    try {
-      const deletedSaved = localStorage.getItem('dubaiKharidDeletedStaticLaptops');
-      if (deletedSaved) {
-        const deletedIds = JSON.parse(deletedSaved);
-        merged = merged.filter(p => !deletedIds.includes(p.id));
-      }
-    } catch (e) {
-      console.error('Error loading deleted static laptops:', e);
-    }
-
-    // 2. Load dynamic uploads & apply overrides
-    try {
-      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      if (saved) {
-        const uploaded = JSON.parse(saved);
-        const uploadedLaptops = uploaded.filter(p => p.category === 'electronics');
-        uploadedLaptops.forEach(p => {
-          const index = merged.findIndex(m => m.id === p.id);
-          if (index !== -1) {
-            merged[index] = p; // Apply edit override
-          } else {
-            merged.unshift(p); // Prepend new upload
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error loading uploaded laptops:', e);
-    }
-
-    try {
-      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
-      if (savedWarehouse) {
-        const warehouse = JSON.parse(savedWarehouse);
-        const warehouseLaptops = warehouse.filter(p => p.category === 'electronics' || p.category === 'laptops');
-        warehouseLaptops.forEach(p => {
-          if (p && !p.isArchived) {
-            const finalProduct = {
-              ...p,
-              store: p.store || 'انبار ایران',
-              product_type: p.product_type || 'iran_inventory'
-            };
-            const index = merged.findIndex(m => m.id === finalProduct.id);
-            if (index !== -1) {
-              merged[index] = finalProduct; // Apply edit override
-            } else {
-              merged.unshift(finalProduct); // Prepend new warehouse product
-            }
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error loading warehouse laptops:', e);
-    }
-    setAllLaptops(merged);
+    const controller = new AbortController();
+    fetch('/api/laptops?limit=60', { cache: 'no-store', signal: controller.signal })
+      .then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'دریافت لپ‌تاپ‌ها با خطا مواجه شد.');
+        setAllLaptops(Array.isArray(payload.data) ? payload.data : []);
+      })
+      .catch(fetchError => {
+        if (fetchError.name !== 'AbortError') setError(fetchError.message || 'دریافت لپ‌تاپ‌ها با خطا مواجه شد.');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
 
   const handleSelect = (product) => {
@@ -83,14 +40,14 @@ export default function StockLaptopsPage() {
   };
 
   const ProductCard = ({ product }) => {
-    const tomanPrice = product.priceAed * EXCHANGE_RATE;
+    const tomanPrice = Number(product.priceToman) || 0;
     return (
       <div 
         className={styles.productCard} 
         onClick={() => handleSelect(product)}
       >
         <div className={styles.imageWrap}>
-          <img src={product.image} alt={product.name} className={styles.productImg} />
+          {product.image ? <img src={product.image} alt={product.name} className={styles.productImg} /> : <div className={styles.productImg} aria-label={product.name} />}
           <span className={styles.storeBadge}>{product.store}</span>
           
           <button 
@@ -138,8 +95,11 @@ export default function StockLaptopsPage() {
           <p className={styles.subtitle}>واردات مستقیم و تضمین شده، موجود در انبار ایران با قابلیت ارسال فوری.</p>
         </div>
 
+        {loading && <div style={{ textAlign: 'center', padding: '48px 0' }}>در حال بارگذاری لپ‌تاپ‌ها...</div>}
+        {!loading && error && <div style={{ textAlign: 'center', padding: '48px 0' }}>{error}</div>}
+        {!loading && !error && allLaptops.length === 0 && <div style={{ textAlign: 'center', padding: '48px 0' }}>در حال حاضر لپ‌تاپ موجودی ثبت نشده است.</div>}
         <div className={styles.grid}>
-          {allLaptops.map(laptop => (
+          {!loading && !error && allLaptops.map(laptop => (
             <ProductCard key={laptop.id} product={laptop} />
           ))}
         </div>

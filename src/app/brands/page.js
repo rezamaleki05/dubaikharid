@@ -60,6 +60,7 @@ export default function BrandsPage() {
   const [sortOption, setSortOption] = useState('');
 
   useEffect(() => {
+    Promise.resolve().then(() => {
     try {
       const savedBrands = localStorage.getItem('dubaiKharidBrands');
       if (savedBrands) {
@@ -105,6 +106,7 @@ export default function BrandsPage() {
       console.error('Error loading stores:', e);
       setStores(storesData);
     }
+    });
   }, []);
 
   const filteredBrands = brands.filter(brand => {

@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useCallback, useContext, useState, useEffect } from 'react';
+import { calculateProductPricing } from '@/lib/pricing';
 
 const SiteSettingsContext = createContext();
 
@@ -23,9 +24,9 @@ const DEFAULTS = {
   address: 'دبی، امارات متحده عربی',
   workingHours: 'شنبه تا پنجشنبه ۹ تا ۱۸',
   minOrderAed: '500',
-  commissionPercent: '25',
-  shippingPerKgAed: '40',
-  minWeightClass: '1',
+  commissionPercent: '',
+  shippingPerKgAed: '',
+  minWeightClass: '',
   roundingMethod: 'ceil',
   shippingBaseRate: '1200000',
   shippingPerKg: '350000',
@@ -36,7 +37,7 @@ const DEFAULTS = {
   notifyNewOrder: true,
   notifyPayment: true,
   notifyShipment: true,
-  aedRate: '19500',
+  aedRate: '',
   aedLastUpdate: '1405/03/30 00:00',
   aedUpdateMode: 'manual',
   aedAutoUpdate: false,
@@ -45,34 +46,29 @@ const DEFAULTS = {
   googleAuthMode: 'simulated'
 };
 
-export function SiteSettingsProvider({ children }) {
-  const [settings, setSettings] = useState(DEFAULTS);
-  const [loaded, setLoaded] = useState(false);
+export function SiteSettingsProvider({ children, initialSettings = null }) {
+  const [settings, setSettings] = useState({ ...DEFAULTS, ...(initialSettings || {}) });
+  const [loaded, setLoaded] = useState(true);
 
-  // Load from localStorage on mount
-  useEffect(() => {
+  const refreshSettings = async () => {
     try {
-      const saved = localStorage.getItem('dubaiKharidSiteSettings');
-      if (saved) {
-        setSettings(prev => ({ ...prev, ...JSON.parse(saved) }));
-      }
-    } catch (e) {
-      console.error('Failed to load site settings:', e);
+      const response = await fetch('/api/settings/public', { cache: 'no-store' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Failed to load settings.');
+      setSettings(previous => ({ ...previous, ...payload.data }));
+      return payload.data;
+    } catch (error) {
+      console.error('Failed to load site settings:', error);
+      return null;
+    } finally {
+      setLoaded(true);
     }
-    setLoaded(true);
-  }, []);
-
-  // Save to localStorage whenever settings change
-  const updateSettings = (newSettings) => {
-    const merged = { ...settings, ...newSettings };
-    setSettings(merged);
-    try {
-      localStorage.setItem('dubaiKharidSiteSettings', JSON.stringify(merged));
-    } catch (e) {
-      console.error('Failed to save site settings:', e);
-    }
-    return merged;
   };
+
+  // Context mirrors server state for client consumers; persistence is handled by protected APIs.
+  const updateSettings = useCallback((newSettings) => {
+    setSettings(previous => ({ ...previous, ...newSettings }));
+  }, []);
 
   // Helper to fetch live rate from local API proxy
   const fetchLiveAedRate = async () => {
@@ -88,20 +84,12 @@ export function SiteSettingsProvider({ children }) {
     return null;
   };
 
-  // Function to execute rate update
+  // Manual lookup only. The admin Settings API decides whether a returned rate is persisted.
   const updateAedRateAuto = async () => {
     const liveRate = await fetchLiveAedRate();
     const now = new Date();
     const jalaliDate = now.toLocaleDateString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-    
-    if (liveRate) {
-      const merged = updateSettings({
-        aedRate: String(liveRate),
-        aedLastUpdate: jalaliDate
-      });
-      return merged;
-    }
-    return null;
+    return liveRate ? { aedRate: String(liveRate), aedLastUpdate: jalaliDate } : null;
   };
 
   // Apply site name dynamically to document title
@@ -129,28 +117,8 @@ export function SiteSettingsProvider({ children }) {
     } catch (e) {}
   }, [settings.faviconUrl, loaded]);
 
-  // Set up auto-update interval
-  useEffect(() => {
-    if (!loaded || !settings.aedAutoUpdate) return;
-    
-    let intervalMinutes = 60;
-    if (settings.aedUpdateInterval === '30min') intervalMinutes = 30;
-    else if (settings.aedUpdateInterval === '1hr') intervalMinutes = 60;
-    else if (settings.aedUpdateInterval === '3hr') intervalMinutes = 180;
-    else if (settings.aedUpdateInterval === 'daily') intervalMinutes = 1440;
-    
-    // Initial fetch on setting activation
-    updateAedRateAuto();
-    
-    const intervalId = setInterval(() => {
-      updateAedRateAuto();
-    }, intervalMinutes * 60 * 1000);
-    
-    return () => clearInterval(intervalId);
-  }, [settings.aedAutoUpdate, settings.aedUpdateInterval, loaded]);
-
   return (
-    <SiteSettingsContext.Provider value={{ settings, updateSettings, loaded, updateAedRateAuto }}>
+    <SiteSettingsContext.Provider value={{ settings, updateSettings, refreshSettings, loaded, updateAedRateAuto }}>
       {children}
     </SiteSettingsContext.Provider>
   );
@@ -162,51 +130,27 @@ export function useSiteSettings() {
 
 // Global price calculation helper
 export function getProductTomanPrice(product, settings) {
+  if (product?.priceToman !== null && product?.priceToman !== undefined) {
+    return Number(product.priceToman) || 0;
+  }
   // Iran inventory warehouse products are already priced in Toman
   if (product.store === 'انبار ایران' || (product.id && product.id.startsWith('DK-INV')) || product.product_type === 'iran_inventory') {
     return product.price || 0;
   }
   
-  // Laptops (electronics category starting with 'lap') are completely independent of exchange rate
+  // A stored selling price is already an authoritative Toman snapshot.
   if (product.id && (product.id.startsWith('lap') || product.category === 'laptops')) {
-    const fixedRate = 19500;
     if (product.rawSpecs?.sellingPrice) {
       return parseFloat(product.rawSpecs.sellingPrice);
     }
-    return Math.round(product.priceAed * fixedRate);
   }
-  
-  // Standard products price calculation:
-  // Formula: (قیمت محصول + هزینه ارسال + کارمزد) * نرخ درهم
-  const rate = parseFloat(settings.aedRate) || 19500;
-  const priceAed = parseFloat(product.priceAed) || 0;
-  const weight = parseFloat(product.weight) || 1.0;
-  
-  // 1. Commission = productPrice * commissionPercent / 100
-  const commissionPercent = parseFloat(settings.commissionPercent) || 25;
-  const commissionAed = priceAed * (commissionPercent / 100);
-  
-  // 2. Shipping
-  // Apply weight rounding rules dynamically based on settings
-  const minWeight = parseFloat(settings.minWeightClass) || 1.0;
-  const roundingMethod = settings.roundingMethod || 'ceil';
-  
-  let roundedWeight = weight;
-  if (roundingMethod === 'ceil') {
-    roundedWeight = Math.ceil(weight);
-  } else if (roundingMethod === 'floor') {
-    roundedWeight = Math.floor(weight);
-  } else if (roundingMethod === 'round') {
-    roundedWeight = Math.round(weight);
+
+  try {
+    return calculateProductPricing({
+      priceAed: parseFloat(product.priceAed) || 0,
+      weight: parseFloat(product.weight) || Number(settings.minWeightClass),
+    }, settings).totalToman;
+  } catch {
+    return 0;
   }
-  
-  if (roundedWeight < minWeight) {
-    roundedWeight = minWeight;
-  }
-  const shippingPerKgAed = parseFloat(settings.shippingPerKgAed) || 40;
-  const shippingAed = roundedWeight * shippingPerKgAed;
-  
-  // Formula: (قیمت محصول + هزینه ارسال + کارمزد) * نرخ درهم
-  const totalToman = (priceAed + shippingAed + commissionAed) * rate;
-  return Math.round(totalToman);
 }

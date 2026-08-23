@@ -243,6 +243,16 @@
   box-shadow: 0 4px 12px rgba(248, 120, 32, 0.2);
 }
 
+.cartBtn:disabled,
+.wishItemCard:hover .cartBtn:disabled {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+  color: var(--text-mid);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
@@ -250,11 +260,19 @@
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
+  .mainContainer { padding: 28px 12px 44px; }
+  .titleHeader { margin-bottom: 28px; }
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
   .title {
-    font-size: 22px;
+    font-size: 24px;
   }
+  .emptyState { margin: 16px auto; padding: 52px 16px; border-radius: 14px; }
+  .cardBody { padding: 11px; }
+}
+
+@media (max-width: 350px) {
+  .grid { grid-template-columns: 1fr; }
 }

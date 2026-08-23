@@ -53,7 +53,8 @@
   align-items: center;
 }
 
-.heroTextContent h1 {
+.heroTextContent h1,
+.heroTextContent h2 {
   font-size: 3rem;
   font-weight: 800;
   line-height: 1.3;

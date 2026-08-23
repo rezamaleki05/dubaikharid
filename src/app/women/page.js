@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { womenProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
@@ -31,7 +32,7 @@ function WomenContent() {
 
   // Sync state if URL search query changes
   useEffect(() => {
-    setActiveTab(initialSub);
+    Promise.resolve().then(() => setActiveTab(initialSub));
   }, [initialSub]);
 
   // Extract unique brands present in women catalog
@@ -164,7 +165,7 @@ function WomenContent() {
             {/* Catalog Grid */}
             {sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
-                <div className={styles.noProductsIcon}>👗</div>
+                <div className={styles.noProductsIcon}><MinimalIcon name="clothing" size={50} weight="thin" /></div>
                 <p>هیچ محصولی با فیلترهای انتخاب شده یافت نشد.</p>
               </div>
             ) : (

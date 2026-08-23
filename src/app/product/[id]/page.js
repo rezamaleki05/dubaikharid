@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { getProductById, getProductType } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import CheckoutModal from '@/components/CheckoutModal';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import styles from './Product.module.css';
 
 // Replaced hardcoded exchange rate
@@ -67,12 +68,11 @@ export default function ProductPage({ params }) {
   const [inquiryColor, setInquiryColor] = useState('');
   const [inquirySize, setInquirySize] = useState('');
 
-  useEffect(() => {
-    if (isInquiryOpen && product) {
-      setInquiryColor(selectedColor || (product.colors ? product.colors[0] : ''));
-      setInquirySize(selectedSize || (product.sizes ? product.sizes[0] : ''));
-    }
-  }, [isInquiryOpen, product, selectedColor, selectedSize]);
+  const openInquiry = () => {
+    setInquiryColor(selectedColor || product?.colors?.[0] || '');
+    setInquirySize(selectedSize || product?.sizes?.[0] || '');
+    setIsInquiryOpen(true);
+  };
 
   const handleDirectPayment = () => {
     if (product.colors && !selectedColor) {
@@ -93,6 +93,7 @@ export default function ProductPage({ params }) {
       : tomanPrice;
 
     const orderData = {
+      link: product.originalLink || product.link || '',
       price: product.priceAed,
       weight: product.weight || 0.5,
       category: product.category,
@@ -101,6 +102,11 @@ export default function ProductPage({ params }) {
       totalToman: finalTomanPrice,
       productName: product.name,
       items: [{
+        id: product.id,
+        ...(product.product_type === 'laptop_stock' ? { laptopId: product.id } : {}),
+        ...(product.product_type === 'iran_inventory' ? { productId: product.id } : {}),
+        product_type: product.product_type,
+        link: product.originalLink || product.link || '',
         name: product.name,
         brand: product.brand,
         quantity: 1,
@@ -115,7 +121,7 @@ export default function ProductPage({ params }) {
     setIsCheckoutOpen(true);
   };
 
-  const handleInquirySubmit = (e) => {
+  const handleInquirySubmit = async (e) => {
     e.preventDefault();
     if (!inquiryForm.name.trim() || !inquiryForm.phone.trim()) {
       alert('لطفاً نام و شماره تماس خود را وارد کنید.');
@@ -137,54 +143,30 @@ export default function ProductPage({ params }) {
       return;
     }
 
-    const randNum = Math.floor(10000 + Math.random() * 90000);
-    const tracking = `DKHARID-REQ-${randNum}`;
-
-    const newLead = {
-      id: tracking,
-      customerName: inquiryForm.name.trim(),
-      phone: cleanPhone,
-      address: 'استعلام قیمت (بدون آدرس اولیه)',
-      notes: inquiryForm.notes.trim() || 'درخواست استعلام قیمت محصول خارجی',
-      productName: product.name,
-      brand: product.brand,
-      weight: product.weight || 0.5,
-      totalToman: 0,
-      priceAed: product.priceAed,
-      date: new Date().toISOString(),
-      status: 'pending',
-      paymentMethod: 'gateway',
-      paymentStatus: 'pending',
-      img: product.image,
-      store: product.store,
-      color: inquiryColor || '',
-      size: inquirySize || '',
-      qty: inquiryQty,
-      isRequest: true,
-      items: [{
-        name: product.name,
-        brand: product.brand,
-        quantity: inquiryQty,
-        color: inquiryColor || '',
-        size: inquirySize || '',
-        priceAed: product.priceAed,
-        discountPercent: product.discountPercent || 0
-      }]
-    };
-
     try {
-      const existingLeads = JSON.parse(localStorage.getItem('dubaiKharidLeads') || '[]');
-      existingLeads.unshift(newLead);
-      localStorage.setItem('dubaiKharidLeads', JSON.stringify(existingLeads));
-      
+      const response = await fetch('/api/purchase-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({
+          customer: { name: inquiryForm.name.trim(), phone: cleanPhone, address: 'استعلام قیمت (بدون آدرس اولیه)' },
+          productUrl: product.originalLink || product.link || window.location.href,
+          productName: product.name,
+          sourceStore: product.store || product.brand || '',
+          priceAed: Number(product.priceAed || 0),
+          weight: Number(product.weight || 0.5),
+          quantity: inquiryQty,
+          notes: [inquiryForm.notes.trim(), inquiryColor ? `رنگ: ${inquiryColor}` : '', inquirySize ? `سایز: ${inquirySize}` : ''].filter(Boolean).join('\n'),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'خطا در ثبت درخواست.');
       setIsInquiryOpen(false);
       setInquiryForm({ name: '', phone: '', notes: '' });
       setInquiryQty(1);
-
-      alert(`درخواست شما ثبت شد. پس از بررسی قیمت نهایی، وزن واقعی، هزینه ارسال و نرخ روز درهم، قیمت دقیق از طریق واتساپ یا تماس به شما اعلام میشود.\nشناسه درخواست: ${tracking}`);
+      alert(`درخواست شما ثبت شد. پس از بررسی قیمت نهایی، وزن واقعی، هزینه ارسال و نرخ روز درهم، قیمت دقیق از طریق واتساپ یا تماس به شما اعلام میشود.\nشناسه درخواست: ${payload.data.requestCode}`);
     } catch (err) {
       console.error(err);
-      alert('خطا در ثبت درخواست. لطفاً مجدداً تلاش کنید.');
+      alert(err.message || 'خطا در ثبت درخواست. لطفاً مجدداً تلاش کنید.');
     }
   };
 
@@ -218,21 +200,21 @@ export default function ProductPage({ params }) {
       };
     }
     
-    // Fallback for static laptops
-    if (prod.model || prod.id.startsWith('lap') || prod.category === 'electronics') {
+    // Only render technical specifications that came from a real product record.
+    if (prod.model || prod.cpu || prod.ram || prod.storage || prod.gpu || prod.screen || prod.screenSize) {
       return {
-        model: prod.model || 'M2 2022',
-        cpu: prod.cpu || 'Apple M2',
-        ram: prod.ram || '8GB',
-        storage: prod.storage || '256GB SSD',
-        gpu: prod.gpu || 'Apple GPU 8-Core',
-        screenSize: prod.screenSize || '13.6 اینچ',
-        batteryHealth: '92%',
-        physicalStatus: 'عالی (در حد نو)',
-        serial: null,
-        warranty: '30 روز مهلت تست و تعویض',
-        accessories: 'شارژر اصلی دبی',
-        tests: { keyboard: true, speaker: true, display: true, usb: true, battery: true, wifi: true, camera: true, charge: true }
+        model: prod.model || null,
+        cpu: prod.cpu || null,
+        ram: prod.ram || null,
+        storage: prod.storage || null,
+        gpu: prod.gpu || null,
+        screenSize: prod.screenSize || prod.screen || null,
+        batteryHealth: prod.batteryHealth ? `${prod.batteryHealth}%` : null,
+        physicalStatus: prod.physicalStatus || prod.condition || null,
+        serial: prod.serial || null,
+        warranty: prod.warranty || null,
+        accessories: prod.accessories || null,
+        tests: prod.hardwareTests || null
       };
     }
 
@@ -242,58 +224,50 @@ export default function ProductPage({ params }) {
   const laptopSpecs = (product && (product.category === 'electronics' || product.id.startsWith('lap') || product.id.startsWith('uploaded'))) ? getLaptopSpecs(product) : null;
 
   useEffect(() => {
-    let found = null;
-    
-    // Check deleted static items first
-    if (typeof window !== 'undefined') {
+    const controller = new AbortController();
+    const loadProduct = async () => {
+      let found = null;
       try {
-        const deletedSaved = localStorage.getItem('dubaiKharidDeletedStaticLaptops');
-        if (deletedSaved) {
-          const deletedIds = JSON.parse(deletedSaved);
-          if (deletedIds.includes(id)) {
-            setProduct(null);
-            setLoading(false);
-            return;
+        const response = await fetch(`/api/laptops/${encodeURIComponent(id)}`, { cache: 'no-store', signal: controller.signal });
+        if (response.ok) found = await response.json();
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+      }
+      if (!found) {
+        try {
+          const response = await fetch(`/api/products/${encodeURIComponent(id)}`, { cache: 'no-store', signal: controller.signal });
+          if (response.ok) found = await response.json();
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+        }
+      }
+      if (!found && typeof window !== 'undefined') {
+        try {
+          const saved = localStorage.getItem('dubaiKharidUploadedProducts');
+          if (saved) {
+            const list = JSON.parse(saved);
+            found = list.find(p => p.id === id && p.category !== 'electronics');
           }
+        } catch (error) {
+          console.error('Error fetching dynamic product override:', error);
         }
-      } catch (e) {
-        console.error(e);
       }
-    }
-
-    // Check localStorage overrides next
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-        if (saved) {
-          const list = JSON.parse(saved);
-          found = list.find(p => p.id === id);
+      if (!found && typeof window !== 'undefined') {
+        try {
+          const saved = localStorage.getItem('dubaiKharidWarehouseProducts');
+          if (saved) found = JSON.parse(saved).find(p => p.id === id && p.category !== 'laptops');
+        } catch (error) {
+          console.error('Error fetching warehouse product:', error);
         }
-      } catch (e) {
-        console.error('Error fetching dynamic product override:', e);
       }
-    }
-
-    // Check localStorage warehouse next
-    if (!found && typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('dubaiKharidWarehouseProducts');
-        if (saved) {
-          const list = JSON.parse(saved);
-          found = list.find(p => p.id === id);
-        }
-      } catch (e) {
-        console.error('Error fetching warehouse product:', e);
+      if (!found) found = getProductById(id);
+      if (!controller.signal.aborted) {
+        setProduct(found || null);
+        setLoading(false);
       }
-    }
-
-    // Fallback to static lists
-    if (!found) {
-      found = getProductById(id);
-    }
-
-    setProduct(found || null);
-    setLoading(false);
+    };
+    loadProduct();
+    return () => controller.abort();
   }, [id]);
 
   if (loading) {
@@ -459,7 +433,7 @@ export default function ProductPage({ params }) {
                     قیمت نهایی پس از بررسی اعلام می‌شود
                   </div>
                   <div style={{ fontSize: '12px', color: '#8b92a5', marginTop: '6px' }}>
-                    (قیمت تقریبی مبدا: {product.priceAed} درهم)
+                    {product.product_type === 'laptop_stock' ? 'قیمت قطعی موجودی ایران' : `(قیمت تقریبی مبدا: ${product.priceAed} درهم)`}
                   </div>
                 </div>
               ) : (
@@ -497,7 +471,7 @@ export default function ProductPage({ params }) {
                     <button 
                       type="button"
                       className={styles.addToCartBtn}
-                      onClick={() => setIsInquiryOpen(true)}
+                      onClick={openInquiry}
                       style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', flex: 1 }}
                     >
                       ثبت درخواست خرید
@@ -505,7 +479,7 @@ export default function ProductPage({ params }) {
                     <button 
                       type="button"
                       className={styles.addToCartBtn}
-                      onClick={() => setIsInquiryOpen(true)}
+                      onClick={openInquiry}
                       style={{ background: 'transparent', border: '1.5px solid #f87820', color: '#f87820', flex: 1 }}
                     >
                       استعلام قیمت
@@ -530,7 +504,7 @@ export default function ProductPage({ params }) {
                       onClick={handleDirectPayment}
                       style={{ background: '#2ecc71', color: '#fff', flex: 1 }}
                     >
-                      💳 پرداخت آنلاین
+                      <MinimalIcon name="creditCard" size={20} /> پرداخت آنلاین
                     </button>
                   </div>
                 </div>
@@ -547,13 +521,13 @@ export default function ProductPage({ params }) {
         {/* Structured Specifications & Tests Dashboard */}
         {laptopSpecs && (
           <div className={styles.technicalPanel} dir="rtl" style={{ marginBottom: '30px' }}>
-            <h2 className={styles.technicalTitle}>📋 وضعیت سلامت فیزیکی و تست‌های سخت‌افزاری</h2>
+            <h2 className={styles.technicalTitle}><MinimalIcon name="clipboard" size={23} /> وضعیت سلامت فیزیکی و تست‌های سخت‌افزاری</h2>
             
             <div className={styles.technicalGrid}>
               
               {/* Left Column: Health and Warranty Stats */}
               <div className={styles.techCard}>
-                <h3>⚙️ اصالت و سلامت فنی دستگاه</h3>
+                <h3><MinimalIcon name="gear" size={20} /> اصالت و سلامت فنی دستگاه</h3>
                 <ul className={styles.techList}>
                   <li>
                     <span>سلامت باتری:</span>
@@ -587,7 +561,7 @@ export default function ProductPage({ params }) {
               {/* Right Column: Hardware Checklist Tests */}
               {laptopSpecs.tests && (
                 <div className={styles.techCard}>
-                  <h3>🔍 چک‌لیست تست‌های سخت‌افزاری (پاس شده)</h3>
+                  <h3><MinimalIcon name="search" size={20} /> چک‌لیست تست‌های سخت‌افزاری (پاس شده)</h3>
                   <div className={styles.checklistGrid}>
                     {Object.entries(laptopSpecs.tests).map(([testKey, passed]) => {
                       const testLabels = {
@@ -603,7 +577,7 @@ export default function ProductPage({ params }) {
                       return (
                         <div key={testKey} className={styles.checkItem}>
                           <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontSize: '16px', marginLeft: '6px' }}>
-                            {passed ? '✓' : '✕'}
+                            <MinimalIcon name={passed ? 'check' : 'x'} size={16} weight="bold" />
                           </span>
                           <span style={{ color: passed ? '#fff' : '#8b92a5', fontSize: '13px' }}>
                             {testLabels[testKey] || testKey}
@@ -662,7 +636,7 @@ export default function ProductPage({ params }) {
                 onClick={() => setIsInquiryOpen(false)}
                 style={{ background: 'transparent', border: 'none', color: '#8b92a5', fontSize: '18px', cursor: 'pointer' }}
               >
-                ✕
+                <MinimalIcon name="x" size={18} />
               </button>
             </div>
 
@@ -678,7 +652,7 @@ export default function ProductPage({ params }) {
               <img src={product.image} alt={product.name} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
               <div>
                 <h4 style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 4px 0' }}>{product.name}</h4>
-                <p style={{ fontSize: '11px', color: '#8b92a5', margin: 0 }}>فروشگاه مبدا: {product.store} | قیمت تقریبی: {product.priceAed} درهم</p>
+                <p style={{ fontSize: '11px', color: '#8b92a5', margin: 0 }}>فروشگاه مبدا: {product.store}{product.product_type === 'laptop_stock' ? '' : ` | قیمت تقریبی: ${product.priceAed} درهم`}</p>
               </div>
             </div>
 
@@ -865,16 +839,8 @@ export default function ProductPage({ params }) {
 }
 
 // ==========================================================================
-// CUSTOMER REVIEWS LOGIC & SEEDS
+// CUSTOMER REVIEWS LOGIC
 // ==========================================================================
-const MOCK_REVIEWS_SEED = [
-  { id: 'seed-1', productId: 'lap1', userName: 'علیرضا زارعی', rating: 5, comment: 'فوق‌العاده تمیز و در حد نو بود. دسته‌بندی استوک دبی خرید حرف نداره. از خریدم خیلی راضی‌ام.', date: '2026-05-15T12:00:00Z', isVerified: true },
-  { id: 'seed-2', productId: 'lap1', userName: 'مریم حسینی', rating: 4, comment: 'سرعت و قدرت دستگاه عالیه، فقط کارتن نداشت که خب برای استوک طبیعیه. بسته‌بندی ارسال دی‌جی‌کالایی و محکم بود.', date: '2026-05-20T08:30:00Z', isVerified: true },
-  { id: 'seed-3', productId: 'p1', userName: 'امیر قاسمی', rating: 5, comment: 'نایک ایر فورس اصل، فوق‌العاده راحت. مستقیم از امارات اومد و بارکدش کاملا معتبر بود.', date: '2026-05-24T14:20:00Z', isVerified: true },
-  { id: 'seed-4', productId: 'w1', userName: 'سارا کریمی', rating: 5, comment: 'جنس نخی خنک و عالی، دقیقا مثل عکسش در سایت مانگو بود. خیلی خوش‌دوخت و زیباست.', date: '2026-05-18T10:15:00Z', isVerified: true },
-  { id: 'seed-5', productId: 'ba2', userName: 'رضا صبوری', rating: 5, comment: 'بسیار لوکس و باابهت. موتور اتوماتیک رولکس عالی کار می‌کنه و تمام شناسنامه‌های اصالت رو داشت.', date: '2026-05-22T19:40:00Z', isVerified: true }
-];
-
 function ReviewsSection({ productId, productName }) {
   const [reviews, setReviews] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -885,16 +851,16 @@ function ReviewsSection({ productId, productName }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('dubaiKharidReviews');
-      let allReviews = [];
-      if (saved) {
-        allReviews = JSON.parse(saved);
-      } else {
-        localStorage.setItem('dubaiKharidReviews', JSON.stringify(MOCK_REVIEWS_SEED));
-        allReviews = MOCK_REVIEWS_SEED;
+      const parsed = saved ? JSON.parse(saved) : [];
+      const allReviews = Array.isArray(parsed)
+        ? parsed.filter(review => !String(review?.id || '').startsWith('seed-'))
+        : [];
+      if (saved && allReviews.length !== parsed.length) {
+        localStorage.setItem('dubaiKharidReviews', JSON.stringify(allReviews));
       }
       
       const filtered = allReviews.filter(r => r.productId === productId);
-      setReviews(filtered);
+      Promise.resolve().then(() => setReviews(filtered));
     } catch (e) {
       console.error('Error loading reviews:', e);
     }
@@ -911,18 +877,19 @@ function ReviewsSection({ productId, productName }) {
     setTimeout(() => {
       try {
         const newReview = {
-          id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          id: crypto.randomUUID(),
           productId,
           productName,
           userName: formData.name.trim(),
           rating: formData.rating,
           comment: formData.comment.trim(),
           date: new Date().toISOString(),
-          isVerified: Math.random() > 0.3
+          isVerified: false
         };
 
         const saved = localStorage.getItem('dubaiKharidReviews');
-        const allReviews = saved ? JSON.parse(saved) : [...MOCK_REVIEWS_SEED];
+        const parsed = saved ? JSON.parse(saved) : [];
+        const allReviews = Array.isArray(parsed) ? parsed : [];
         allReviews.unshift(newReview);
         localStorage.setItem('dubaiKharidReviews', JSON.stringify(allReviews));
 
@@ -965,11 +932,11 @@ function ReviewsSection({ productId, productName }) {
     <section className={styles.reviewsSection}>
       <div className={styles.reviewsHeader}>
         <h2 className={styles.reviewsTitle}>
-          <span style={{ marginLeft: '10px' }}>💬</span> نظرات خریداران ({totalCount})
+          <MinimalIcon name="paperPlane" size={23} style={{ marginLeft: '10px' }} /> نظرات خریداران ({totalCount})
         </h2>
         {!showForm && (
           <button onClick={() => setShowForm(true)} className={styles.writeReviewBtn}>
-            ✏️ ثبت دیدگاه جدید
+            <MinimalIcon name="pencil" size={17} /> ثبت دیدگاه جدید
           </button>
         )}
       </div>
@@ -978,8 +945,9 @@ function ReviewsSection({ productId, productName }) {
         <div className={styles.ratingAverage}>
           <div className={styles.averageScore}>{avgScore}</div>
           <div className={styles.averageStars}>
-            {'★'.repeat(Math.round(parseFloat(avgScore)))}
-            {'☆'.repeat(5 - Math.round(parseFloat(avgScore)))}
+            {Array.from({ length: 5 }, (_, index) => (
+              <MinimalIcon key={index} name="star" size={17} weight={index < Math.round(parseFloat(avgScore)) ? 'fill' : 'regular'} />
+            ))}
           </div>
           <div className={styles.totalReviewsText}>بر اساس {totalCount} نظر</div>
         </div>
@@ -1031,7 +999,7 @@ function ReviewsSection({ productId, productName }) {
                         onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
                         aria-label={`امتیاز ${star} ستاره`}
                       >
-                        ★
+                        <MinimalIcon name="star" size={22} weight={isActive ? 'fill' : 'regular'} />
                       </button>
                     );
                   })}
@@ -1064,7 +1032,7 @@ function ReviewsSection({ productId, productName }) {
       <div className={styles.reviewsList}>
         {reviews.length === 0 ? (
           <div className={styles.emptyReviews}>
-            <div className={styles.emptyIcon}>📦</div>
+            <div className={styles.emptyIcon}><MinimalIcon name="package" size={50} weight="thin" /></div>
             <p>هنوز هیچ دیدگاهی ثبت نشده است.</p>
             <p style={{ fontSize: '12px', color: '#8b92a5', marginTop: '6px' }}>اولین کسی باشید که برای این محصول نظر ثبت می‌کند!</p>
           </div>
@@ -1075,12 +1043,13 @@ function ReviewsSection({ productId, productName }) {
                 <div className={styles.userNameWrap}>
                   <span className={styles.userName}>{rev.userName}</span>
                   {rev.isVerified && (
-                    <span className={styles.verifiedBadge}>✓ خریدار تأیید شده</span>
+                    <span className={styles.verifiedBadge}><MinimalIcon name="check" size={12} weight="bold" /> خریدار تأیید شده</span>
                   )}
                 </div>
                 <div className={styles.reviewStars}>
-                  {'★'.repeat(rev.rating)}
-                  {'☆'.repeat(5 - rev.rating)}
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <MinimalIcon key={index} name="star" size={15} weight={index < rev.rating ? 'fill' : 'regular'} />
+                  ))}
                 </div>
               </div>
               <p className={styles.reviewText}>{rev.comment}</p>

@@ -296,17 +296,38 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .mainContainer { padding: 24px 12px 36px; }
+  .heroSection {
+    padding: 28px 18px 32px;
+    margin-bottom: 22px;
+    border-radius: 14px;
+  }
+  .title { font-size: 25px; line-height: 1.45; }
+  .subtitle { font-size: 12px; line-height: 1.8; }
   .controlsRow {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    margin-bottom: 22px;
   }
+  .tabs { width: 100%; max-width: 100%; }
+  .tab { min-height: 44px; padding: 10px 16px; }
+  .sortBox { width: 100%; }
   
   .sortSelect {
     width: 100%;
+    min-width: 0;
+    min-height: 44px;
   }
   
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
+  .cardBody { padding: 12px; }
+  .noProducts { padding: 48px 10px; }
+}
+
+@media (max-width: 350px) {
+  .grid { grid-template-columns: 1fr; }
 }

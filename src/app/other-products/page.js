@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
@@ -35,7 +36,7 @@ const catalogPresets = {
   },
 };
 
-function OtherProductsContent({ preset = 'other' }) {
+export function OtherProductsContent({ preset = 'other' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const catalogPreset = catalogPresets[preset] || catalogPresets.other;
@@ -58,7 +59,7 @@ function OtherProductsContent({ preset = 'other' }) {
 
   // Sync state if URL sub parameter changes
   useEffect(() => {
-    setActiveTab(initialSub);
+    Promise.resolve().then(() => setActiveTab(initialSub));
   }, [initialSub]);
 
   // Load and merge products
@@ -98,7 +99,7 @@ function OtherProductsContent({ preset = 'other' }) {
     } catch (e) {
       console.error('Error merging warehouse products for other products:', e);
     }
-    setAllProducts(merged);
+    Promise.resolve().then(() => setAllProducts(merged));
   }, []);
 
   // Filter out laptops, men/women/kids fashion, and bags/accessories
@@ -276,7 +277,7 @@ function OtherProductsContent({ preset = 'other' }) {
             {/* Catalog Grid */}
             {sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
-                <div className={styles.noProductsIcon}>📦</div>
+                <div className={styles.noProductsIcon}><MinimalIcon name="package" size={50} weight="thin" /></div>
                 <p>هیچ محصولی در این دسته فیلتر یافت نشد.</p>
               </div>
             ) : (

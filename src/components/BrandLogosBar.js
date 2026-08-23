@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import styles from './BrandLogosBar.module.css';
 
 const brands = [
@@ -147,18 +148,19 @@ const brands = [
 export default function BrandLogosBar() {
   const repeatedBrands = [...brands, ...brands, ...brands, ...brands];
   const renderBrands = () => (
-    repeatedBrands.map(({ id, url, name, logo }, idx) => (
-      <a
+    repeatedBrands.map(({ id, url, name, logo }, idx) => {
+      const storeIds = new Set(['amazon', 'noon', 'namshi']);
+      const internalUrl = storeIds.has(id) ? `/stores/${id}` : id === 'temu' ? url : `/brands/${id}`;
+      return <Link
         key={`${id}-${idx}`}
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={internalUrl}
         className={styles.brandCard}
-        title={name}
+        title={`راهنمای خرید از ${name}`}
+        aria-label={`راهنمای خرید از ${name}`}
       >
         {logo}
-      </a>
-    ))
+      </Link>;
+    })
   );
 
   return (

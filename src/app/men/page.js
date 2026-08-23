@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { menProducts, womenProducts, kidsProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Men.module.css';
@@ -30,7 +31,7 @@ const catalogPresets = {
   },
 };
 
-function MenContent({ preset = 'men' }) {
+export function MenContent({ preset = 'men' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const catalogPreset = catalogPresets[preset] || catalogPresets.men;
@@ -53,7 +54,7 @@ function MenContent({ preset = 'men' }) {
 
   // Sync state if URL search query changes
   useEffect(() => {
-    setActiveTab(initialSub);
+    Promise.resolve().then(() => setActiveTab(initialSub));
   }, [initialSub]);
 
   // Extract unique brands present in men catalog
@@ -186,7 +187,7 @@ function MenContent({ preset = 'men' }) {
             {/* Catalog Grid */}
             {sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
-                <div className={styles.noProductsIcon}>🧥</div>
+                <div className={styles.noProductsIcon}><MinimalIcon name="coat" size={50} weight="thin" /></div>
                 <p>هیچ محصولی با فیلترهای انتخاب شده یافت نشد.</p>
               </div>
             ) : (

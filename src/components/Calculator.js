@@ -1,18 +1,18 @@
 'use client';
-import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
+import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { calculateProductPricing } from '@/lib/pricing';
 
 import { useState, useEffect, useRef } from 'react';
 import styles from './Calculator.module.css';
 
 export default function Calculator({ initialValues, onOrderSubmit }) {
   const { settings } = useSiteSettings();
-  // Exchange Rate (1 AED = 19,500 Toman)
-  const EXCHANGE_RATE = parseFloat(settings.aedRate) || 19500;
 
   // State Variables
   const [link, setLink] = useState('');
   const [loading, setLoading] = useState(false);
   const [detectedItem, setDetectedItem] = useState(null);
+  const [lookupError, setLookupError] = useState('');
   
   const [category, setCategory] = useState('bags');
   const [priceAed, setPriceAed] = useState('');
@@ -39,31 +39,27 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
   // Synchronize when parent passes values
   useEffect(() => {
     if (initialValues) {
-      if (initialValues.link) setLink(initialValues.link);
-      if (initialValues.price) setPriceAed(initialValues.price);
-      if (initialValues.weight) {
-        if (initialValues.weight <= 1) setWeightClass('light');
-        else if (initialValues.weight <= 3) setWeightClass('medium');
-        else setWeightClass('heavy');
-      }
-      if (initialValues.category) setCategory(initialValues.category);
-      if (initialValues.name) {
-        setDetectedItem({
-          name: initialValues.name,
-          brand: initialValues.brand || 'برند اورجینال',
-          store: 'فروشگاه دبی'
-        });
-      }
-      
-      if (calculatorRef.current) {
-        calculatorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      Promise.resolve().then(() => {
+        if (initialValues.link) setLink(initialValues.link);
+        if (initialValues.price) setPriceAed(initialValues.price);
+        if (initialValues.weight) {
+          if (initialValues.weight <= 1) setWeightClass('light');
+          else if (initialValues.weight <= 3) setWeightClass('medium');
+          else setWeightClass('heavy');
+        }
+        if (initialValues.category) setCategory(initialValues.category);
+        if (initialValues.name) {
+          setDetectedItem({ name: initialValues.name, brand: initialValues.brand || 'برند اورجینال', store: 'فروشگاه دبی' });
+        }
+        calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
     }
   }, [initialValues]);
 
   const handleLinkChange = (e) => {
     const url = e.target.value;
     setLink(url);
+    setLookupError('');
 
     if (!url || url.trim().length < 4) {
       setDetectedItem(null);
@@ -76,74 +72,35 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
       setDetectedItem(null);
 
       fetch(`/api/fetch-product?url=${encodeURIComponent(url)}`)
-        .then(res => res.json())
-        .then(data => {
+        .then(async res => ({ ok: res.ok, status: res.status, data: await res.json() }))
+        .then(({ ok, status, data }) => {
           setLoading(false);
-          if (data && data.name) {
+          const product = ok ? data : data?.product;
+          if (product?.name) {
             setDetectedItem({
-              name: data.name,
-              brand: data.brand,
-              store: data.store || 'فروشگاه دبی'
+              name: product.name,
+              brand: product.brand,
+              store: product.store || 'فروشگاه دبی',
+              imageUrl: product.imageUrl || ''
             });
-            setCategory(data.category);
-            setPriceAed(data.priceAed);
-            if (data.weight <= 1) setWeightClass('light');
-            else if (data.weight <= 3) setWeightClass('medium');
+            setCategory(product.category || 'others');
+            setPriceAed(product.priceAed ?? '');
+            if (product.weight <= 1) setWeightClass('light');
+            else if (product.weight <= 3) setWeightClass('medium');
             else setWeightClass('heavy');
           }
+          if (!ok) {
+            setPriceAed('');
+            setLookupError(status === 422
+              ? 'قیمت از صفحه فروشنده قابل استخراج نبود؛ لطفاً قیمت واقعی را دستی وارد کنید.'
+              : 'بررسی خودکار لینک انجام نشد؛ لطفاً اطلاعات واقعی محصول را دستی وارد کنید.');
+          }
         })
-        .catch(err => {
-          // Mock fallback
-          setTimeout(() => {
-            setLoading(false);
-            let domain = 'سفارشی';
-            try {
-              const parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
-              domain = parsedUrl.hostname.replace('www.', '');
-            } catch (e) {
-              domain = url.replace('https://', '').replace('http://', '').split('/')[0].replace('www.', '');
-            }
-
-            let name = 'کالای انتخابی شما از سایت‌های دبی';
-            let brand = 'سفارشی';
-            let store = domain;
-            let categorySelect = 'others';
-            let price = 350;
-            let wClass = 'light';
-
-            if (urlLower.includes('noon.com')) {
-              name = 'Gucci Ophidia GG Small Shoulder Bag';
-              brand = 'Gucci';
-              store = 'noon.com';
-              categorySelect = 'bags';
-              price = 599;
-              wClass = 'light';
-            } else if (urlLower.includes('amazon')) {
-              name = 'Apple Watch Series 9 45mm';
-              brand = 'Apple';
-              store = 'amazon.ae';
-              categorySelect = 'electronics';
-              price = 1549;
-              wClass = 'light';
-            } else if (urlLower.includes('shein')) {
-              name = 'Women Elegant Winter Coat';
-              brand = 'Shein';
-              store = 'shein.com';
-              categorySelect = 'clothing';
-              price = 185;
-              wClass = 'medium';
-            } else {
-              const cleanBrandName = domain.split('.')[0] || 'برند مبدا';
-              brand = cleanBrandName.charAt(0).toUpperCase() + cleanBrandName.slice(1);
-              name = `سفارش کالا از ${brand}`;
-              store = domain;
-            }
-
-            setDetectedItem({ name, brand, store });
-            setCategory(categorySelect);
-            setPriceAed(price);
-            setWeightClass(wClass);
-          }, 1000);
+        .catch(() => {
+          setLoading(false);
+          setDetectedItem(null);
+          setPriceAed('');
+          setLookupError('بررسی خودکار لینک انجام نشد؛ لطفاً اطلاعات واقعی محصول را دستی وارد کنید.');
         });
     }
   };
@@ -153,31 +110,14 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
   const numPrice = parseFloat(priceAed) || 0;
   const weightVal = weightValues[weightClass];
   
-  // Apply weight rounding rules dynamically based on settings
-  const minWeight = parseFloat(settings.minWeightClass) || 1.0;
-  const roundingMethod = settings.roundingMethod || 'ceil';
-  
-  let roundedWeight = weightVal;
-  if (roundingMethod === 'ceil') {
-    roundedWeight = Math.ceil(weightVal);
-  } else if (roundingMethod === 'floor') {
-    roundedWeight = Math.floor(weightVal);
-  } else if (roundingMethod === 'round') {
-    roundedWeight = Math.round(weightVal);
-  }
-  
-  if (roundedWeight < minWeight) {
-    roundedWeight = minWeight;
-  }
-  
-  const shippingPerKgAed = parseFloat(settings.shippingPerKgAed) || 40;
-  const commissionPercent = parseFloat(settings.commissionPercent) || 25;
-  
-  const shippingAed = roundedWeight * shippingPerKgAed;
-  const commissionAed = numPrice * (commissionPercent / 100);
-  
-  // Formula: (قیمت محصول + هزینه ارسال + کارمزد) * نرخ درهم
-  const totalToman = (numPrice + shippingAed + commissionAed) * EXCHANGE_RATE;
+  let pricing = { billableWeight: 0, shippingAed: 0, commissionAed: 0, totalToman: 0 };
+  try {
+    pricing = calculateProductPricing({ priceAed: numPrice, weight: weightVal }, settings);
+  } catch {}
+  const roundedWeight = pricing.billableWeight;
+  const shippingAed = pricing.shippingAed;
+  const commissionAed = pricing.commissionAed;
+  const totalToman = pricing.totalToman;
 
   const formatNumber = (num) => {
     return Math.round(num).toLocaleString('fa-IR');
@@ -190,7 +130,10 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
         productName: detectedItem ? detectedItem.name : `${currentCategoryConfig.name} دبی`,
         priceAed: numPrice,
         weight: weightVal,
-        totalToman
+        totalToman,
+        ...(initialValues?.laptopId && (initialValues.link || '') === link ? {
+          items: [{ id: initialValues.laptopId, laptopId: initialValues.laptopId, product_type: 'laptop_stock', quantity: 1 }],
+        } : {}),
       });
     }
   };
@@ -202,10 +145,10 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
         {/* LEFT SIDE: Text and Trust Bar */}
         <div className={styles.leftCol}>
           <div className={styles.heroTextContent}>
-            <h1>
+            <h2>
               استعلام سریع<br/>
               <span className={styles.heroHighlight}>قیمت خرید از دبی</span>
-            </h1>
+            </h2>
             <p>لینک محصول را وارد کنید تا هزینه تقریبی نهایی به همراه نام محصول و فروشگاه نمایش داده شود.</p>
           </div>
 
@@ -273,9 +216,11 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
               {/* Detected Product Preview */}
               {detectedItem && (
                 <div className={styles.productPreview}>
-                  <div className={styles.productThumb}>
-                    <img src="/images/gucci-bag-mockup.png" alt="Product Thumbnail" onError={(e) => { e.target.style.display = 'none'; }} />
-                  </div>
+                  {detectedItem.imageUrl && (
+                    <div className={styles.productThumb}>
+                      <img src={detectedItem.imageUrl} alt={detectedItem.name} onError={(e) => { e.currentTarget.parentElement.style.display = 'none'; }} />
+                    </div>
+                  )}
                   <div className={styles.productInfo}>
                     <h3>{detectedItem.name}</h3>
                     <div className={styles.storeTag}>
@@ -289,6 +234,9 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
                 <div className={styles.productPreviewLoading}>
                   در حال بررسی لینک...
                 </div>
+              )}
+              {lookupError && (
+                <p role="alert" style={{ color: '#fca5a5', fontSize: '12px', margin: '8px 0 0' }}>{lookupError}</p>
               )}
 
               {/* 3 Columns Row */}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CheckoutModal from '@/components/CheckoutModal';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { useCart } from '@/context/CartContext';
 import styles from './Cart.module.css';
 
@@ -14,16 +15,17 @@ const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
 export default function CartPage() {
   const { settings } = useSiteSettings();
-  const { cartItems, addToCart, decrementQuantity, removeFromCart, clearCart, cartCount } = useCart();
+  const { cartItems, addToCart, decrementQuantity, removeFromCart, removePurchasedItems, cartCount, hydrated, resolveError } = useCart();
   
   // Checkout Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrderData, setModalOrderData] = useState(null);
 
   // Calculate original and discounted subtotals
-  const originalSubtotalToman = cartItems.reduce((acc, item) => acc + (getProductTomanPrice(item, settings) * item.quantity), 0);
+  const billableItems = cartItems.filter(item => !item.unavailable);
+  const originalSubtotalToman = billableItems.reduce((acc, item) => acc + (getProductTomanPrice(item, settings) * item.quantity), 0);
   
-  const discountedSubtotalToman = cartItems.reduce((acc, item) => {
+  const discountedSubtotalToman = billableItems.reduce((acc, item) => {
     const itemOriginalPrice = getProductTomanPrice(item, settings);
     const finalPrice = item.discountPercent && item.discountPercent > 0 
       ? itemOriginalPrice * (1 - item.discountPercent / 100) 
@@ -33,7 +35,7 @@ export default function CartPage() {
 
   const savingsToman = originalSubtotalToman - discountedSubtotalToman;
   
-  const subtotalAed = cartItems.reduce((acc, item) => {
+  const subtotalAed = billableItems.reduce((acc, item) => {
     const finalPriceAed = item.discountPercent && item.discountPercent > 0
       ? item.priceAed * (1 - item.discountPercent / 100)
       : item.priceAed;
@@ -42,9 +44,14 @@ export default function CartPage() {
 
   const shippingToman = 0;
   const totalToman = discountedSubtotalToman + shippingToman;
+  const hasUnavailableItems = cartItems.some(item => item.unavailable);
+  const isResolving = cartItems.some(item => item.resolving);
+  const checkoutTypes = new Set(cartItems.map(item => item.type));
+  const hasMixedDatabaseTypes = checkoutTypes.size > 1;
 
   // Trigger pre-invoice checkout modal for entire cart
   const handleProceedToCheckout = () => {
+    if (hasUnavailableItems || isResolving || hasMixedDatabaseTypes || resolveError) return;
     // Compile total order weight and general description
     const totalWeight = cartItems.reduce((acc, item) => acc + (item.weight * item.quantity), 0);
     
@@ -56,6 +63,14 @@ export default function CartPage() {
       brand: 'دبی خرید',
       totalToman: totalToman,
       items: cartItems.map(item => ({
+        cartKey: item.key,
+        id: item.id,
+        type: item.type,
+        ...(item.type === 'LAPTOP' ? { laptopId: item.id } : {}),
+        ...(item.type === 'PRODUCT' ? { productId: item.id } : {}),
+        product_type: item.product_type,
+        link: item.originalLink || item.link || '',
+        weight: item.weight,
         name: item.name,
         brand: item.brand,
         quantity: item.quantity,
@@ -70,10 +85,10 @@ export default function CartPage() {
     setIsModalOpen(true);
   };
 
-  const handleCheckoutSuccess = () => {
+  const handleCheckoutSuccess = ({ items = [] } = {}) => {
     setIsModalOpen(false);
-    clearCart(); // Clear cart after successful checkout submission
-    alert('پیش‌فاکتور شما با موفقیت ثبت شد و سبد خرید خالی گردید.');
+    removePurchasedItems(items.map(item => item.cartKey).filter(Boolean));
+    alert('پیش‌فاکتور شما با موفقیت ثبت شد.');
   };
 
   return (
@@ -81,9 +96,11 @@ export default function CartPage() {
       <Header />
       
       <main className={styles.mainContainer} dir="rtl">
-        {cartCount === 0 ? (
+        {!hydrated ? (
+          <div className={styles.emptyState}><p className={styles.emptySubText}>در حال بارگذاری سبد خرید...</p></div>
+        ) : cartCount === 0 ? (
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>🛒</div>
+            <div className={styles.emptyIcon}><MinimalIcon name="shoppingCart" size={52} weight="thin" /></div>
             <h1 className={styles.emptyText}>سبد خرید شما خالی است</h1>
             <p className={styles.emptySubText}>هنوز هیچ محصولی به سبد خرید خود اضافه نکرده‌اید.</p>
             <Link href="/" className={styles.shopBtn}>
@@ -138,12 +155,16 @@ export default function CartPage() {
                             <span>{fmtToman(tomanPrice * item.quantity)} تومان</span>
                           )}
                         </div>
+
+                        {item.unavailable && <div style={{ color: '#d93025', fontSize: '12px', fontWeight: '700', marginBottom: '8px' }}>این کالا در حال حاضر قابل سفارش نیست.</div>}
+                        {item.priceChanged && <div style={{ color: '#a35b00', fontSize: '12px', marginBottom: '8px' }}>قیمت کالا با آخرین اطلاعات فروشگاه به‌روزرسانی شد.</div>}
                         
                         <div className={styles.itemControls}>
                           <div className={styles.qtyBox}>
                             <button 
                               className={styles.qtyBtn} 
                               onClick={() => addToCart(item, item.selectedSize, item.selectedColor)}
+                              disabled={item.type === 'LAPTOP' || item.unavailable}
                             >
                               +
                             </button>
@@ -151,6 +172,7 @@ export default function CartPage() {
                             <button 
                               className={styles.qtyBtn} 
                               onClick={() => decrementQuantity(item.cartItemId)}
+                              disabled={item.type === 'LAPTOP' || item.unavailable}
                             >
                               -
                             </button>
@@ -192,16 +214,21 @@ export default function CartPage() {
                 </div>
                 
                 <div className={styles.summaryTotalRow}>
-                  <span>جمع کل:</span>
+                  <span>جمع برآوردی:</span>
                   <span>{fmtToman(totalToman)} تومان</span>
                 </div>
+
+                {resolveError && <div style={{ color: '#d93025', fontSize: '12px', marginBottom: '10px' }}>{resolveError}</div>}
+                {hasUnavailableItems && <div style={{ color: '#d93025', fontSize: '12px', marginBottom: '10px' }}>برای ادامه، کالای ناموجود را از سبد حذف کنید.</div>}
+                {hasMixedDatabaseTypes && <div style={{ color: '#a35b00', fontSize: '12px', marginBottom: '10px' }}>انواع مختلف کالا باید جداگانه سفارش داده شوند.</div>}
                 
                 <button 
                   type="button"
                   className={styles.checkoutBtn}
                   onClick={handleProceedToCheckout}
+                  disabled={hasUnavailableItems || isResolving || hasMixedDatabaseTypes || Boolean(resolveError)}
                 >
-                  تکمیل سفارش و پرداخت
+                  {isResolving ? 'در حال بررسی قیمت و موجودی...' : 'تکمیل سفارش و پرداخت'}
                 </button>
               </div>
             </div>

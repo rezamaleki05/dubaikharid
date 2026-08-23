@@ -5,6 +5,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Search.module.css';
@@ -58,7 +59,7 @@ function SearchContent() {
     } catch (e) {
       console.error('Error merging products for search:', e);
     }
-    setAllProducts(merged);
+    Promise.resolve().then(() => setAllProducts(merged));
   }, []);
 
   useEffect(() => {
@@ -109,7 +110,7 @@ function SearchContent() {
         <div className={styles.searchHeader}>
           {query ? (
             <h1 className={styles.searchTitle}>
-              نتایج جستجو برای: <span className={styles.searchQuery}>"{query}"</span>
+              نتایج جستجو برای: <span className={styles.searchQuery}>«{query}»</span>
               <span className={styles.resultsCount}>({totalResultsCount} مورد یافت شد)</span>
             </h1>
           ) : (
@@ -226,8 +227,8 @@ function SearchContent() {
           </div>
         ) : query ? (
           <div className={styles.noResults}>
-            <div className={styles.noResultsIcon}>🔍</div>
-            <p className={styles.noResultsText}>متاسفانه نتیجه‌ای برای "{query}" یافت نشد.</p>
+            <div className={styles.noResultsIcon}><MinimalIcon name="search" size={50} weight="thin" /></div>
+            <p className={styles.noResultsText}>متاسفانه نتیجه‌ای برای «{query}» یافت نشد.</p>
           </div>
         ) : null}
       </main>

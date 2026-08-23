@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { bagsAndAccessoriesProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
@@ -25,7 +26,7 @@ const catalogPresets = {
   },
 };
 
-function BagsAccessoriesContent({ preset = 'accessories' }) {
+export function BagsAccessoriesContent({ preset = 'accessories' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const catalogPreset = catalogPresets[preset] || catalogPresets.accessories;
@@ -45,7 +46,7 @@ function BagsAccessoriesContent({ preset = 'accessories' }) {
 
   // Sync state if URL sub parameter changes
   useEffect(() => {
-    setActiveTab(initialSub);
+    Promise.resolve().then(() => setActiveTab(initialSub));
   }, [initialSub]);
 
   // Extract unique brands present in bags and accessories catalog
@@ -172,7 +173,7 @@ function BagsAccessoriesContent({ preset = 'accessories' }) {
             {/* Catalog Grid */}
             {sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
-                <div className={styles.noProductsIcon}>💼</div>
+                <div className={styles.noProductsIcon}><MinimalIcon name="briefcase" size={50} weight="thin" /></div>
                 <p>هیچ اکسسوری با فیلترهای انتخاب شده یافت نشد.</p>
               </div>
             ) : (

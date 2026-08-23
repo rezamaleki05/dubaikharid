@@ -1,7 +1,8 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import styles from './CheckoutModal.module.css';
 
 export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrement }) {
@@ -17,11 +18,16 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   const [step, setStep] = useState(1); // 1 = Form, 2 = Payment Method, 3 = Loading, 4 = Success
   const [trackingCode, setTrackingCode] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('gateway'); // 'gateway' | 'card'
-  const [copied, setCopied] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [resultKind, setResultKind] = useState('order');
+  const [authoritativeTotal, setAuthoritativeTotal] = useState(null);
+  const idempotencyKeyRef = useRef(null);
+  const submittingRef = useRef(false);
 
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
+      idempotencyKeyRef.current ||= crypto.randomUUID();
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -32,6 +38,18 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   }, [isOpen]);
 
   if (!isOpen || !orderData) return null;
+
+  const calculateFallbackTotal = () => {
+    const rate = Number(settings.aedRate);
+    const price = Number(orderData.priceAed ?? orderData.price);
+    return Number.isFinite(rate) && rate > 0 && Number.isFinite(price) && price >= 0 ? Math.round(price * rate) : 0;
+  };
+
+  const checkoutItems = orderData.items || [];
+  const canCreateDatabaseOrder = checkoutItems.length > 0 && (
+    checkoutItems.every(item => item.laptopId || item.product_type === 'laptop_stock')
+    || checkoutItems.every(item => item.productId && !item.laptopId)
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,72 +85,75 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setStep(2); // Go to Payment Selection Step
+    if (canCreateDatabaseOrder) setStep(2);
+    else await handlePaymentSubmit();
   };
 
-  const handlePaymentSubmit = () => {
+  const handlePaymentSubmit = async () => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     const cleanPhone = toEnglishDigits(formData.phone.trim().replace(/\s+/g, ''));
-
-    // Transition to loading step
     setStep(3);
+    setSubmitError('');
+    const customer = { name: formData.name.trim(), phone: cleanPhone, address: formData.address.trim() };
+    const sourceItems = orderData.items || [];
+    const laptopItems = sourceItems.filter(item => item.laptopId || item.product_type === 'laptop_stock');
+    const isLaptopOrder = laptopItems.length > 0 && laptopItems.length === sourceItems.length;
+    const isCatalogOrder = sourceItems.length > 0 && sourceItems.every(item => item.productId && !item.laptopId);
 
-    // Simulate database insertion and payment gateway handshake
-    setTimeout(() => {
-      // Generate standard random tracking code
-      const randNum = Math.floor(10000 + Math.random() * 90000);
-      const tracking = `DKHARID-${randNum}`;
-      setTrackingCode(tracking);
-
-      const totalTomanVal = orderData.totalToman || ((orderData.price || 0) * 19500);
-      const isCardSelected = paymentMethod === 'card';
-
-      // Save order lead to localStorage for Admin Panel
-      try {
-        const existingLeads = JSON.parse(localStorage.getItem('dubaiKharidLeads') || '[]');
-        const paymentNotes = isCardSelected 
-          ? `[کارت به کارت] ${formData.notes.trim()}`
-          : `[درگاه شتاب] ${formData.notes.trim()}`;
-
-        const newLead = {
-          id: tracking,
-          customerName: formData.name.trim(),
-          phone: cleanPhone,
-          address: formData.address.trim(),
-          notes: paymentNotes,
-          productName: orderData.productName || orderData.name || 'پیش‌فاکتور سبد خرید دبی',
-          brand: orderData.brand || 'دبی خرید',
-          weight: orderData.weight || 0.5,
-          totalToman: totalTomanVal,
-          priceAed: orderData.priceAed || orderData.price || 0,
-          date: new Date().toISOString(),
-          status: 'pending', // 'pending' = در انتظار بررسی
-          items: orderData.items || null
-        };
-        existingLeads.unshift(newLead);
-        localStorage.setItem('dubaiKharidLeads', JSON.stringify(existingLeads));
-      } catch (err) {
-        console.error('Failed to save checkout lead locally:', err);
+    try {
+      const endpoint = isLaptopOrder || isCatalogOrder ? '/api/orders' : '/api/purchase-requests';
+      const payload = endpoint === '/api/orders'
+        ? {
+            customer,
+            paymentMethod: paymentMethod === 'card' ? 'CARD' : 'ONLINE',
+            notes: formData.notes.trim(),
+            items: sourceItems.map(item => ({
+              ...(item.laptopId || item.product_type === 'laptop_stock' ? { laptopId: item.laptopId || item.id } : { productId: item.productId }),
+              quantity: item.quantity || 1,
+              selectedColor: item.color || item.selectedColor || '',
+              selectedSize: item.size || item.selectedSize || '',
+            })),
+          }
+        : {
+            customer,
+            productUrl: orderData.link || orderData.productUrl || orderData.originalLink || sourceItems[0]?.link || sourceItems[0]?.originalLink || window.location.href,
+            productName: orderData.productName || orderData.name || sourceItems.map(item => item.name).join(' + '),
+            sourceStore: orderData.store || orderData.brand || 'فروشگاه دبی',
+            priceAed: Number(orderData.priceAed ?? orderData.price ?? sourceItems.reduce((sum, item) => sum + Number(item.priceAed || 0) * Number(item.quantity || 1), 0)),
+            weight: Number(orderData.weight || sourceItems.reduce((sum, item) => sum + Number(item.weight || 0) * Number(item.quantity || 1), 0)),
+            quantity: sourceItems.reduce((sum, item) => sum + Number(item.quantity || 1), 0) || 1,
+            notes: formData.notes.trim(),
+          };
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKeyRef.current },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        const itemMessage = result.details?.items?.map(item => item.message).filter(Boolean).join('، ');
+        throw new Error(itemMessage || result.error || 'ثبت اطلاعات با خطا مواجه شد.');
       }
-
-      if (!isCardSelected) {
-        // RENDER 1: ONLINE BANK PORTAL (Simulated banking Shetab)
-        if (onCartIncrement) {
-          onCartIncrement(); // Empties the cart if checked out from cart page
-        }
-        // Redirect browser to Shetab online payment gate
-        window.location.href = `/payment?amount=${totalTomanVal}&tracking=${tracking}&prodName=${encodeURIComponent(orderData.productName || orderData.name)}&customer=${encodeURIComponent(formData.name.trim())}&phone=${cleanPhone}&address=${encodeURIComponent(formData.address.trim())}&notes=${encodeURIComponent(formData.notes.trim())}`;
+      const isOrder = endpoint === '/api/orders';
+      const code = isOrder ? result.data.orderCode : result.data.requestCode;
+      setTrackingCode(code);
+      setResultKind(isOrder ? 'order' : 'request');
+      setAuthoritativeTotal(isOrder ? Number(result.data.totalToman) : null);
+      if (onCartIncrement) onCartIncrement({ kind: isOrder ? 'order' : 'request', code, items: sourceItems });
+      if (isOrder && paymentMethod === 'gateway') {
+        window.location.href = `/payment?order=${encodeURIComponent(code)}`;
         return;
       }
-
-      // RENDER 2: CARD TO CARD (Transition to Success / Bank Card details)
       setStep(4);
-      if (onCartIncrement) {
-        onCartIncrement(); // Empties the cart for card-to-card success
-      }
-    }, 1800);
+    } catch (error) {
+      submittingRef.current = false;
+      setSubmitError(error.message || 'ثبت اطلاعات با خطا مواجه شد.');
+      setStep(2);
+    }
   };
 
   const handleClose = () => {
@@ -140,14 +161,12 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     setFormData({ name: '', phone: '', address: '', notes: '' });
     setErrors({});
     setPaymentMethod('gateway');
-    setCopied(false);
+    setSubmitError('');
+    setResultKind('order');
+    setAuthoritativeTotal(null);
+    idempotencyKeyRef.current = null;
+    submittingRef.current = false;
     onClose();
-  };
-
-  const handleCopyCard = () => {
-    navigator.clipboard.writeText('6037997512345678');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const formatPrice = (price) => {
@@ -159,15 +178,15 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
       <div className={styles.modalContainer}>
         {/* Close Button */}
         <button onClick={handleClose} className={styles.closeBtn} aria-label="بستن">
-          ✕
+          <MinimalIcon name="x" size={19} />
         </button>
 
         {/* STEP 1: FORM INPUT */}
         {step === 1 && (
           <form onSubmit={handleFormSubmit} className={styles.form} dir="rtl">
             <div className={styles.modalHeader}>
-              <span className={styles.airplaneIcon}>✈️</span>
-              <h2>ثبت نهایی سفارش خرید از دبی</h2>
+              <span className={styles.airplaneIcon}><MinimalIcon name="airplane" size={34} weight="thin" /></span>
+              <h2>{canCreateDatabaseOrder ? 'ثبت نهایی سفارش خرید از دبی' : 'ثبت درخواست خرید از دبی'}</h2>
               <p>مشخصات خود را وارد کنید تا کارشناسان ما فرآیند خرید کالا را برای شما آغاز کنند.</p>
             </div>
 
@@ -179,8 +198,8 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
                 <span className={styles.prodBrand}>برند: {orderData.brand} | وزن: {orderData.weight} کیلوگرم</span>
               </div>
               <div className={styles.summaryPriceRow}>
-                <span>مبلغ قابل پرداخت:</span>
-                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * (orderData.category === 'laptops' ? 19500 : (parseFloat(settings.aedRate) || 19500))))} تومان</span>
+                <span>{canCreateDatabaseOrder ? 'مبلغ برآوردی تا تأیید سرور:' : 'هزینه تقریبی:'}</span>
+                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || calculateFallbackTotal())} تومان</span>
               </div>
             </div>
 
@@ -246,7 +265,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             {/* Action Buttons */}
             <div className={styles.actions}>
               <button type="submit" className={styles.submitBtn}>
-                تأیید مشخصات و مرحله بعد
+                {canCreateDatabaseOrder ? 'تأیید مشخصات و مرحله بعد' : 'ثبت درخواست خرید'}
               </button>
               <button type="button" onClick={handleClose} className={styles.cancelBtn}>
                 انصراف
@@ -259,7 +278,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
         {step === 2 && (
           <div className={styles.paymentSection} dir="rtl">
             <div className={styles.modalHeader}>
-              <span className={styles.airplaneIcon}>💳</span>
+              <span className={styles.airplaneIcon}><MinimalIcon name="creditCard" size={34} weight="thin" /></span>
               <h2 className={styles.paymentTitle}>انتخاب روش پرداخت سفارش</h2>
               <p>لطفاً یکی از دو روش پرداخت ایمن زیر را برای نهایی کردن سفارش انتخاب کنید.</p>
             </div>
@@ -267,8 +286,8 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             {/* Price Row */}
             <div className={styles.summaryCard} style={{ marginBottom: '20px' }}>
               <div className={styles.summaryPriceRow}>
-                <span>مبلغ قابل پرداخت سفارش:</span>
-                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || (orderData.price * (orderData.category === 'laptops' ? 19500 : (parseFloat(settings.aedRate) || 19500))))} تومان</span>
+                <span>مبلغ برآوردی تا تأیید نهایی سرور:</span>
+                <span className={styles.totalPrice}>{formatPrice(orderData.totalToman || calculateFallbackTotal())} تومان</span>
               </div>
             </div>
 
@@ -311,7 +330,8 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
 
             {/* Actions */}
             <div className={styles.actions}>
-              <button type="button" onClick={handlePaymentSubmit} className={styles.submitBtn}>
+              {submitError && <div className={styles.errorText}>{submitError}</div>}
+              <button type="button" onClick={handlePaymentSubmit} className={styles.submitBtn} disabled={step === 3}>
                 تأیید و پرداخت نهایی سفارش
               </button>
               <button type="button" onClick={() => setStep(1)} className={styles.cancelBtn}>
@@ -339,48 +359,26 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               </svg>
             </div>
 
-            <h2>پیش‌فاکتور سفارش شما با موفقیت ثبت شد!</h2>
+            <h2>{resultKind === 'order' ? 'پیش‌فاکتور سفارش شما با موفقیت ثبت شد!' : 'درخواست خرید شما با موفقیت ثبت شد!'}</h2>
 
             {/* Tracking Card */}
             <div className={styles.trackingCard}>
-              <div className={styles.trackingLabel}>کد رهگیری پیش‌فاکتور شما:</div>
+              <div className={styles.trackingLabel}>{resultKind === 'order' ? 'شماره واقعی سفارش شما:' : 'شناسه درخواست خرید شما:'}</div>
               <div className={styles.trackingCode}>{trackingCode}</div>
             </div>
 
-            {/* Direct Bank Card Details for Card to Card transfer */}
-            <div className={styles.bankDetailsBox}>
-              <div className={styles.bankDetailsTitle}>💳 اطلاعات کارت فروشگاه جهت واریز کارت‌به‌کارت:</div>
-              
-              <div className={styles.bankRow}>
-                <span className={styles.bankLabel}>شماره کارت:</span>
-                <div className={styles.cardNumBox}>
-                  <span className={styles.cardNum}>۶۰۳۷-۹۹۷۵-۱۲۳۴-۵۶۷۸</span>
-                  <button onClick={handleCopyCard} className={styles.copyBtn}>
-                    {copied ? 'کپی شد! ✓' : 'کپی کارت'}
-                  </button>
-                </div>
+            {resultKind === 'order' && authoritativeTotal !== null && (
+              <div className={styles.bankDetailsBox}>
+                <div className={styles.bankDetailsTitle}>مبلغ نهایی ثبت‌شده در سفارش:</div>
+                <div className={styles.bankRow}><span className={styles.bankValue} style={{ color: '#4ade80', fontSize: '1rem' }}>{formatPrice(authoritativeTotal)} تومان</span></div>
+                <div className={styles.bankRow}><span className={styles.bankValue}>اطلاعات پرداخت معتبر پس از هماهنگی پشتیبانی اعلام می‌شود.</span></div>
               </div>
-
-              <div className={styles.bankRow}>
-                <span className={styles.bankLabel}>نام بانک:</span>
-                <span className={styles.bankValue}>بانک ملی ایران</span>
-              </div>
-
-              <div className={styles.bankRow}>
-                <span className={styles.bankLabel}>نام صاحب حساب:</span>
-                <span className={styles.bankValue}>امین دبی خرید (مدیریت سیستم)</span>
-              </div>
-
-              <div className={styles.bankRow}>
-                <span className={styles.bankLabel}>مبلغ واریزی:</span>
-                <span className={styles.bankValue} style={{ color: '#4ade80', fontSize: '1rem' }}>
-                  {formatPrice(orderData.totalToman || (orderData.price * (orderData.category === 'laptops' ? 19500 : (parseFloat(settings.aedRate) || 19500))))} تومان
-                </span>
-              </div>
-            </div>
+            )}
 
             <p className={styles.successDesc} style={{ textAlign: 'right' }}>
-              کاربر گرامی، سفارش شما با موفقیت در پنل مدیریت دبی خرید به ثبت رسید. لطفا مبلغ فوق را به شماره کارت درج شده واریز کرده و فیش واریزی را جهت نهایی‌سازی فاکتور و ارسال هوایی بار از دبی، نزد خود نگه دارید. کارشناسان ما حداکثر تا <strong>۳۰ دقیقه آینده</strong> با شما تماس خواهند گرفت.
+              {resultKind === 'order'
+                ? <>کاربر گرامی، سفارش شما با موفقیت در پنل مدیریت دبی خرید ثبت شد. وضعیت پرداخت تا زمان تأیید معتبر، «در انتظار» باقی می‌ماند و کارشناسان ما برای ادامه فرایند با شما تماس خواهند گرفت.</>
+                : <>این مبلغ صرفاً برآورد اولیه است. پس از بررسی لینک، موجودی، وزن واقعی و نرخ معتبر، قیمت نهایی توسط کارشناس اعلام می‌شود.</>}
             </p>
 
             <button type="button" onClick={handleClose} className={styles.doneBtn}>

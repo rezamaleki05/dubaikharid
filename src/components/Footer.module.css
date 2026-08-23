@@ -122,6 +122,9 @@
 }
 
 .contactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
   line-height: 1.6;
   margin-bottom: 16px;
   font-size: 0.85rem;
@@ -153,12 +156,26 @@
   color: #fff;
 }
 
+.adminLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 10px;
+  color: #fff;
+  font-size: 10px;
+  text-decoration: none;
+  opacity: 0.3;
+}
+
 .trustLogos {
   display: flex;
   gap: 12px;
 }
 
 .trustBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 0.75rem;
   font-weight: 600;
   background-color: rgba(255, 255, 255, 0.05);
@@ -181,10 +198,17 @@
 }
 
 @media (max-width: 768px) {
+  .footerTop { padding: 48px 0 36px; }
+  .footerTopInner { gap: 32px; }
+  .logoImg { height: 52px; }
+  .aboutText { text-align: right; line-height: 1.9; }
   .linksGrid {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 20px;
   }
+  .linksCol:last-child { grid-column: 1 / -1; }
+  .linksCol h4 { margin-bottom: 14px; }
+  .linksCol ul { gap: 10px; }
   
   .footerBottomInner {
     flex-direction: column;

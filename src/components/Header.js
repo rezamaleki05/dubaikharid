@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -14,6 +15,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
@@ -80,6 +82,26 @@ export default function Header() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [isMobileMenuOpen]);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const isActive = (href) => href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
 
@@ -87,31 +109,30 @@ export default function Header() {
       <div className={styles.topBar}>
         <div className="container">
           <div className={styles.topBarInner}>
-            {/* Right: shipping info */}
             <div className={styles.topBarRight}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-              <span>خرید مستقیم از دبی | ارسال سریع به سراسر ایران</span>
+              <span className={styles.servicePulse} aria-hidden="true" />
+              <span>سفارش از فروشگاه‌های دبی، تحویل در ایران</span>
+              <Link href="/buy-from-dubai" className={styles.topBarGuide}>راهنمای خرید</Link>
             </div>
-            {/* Left: login */}
             <div className={styles.topBarLeft}>
               {isLoggedIn && currentUser ? (
                 <div className={styles.userMenuContainer}>
                   <button className={styles.userMenuTrigger}>
-                    <img src={currentUser.avatar} alt="avatar" className={styles.userAvatar} />
-                    <span style={{ fontSize: '11px', fontWeight: 'bold' }}>{currentUser.name}</span>
-                    <span style={{ fontSize: '9px', opacity: 0.7 }}>▼</span>
+                    <span className={styles.userAvatar} aria-hidden="true">{currentUser.name?.trim()?.charAt(0) || 'ک'}</span>
+                    <span>{currentUser.name}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
                   </button>
                   <div className={styles.userDropdown}>
-                    <a href="/profile">👤 پنل کاربری</a>
-                    <a href="/profile?sub=orders">📦 سفارشات من</a>
-                    <button onClick={logout} className={styles.logoutBtn}>🚪 خروج از حساب</button>
+                    <Link href="/profile">پنل کاربری</Link>
+                    <Link href="/profile?sub=orders">سفارش‌های من</Link>
+                    <button onClick={logout} className={styles.logoutBtn}>خروج از حساب</button>
                   </div>
                 </div>
               ) : (
-                <a href="/login" className={styles.topBarLogin}>
+                <Link href="/login" className={styles.topBarLogin}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   ورود / ثبت نام
-                </a>
+                </Link>
               )}
             </div>
           </div>
@@ -123,13 +144,27 @@ export default function Header() {
         <div className="container">
           <div className={styles.mainRowInner}>
 
+            <button
+              type="button"
+              className={`${styles.mobileMenuButton} ${isMobileMenuOpen ? styles.mobileMenuButtonOpen : ''}`}
+              aria-label={isMobileMenuOpen ? 'بستن منوی اصلی' : 'باز کردن منوی اصلی'}
+              aria-controls="store-navigation"
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen((open) => !open)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+
             {/* Logo */}
-            <a href="/" className={styles.logo}>
+            <Link href="/" className={styles.logo}>
               <img src={settings.siteLogoUrl} alt={settings.siteName} className={styles.logoImg} />
-            </a>
+              <span className={styles.logoCaption}>خرید بی‌واسطه از دبی</span>
+            </Link>
 
             {/* Search — CENTER */}
-            <div style={{ position: 'relative', flex: 1, maxWidth: '600px', margin: '0 auto' }}>
+            <div className={styles.searchArea}>
               <div className={styles.searchBox}>
                 <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%' }}>
                   <input
@@ -149,54 +184,19 @@ export default function Header() {
 
               {/* Suggestions Dropdown */}
               {showSuggestions && suggestions.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  background: 'rgba(17, 17, 17, 0.98)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '12px',
-                  marginTop: '8px',
-                  overflow: 'hidden',
-                  zIndex: 9999,
-                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.8)',
-                  direction: 'rtl',
-                  textAlign: 'right'
-                }}>
+                <ul className={styles.suggestions} aria-label="پیشنهادهای جستجو">
                   {suggestions.map((term, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleSuggestionClick(term)}
-                      style={{
-                        padding: '12px 16px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        color: '#b2b9ca',
-                        borderBottom: index < suggestions.length - 1 ? '1px solid rgba(255, 255, 255, 0.03)' : 'none',
-                        transition: 'background 0.2s, color 0.2s',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(248, 120, 32, 0.1)';
-                        e.currentTarget.style.color = '#fff';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                        e.currentTarget.style.color = '#b2b9ca';
-                      }}
-                    >
-                      <span>{term.label}</span>
-                      <span style={{ fontSize: '10px', color: '#f87820', background: 'rgba(248, 120, 32, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
-                        {term.type === 'brand' ? 'برند' : term.type === 'category' ? 'دسته‌بندی' : 'محصول'}
-                      </span>
-                    </div>
+                    <li key={`${term.type}-${term.query}-${index}`}>
+                      <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => handleSuggestionClick(term)}>
+                        <span className={styles.suggestionIcon} aria-hidden="true">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                        </span>
+                        <span>{term.label}</span>
+                        <small>{term.type === 'brand' ? 'برند' : term.type === 'category' ? 'دسته‌بندی' : 'محصول'}</small>
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
 
@@ -227,43 +227,74 @@ export default function Header() {
       </div>
 
       {/* ── NAV ── */}
-      <nav className={styles.nav}>
+      <button
+        type="button"
+        className={`${styles.mobileMenuBackdrop} ${isMobileMenuOpen ? styles.mobileMenuBackdropVisible : ''}`}
+        aria-label="بستن منوی اصلی"
+        tabIndex={isMobileMenuOpen ? 0 : -1}
+        onClick={closeMobileMenu}
+      />
+      <nav id="store-navigation" className={`${styles.nav} ${isMobileMenuOpen ? styles.navOpen : ''}`} aria-label="منوی اصلی فروشگاه">
+        <div className={styles.mobileNavHeader}>
+          <div>
+            <span className={styles.mobileNavEyebrow}>DUBAI KHARID</span>
+            <strong>انتخاب مسیر خرید</strong>
+          </div>
+          <button type="button" onClick={closeMobileMenu} aria-label="بستن منو">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
         <div className="container">
           <ul className={styles.navList}>
-            <li><a href="/" className={pathname === '/' ? styles.navActive : ''}>صفحه اصلی</a></li>
-            <li><a href="/brands" className={pathname === '/brands' ? styles.navActive : ''}>برندها</a></li>
-            <li><a href="/stock-laptops" className={pathname === '/stock-laptops' ? styles.navActive : ''}>لپتاپ استوک</a></li>
+            <li><Link href="/" aria-current={isActive('/') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/') ? styles.navActive : ''}>صفحه اصلی</Link></li>
+            <li><Link href="/brands" aria-current={isActive('/brands') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/brands') ? styles.navActive : ''}>برندها</Link></li>
+            <li><Link href="/stock-laptops" aria-current={isActive('/stock-laptops') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/stock-laptops') ? styles.navActive : ''}>لپتاپ استوک</Link></li>
             <li className={styles.navDropdown}>
-              <a href="/men" className={pathname === '/men' ? styles.navActive : ''}>مردانه</a>
-              <ul className={styles.dropdownMenu}>
-                <li><a href="/men?sub=clothing">لباس مردانه</a></li>
-                <li><a href="/men?sub=pants">شلوار مردانه</a></li>
-                <li><a href="/men?sub=shoes">کفش مردانه</a></li>
-                <li><a href="/men?sub=accessories">اکسسوری مردانه</a></li>
-              </ul>
+              <Link href="/men" aria-current={isActive('/men') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/men') ? styles.navActive : ''}>مردانه</Link>
+              <div className={styles.dropdownBridge}>
+                <ul className={styles.dropdownMenu}>
+                  <li><Link href="/men?sub=clothing" onClick={closeMobileMenu}>لباس مردانه</Link></li>
+                  <li><Link href="/men?sub=pants" onClick={closeMobileMenu}>شلوار مردانه</Link></li>
+                  <li><Link href="/men?sub=shoes" onClick={closeMobileMenu}>کفش مردانه</Link></li>
+                  <li><Link href="/men?sub=accessories" onClick={closeMobileMenu}>اکسسوری مردانه</Link></li>
+                </ul>
+              </div>
             </li>
             <li className={styles.navDropdown}>
-              <a href="/women" className={pathname === '/women' ? styles.navActive : ''}>زنانه</a>
-              <ul className={styles.dropdownMenu}>
-                <li><a href="/women?sub=clothing">لباس زنانه</a></li>
-                <li><a href="/women?sub=pants">شلوار زنانه</a></li>
-                <li><a href="/women?sub=shoes">کفش زنانه</a></li>
-                <li><a href="/women?sub=accessories">اکسسوری زنانه</a></li>
-              </ul>
+              <Link href="/women" aria-current={isActive('/women') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/women') ? styles.navActive : ''}>زنانه</Link>
+              <div className={styles.dropdownBridge}>
+                <ul className={styles.dropdownMenu}>
+                  <li><Link href="/women?sub=clothing" onClick={closeMobileMenu}>لباس زنانه</Link></li>
+                  <li><Link href="/women?sub=pants" onClick={closeMobileMenu}>شلوار زنانه</Link></li>
+                  <li><Link href="/women?sub=shoes" onClick={closeMobileMenu}>کفش زنانه</Link></li>
+                  <li><Link href="/women?sub=accessories" onClick={closeMobileMenu}>اکسسوری زنانه</Link></li>
+                </ul>
+              </div>
             </li>
             <li className={styles.navDropdown}>
-              <a href="/kids" className={pathname === '/kids' ? styles.navActive : ''}>کودک</a>
-              <ul className={styles.dropdownMenu}>
-                <li><a href="/kids?sub=clothing">لباس بچگانه</a></li>
-                <li><a href="/kids?sub=pants">شلوار بچگانه</a></li>
-                <li><a href="/kids?sub=shoes">کفش بچگانه</a></li>
-              </ul>
+              <Link href="/kids" aria-current={isActive('/kids') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/kids') ? styles.navActive : ''}>کودک</Link>
+              <div className={styles.dropdownBridge}>
+                <ul className={styles.dropdownMenu}>
+                  <li><Link href="/kids?sub=clothing" onClick={closeMobileMenu}>لباس بچگانه</Link></li>
+                  <li><Link href="/kids?sub=pants" onClick={closeMobileMenu}>شلوار بچگانه</Link></li>
+                  <li><Link href="/kids?sub=shoes" onClick={closeMobileMenu}>کفش بچگانه</Link></li>
+                </ul>
+              </div>
             </li>
-            <li><a href="/bags-accessories" className={pathname === '/bags-accessories' ? styles.navActive : ''}>کیف و اکسسوری</a></li>
-            <li><a href="/other-products" className={pathname === '/other-products' ? styles.navActive : ''}>سایر محصولات</a></li>
-            <li><a href="/best-sellers" className={pathname === '/best-sellers' ? `${styles.navActive} ${styles.navBestSellers}` : styles.navBestSellers}>پرفروش‌ها</a></li>
-            <li><a href="/sale" className={pathname === '/sale' ? `${styles.navActive} ${styles.navSale}` : styles.navSale}>تخفیف‌ها</a></li>
+            <li><Link href="/bags-accessories" aria-current={isActive('/bags-accessories') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/bags-accessories') ? styles.navActive : ''}>کیف و اکسسوری</Link></li>
+            <li><Link href="/other-products" aria-current={isActive('/other-products') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/other-products') ? styles.navActive : ''}>سایر محصولات</Link></li>
+            <li><Link href="/best-sellers" aria-current={isActive('/best-sellers') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/best-sellers') ? `${styles.navActive} ${styles.navBestSellers}` : styles.navBestSellers}>پرفروش‌ها</Link></li>
+            <li><Link href="/sale" aria-current={isActive('/sale') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/sale') ? `${styles.navActive} ${styles.navSale}` : styles.navSale}>تخفیف‌ها</Link></li>
           </ul>
+        </div>
+        <div className={styles.mobileNavFooter}>
+          <Link className={styles.mobileGuideLink} href="/buy-from-dubai" onClick={closeMobileMenu}>
+            <span>راهنمای سفارش مستقیم</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+          </Link>
+          <Link className={styles.mobileAccountLink} href={isLoggedIn ? '/profile' : '/login'} onClick={closeMobileMenu}>
+            {isLoggedIn ? 'حساب کاربری من' : 'ورود یا ثبت‌نام'}
+          </Link>
         </div>
       </nav>
     </header>

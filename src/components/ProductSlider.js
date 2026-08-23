@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { laptops, trendingProducts } from '@/data/products';
+import { trendingProducts } from '@/data/products';
 import styles from './ProductSlider.module.css';
 
 export default function ProductSlider({ onSelectProduct }) {
@@ -19,18 +19,23 @@ export default function ProductSlider({ onSelectProduct }) {
   const [allTrending, setAllTrending] = useState([]);
 
   useEffect(() => {
-    let mergedLaptops = [...laptops];
     let mergedTrending = [...trendingProducts];
+    const controller = new AbortController();
+    fetch('/api/laptops?limit=12', { cache: 'no-store', signal: controller.signal })
+      .then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'دریافت لپ‌تاپ‌ها با خطا مواجه شد.');
+        setAllLaptops(Array.isArray(payload.data) ? payload.data : []);
+      })
+      .catch(error => {
+        if (error.name !== 'AbortError') console.error('Error fetching laptops for ProductSlider:', error);
+      });
     try {
       const saved = localStorage.getItem('dubaiKharidUploadedProducts');
       if (saved) {
         const uploaded = JSON.parse(saved);
         uploaded.forEach(p => {
-          if (p.category === 'electronics') {
-            if (!mergedLaptops.some(m => m.id === p.id)) {
-              mergedLaptops.unshift(p);
-            }
-          } else {
+          if (p.category !== 'electronics' && p.category !== 'laptops') {
             if (!mergedTrending.some(m => m.id === p.id)) {
               mergedTrending.unshift(p);
             }
@@ -52,11 +57,7 @@ export default function ProductSlider({ onSelectProduct }) {
               store: p.store || 'انبار ایران',
               product_type: p.product_type || 'iran_inventory'
             };
-            if (finalProduct.category === 'electronics' || finalProduct.category === 'laptops') {
-              if (!mergedLaptops.some(m => m.id === finalProduct.id)) {
-                mergedLaptops.unshift(finalProduct);
-              }
-            } else {
+            if (finalProduct.category !== 'electronics' && finalProduct.category !== 'laptops') {
               if (!mergedTrending.some(m => m.id === finalProduct.id)) {
                 mergedTrending.unshift(finalProduct);
               }
@@ -67,8 +68,8 @@ export default function ProductSlider({ onSelectProduct }) {
     } catch (e) {
       console.error('Error merging warehouse products for ProductSlider:', e);
     }
-    setAllLaptops(mergedLaptops);
-    setAllTrending(mergedTrending);
+    queueMicrotask(() => setAllTrending(mergedTrending));
+    return () => controller.abort();
   }, []);
 
   // Replaced hardcoded exchange rate
@@ -89,7 +90,9 @@ export default function ProductSlider({ onSelectProduct }) {
         style={{ cursor: 'pointer' }}
       >
         <div className={styles.imageWrap}>
-          <img src={product.image} alt={product.name} className={styles.productImg} />
+          {product.image
+            ? <img src={product.image} alt={product.name} className={styles.productImg} />
+            : <div className={styles.productImg} role="img" aria-label={product.name} />}
           {showStore && <span className={styles.storeBadge}>{product.store}</span>}
           
           <button 

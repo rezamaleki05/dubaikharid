@@ -77,8 +77,8 @@ if (typeof window !== 'undefined') {
               womenProducts.push(prod);
             } else if (prod.gender === 'kids') {
               kidsProducts.push(prod);
-            } else if (prod.category === 'electronics') {
-              laptops.push(prod);
+            } else if (prod.category === 'electronics' || prod.category === 'laptops') {
+              // Laptop stock is loaded from the PostgreSQL-backed public API.
             } else if (prod.category === 'bags' || prod.category === 'accessories' || prod.category === 'watches_glasses' || prod.category === 'wallets_belts') {
               bagsAndAccessoriesProducts.push(prod);
             } else {
@@ -123,7 +123,7 @@ if (typeof window !== 'undefined') {
             } else if (prod.gender === 'kids') {
               kidsProducts.push(prod);
             } else if (prod.category === 'electronics' || prod.category === 'laptops') {
-              laptops.push(prod);
+              // Keep WarehouseItem and Laptop inventory as separate domains.
             } else if (prod.category === 'bags' || prod.category === 'accessories' || prod.category === 'watches_glasses' || prod.category === 'wallets_belts') {
               bagsAndAccessoriesProducts.push(prod);
             } else {

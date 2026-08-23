@@ -1,4 +1,5 @@
 import styles from './Hero.module.css';
+import MinimalIcon from './ui/MinimalIcon';
 
 
 export default function Hero() {
@@ -17,14 +18,14 @@ export default function Hero() {
 
             {/* Breadcrumb tag */}
             <div className={styles.breadcrumb}>
-              <span className={styles.breadDiamond}>♦</span>
+              <span className={styles.breadDiamond}><MinimalIcon name="circle" size={7} weight="fill" /></span>
               <span>خرید مستقیم از دبی | ارسال سریع به سراسر ایران</span>
             </div>
 
             {/* H1 */}
             <h1 className={styles.title}>
-              خرید برندهای لوکس و اورجینال<br />
-              <span className={styles.highlight}>مستقیم از دبی</span>
+              خرید مستقیم از دبی<br />
+              <span className={styles.highlight}>و ارسال به ایران</span>
             </h1>
 
             {/* Description */}
@@ -35,9 +36,9 @@ export default function Hero() {
 
             {/* Buttons */}
             <div className={styles.btns}>
-              <a href="#trending" className={styles.btnSecondary}>
+              <a href="/buy-from-dubai" className={styles.btnSecondary}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-                مشاهده محصولات
+                راهنمای خرید از دبی
               </a>
               <a href="#calculator" className={styles.btnPrimary}>
                 شروع خرید

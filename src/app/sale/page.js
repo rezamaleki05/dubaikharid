@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { getAllProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Sale.module.css';
@@ -62,7 +63,7 @@ function SaleContent() {
       console.error('Error merging warehouse products for SaleContent:', e);
     }
     const filteredDiscounted = merged.filter(p => p.discountPercent && p.discountPercent > 0);
-    setDiscountedProducts(filteredDiscounted);
+    Promise.resolve().then(() => setDiscountedProducts(filteredDiscounted));
   }, []);
 
   // Filter products based on active tab
@@ -166,7 +167,7 @@ function SaleContent() {
         {/* Catalog Grid */}
         {sortedProducts.length === 0 ? (
           <div className={styles.noProducts}>
-            <div className={styles.noProductsIcon}>🔥</div>
+            <div className={styles.noProductsIcon}><MinimalIcon name="fire" size={50} weight="thin" /></div>
             <p>در حال حاضر هیچ کالای تخفیف‌داری در این دسته موجود نیست.</p>
           </div>
         ) : (

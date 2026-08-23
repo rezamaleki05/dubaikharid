@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MinimalIcon from '@/components/ui/MinimalIcon';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Wishlist.module.css';
 
@@ -24,7 +25,7 @@ export default function WishlistPage() {
         {wishlistItems.length === 0 ? (
           /* Empty Favorites state */
           <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>❤️</div>
+            <div className={styles.emptyIcon}><MinimalIcon name="heart" size={48} weight="thin" /></div>
             <h1 className={styles.emptyText}>لیست علاقه‌مندی‌های شما خالی است</h1>
             <p className={styles.emptySubText}>هنوز هیچ محصولی را لایک نکرده‌اید تا به این صفحه اضافه شود.</p>
             <Link href="/" className={styles.shopBtn}>
@@ -45,9 +46,9 @@ export default function WishlistPage() {
                 const tomanPrice = getProductTomanPrice(item, settings);
                 return (
                   <div 
-                    key={item.id} 
+                    key={item.key}
                     className={styles.wishItemCard}
-                    onClick={() => router.push(`/product/${item.id}`)}
+                    onClick={() => { if (!item.unavailable) router.push(`/product/${item.id}`); }}
                   >
                     <div className={styles.imageWrap}>
                       <img src={item.image || item.img} alt={item.name} className={styles.productImg} />
@@ -77,6 +78,7 @@ export default function WishlistPage() {
                       <span className={styles.brandBadge}>{item.brand || ''}</span>
                       <h3 className={styles.productName}>{item.name}</h3>
                       <p className={styles.productSpec}>{item.spec || ''}</p>
+                      {item.unavailable && <p style={{ color: '#d93025', fontSize: '12px', fontWeight: '700' }}>این کالا در حال حاضر قابل سفارش نیست.</p>}
                       
                       <div className={styles.priceRow}>
                         {item.discountPercent && item.discountPercent > 0 ? (
@@ -95,8 +97,8 @@ export default function WishlistPage() {
                         )}
                       </div>
 
-                      <button className={styles.cartBtn}>
-                        مشاهده و انتخاب محصول
+                      <button className={styles.cartBtn} disabled={item.unavailable}>
+                        {item.unavailable ? 'ناموجود' : 'مشاهده و انتخاب محصول'}
                       </button>
                     </div>
                   </div>
