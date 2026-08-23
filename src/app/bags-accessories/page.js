@@ -12,10 +12,24 @@ import styles from '../men/Men.module.css';
 // Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
-function BagsAccessoriesContent() {
+const catalogPresets = {
+  accessories: {
+    defaultSub: 'all',
+    title: 'مجموعه کیف و اکسسوری دبی خرید',
+    subtitle: 'خرید مستقیم کیف‌های دستی لوکس، عینک‌های برند، ساعت‌های مچی و کیف پول اصل از بازارهای دبی',
+  },
+  watches: {
+    defaultSub: 'watches_glasses',
+    title: 'ساعت مچی',
+    subtitle: 'مشاهده و سفارش ساعت‌های مچی اصل از برندها و فروشگاه‌های معتبر دبی',
+  },
+};
+
+function BagsAccessoriesContent({ preset = 'accessories' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialSub = searchParams.get('sub') || 'all';
+  const catalogPreset = catalogPresets[preset] || catalogPresets.accessories;
+  const initialSub = searchParams.get('sub') || catalogPreset.defaultSub;
 
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { settings } = useSiteSettings();
@@ -82,8 +96,8 @@ function BagsAccessoriesContent() {
       <main className={styles.mainContainer} dir="rtl">
         {/* Category Header */}
         <div className={styles.heroSection}>
-          <h1 className={styles.title}>مجموعه کیف و اکسسوری دبی خرید</h1>
-          <p className={styles.subtitle}>خرید مستقیم کیف‌های دستی لوکس، عینک‌های برند، ساعت‌های مچی و کیف پول اصل از بازارهای دبی</p>
+          <h1 className={styles.title}>{catalogPreset.title}</h1>
+          <p className={styles.subtitle}>{catalogPreset.subtitle}</p>
         </div>
 
         <div className={styles.contentLayout}>
@@ -237,10 +251,14 @@ function BagsAccessoriesContent() {
   );
 }
 
-export default function BagsAccessoriesPage() {
+export function BagsAccessoriesCatalog({ preset = 'accessories' }) {
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری...</div>}>
-      <BagsAccessoriesContent />
+      <BagsAccessoriesContent preset={preset} />
     </Suspense>
   );
+}
+
+export default function BagsAccessoriesPage() {
+  return <BagsAccessoriesCatalog />;
 }
