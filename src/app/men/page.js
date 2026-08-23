@@ -5,17 +5,39 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { menProducts } from '@/data/products';
+import { menProducts, womenProducts, kidsProducts } from '@/data/products';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Men.module.css';
 
 // Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
-function MenContent() {
+const catalogPresets = {
+  men: {
+    defaultSub: 'all',
+    title: 'مجموعه مردانه دبی خرید',
+    subtitle: 'خرید مستقیم لباس، شلوار، کفش و اکسسوری اصل برندهای جهانی از دبی با ارسال سریع',
+  },
+  sportsShoes: {
+    defaultSub: 'shoes',
+    title: 'کفش ورزشی',
+    subtitle: 'مشاهده و سفارش کفش‌های ورزشی زنانه، مردانه و کودک از برندهای معتبر دبی',
+  },
+  clothing: {
+    defaultSub: 'clothing',
+    title: 'پوشاک و لباس',
+    subtitle: 'مشاهده و سفارش پوشاک زنانه، مردانه و کودک از برندهای معتبر دبی',
+  },
+};
+
+function MenContent({ preset = 'men' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialSub = searchParams.get('sub') || 'all';
+  const catalogPreset = catalogPresets[preset] || catalogPresets.men;
+  const initialSub = searchParams.get('sub') || catalogPreset.defaultSub;
+  const catalogProducts = preset === 'men'
+    ? menProducts
+    : [...menProducts, ...womenProducts, ...kidsProducts];
 
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { settings } = useSiteSettings();
@@ -35,7 +57,7 @@ function MenContent() {
   }, [initialSub]);
 
   // Extract unique brands present in men catalog
-  const availableBrands = Array.from(new Set(menProducts.map(p => p.brand)));
+  const availableBrands = Array.from(new Set(catalogProducts.map(p => p.brand)));
 
   // Toggle brand filtering selection
   const handleBrandToggle = (brand) => {
@@ -45,7 +67,7 @@ function MenContent() {
   };
 
   // Filter products based on subcategory & brands
-  const filteredProducts = menProducts.filter(product => {
+  const filteredProducts = catalogProducts.filter(product => {
     const matchesTab = activeTab === 'all' || product.category === activeTab;
     const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
     return matchesTab && matchesBrand;
@@ -82,8 +104,8 @@ function MenContent() {
       <main className={styles.mainContainer} dir="rtl">
         {/* Category Header */}
         <div className={styles.heroSection}>
-          <h1 className={styles.title}>مجموعه مردانه دبی خرید</h1>
-          <p className={styles.subtitle}>خرید مستقیم لباس، شلوار، کفش و اکسسوری اصل برندهای جهانی از دبی با ارسال سریع</p>
+          <h1 className={styles.title}>{catalogPreset.title}</h1>
+          <p className={styles.subtitle}>{catalogPreset.subtitle}</p>
         </div>
 
         <div className={styles.contentLayout}>
@@ -243,11 +265,14 @@ function MenContent() {
   );
 }
 
-export default function MenPage() {
-  const { settings } = useSiteSettings();
+export function FashionCatalog({ preset = 'men' }) {
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری...</div>}>
-      <MenContent />
+      <MenContent preset={preset} />
     </Suspense>
   );
+}
+
+export default function MenPage() {
+  return <FashionCatalog />;
 }
