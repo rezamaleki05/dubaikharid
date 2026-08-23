@@ -1,0 +1,17 @@
+.page { min-height: 100vh; background: var(--bg-dark, #080b12); color: #fff; }
+.main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 38px 0 72px; }
+.header { display: flex; align-items: center; gap: 28px; padding: 36px 0 46px; border-bottom: 1px solid #232936; }
+.header h1 { margin: 8px 0 0; font-size: clamp(32px, 6vw, 58px); }
+.eyebrow { margin: 0; color: #f87820; font-weight: 800; }
+.logo { width: 96px; height: 72px; padding: 12px; object-fit: contain; border: 1px solid #2a303c; border-radius: 10px; background: #fff; }
+.intro, .process, .products, .notice { max-width: 900px; padding: 42px 0; border-bottom: 1px solid #232936; }
+.intro h2, .process h2, .products h2, .notice h2 { font-size: 26px; margin: 0 0 14px; }
+.intro p, .process li, .notice p { color: #bbc2ce; line-height: 2; }
+.process ol { padding-inline-start: 24px; }
+.cta { display: inline-flex; margin-top: 18px; padding: 12px 20px; border-radius: 8px; background: #f87820; color: #fff; text-decoration: none; font-weight: 800; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.grid a { min-height: 80px; display: flex; align-items: center; padding: 16px; color: #fff; text-decoration: none; border: 1px solid #2a303c; border-radius: 8px; }
+.grid a:hover { border-color: #f87820; }
+.related { display: flex; flex-wrap: wrap; gap: 22px; padding-top: 36px; }
+.related a { color: #f89a55; }
+@media (max-width: 700px) { .main { width: min(100% - 24px, 1180px); } .header { align-items: flex-start; flex-direction: column; } .grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,24 @@
+.breadcrumbs {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto 24px;
+  color: #8b92a5;
+  font-size: 13px;
+}
+
+.breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumbs li:not(:last-child)::after {
+  content: '/';
+  margin-inline-start: 8px;
+  color: #5f6675;
+}
+
+.breadcrumbs a { color: #f87820; text-decoration: none; }
+.breadcrumbs a:hover { text-decoration: underline; }
