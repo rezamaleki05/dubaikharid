@@ -12,10 +12,34 @@ import styles from '../men/Men.module.css';
 // Formatting utilities
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
-function OtherProductsContent() {
+const catalogPresets = {
+  other: {
+    defaultSub: 'all',
+    title: 'سایر محصولات دبی خرید',
+    subtitle: 'خرید مستقیم انواع کالاها شامل گوشی موبایل، عطر و ادکلن، مکمل و قرص، لوازم الکترونیکی و سایر کالاهای خاص از دبی',
+  },
+  mobile: {
+    defaultSub: 'mobile',
+    title: 'موبایل و تبلت',
+    subtitle: 'مشاهده و سفارش موبایل و تبلت از فروشگاه‌های معتبر دبی',
+  },
+  electronics: {
+    defaultSub: 'electronics',
+    title: 'لوازم الکترونیک',
+    subtitle: 'مشاهده و سفارش لوازم الکترونیکی اصل از دبی',
+  },
+  beautyHealth: {
+    defaultSub: 'beauty_health',
+    title: 'زیبایی و سلامت',
+    subtitle: 'مشاهده و سفارش محصولات زیبایی، بهداشتی و سلامت از دبی',
+  },
+};
+
+function OtherProductsContent({ preset = 'other' }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialSub = searchParams.get('sub') || 'all';
+  const catalogPreset = catalogPresets[preset] || catalogPresets.other;
+  const initialSub = searchParams.get('sub') || catalogPreset.defaultSub;
 
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { settings } = useSiteSettings();
@@ -112,7 +136,13 @@ function OtherProductsContent() {
     const categoryLower = (product.category || '').toLowerCase();
     
     let matchesTab = true;
-    if (activeTab === 'phones') {
+    if (activeTab === 'mobile') {
+      matchesTab = categoryLower === 'mobile' || categoryLower === 'phone' || categoryLower === 'phones' || categoryLower === 'tablet' || categoryLower.includes('گوشی') || categoryLower.includes('موبایل') || categoryLower.includes('تبلت');
+    } else if (activeTab === 'electronics') {
+      matchesTab = categoryLower === 'electronics' || categoryLower === 'electronic' || categoryLower === 'digital' || categoryLower.includes('الکترونیک') || categoryLower.includes('دیجیتال');
+    } else if (activeTab === 'beauty_health') {
+      matchesTab = categoryLower === 'beauty' || categoryLower === 'perfume' || categoryLower === 'health' || categoryLower === 'pills' || categoryLower === 'supplement' || categoryLower === 'pharmacy' || categoryLower.includes('عطر') || categoryLower.includes('آرایشی') || categoryLower.includes('مکمل') || categoryLower.includes('قرص') || categoryLower.includes('بهداشتی');
+    } else if (activeTab === 'phones') {
       matchesTab = categoryLower === 'electronics' || categoryLower === 'mobile' || categoryLower === 'phone' || categoryLower.includes('گوشی') || categoryLower.includes('تبلت');
     } else if (activeTab === 'beauty') {
       matchesTab = categoryLower === 'beauty' || categoryLower === 'perfume' || categoryLower.includes('عطر') || categoryLower.includes('آرایشی');
@@ -160,8 +190,8 @@ function OtherProductsContent() {
       <main className={styles.mainContainer} dir="rtl">
         {/* Category Header */}
         <div className={styles.heroSection}>
-          <h1 className={styles.title}>سایر محصولات دبی خرید</h1>
-          <p className={styles.subtitle}>خرید مستقیم انواع کالاها شامل گوشی موبایل، عطر و ادکلن، مکمل و قرص، لوازم الکترونیکی و سایر کالاهای خاص از دبی</p>
+          <h1 className={styles.title}>{catalogPreset.title}</h1>
+          <p className={styles.subtitle}>{catalogPreset.subtitle}</p>
         </div>
 
         <div className={styles.contentLayout}>
@@ -329,10 +359,14 @@ function OtherProductsContent() {
   );
 }
 
-export default function OtherProductsPage() {
+export function OtherProductsCatalog({ preset = 'other' }) {
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری...</div>}>
-      <OtherProductsContent />
+      <OtherProductsContent preset={preset} />
     </Suspense>
   );
+}
+
+export default function OtherProductsPage() {
+  return <OtherProductsCatalog />;
 }
