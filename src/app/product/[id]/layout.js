@@ -37,7 +37,9 @@ export default async function ProductSeoLayout({ children, params }) {
     { name: 'صفحه اصلی', path: '/' },
     ...(item.kind === 'laptop'
       ? [{ name: 'لپ‌تاپ‌های استوک', path: '/stock-laptops' }]
-      : item.brand ? [{ name: brandName, path: `/brands/${item.brand.id}` }] : []),
+      : item.brand?.showInBrandDirectory
+        ? [{ name: brandName, path: `/brands/${item.brand.id}` }]
+        : []),
     { name: item.name, path: `/product/${item.id}` },
   ];
   const productSchema = {

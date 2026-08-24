@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
+import { authorizeAdminApiRequest, authorizeAdminApiRequestAny } from '@/lib/adminApiAuth';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { logAdminActivity } from '@/lib/adminActivity';
 import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 export async function GET(request) {
-  const { response } = await authorizeAdminApiRequest(request, ADMIN_PERMISSIONS.CATEGORIES_MANAGE);
+  const { response } = await authorizeAdminApiRequestAny(request, [
+    ADMIN_PERMISSIONS.CATEGORIES_MANAGE,
+    ADMIN_PERMISSIONS.BRANDS_MANAGE,
+    ADMIN_PERMISSIONS.PRODUCTS_VIEW,
+    ADMIN_PERMISSIONS.WAREHOUSE_VIEW,
+  ]);
   if (response) return response;
 
   try {

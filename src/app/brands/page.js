@@ -35,7 +35,10 @@ export default function BrandsPage() {
     return () => controller.abort();
   }, []);
 
-  const categories = ['همه برندها', ...new Set(brands.map(brand => brand.cat).filter(Boolean))];
+  const categories = ['همه برندها', ...new Set(brands.flatMap(brand => [
+    brand.cat,
+    ...(Array.isArray(brand.categories) ? brand.categories.map(category => category.name) : []),
+  ]).filter(Boolean))];
 
   const filteredBrands = brands.filter(brand => {
     const query = searchQuery.toLowerCase().trim();
@@ -46,7 +49,10 @@ export default function BrandsPage() {
         String(brand.cat || '').includes(query)
       );
     }
-    return activeCat === 'همه/برندها' || activeCat === 'همه برندها' || brand.cat === activeCat;
+    return activeCat === 'همه/برندها'
+      || activeCat === 'همه برندها'
+      || brand.cat === activeCat
+      || brand.categories?.some(category => category.name === activeCat);
   });
 
   const sortedBrands = [...filteredBrands].sort((a, b) => {

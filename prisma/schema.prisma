@@ -471,17 +471,19 @@ model Shipment {
 }
 
 model Brand {
-  id       String  @id @default(cuid())
-  name     String
-  faName   String?
-  cat      String?
-  url      String?
-  img      String?
-  fallback String?
-  hasImage Boolean @default(false)
+  id                   String  @id @default(cuid())
+  name                 String
+  faName               String?
+  cat                  String?
+  url                  String?
+  img                  String?
+  fallback             String?
+  hasImage             Boolean @default(false)
+  showInBrandDirectory Boolean @default(true)
 
-  products       Product[]
-  warehouseItems WarehouseItem[]
+  products         Product[]
+  warehouseItems   WarehouseItem[]
+  categoryMappings BrandCategory[]
 }
 
 model Store {
@@ -503,8 +505,20 @@ model Category {
   query     String?
   countText String?
 
-  products       Product[]
-  warehouseItems WarehouseItem[]
+  products         Product[]
+  warehouseItems   WarehouseItem[]
+  brandMappings    BrandCategory[]
+}
+
+model BrandCategory {
+  brandId    String
+  categoryId String
+
+  brand    Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([brandId, categoryId])
+  @@index([categoryId])
 }
 
 model Setting {

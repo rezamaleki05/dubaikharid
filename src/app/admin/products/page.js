@@ -70,7 +70,7 @@ export default function AdminProductsPage() {
   const [isAddProductManualOpen, setIsAddProductManualOpen] = useState(false);
   const [addProductManualForm, setAddProductManualForm] = useState({
     name: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
-    category: 'clothing', gender: 'men', discountPercent: 0, hasDiscount: false, isBestSeller: false
+    category: '', gender: '', discountPercent: 0, hasDiscount: false, isBestSeller: false
   });
   const [editProductImage, setEditProductImage] = useState(() => createProductImageState());
   const [addProductImage, setAddProductImage] = useState(() => createProductImageState());
@@ -334,7 +334,7 @@ export default function AdminProductsPage() {
               onClick={() => {
                 setAddProductManualForm({
                   name: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
-                  originalLink: '', image: '', category: categories[0]?.id || '', gender: '', discountPercent: 0,
+                  originalLink: '', image: '', category: '', gender: '', discountPercent: 0,
                   hasDiscount: false, isBestSeller: false,
                 });
                 setAddProductImage(createProductImageState());
@@ -720,9 +720,18 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>دسته‌بندی (ضروری):</label>
+                    <select required value={editProductForm.category} onChange={e => setEditProductForm(previous => ({ ...previous, category: e.target.value }))} style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}>
+                      <option value="">انتخاب دسته‌بندی</option>
+                      {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <AdminBrandSelector
                       brands={safeBrands}
+                      categoryId={editProductForm.category}
                       value={editProductForm.brandId}
                       onChange={brandId => setEditProductForm(previous => ({ ...previous, brandId }))}
                       onBrandsChange={setBrands}
@@ -789,11 +798,7 @@ export default function AdminProductsPage() {
                   />
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نمایش در دسته‌بندی‌های سایت:</label>
-                    <select required value={editProductForm.category} onChange={e => setEditProductForm({ ...editProductForm, category: e.target.value })} style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', marginBottom: '8px' }}>
-                      <option value="">انتخاب دسته‌بندی</option>
-                      {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
-                    </select>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>ویژگی‌های نمایش محصول:</label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '8px' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
                         <input 
@@ -895,9 +900,23 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>دسته‌بندی (ضروری):</label>
+                    <select
+                      required
+                      value={addProductManualForm.category}
+                      onChange={e => setAddProductManualForm(previous => ({ ...previous, category: e.target.value }))}
+                      style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="" style={{ background: '#1c1f2a' }}>انتخاب دسته‌بندی</option>
+                      {categories.map(category => <option key={category.id} value={category.id} style={{ background: '#1c1f2a' }}>{category.name}</option>)}
+                    </select>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <AdminBrandSelector
                       brands={safeBrands}
+                      categoryId={addProductManualForm.category}
                       value={addProductManualForm.brandId}
                       onChange={brandId => setAddProductManualForm(previous => ({ ...previous, brandId }))}
                       onBrandsChange={setBrands}
@@ -963,20 +982,6 @@ export default function AdminProductsPage() {
                     onChange={setAddProductImage}
                     uploading={productImageUploading === 'add'}
                   />
-
-                  {/* Category select - warehouse style */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>دسته‌بندی (ضروری):</label>
-                    <select
-                      required
-                      value={addProductManualForm.category}
-                      onChange={e => setAddProductManualForm(prev => ({ ...prev, category: e.target.value }))}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
-                    >
-                      <option value="" style={{ background: '#1c1f2a' }}>انتخاب دسته‌بندی</option>
-                      {categories.map(category => <option key={category.id} value={category.id} style={{ background: '#1c1f2a' }}>{category.name}</option>)}
-                    </select>
-                  </div>
 
                   {/* Best-seller & Discount toggles - warehouse style */}
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
