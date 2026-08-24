@@ -3,6 +3,7 @@ import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsCon
 
 import { useState, useEffect, useRef } from 'react';
 import MinimalIcon from '@/components/ui/MinimalIcon';
+import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
 import styles from './CheckoutModal.module.css';
 
 export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrement }) {
@@ -17,12 +18,14 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState(1); // 1 = Form, 2 = Payment Method, 3 = Loading, 4 = Success
   const [trackingCode, setTrackingCode] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('gateway'); // 'gateway' | 'card'
+  const [paymentMethod, setPaymentMethod] = useState('card'); // 'gateway' | 'card'
   const [submitError, setSubmitError] = useState('');
   const [resultKind, setResultKind] = useState('order');
   const [authoritativeTotal, setAuthoritativeTotal] = useState(null);
+  const [manualPayment, setManualPayment] = useState(null);
   const idempotencyKeyRef = useRef(null);
   const submittingRef = useRef(false);
+  const completedResultRef = useRef(null);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -143,8 +146,11 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
       setTrackingCode(code);
       setResultKind(isOrder ? 'order' : 'request');
       setAuthoritativeTotal(isOrder ? Number(result.data.totalToman) : null);
-      if (onCartIncrement) onCartIncrement({ kind: isOrder ? 'order' : 'request', code, items: sourceItems });
+      setManualPayment(result.data.manualPayment || null);
+      completedResultRef.current = { kind: isOrder ? 'order' : 'request', code, items: sourceItems };
       if (isOrder && paymentMethod === 'gateway') {
+        if (onCartIncrement) onCartIncrement(completedResultRef.current);
+        completedResultRef.current = null;
         window.location.href = `/payment?order=${encodeURIComponent(code)}`;
         return;
       }
@@ -160,12 +166,15 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     setStep(1);
     setFormData({ name: '', phone: '', address: '', notes: '' });
     setErrors({});
-    setPaymentMethod('gateway');
+    setPaymentMethod('card');
     setSubmitError('');
     setResultKind('order');
     setAuthoritativeTotal(null);
+    setManualPayment(null);
     idempotencyKeyRef.current = null;
     submittingRef.current = false;
+    if (completedResultRef.current && onCartIncrement) onCartIncrement(completedResultRef.current);
+    completedResultRef.current = null;
     onClose();
   };
 
@@ -296,14 +305,16 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               {/* Method 1: online Gateway */}
               <div 
                 className={`${styles.paymentCard} ${paymentMethod === 'gateway' ? styles.paymentCardActive : ''}`}
-                onClick={() => setPaymentMethod('gateway')}
+                onClick={() => { if (settings.onlinePaymentEnabled === true) setPaymentMethod('gateway'); }}
+                aria-disabled={settings.onlinePaymentEnabled !== true}
+                style={settings.onlinePaymentEnabled !== true ? { opacity: 0.48, cursor: 'not-allowed' } : undefined}
               >
                 <div className={styles.paymentCardIcon}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
                 <div className={styles.paymentCardInfo}>
                   <div className={styles.paymentCardTitle}>درگاه پرداخت آنلاین شتاب</div>
-                  <div className={styles.paymentCardDesc}>اتصال مستقیم به کلیه کارت‌های بانکی عضو شبکه شتاب</div>
+                  <div className={styles.paymentCardDesc}>{settings.onlinePaymentEnabled === true ? 'اتصال مستقیم به کلیه کارت‌های بانکی عضو شبکه شتاب' : 'به‌زودی'}</div>
                 </div>
                 <div className={styles.paymentRadio}>
                   <div className={styles.paymentRadioInner}></div>
@@ -313,7 +324,9 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               {/* Method 2: Card to Card */}
               <div 
                 className={`${styles.paymentCard} ${paymentMethod === 'card' ? styles.paymentCardActive : ''}`}
-                onClick={() => setPaymentMethod('card')}
+                onClick={() => { if (settings.cardPaymentEnabled !== false) setPaymentMethod('card'); }}
+                aria-disabled={settings.cardPaymentEnabled === false}
+                style={settings.cardPaymentEnabled === false ? { opacity: 0.48, cursor: 'not-allowed' } : undefined}
               >
                 <div className={styles.paymentCardIcon}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
@@ -331,7 +344,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             {/* Actions */}
             <div className={styles.actions}>
               {submitError && <div className={styles.errorText}>{submitError}</div>}
-              <button type="button" onClick={handlePaymentSubmit} className={styles.submitBtn} disabled={step === 3}>
+              <button type="button" onClick={handlePaymentSubmit} className={styles.submitBtn} disabled={step === 3 || (paymentMethod === 'gateway' ? settings.onlinePaymentEnabled !== true : settings.cardPaymentEnabled === false)}>
                 تأیید و پرداخت نهایی سفارش
               </button>
               <button type="button" onClick={() => setStep(1)} className={styles.cancelBtn}>
@@ -359,7 +372,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               </svg>
             </div>
 
-            <h2>{resultKind === 'order' ? 'پیش‌فاکتور سفارش شما با موفقیت ثبت شد!' : 'درخواست خرید شما با موفقیت ثبت شد!'}</h2>
+            <h2>{resultKind === 'order' ? 'درخواست شما با موفقیت ثبت شد' : 'درخواست خرید شما با موفقیت ثبت شد!'}</h2>
 
             {/* Tracking Card */}
             <div className={styles.trackingCard}>
@@ -367,12 +380,14 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
               <div className={styles.trackingCode}>{trackingCode}</div>
             </div>
 
-            {resultKind === 'order' && authoritativeTotal !== null && (
-              <div className={styles.bankDetailsBox}>
-                <div className={styles.bankDetailsTitle}>مبلغ نهایی ثبت‌شده در سفارش:</div>
-                <div className={styles.bankRow}><span className={styles.bankValue} style={{ color: '#4ade80', fontSize: '1rem' }}>{formatPrice(authoritativeTotal)} تومان</span></div>
-                <div className={styles.bankRow}><span className={styles.bankValue}>اطلاعات پرداخت معتبر پس از هماهنگی پشتیبانی اعلام می‌شود.</span></div>
-              </div>
+            {resultKind === 'order' && authoritativeTotal !== null && manualPayment && (
+              <ManualPaymentPanel
+                orderCode={trackingCode}
+                totalToman={authoritativeTotal}
+                access={manualPayment}
+                uploadToken={manualPayment.uploadToken}
+                onSkip={handleClose}
+              />
             )}
 
             <p className={styles.successDesc} style={{ textAlign: 'right' }}>

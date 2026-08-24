@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MinimalIcon from '@/components/ui/MinimalIcon';
+import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
+import OrderPaymentPanel from '@/components/payment/OrderPaymentPanel';
 import styles from './Profile.module.css';
 
 // ── SVG OUTLINE MONOCHROME ICONS ──
@@ -204,6 +206,7 @@ function ProfileContent() {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [viewingRequestId, setViewingRequestId] = useState(null);
   const [requestSuccessMessage, setRequestSuccessMessage] = useState(false);
+  const [requestPaymentResult, setRequestPaymentResult] = useState(null);
 
   // Form states
   const [editName, setEditName] = useState('');
@@ -483,9 +486,18 @@ function ProfileContent() {
     }
   };
 
-  // Pay ready-to-pay lead
-  const handlePayOrder = (orderId) => {
-    router.push(`/payment?id=${orderId}`);
+  const handlePayOrder = (orderId) => router.push(`/payment?id=${orderId}`);
+
+  const handlePayPurchaseRequest = async (requestId) => {
+    try {
+      const response = await fetch(`/api/account/purchase-requests/${encodeURIComponent(requestId)}/pay`, { method: 'POST' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'آماده‌سازی پرداخت با خطا مواجه شد.');
+      setRequestPaymentResult(payload.data);
+      setPurchaseRequests(previous => previous.map(item => item.id === requestId ? { ...item, status: 'converted', orderId: payload.data.orderId, orderCode: payload.data.orderCode, paymentMethod: 'card', paymentStatus: 'pending' } : item));
+    } catch (error) {
+      alert(error.message || 'آماده‌سازی پرداخت با خطا مواجه شد.');
+    }
   };
 
   // Active status checks
@@ -1060,7 +1072,7 @@ function ProfileContent() {
                               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '16px', marginTop: '24px' }}>
                                 <div style={{ textAlign: 'right' }}>
                                   <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>فروشگاه مبدا:</span>
-                                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}>{o.store || 'نون امارات (Noon)'}</span>
+                                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}>{o.store || 'ثبت نشده'}</span>
                                 </div>
                                 <div style={{ textAlign: 'right' }}>
                                   <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>آدرس ارسال در ایران:</span>
@@ -1086,6 +1098,7 @@ function ProfileContent() {
                                   )}
                                 </div>
                               </div>
+                              {o.paymentMethod === 'card' && <OrderPaymentPanel orderCode={o.orderCode || o.id} />}
                             </div>
                           )}
                         </div>
@@ -1101,188 +1114,39 @@ function ProfileContent() {
               <div>
                 {/* ── SUB-VIEW A: DETAILED REQUEST VIEWER ── */}
                 {viewingRequestId ? (() => {
-                  const req = orders.find(o => o.id === viewingRequestId);
+                  const req = purchaseRequests.find(item => item.id === viewingRequestId);
                   if (!req) return <div className={styles.panelCard}>درخواست یافت نشد. <button onClick={() => setViewingRequestId(null)}>بازگشت</button></div>;
-                  
-                  const stepIdx = getRequestStepIndex(req.status);
-                  
-                  // Parse specific fields from req.details or fallbacks
-                  const specs = {
-                    color: req.details && req.details.includes('رنگ:') ? req.details.split('رنگ:')[1].split('\n')[0].trim() : 'Midnight',
-                    size: req.details && req.details.includes('سایز:') ? req.details.split('سایز:')[1].split('\n')[0].trim() : '45mm',
-                    warranty: req.details && req.details.includes('گارانتی:') ? req.details.split('گارانتی:')[1].split('\n')[0].trim() : 'بین‌المللی'
-                  };
-
-                  // Parse AED prices from breakdown or default
-                  const aedBreakdown = req.priceBreakdown || {
-                    product: req.id === '1257' ? 1499 : 1499,
-                    shipping: req.id === '1257' ? 85 : 85,
-                    commission: req.id === '1257' ? 150 : 150,
-                    rate: 28150
-                  };
-
-                  const computedToman = req.totalToman > 0 ? req.totalToman : (aedBreakdown.product + aedBreakdown.shipping + aedBreakdown.commission) * aedBreakdown.rate;
-
+                  const paymentResult = requestPaymentResult?.requestId === req.id ? requestPaymentResult : null;
                   return (
-                    <div>
-                      {/* Detailed request block - 3 columns */}
+                    <div className={styles.panelCard}>
+                      <button className={styles.tableActionBtn} onClick={() => { setViewingRequestId(null); setRequestPaymentResult(null); }}>بازگشت ←</button>
+                      <h3 className={styles.cardHeaderTitle}>جزئیات واقعی درخواست خرید</h3>
                       <div className={styles.detailsGrid3Cols}>
-                        
-                        {/* COLUMN 1 (Right in RTL): Pricing Details */}
                         <div className={styles.detailCard}>
-                          <h3 className={styles.detailTitle}>جزئیات قیمت</h3>
-                          
-                          {req.status === 'pending' || req.status === 'reviewing' ? (
-                            <div style={{ padding: '20px 0', textItems: 'center', textAlign: 'center' }}>
-                              <span style={{ fontSize: '14px', color: '#f87820', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
-                                ⏳ در حال بررسی توسط کارشناسان
-                              </span>
-                              <p style={{ fontSize: '11px', color: '#8b92a5', lineHeight: '1.6', margin: 0 }}>
-                                قیمت نهایی محصول پس از بررسی وزن کالا، نرخ روز درهم و هزینه‌های گمرکی اعلام خواهد شد.
-                              </p>
-                            </div>
-                          ) : (
-                            <div>
-                              <div className={styles.priceItemRow}>
-                                <span className={styles.priceItemLabel}>قیمت محصول:</span>
-                                <span className={styles.priceItemVal}>AED {aedBreakdown.product.toLocaleString()}</span>
-                              </div>
-                              <div className={styles.priceItemRow}>
-                                <span className={styles.priceItemLabel}>هزینه ارسال:</span>
-                                <span className={styles.priceItemVal}>AED {aedBreakdown.shipping.toLocaleString()}</span>
-                              </div>
-                              <div className={styles.priceItemRow}>
-                                <span className={styles.priceItemLabel}>کارمزد خدمات:</span>
-                                <span className={styles.priceItemVal}>AED {aedBreakdown.commission.toLocaleString()}</span>
-                              </div>
-
-                              <div className={styles.totalPriceContainer}>
-                                <span className={styles.totalPriceLabel}>قیمت نهایی (تومان):</span>
-                                <strong className={styles.totalPriceVal}>{fmtToman(computedToman)}</strong>
-                              </div>
-
-                              <div className={styles.exchangeRateSubCard}>
-                                قیمت نهایی بر اساس نرخ روز درهم محاسبه شده است.
-                                <br />
-                                <strong>نرخ هر درهم: {aedBreakdown.rate.toLocaleString()} تومان</strong>
-                              </div>
-
-                              {req.paymentStatus !== 'paid' && req.status !== 'cancelled' && (
-                                <button 
-                                  className={styles.payActiveBtn} 
-                                  style={{ width: '100%', marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                                  onClick={() => handlePayOrder(req.id)}
-                                >
-                                  <span><MinimalIcon name="creditCard" size={15} style={{ marginLeft: '6px' }} /> پرداخت آنلاین</span>
-                                </button>
-                              )}
-                            </div>
-                          )}
+                          <span className={styles.detailLabel}>شماره درخواست</span>
+                          <strong className={styles.detailVal} dir="ltr">{req.requestCode || req.id}</strong>
+                          <span className={styles.detailLabel}>تاریخ ثبت</span>
+                          <strong className={styles.detailVal}>{new Date(req.date).toLocaleString('fa-IR')}</strong>
+                          <span className={styles.detailLabel}>وضعیت</span>
+                          <strong className={styles.detailVal}>{req.status === 'price_tagged' ? 'قیمت نهایی اعلام شده' : req.status === 'converted' ? 'تبدیل شده به سفارش' : req.status === 'cancelled' ? 'لغو شده' : 'در انتظار بررسی کارشناسان'}</strong>
                         </div>
-
-                        {/* COLUMN 2 (Center in RTL): Status Timeline */}
                         <div className={styles.detailCard}>
-                          <h3 className={styles.detailTitle}>وضعیت سفارش</h3>
-                          
-                          <div className={styles.verticalTimeline}>
-                            <div className={styles.verticalLine}></div>
-                            
-                            {REQUEST_DETAILED_STEPS.map((s, idx) => {
-                              const isCompleted = (idx + 1) < stepIdx;
-                              const isActive = (idx + 1) === stepIdx;
-
-                              return (
-                                <div 
-                                  key={s.id} 
-                                  className={`${styles.verticalStep} ${isCompleted ? styles.verticalStepCompleted : ''} ${isActive ? styles.verticalStepActive : ''}`}
-                                >
-                                  <div className={styles.verticalIcon}>
-                                    {isCompleted ? <MinimalIcon name="check" size={12} weight="bold" /> : isActive ? <MinimalIcon name="circle" size={9} weight="fill" /> : null}
-                                  </div>
-                                  <div className={styles.verticalStepText}>
-                                    <span className={styles.verticalStepTitle}>{s.text}</span>
-                                    {(isCompleted || isActive) && (
-                                      <span className={styles.verticalStepDate}>
-                                        {/* Mock Dates for steps */}
-                                        {idx === 0 && '1403/04/15 - 11:30'}
-                                        {idx === 1 && '1403/04/15 - 11:45'}
-                                        {idx === 2 && '1403/04/15 - 14:20'}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+                          <span className={styles.detailLabel}>نام محصول</span>
+                          <strong className={styles.detailVal}>{req.productName}</strong>
+                          <span className={styles.detailLabel}>فروشگاه</span>
+                          <strong className={styles.detailVal}>{req.store || 'ثبت نشده'}</strong>
+                          <span className={styles.detailLabel}>تعداد</span>
+                          <strong className={styles.detailVal}>{req.qty || 1} عدد</strong>
+                          {req.originalUrl && <a href={req.originalUrl} target="_blank" rel="noreferrer" className={styles.tableActionBtn}>مشاهده محصول در سایت اصلی</a>}
                         </div>
-
-                        {/* COLUMN 3 (Left in RTL): Product Info Summary */}
-                        <div className={styles.detailCard} style={{ position: 'relative' }}>
-                          <button 
-                            className={styles.tableActionBtn} 
-                            style={{ position: 'absolute', left: '16px', top: '16px', padding: '4px 10px', fontSize: '11px' }}
-                            onClick={() => setViewingRequestId(null)}
-                          >
-                            بازگشت ←
-                          </button>
-                          
-                          <h3 className={styles.detailTitle} style={{ paddingLeft: '60px' }}>اطلاعات کالا</h3>
-                          
-                          {req.img ? (
-                            <img
-                              src={req.img}
-                              alt={req.productName || 'محصول'}
-                              style={{ width: '100%', height: '180px', objectFit: 'contain', borderRadius: '12px', background: '#fff', marginBottom: '16px', padding: '10px', boxSizing: 'border-box' }}
-                            />
-                          ) : (
-                            <div role="img" aria-label={req.productName || 'محصول بدون تصویر'} style={{ width: '100%', height: '180px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', marginBottom: '16px' }} />
-                          )}
-
-                          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                            <strong style={{ fontSize: '13.5px', color: '#fff', display: 'block', marginBottom: '8px', lineHeight: '1.4' }}>{req.productName}</strong>
-                            <a 
-                              href={req.originalUrl || '#'} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              style={{ color: '#f87820', textDecoration: 'none', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <span><MinimalIcon name="link" size={14} style={{ marginLeft: '5px' }} /> مشاهده محصول در سایت اصلی</span>
-                            </a>
-                          </div>
-
-                          <table className={styles.detailTable}>
-                            <tbody>
-                              <tr>
-                                <td className={styles.detailLabel}>فروشگاه:</td>
-                                <td className={styles.detailVal}>{req.store}</td>
-                              </tr>
-                              <tr>
-                                <td className={styles.detailLabel}>تعداد:</td>
-                                <td className={styles.detailVal}>{req.qty || 1} عدد</td>
-                              </tr>
-                              <tr>
-                                <td className={styles.detailLabel}>تاریخ ثبت:</td>
-                                <td className={styles.detailVal}>
-                                  {new Date(req.date).toLocaleDateString('fa-IR')}
-                                </td>
-                              </tr>
-                              <tr>
-                                <td className={styles.detailLabel}>رنگ:</td>
-                                <td className={styles.detailVal}>{specs.color}</td>
-                              </tr>
-                              <tr>
-                                <td className={styles.detailLabel}>سایز:</td>
-                                <td className={styles.detailVal}>{specs.size}</td>
-                              </tr>
-                              <tr>
-                                <td className={styles.detailLabel}>گارانتی:</td>
-                                <td className={styles.detailVal}>{specs.warranty}</td>
-                              </tr>
-                            </tbody>
-                          </table>
+                        <div className={styles.detailCard}>
+                          <span className={styles.detailLabel}>مبلغ نهایی</span>
+                          {req.totalToman > 0 ? <strong className={styles.totalPriceVal}>{fmtToman(req.totalToman)} تومان</strong> : <p style={{ color: '#8b92a5', lineHeight: 1.8 }}>درخواست خرید شما ثبت شد. قیمت نهایی پس از بررسی توسط کارشناسان دبی خرید اعلام می‌شود.</p>}
+                          {req.status === 'price_tagged' && req.totalToman > 0 && !req.orderCode && !paymentResult && <button className={styles.payActiveBtn} onClick={() => handlePayPurchaseRequest(req.id)}>پرداخت سفارش</button>}
                         </div>
-
                       </div>
+                      {paymentResult && <ManualPaymentPanel orderCode={paymentResult.orderCode} totalToman={paymentResult.totalToman} access={paymentResult.manualPayment} uploadToken={paymentResult.manualPayment?.uploadToken} />}
+                      {!paymentResult && req.orderCode && <OrderPaymentPanel orderCode={req.orderCode} />}
                     </div>
                   );
                 })() : (
@@ -1492,10 +1356,9 @@ function ProfileContent() {
                             <tbody>
                               {purchaseRequests.map(r => (
                                 <tr key={r.id}>
-                                  <td style={{ fontWeight: 'bold', color: '#fff', fontFamily: 'monospace' }}>#DK-{r.id}</td>
+                                  <td style={{ fontWeight: 'bold', color: '#fff', fontFamily: 'monospace' }}>{r.requestCode || r.id}</td>
                                   <td>
                                     <div className={styles.tableProdName}>
-                                      <img src={r.img} alt="thumb" className={styles.tableProdImg} />
                                       <span style={{ fontWeight: 'bold', color: '#fff' }}>{r.productName}</span>
                                     </div>
                                   </td>
@@ -1528,7 +1391,7 @@ function ProfileContent() {
                                         <button 
                                           className={styles.payActiveBtn}
                                           style={{ padding: '4px 10px', fontSize: '10.5px' }}
-                                          onClick={() => handlePayOrder(r.id)}
+                                          onClick={() => { setViewingRequestId(r.id); setRequestPaymentResult(null); }}
                                         >
                                           پرداخت
                                         </button>

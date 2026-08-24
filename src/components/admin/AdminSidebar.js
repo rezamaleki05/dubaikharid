@@ -78,6 +78,13 @@ export default function AdminSidebar({
       icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
     },
     {
+      key: 'bank_accounts',
+      label: 'حساب‌های بانکی',
+      href: ADMIN_ROUTES.bank_accounts,
+      permission: ADMIN_PERMISSIONS.SETTINGS_VIEW,
+      icon: AdminIcons.card(16)
+    },
+    {
       key: 'shipments',
       label: 'ارسال ها',
       href: ADMIN_ROUTES.shipments,

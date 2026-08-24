@@ -18,7 +18,7 @@ export async function GET(request) {
       where: { customerId: customer.id },
       orderBy: { createdAt: 'desc' },
       take: 50,
-      include: { order: { select: { orderCode: true, payments: { select: { status: true, reference: true }, orderBy: { createdAt: 'desc' } } } } },
+      include: { order: { select: { id: true, orderCode: true, payments: { select: { id: true, method: true, status: true, reference: true, receiptBlobPathname: true, receiptSubmittedAt: true, rejectionReason: true }, orderBy: { createdAt: 'desc' } } } } },
     }),
   ]);
   return NextResponse.json({

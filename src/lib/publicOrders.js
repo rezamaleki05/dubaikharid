@@ -6,7 +6,7 @@ import { normalizeCustomerPhone } from '@/lib/adminCustomers';
 import { calculateProductPricing } from '@/lib/pricing';
 import { prisma } from '@/lib/prisma';
 import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
-import { getPricingSettings } from '@/lib/settings';
+import { getPricingSettings, getSettings } from '@/lib/settings';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAYMENT_METHODS = new Set(['CARD', 'ONLINE']);
@@ -129,6 +129,13 @@ function orderCode() {
 
 export async function createPublicOrder(input, idempotencyKey, { authenticatedCustomerId = null } = {}) {
   const parsed = validatePublicOrderInput(input);
+  const { values: paymentSettings } = await getSettings(['cardPaymentEnabled', 'onlinePaymentEnabled']);
+  if (parsed.paymentMethod === 'ONLINE' && paymentSettings.onlinePaymentEnabled !== true) {
+    throw new PublicOrderError('درگاه پرداخت آنلاین هنوز فعال نیست.', 409, 'PAYMENT_METHOD_DISABLED');
+  }
+  if (parsed.paymentMethod === 'CARD' && paymentSettings.cardPaymentEnabled !== true) {
+    throw new PublicOrderError('پرداخت کارت‌به‌کارت در حال حاضر فعال نیست.', 409, 'PAYMENT_METHOD_DISABLED');
+  }
   const pricingSettings = parsed.type === 'CATALOG_PRODUCT' ? await getPricingSettings() : null;
 
   try {

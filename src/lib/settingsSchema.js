@@ -30,6 +30,8 @@ export const SETTING_DEFINITIONS = Object.freeze({
   notifyNewOrder: { dbKey: 'notifyNewOrder', type: 'boolean', defaultValue: true },
   notifyPayment: { dbKey: 'notifyPayment', type: 'boolean', defaultValue: true },
   notifyShipment: { dbKey: 'notifyShipment', type: 'boolean', defaultValue: true },
+  cardPaymentEnabled: { dbKey: 'cardPaymentEnabled', type: 'boolean', defaultValue: true },
+  onlinePaymentEnabled: { dbKey: 'onlinePaymentEnabled', type: 'boolean', defaultValue: false },
   aedRate: { dbKey: 'aed_toman_rate', type: 'number', min: 1, max: 100_000_000, defaultValue: '19500', financial: true },
   aedLastUpdate: { dbKey: 'aedLastUpdate', type: 'text', max: 120, defaultValue: 'ثبت نشده' },
   aedUpdateMode: { dbKey: 'aedUpdateMode', type: 'enum', values: ['manual'], defaultValue: 'manual' },
@@ -44,7 +46,7 @@ export const PUBLIC_SETTING_KEYS = Object.freeze([
   'telegramId', 'whatsapp', 'instagramId', 'dubaiAddress', 'iranAddress', 'address',
   'workingHours', 'minOrderAed', 'commissionPercent', 'shippingPerKgAed',
   'minWeightClass', 'roundingMethod', 'maintenanceMode', 'allowRegistration',
-  'aedRate', 'aedLastUpdate',
+  'cardPaymentEnabled', 'onlinePaymentEnabled', 'aedRate', 'aedLastUpdate',
 ]);
 
 export const FINANCIAL_SETTING_KEYS = Object.freeze(

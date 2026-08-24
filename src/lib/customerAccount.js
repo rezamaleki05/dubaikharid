@@ -15,6 +15,17 @@ export function serializeCustomerOrder(order, customer) {
     paymentStatus: successfulPayment ? 'paid' : (latestPayment?.status || 'pending'),
     paymentMethod: latestPayment?.method === 'ONLINE' ? 'gateway' : 'card',
     transactionId: successfulPayment?.reference || null,
+    payment: latestPayment ? {
+      id: latestPayment.id,
+      method: latestPayment.method,
+      status: latestPayment.status,
+      amount: Number(latestPayment.amount),
+      hasReceipt: Boolean(latestPayment.receiptBlobPathname),
+      receiptOriginalName: latestPayment.receiptOriginalName || null,
+      receiptSubmittedAt: latestPayment.receiptSubmittedAt || null,
+      rejectionReason: latestPayment.rejectionReason || null,
+      receiptUrl: latestPayment.receiptBlobPathname ? `/api/payments/${encodeURIComponent(latestPayment.id)}/receipt` : null,
+    } : null,
     date: order.createdAt,
     productName: order.items.map(item => item.name).join(' + '),
     items: order.items.map(item => ({
@@ -41,6 +52,7 @@ export function serializeCustomerOrder(order, customer) {
 
 export function serializeCustomerRequest(item, customer) {
   const successfulPayment = item.order?.payments?.find(payment => payment.status === 'success');
+  const latestPayment = item.order?.payments?.[0];
   return {
     id: item.id,
     requestCode: item.requestCode || item.id,
@@ -57,6 +69,16 @@ export function serializeCustomerRequest(item, customer) {
     qty: item.quantity,
     details: item.note || '',
     orderCode: item.order?.orderCode || null,
+    orderId: item.order?.id || null,
+    pricingAvailable: Number(item.finalToman || 0) > 0 && ['price_tagged', 'approved', 'converted'].includes(item.status),
+    paymentMethod: latestPayment?.method === 'ONLINE' ? 'gateway' : latestPayment ? 'card' : null,
+    payment: latestPayment ? {
+      id: latestPayment.id,
+      status: latestPayment.status,
+      hasReceipt: Boolean(latestPayment.receiptBlobPathname),
+      receiptSubmittedAt: latestPayment.receiptSubmittedAt || null,
+      rejectionReason: latestPayment.rejectionReason || null,
+    } : null,
     isRequest: true,
   };
 }

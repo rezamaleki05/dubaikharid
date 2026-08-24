@@ -60,6 +60,13 @@ export function serializeAdminPayment(payment) {
     productName: payment.order?.items?.map(item => item.name).filter(Boolean).join(' + ') || '',
     orderTotalToman: payment.order?.totalToman ?? null,
     confirmedBy: payment.confirmedBy || null,
+    hasReceipt: Boolean(payment.receiptBlobPathname),
+    receiptOriginalName: payment.receiptOriginalName || '',
+    receiptMimeType: payment.receiptMimeType || '',
+    receiptSizeBytes: payment.receiptSizeBytes || null,
+    receiptSubmittedAt: payment.receiptSubmittedAt || null,
+    receiptUrl: payment.receiptBlobPathname ? `/api/admin/payments/${encodeURIComponent(payment.id)}/receipt` : null,
+    rejectionReason: payment.rejectionReason || '',
   };
 }
 

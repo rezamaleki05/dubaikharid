@@ -433,6 +433,12 @@ model Payment {
   notes         String?
   paidAt        DateTime?
   confirmedById String?
+  receiptBlobPathname String?
+  receiptOriginalName String?
+  receiptMimeType String?
+  receiptSizeBytes Int?
+  receiptSubmittedAt DateTime?
+  rejectionReason String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -444,6 +450,20 @@ model Payment {
   @@index([type, createdAt])
   @@index([method, createdAt])
   @@index([confirmedById])
+}
+
+model BankAccount {
+  id                String   @id @default(cuid())
+  bankName          String
+  cardNumber        String   @unique
+  iban              String   @unique
+  accountHolderName String
+  isActive          Boolean  @default(true)
+  isDefault         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([isActive, isDefault])
 }
 
 model Shipment {

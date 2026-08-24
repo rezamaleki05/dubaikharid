@@ -88,9 +88,11 @@ function PaymentsContent() {
 
   const handleRejectPayment = async (paymentId) => {
     if (!can(ADMIN_PERMISSIONS.PAYMENTS_EDIT)) return;
-    if (!confirm('آیا از رد این تراکنش مطمئن هستید؟ پیام عدم تایید و مغایرت مالی ثبت خواهد شد.')) return;
+    const rejectionReason = window.prompt('دلیل رد رسید را وارد کنید:');
+    if (rejectionReason === null) return;
+    if (!rejectionReason.trim()) { alert('ثبت دلیل رد برای اطلاع مشتری الزامی است.'); return; }
 
-    try { await patchPayment(paymentId, { status: 'failed', notes: 'واریزی توسط مدیریت رد شد. مغایرت در رسید واریزی.' }); alert('تراکنش رد شد و مغایرت مالی فیش اعلام گردید.'); }
+    try { await patchPayment(paymentId, { status: 'failed', rejectionReason: rejectionReason.trim() }); alert('رسید رد شد و دلیل آن برای مشتری ثبت گردید.'); }
     catch (error) { alert(error.message); }
   };
 
@@ -853,6 +855,10 @@ function PaymentsContent() {
                                 <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '10px' }}>
                                   تراکنش موفق
                                 </span>
+                              ) : selectedTxn.status === 'failed' ? (
+                                <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef7777', fontSize: '10px' }}>
+                                  رسید رد شده
+                                </span>
                               ) : (
                                 <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontSize: '10px' }}>
                                   در انتظار بررسی
@@ -916,7 +922,22 @@ function PaymentsContent() {
                               <span className={styles.addressLabel}>تاریخ و زمان ثبت:</span>
                               <span className={styles.addressVal} dir="ltr">{new Intl.DateTimeFormat('fa-IR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(selectedTxn.date))}</span>
                             </div>
+                            {selectedTxn.receiptSubmittedAt && <div className={styles.addressRow} style={{ marginTop: '6px' }}>
+                              <span className={styles.addressLabel}>زمان ارسال رسید:</span>
+                              <span className={styles.addressVal} dir="ltr">{new Intl.DateTimeFormat('fa-IR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(selectedTxn.receiptSubmittedAt))}</span>
+                            </div>}
                           </div>
+
+                          {selectedTxn.hasReceipt ? (
+                            <div className={styles.addressSection} style={{ marginBottom: '20px' }}>
+                              <h4 className={styles.addressTitle}>{AdminIcons.receipt(16)} تصویر رسید پرداخت</h4>
+                              <img src={selectedTxn.receiptUrl} alt="رسید خصوصی پرداخت مشتری" style={{ display: 'block', width: '100%', maxHeight: '430px', objectFit: 'contain', background: '#090b0f', border: '1px solid rgba(255,255,255,.07)' }} />
+                              <div className={styles.addressRow} style={{ marginTop: '10px' }}><span className={styles.addressLabel}>نام فایل:</span><span className={styles.addressVal}>{selectedTxn.receiptOriginalName || 'ثبت نشده'}</span></div>
+                              <div className={styles.addressRow} style={{ marginTop: '6px' }}><span className={styles.addressLabel}>نوع / حجم:</span><span className={styles.addressVal} dir="ltr">{selectedTxn.receiptMimeType || '-'} · {selectedTxn.receiptSizeBytes ? `${Math.ceil(selectedTxn.receiptSizeBytes / 1024).toLocaleString('fa-IR')} KB` : '-'}</span></div>
+                            </div>
+                          ) : selectedTxn.methodCode === 'CARD' ? <div className={styles.addressSection} style={{ marginBottom: '20px', color: '#8b92a5' }}>هنوز رسیدی برای این پرداخت ارسال نشده است.</div> : null}
+
+                          {selectedTxn.rejectionReason && <div className={styles.addressSection} style={{ marginBottom: '20px', borderColor: 'rgba(239,68,68,.25)', color: '#efaaaa' }}><strong>دلیل رد ثبت‌شده برای مشتری:</strong><p style={{ margin: '8px 0 0' }}>{selectedTxn.rejectionReason}</p></div>}
 
                           {/* Client profiles */}
                           {selectedTxn.recipient && (
@@ -968,15 +989,17 @@ function PaymentsContent() {
                               <button 
                                 type="button" 
                                 onClick={() => handleApprovePayment(selectedTxn.id)}
+                                disabled={selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt}
                                 className={styles.printLabelActionBtn}
-                                style={{ flexGrow: 2, height: '42px', padding: 0 }}
+                                style={{ flexGrow: 2, height: '42px', padding: 0, opacity: selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt ? .45 : 1 }}
                               >
-                                {AdminIcons.check(12)} تایید و ثبت تراکنش موفق
+                                {AdminIcons.check(12)} تایید پرداخت
                               </button>
                               <button 
                                 type="button" 
                                 onClick={() => handleRejectPayment(selectedTxn.id)}
-                                style={{ flexGrow: 1, background: 'none', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                                disabled={selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt}
+                                style={{ flexGrow: 1, background: 'none', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt ? 'not-allowed' : 'pointer', opacity: selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt ? .45 : 1 }}
                               >
                                 {AdminIcons.close(12)} رد رسید
                               </button>

@@ -1,15 +1,10 @@
-import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { Prisma } from '@/generated/prisma/client';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import { PURCHASE_REQUEST_STATUSES, serializeAdminPurchaseRequest } from '@/lib/adminPurchaseRequests';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { prisma } from '@/lib/prisma';
-
-function code() {
-  return `DK-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`;
-}
+import { convertPurchaseRequestInTransaction } from '@/lib/purchaseRequestOrders';
 
 export async function PATCH(request, { params }) {
   const { admin, response } = await authorizeAdminApiRequest(request, ADMIN_PERMISSIONS.PURCHASE_REQUESTS_EDIT);
@@ -41,33 +36,7 @@ export async function PATCH(request, { params }) {
       const current = await tx.purchaseRequest.findUnique({ where: { id }, include: { customer: true, order: { include: { payments: true } } } });
       if (!current) throw Object.assign(new Error('NOT_FOUND'), { status: 404 });
       if (body.action === 'convert') {
-        if (current.order) return current;
-        const finalToman = Number(data.finalToman ?? current.finalToman);
-        const priceAed = Number(data.priceAed ?? current.priceAed ?? 0);
-        const weight = Number(data.weight ?? current.weight ?? 0);
-        if (!Number.isFinite(finalToman) || finalToman <= 0) throw Object.assign(new Error('FINAL_PRICE_REQUIRED'), { status: 409 });
-        await tx.order.create({
-          data: {
-            orderCode: code(),
-            type: 'EXTERNAL_PURCHASE',
-            pricingStatus: 'CONFIRMED',
-            purchaseRequestId: current.id,
-            customerId: current.customerId,
-            customerNameSnapshot: current.customer?.name,
-            customerPhoneSnapshot: current.customer?.normalizedPhone,
-            customerEmailSnapshot: current.customer?.email,
-            deliveryAddress: current.deliveryAddress,
-            status: body.markPaid ? 'paid' : 'pricing',
-            totalAed: priceAed,
-            totalToman: finalToman,
-            notes: current.note,
-            productSubtotalToman: new Prisma.Decimal(String(Math.round(finalToman))),
-            items: { create: { name: current.productName || 'سفارش خرید خارجی', quantity: current.quantity, priceAed: priceAed || null, priceToman: finalToman / current.quantity, weight } },
-            ...(body.markPaid ? { payments: { create: { amount: new Prisma.Decimal(String(Math.round(finalToman))), currency: 'TOMAN', method: 'CARD', type: 'INCOME', category: 'سفارشات', status: 'success', paidAt: new Date(), confirmedById: admin.id } } } : {}),
-          },
-        });
-        await tx.purchaseRequest.update({ where: { id }, data: { ...data, status: 'converted' } });
-        return tx.purchaseRequest.findUnique({ where: { id }, include: { customer: true, order: { include: { payments: true } } } });
+        return convertPurchaseRequestInTransaction(tx, current, { overrides: { ...data, allowUnpricedStatus: true }, markPaid: body.markPaid === true, confirmedById: admin.id });
       }
       await tx.purchaseRequest.update({ where: { id }, data });
       return tx.purchaseRequest.findUnique({ where: { id }, include: { customer: true, order: { include: { payments: true } } } });
@@ -77,6 +46,7 @@ export async function PATCH(request, { params }) {
   } catch (error) {
     if (error.message === 'NOT_FOUND') return NextResponse.json({ error: 'درخواست خرید پیدا نشد.' }, { status: 404 });
     if (error.message === 'FINAL_PRICE_REQUIRED') return NextResponse.json({ error: 'پیش از تبدیل، قیمت نهایی معتبر ثبت کنید.' }, { status: 409 });
+    if (error.message === 'REQUEST_NOT_PAYABLE') return NextResponse.json({ error: 'این درخواست هنوز آماده پرداخت نیست.' }, { status: 409 });
     console.error('Error updating purchase request:', error);
     return NextResponse.json({ error: 'به‌روزرسانی درخواست خرید با خطا مواجه شد.' }, { status: 500 });
   }
