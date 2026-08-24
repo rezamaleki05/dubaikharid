@@ -279,9 +279,15 @@ export async function getPublicProduct(identifier) {
   if (typeof identifier !== 'string' || !identifier || identifier.length > 180) return null;
   const product = await prisma.product.findFirst({
     where: { OR: [{ id: identifier }, { slug: identifier }], ...PUBLIC_PRODUCT_VISIBILITY },
-    select: PUBLIC_PRODUCT_SELECT,
+    select: {
+      ...PUBLIC_PRODUCT_SELECT,
+      brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
+    },
   });
-  return product ? serializePublicProduct(product) : null;
+  return product ? {
+    ...serializePublicProduct(product),
+    brandVisible: product.brand?.showInBrandDirectory === true,
+  } : null;
 }
 
 export async function getPublicDiscovery({ search = '', category = '', limit = 60 } = {}) {

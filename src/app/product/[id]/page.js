@@ -291,6 +291,9 @@ export default function ProductPage({ params }) {
   };
 
   const tomanPrice = getProductTomanPrice(product, settings);
+  const brandName = typeof product.brand === 'string' ? product.brand.trim() : '';
+  const showBrandBadge = Boolean(brandName)
+    && (product.product_type !== 'iran_inventory' || product.brandVisible === true);
 
   return (
     <div className={styles.pageWrapper}>
@@ -310,7 +313,7 @@ export default function ProductPage({ params }) {
 
           {/* Info Section */}
           <div className={styles.infoSection} dir="rtl">
-            <div className={styles.brandBadge}>{product.brand}</div>
+            {showBrandBadge ? <div className={styles.brandBadge}>{brandName}</div> : null}
             <h1 className={styles.productName}>{product.name}</h1>
             
             {/* dynamic Specs */}
