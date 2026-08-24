@@ -252,7 +252,7 @@ export function serializePublicLaptop(laptop) {
     screen: serialized.screen,
     condition: serialized.condition,
     priceToman: serialized.priceToman,
-    image: serialized.image,
+    image: serialized.image || '/images/product-placeholder.svg',
     images: serialized.images,
     description: serialized.description,
     store: serialized.store,

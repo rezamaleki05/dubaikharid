@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { logAdminActivity } from '@/lib/adminActivity';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 export async function PUT(request, { params }) {
   const { admin, response } = await authorizeAdminApiRequest(request, ADMIN_PERMISSIONS.CATEGORIES_MANAGE);
@@ -21,6 +22,7 @@ export async function PUT(request, { params }) {
       }
     });
     await logAdminActivity({ adminId: admin.id, action: 'CATEGORY_UPDATED', entityType: 'Category', entityId: id, request });
+    revalidatePublicCatalog();
     return NextResponse.json({
       id: updatedCategory.id,
       name: updatedCategory.name,
@@ -44,6 +46,7 @@ export async function DELETE(request, { params }) {
       where: { id }
     });
     await logAdminActivity({ adminId: admin.id, action: 'CATEGORY_DELETED', entityType: 'Category', entityId: id, request });
+    revalidatePublicCatalog();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting category:', error);

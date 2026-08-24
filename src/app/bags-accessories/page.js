@@ -5,8 +5,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CatalogPagination from '@/components/CatalogPagination';
 import MinimalIcon from '@/components/ui/MinimalIcon';
-import { bagsAndAccessoriesProducts } from '@/data/products';
+import { usePublicCatalog } from '@/hooks/usePublicCatalog';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
 
@@ -44,13 +45,24 @@ export function BagsAccessoriesContent({ preset = 'accessories' }) {
   // Sorting state
   const [sortOption, setSortOption] = useState('');
 
+  const {
+    products: sortedProducts,
+    availableBrands,
+    pagination,
+    setPage,
+    loading,
+    error,
+  } = usePublicCatalog({
+    scope: 'accessories',
+    category: activeTab,
+    brands: selectedBrands,
+    sort: sortOption || 'newest',
+  });
+
   // Sync state if URL sub parameter changes
   useEffect(() => {
     Promise.resolve().then(() => setActiveTab(initialSub));
   }, [initialSub]);
-
-  // Extract unique brands present in bags and accessories catalog
-  const availableBrands = Array.from(new Set(bagsAndAccessoriesProducts.map(p => p.brand)));
 
   // Toggle brand filtering selection
   const handleBrandToggle = (brand) => {
@@ -58,37 +70,6 @@ export function BagsAccessoriesContent({ preset = 'accessories' }) {
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
     );
   };
-
-  // Filter products based on subcategory tab & brands selection
-  const filteredProducts = bagsAndAccessoriesProducts.filter(product => {
-    const matchesTab = activeTab === 'all' || product.category === activeTab;
-    const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
-    return matchesTab && matchesBrand;
-  });
-
-  // Sort products based on sort select option
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = getProductTomanPrice(a, settings);
-    const salePriceA = a.discountPercent && a.discountPercent > 0 
-      ? origPriceA * (1 - a.discountPercent / 100) 
-      : origPriceA;
-
-    const origPriceB = getProductTomanPrice(b, settings);
-    const salePriceB = b.discountPercent && b.discountPercent > 0 
-      ? origPriceB * (1 - b.discountPercent / 100) 
-      : origPriceB;
-
-    if (sortOption === 'price_asc') {
-      return salePriceA - salePriceB; // price low-to-high
-    }
-    if (sortOption === 'price_desc') {
-      return salePriceB - salePriceA; // price high-to-low
-    }
-    if (sortOption === 'newest') {
-      return b.id.localeCompare(a.id); // newest products first
-    }
-    return 0;
-  });
 
   return (
     <div className={styles.pageWrapper}>
@@ -108,15 +89,15 @@ export function BagsAccessoriesContent({ preset = 'accessories' }) {
             <div className={styles.filterBlock}>
               <h3 className={styles.filterTitle}>فیلتر بر اساس برندها</h3>
               <div className={styles.brandList}>
-                {availableBrands.map((brand, idx) => (
-                  <label key={idx} className={styles.brandItem}>
+                {availableBrands.map(brand => (
+                  <label key={brand.id} className={styles.brandItem}>
                     <input 
                       type="checkbox"
                       className={styles.checkbox}
-                      checked={selectedBrands.includes(brand)}
-                      onChange={() => handleBrandToggle(brand)}
+                      checked={selectedBrands.includes(brand.id)}
+                      onChange={() => handleBrandToggle(brand.id)}
                     />
-                    <span>{brand}</span>
+                    <span>{brand.displayName}</span>
                   </label>
                 ))}
               </div>
@@ -171,7 +152,11 @@ export function BagsAccessoriesContent({ preset = 'accessories' }) {
             </div>
 
             {/* Catalog Grid */}
-            {sortedProducts.length === 0 ? (
+            {loading ? (
+              <div className={styles.noProducts}><p>در حال دریافت محصولات...</p></div>
+            ) : error ? (
+              <div className={styles.noProducts}><p>{error}</p></div>
+            ) : sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
                 <div className={styles.noProductsIcon}><MinimalIcon name="briefcase" size={50} weight="thin" /></div>
                 <p>هیچ اکسسوری با فیلترهای انتخاب شده یافت نشد.</p>
@@ -241,6 +226,8 @@ export function BagsAccessoriesContent({ preset = 'accessories' }) {
                 })}
               </div>
             )}
+
+            <CatalogPagination pagination={pagination} onPageChange={setPage} />
 
           </section>
 

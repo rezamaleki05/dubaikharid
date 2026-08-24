@@ -5,8 +5,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CatalogPagination from '@/components/CatalogPagination';
 import MinimalIcon from '@/components/ui/MinimalIcon';
-import { getAllProducts } from '@/data/products';
+import { usePublicCatalog } from '@/hooks/usePublicCatalog';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
 
@@ -54,76 +55,24 @@ export function OtherProductsContent({ preset = 'other' }) {
   // Sorting state
   const [sortOption, setSortOption] = useState('');
 
-  // Local state for all products to react to localStorage changes
-  const [allProducts, setAllProducts] = useState([]);
+  const {
+    products: sortedProducts,
+    availableBrands,
+    pagination,
+    setPage,
+    loading,
+    error,
+  } = usePublicCatalog({
+    scope: 'other',
+    category: activeTab,
+    brands: selectedBrands,
+    sort: sortOption || 'newest',
+  });
 
   // Sync state if URL sub parameter changes
   useEffect(() => {
     Promise.resolve().then(() => setActiveTab(initialSub));
   }, [initialSub]);
-
-  // Load and merge products
-  useEffect(() => {
-    let merged = getAllProducts();
-    try {
-      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      if (saved) {
-        const uploaded = JSON.parse(saved);
-        uploaded.forEach(p => {
-          if (!merged.some(m => m.id === p.id)) {
-            merged.unshift(p);
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error loading uploaded products:', e);
-    }
-
-    try {
-      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
-      if (savedWarehouse) {
-        const warehouse = JSON.parse(savedWarehouse);
-        warehouse.forEach(p => {
-          if (p && !p.isArchived) {
-            const finalProduct = {
-              ...p,
-              store: p.store || 'انبار ایران',
-              product_type: p.product_type || 'iran_inventory'
-            };
-            if (!merged.some(m => m.id === finalProduct.id)) {
-              merged.unshift(finalProduct);
-            }
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging warehouse products for other products:', e);
-    }
-    Promise.resolve().then(() => setAllProducts(merged));
-  }, []);
-
-  // Filter out laptops, men/women/kids fashion, and bags/accessories
-  const otherProducts = allProducts.filter(product => {
-    // Exclude laptops
-    if (product.id && (product.id.startsWith('lap') || product.product_type === 'stock_laptop')) {
-      return false;
-    }
-    // Also check name fallback for laptops
-    const nameLower = (product.name || '').toLowerCase();
-    if (nameLower.includes('laptop') || nameLower.includes('macbook') || nameLower.includes('thinkpad') || nameLower.includes('spectre') || nameLower.includes('zephyrus')) {
-      return false;
-    }
-
-    const isMen = product.gender === 'men';
-    const isWomen = product.gender === 'women';
-    const isKids = product.gender === 'kids';
-    const isBagsAcc = product.category === 'bags' || product.category === 'accessories' || product.category === 'watches_glasses' || product.category === 'wallets_belts';
-
-    return !isMen && !isWomen && !isKids && !isBagsAcc;
-  });
-
-  // Extract unique brands present in other products catalog
-  const availableBrands = Array.from(new Set(otherProducts.map(p => p.brand).filter(Boolean)));
 
   // Toggle brand filtering selection
   const handleBrandToggle = (brand) => {
@@ -131,58 +80,6 @@ export function OtherProductsContent({ preset = 'other' }) {
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
     );
   };
-
-  // Filter products based on subcategory tab & brands selection
-  const filteredProducts = otherProducts.filter(product => {
-    const categoryLower = (product.category || '').toLowerCase();
-    
-    let matchesTab = true;
-    if (activeTab === 'mobile') {
-      matchesTab = categoryLower === 'mobile' || categoryLower === 'phone' || categoryLower === 'phones' || categoryLower === 'tablet' || categoryLower.includes('گوشی') || categoryLower.includes('موبایل') || categoryLower.includes('تبلت');
-    } else if (activeTab === 'electronics') {
-      matchesTab = categoryLower === 'electronics' || categoryLower === 'electronic' || categoryLower === 'digital' || categoryLower.includes('الکترونیک') || categoryLower.includes('دیجیتال');
-    } else if (activeTab === 'beauty_health') {
-      matchesTab = categoryLower === 'beauty' || categoryLower === 'perfume' || categoryLower === 'health' || categoryLower === 'pills' || categoryLower === 'supplement' || categoryLower === 'pharmacy' || categoryLower.includes('عطر') || categoryLower.includes('آرایشی') || categoryLower.includes('مکمل') || categoryLower.includes('قرص') || categoryLower.includes('بهداشتی');
-    } else if (activeTab === 'phones') {
-      matchesTab = categoryLower === 'electronics' || categoryLower === 'mobile' || categoryLower === 'phone' || categoryLower.includes('گوشی') || categoryLower.includes('تبلت');
-    } else if (activeTab === 'beauty') {
-      matchesTab = categoryLower === 'beauty' || categoryLower === 'perfume' || categoryLower.includes('عطر') || categoryLower.includes('آرایشی');
-    } else if (activeTab === 'health') {
-      matchesTab = categoryLower === 'health' || categoryLower === 'pills' || categoryLower === 'supplement' || categoryLower === 'pharmacy' || categoryLower.includes('مکمل') || categoryLower.includes('قرص') || categoryLower.includes('بهداشتی');
-    } else if (activeTab === 'others') {
-      const isPhone = categoryLower === 'electronics' || categoryLower === 'mobile' || categoryLower === 'phone' || categoryLower.includes('گوشی') || categoryLower.includes('تبلت');
-      const isBeauty = categoryLower === 'beauty' || categoryLower === 'perfume' || categoryLower.includes('عطر') || categoryLower.includes('آرایشی');
-      const isHealth = categoryLower === 'health' || categoryLower === 'pills' || categoryLower === 'supplement' || categoryLower === 'pharmacy' || categoryLower.includes('مکمل') || categoryLower.includes('قرص') || categoryLower.includes('بهداشتی');
-      matchesTab = !isPhone && !isBeauty && !isHealth;
-    }
-
-    const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
-    return matchesTab && matchesBrand;
-  });
-
-  // Sort products based on sort select option
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = getProductTomanPrice(a, settings);
-    const salePriceA = a.discountPercent && a.discountPercent > 0 
-      ? origPriceA * (1 - a.discountPercent / 100) 
-      : origPriceA;
-
-    const origPriceB = getProductTomanPrice(b, settings);
-    const salePriceB = b.discountPercent && b.discountPercent > 0 
-      ? origPriceB * (1 - b.discountPercent / 100) 
-      : origPriceB;
-
-    if (sortOption === 'price_asc') {
-      return salePriceA - salePriceB;
-    }
-    if (sortOption === 'price_desc') {
-      return salePriceB - salePriceA;
-    }
-    if (sortOption === 'newest') {
-      return b.id.localeCompare(a.id);
-    }
-    return 0;
-  });
 
   return (
     <div className={styles.pageWrapper}>
@@ -205,15 +102,15 @@ export function OtherProductsContent({ preset = 'other' }) {
                 <p style={{ fontSize: '11px', color: '#8b92a5', padding: '10px 0' }}>برندی یافت نشد.</p>
               ) : (
                 <div className={styles.brandList}>
-                  {availableBrands.map((brand, idx) => (
-                    <label key={idx} className={styles.brandItem}>
+                  {availableBrands.map(brand => (
+                    <label key={brand.id} className={styles.brandItem}>
                       <input 
                         type="checkbox"
                         className={styles.checkbox}
-                        checked={selectedBrands.includes(brand)}
-                        onChange={() => handleBrandToggle(brand)}
+                        checked={selectedBrands.includes(brand.id)}
+                        onChange={() => handleBrandToggle(brand.id)}
                       />
-                      <span>{brand}</span>
+                      <span>{brand.displayName}</span>
                     </label>
                   ))}
                 </div>
@@ -275,7 +172,11 @@ export function OtherProductsContent({ preset = 'other' }) {
             </div>
 
             {/* Catalog Grid */}
-            {sortedProducts.length === 0 ? (
+            {loading ? (
+              <div className={styles.noProducts}><p>در حال دریافت محصولات...</p></div>
+            ) : error ? (
+              <div className={styles.noProducts}><p>{error}</p></div>
+            ) : sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
                 <div className={styles.noProductsIcon}><MinimalIcon name="package" size={50} weight="thin" /></div>
                 <p>هیچ محصولی در این دسته فیلتر یافت نشد.</p>
@@ -349,6 +250,8 @@ export function OtherProductsContent({ preset = 'other' }) {
                 })}
               </div>
             )}
+
+            <CatalogPagination pagination={pagination} onPageChange={setPage} />
 
           </section>
 

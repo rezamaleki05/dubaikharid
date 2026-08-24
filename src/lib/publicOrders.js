@@ -5,6 +5,7 @@ import { Prisma } from '@/generated/prisma/client';
 import { normalizeCustomerPhone } from '@/lib/adminCustomers';
 import { calculateProductPricing } from '@/lib/pricing';
 import { prisma } from '@/lib/prisma';
+import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
 import { getPricingSettings } from '@/lib/settings';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -160,7 +161,7 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
           return { name: laptop.name, quantity: 1, priceToman: Number(laptop.priceToman), laptopId: laptop.id, selectedColor: item.selectedColor, selectedSize: item.selectedSize, weight: laptop.weightKg ? Number(laptop.weightKg) : null };
         });
       } else {
-        productRows = await tx.product.findMany({ where: { id: { in: parsed.items.map(item => item.productId) }, status: 'active' }, include: { warehouseItem: true } });
+        productRows = await tx.product.findMany({ where: { id: { in: parsed.items.map(item => item.productId) }, ...PUBLIC_PRODUCT_VISIBILITY }, include: { warehouseItem: true } });
         if (productRows.length !== new Set(parsed.items.map(item => item.productId)).size) {
           const found = new Set(productRows.map(item => item.id));
           throw new PublicOrderError('یکی از کالاها پیدا نشد یا غیرفعال است.', 404, 'ITEM_NOT_FOUND', { items: parsed.items.filter(item => !found.has(item.productId)).map(item => ({ id: item.productId, code: 'ITEM_NOT_FOUND', message: 'کالا پیدا نشد یا غیرفعال است.' })) });

@@ -11,6 +11,7 @@ import {
 } from '@/lib/adminProducts';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { prisma } from '@/lib/prisma';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 function parsePositiveInteger(value, fallback, maximum = Number.MAX_SAFE_INTEGER) {
   if (value === null) return fallback;
@@ -128,6 +129,7 @@ export async function POST(request) {
       },
       request,
     });
+    revalidatePublicCatalog(product.id);
     return NextResponse.json(serializeAdminProduct(product), { status: 201 });
   } catch (error) {
     if (error?.code === 'P2002') {

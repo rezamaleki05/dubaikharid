@@ -1,12 +1,13 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CatalogPagination from '@/components/CatalogPagination';
 import MinimalIcon from '@/components/ui/MinimalIcon';
-import { getAllProducts } from '@/data/products';
+import { usePublicCatalog } from '@/hooks/usePublicCatalog';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Sale.module.css';
 
@@ -24,80 +25,17 @@ function SaleContent() {
   // Sort state
   const [sortOption, setSortOption] = useState(''); // '', 'discount', 'price_asc', 'price_desc'
 
-  const [discountedProducts, setDiscountedProducts] = useState([]);
-
-  useEffect(() => {
-    let merged = getAllProducts();
-    try {
-      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      if (saved) {
-        const uploaded = JSON.parse(saved);
-        uploaded.forEach(p => {
-          if (!merged.some(m => m.id === p.id)) {
-            merged.unshift(p);
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging products for SaleContent:', e);
-    }
-
-    try {
-      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
-      if (savedWarehouse) {
-        const warehouse = JSON.parse(savedWarehouse);
-        warehouse.forEach(p => {
-          if (p && !p.isArchived) {
-            const finalProduct = {
-              ...p,
-              store: p.store || 'انبار ایران',
-              product_type: p.product_type || 'iran_inventory'
-            };
-            if (!merged.some(m => m.id === finalProduct.id)) {
-              merged.unshift(finalProduct);
-            }
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging warehouse products for SaleContent:', e);
-    }
-    const filteredDiscounted = merged.filter(p => p.discountPercent && p.discountPercent > 0);
-    Promise.resolve().then(() => setDiscountedProducts(filteredDiscounted));
-  }, []);
-
-  // Filter products based on active tab
-  const filteredProducts = discountedProducts.filter(product => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'men') return product.gender === 'men';
-    if (activeTab === 'women') return product.gender === 'women';
-    if (activeTab === 'kids') return product.gender === 'kids';
-    if (activeTab === 'acc_tech') {
-      const isTech = product.category === 'electronics';
-      const isAcc = product.category === 'bags' || product.category === 'watches_glasses' || product.category === 'wallets_belts' || product.category === 'accessories';
-      return isTech || isAcc;
-    }
-    return true;
-  });
-
-  // Sort products based on sort select option
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = getProductTomanPrice(a, settings);
-    const salePriceA = origPriceA * (1 - a.discountPercent / 100);
-
-    const origPriceB = getProductTomanPrice(b, settings);
-    const salePriceB = origPriceB * (1 - b.discountPercent / 100);
-
-    if (sortOption === 'discount') {
-      return b.discountPercent - a.discountPercent; // highest discount percent first
-    }
-    if (sortOption === 'price_asc') {
-      return salePriceA - salePriceB; // price low-to-high
-    }
-    if (sortOption === 'price_desc') {
-      return salePriceB - salePriceA; // price high-to-low
-    }
-    return 0;
+  const {
+    products: sortedProducts,
+    pagination,
+    setPage,
+    loading,
+    error,
+  } = usePublicCatalog({
+    scope: ['men', 'women', 'kids'].includes(activeTab) ? activeTab : 'all',
+    category: activeTab === 'acc_tech' ? 'acc_tech' : 'all',
+    sale: true,
+    sort: sortOption || 'newest',
   });
 
   return (
@@ -165,7 +103,11 @@ function SaleContent() {
         </div>
 
         {/* Catalog Grid */}
-        {sortedProducts.length === 0 ? (
+        {loading ? (
+          <div className={styles.noProducts}><p>در حال دریافت محصولات تخفیف‌دار...</p></div>
+        ) : error ? (
+          <div className={styles.noProducts}><p>{error}</p></div>
+        ) : sortedProducts.length === 0 ? (
           <div className={styles.noProducts}>
             <div className={styles.noProductsIcon}><MinimalIcon name="fire" size={50} weight="thin" /></div>
             <p>در حال حاضر هیچ کالای تخفیف‌داری در این دسته موجود نیست.</p>
@@ -225,6 +167,7 @@ function SaleContent() {
             })}
           </div>
         )}
+        <CatalogPagination pagination={pagination} onPageChange={setPage} />
       </main>
 
       <Footer />

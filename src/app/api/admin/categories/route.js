@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { logAdminActivity } from '@/lib/adminActivity';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 export async function GET(request) {
   const { response } = await authorizeAdminApiRequest(request, ADMIN_PERMISSIONS.CATEGORIES_MANAGE);
@@ -43,6 +44,7 @@ export async function POST(request) {
       }
     });
     await logAdminActivity({ adminId: admin.id, action: 'CATEGORY_CREATED', entityType: 'Category', entityId: newCategory.id, request });
+    revalidatePublicCatalog();
     return NextResponse.json({
       id: newCategory.id,
       name: newCategory.name,

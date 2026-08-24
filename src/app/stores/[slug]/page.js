@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 import JsonLd from '@/components/seo/JsonLd';
+import { getPublicCatalog } from '@/lib/publicCatalog';
 import { getSeoStore } from '@/lib/publicSeoData';
 import { breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
 import styles from '../../seo-collection.module.css';
@@ -30,10 +31,16 @@ export async function generateMetadata({ params }) {
   });
 }
 
-export default async function StorePage({ params }) {
+export default async function StorePage({ params, searchParams }) {
   const { slug } = await params;
+  const query = await searchParams;
   const store = await getSeoStore(slug);
   if (!store) notFound();
+  const requestedPage = /^\d+$/.test(query?.page || '') ? Number(query.page) : 1;
+  const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 1_000_000
+    ? requestedPage
+    : 1;
+  const catalog = await getPublicCatalog({ store: store.id, page, limit: 24 });
   const intent = STORE_INTENTS[store.id] || { fa: store.name, title: `خرید از ${store.name}`, common: store.desc || 'کالاهای موجود در فروشگاه' };
   const crumbs = [{ name: 'صفحه اصلی', path: '/' }, { name: 'برندها و فروشگاه‌ها', path: '/brands' }, { name: intent.fa, path: `/stores/${store.id}` }];
 
@@ -57,7 +64,7 @@ export default async function StorePage({ params }) {
           <ol><li>محصول و گزینه‌های موردنظر را در صفحه فروشگاه انتخاب کنید.</li><li>لینک مستقیم محصول را کپی کنید.</li><li>لینک را در فرم استعلام وارد کنید تا برآورد اولیه محاسبه شود.</li><li>پس از بررسی قیمت، موجودی و وزن واقعی، ادامه سفارش هماهنگ می‌شود.</li></ol>
           <Link href="/#calculator" className={styles.cta}>ثبت سفارش از {intent.fa}</Link>
         </section>
-        {store.products.length > 0 && <section className={styles.products}><h2>محصولات ثبت‌شده از {store.name}</h2><div className={styles.grid}>{store.products.map(product => <Link key={product.id} href={`/product/${product.id}`}><span>{product.name}</span></Link>)}</div></section>}
+        {catalog.data.length > 0 && <section className={styles.products}><h2>محصولات ثبت‌شده از {store.name}</h2><div className={styles.grid}>{catalog.data.map(product => <Link key={product.id} href={`/product/${product.id}`}><span>{product.name}</span></Link>)}</div>{catalog.pagination.totalPages > 1 && <nav aria-label="صفحه‌بندی محصولات" style={{display:'flex',justifyContent:'center',gap:'18px',marginTop:'24px'}}>{page > 1 && <Link href={`?page=${page - 1}`}>صفحه قبل</Link>}{page < catalog.pagination.totalPages && <Link href={`?page=${page + 1}`}>صفحه بعد</Link>}</nav>}</section>}
         <section className={styles.related}><Link href="/buy-from-dubai">راهنمای کامل خرید مستقیم از دبی</Link><Link href="/brands">مشاهده برندها و فروشگاه‌های دیگر</Link></section>
       </main>
       <Footer />

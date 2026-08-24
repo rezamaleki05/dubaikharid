@@ -135,7 +135,8 @@ export function getProductTomanPrice(product, settings) {
   }
   // Iran inventory warehouse products are already priced in Toman
   if (product.store === 'انبار ایران' || (product.id && product.id.startsWith('DK-INV')) || product.product_type === 'iran_inventory') {
-    return product.price || 0;
+    const inventoryPrice = Number(product.price);
+    if (Number.isFinite(inventoryPrice) && inventoryPrice > 0) return inventoryPrice;
   }
   
   // A stored selling price is already an authoritative Toman snapshot.

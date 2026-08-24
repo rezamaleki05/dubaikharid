@@ -4,7 +4,7 @@ import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsCon
 import { use, useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getProductById, getProductType } from '@/data/products';
+import { inferCollectionItemType } from '@/lib/clientCollectionState';
 import { useCart } from '@/context/CartContext';
 import CheckoutModal from '@/components/CheckoutModal';
 import MinimalIcon from '@/components/ui/MinimalIcon';
@@ -241,26 +241,6 @@ export default function ProductPage({ params }) {
           if (error.name === 'AbortError') return;
         }
       }
-      if (!found && typeof window !== 'undefined') {
-        try {
-          const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-          if (saved) {
-            const list = JSON.parse(saved);
-            found = list.find(p => p.id === id && p.category !== 'electronics');
-          }
-        } catch (error) {
-          console.error('Error fetching dynamic product override:', error);
-        }
-      }
-      if (!found && typeof window !== 'undefined') {
-        try {
-          const saved = localStorage.getItem('dubaiKharidWarehouseProducts');
-          if (saved) found = JSON.parse(saved).find(p => p.id === id && p.category !== 'laptops');
-        } catch (error) {
-          console.error('Error fetching warehouse product:', error);
-        }
-      }
-      if (!found) found = getProductById(id);
       if (!controller.signal.aborted) {
         setProduct(found || null);
         setLoading(false);
@@ -426,7 +406,7 @@ export default function ProductPage({ params }) {
             </div>
 
             <div className={styles.priceSection}>
-              {getProductType(product) === 'external_product' ? (
+              {inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
                 <div>
                   <div className={styles.priceLabel}>قیمت نهایی محصول:</div>
                   <div className={styles.priceValue} style={{ fontSize: '20px', color: '#f87820', fontWeight: 'bold' }}>
@@ -465,7 +445,7 @@ export default function ProductPage({ params }) {
             </div>
 
             <div className={styles.actionSection}>
-              {getProductType(product) === 'external_product' ? (
+              {inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
                 <div style={{ display: 'flex', gap: '12px', width: '100%', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
                     <button 

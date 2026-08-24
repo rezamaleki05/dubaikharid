@@ -13,45 +13,6 @@ const steps = [
   { id: 4, title: '۴. ارسال لینک محصول', desc: 'لینک محصول یا عکس از محصول انتخابی خود را برای ما ارسال کنید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> }
 ];
 
-const categories = ['همه برندها', 'مد و پوشاک', 'کیف و کفش', 'ساعت و اکسسوری', 'عطر و آرایشی', 'تکنولوژی', 'خانه و دکوراسیون', 'ورزشی ( اسپورت )'];
-
-// Brands database with direct UAE official storefront URLs
-const brandsData = [
-  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI', url: 'https://www.gucci.com/ae/en/' },
-  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV', url: 'https://ae.louisvuitton.com/eng-ae/homepage' },
-  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL', url: 'https://www.chanel.com/ae/' },
-  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
-  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
-  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
-  { id: 'aldo', name: 'Aldo', faName: 'آلدو', cat: 'کیف و کفش', hasImage: true, img: '/images/logo/aldo.png', url: 'https://aldoshoes.me/ae/en/' },
-  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
-  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
-  { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
-  { id: 'fendi', name: 'Fendi', faName: 'فندی', cat: 'مد و پوشاک', hasImage: false, fallback: 'FENDI', url: 'https://www.fendi.com/ae-en/' },
-  { id: 'balenciaga', name: 'Balenciaga', faName: 'بالنسیاگا', cat: 'مد و پوشاک', hasImage: false, fallback: 'BALENCIAGA', url: 'https://www.balenciaga.com/en-ae' },
-  { id: 'saintlaurent', name: 'Saint Laurent', faName: 'سن لورن', cat: 'مد و پوشاک', hasImage: false, fallback: 'YSL', url: 'https://www.ysl.com/en-ae' },
-  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg', url: 'https://www.nike.com/ae/' },
-  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png', url: 'https://www.adidas.ae' },
-  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png', url: 'https://m.shein.com/ae' },
-  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '', url: 'https://www.apple.com/ae/' },
-  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG', url: 'https://www.samsung.com/ae/' },
-  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA', url: 'https://www.sephora.ae' },
-  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' },
-  { id: 'zara', name: 'Zara', faName: 'زارا', cat: 'مد و پوشاک', hasImage: false, fallback: 'ZARA', url: 'https://www.zara.com/ae/en/' },
-  { id: 'mango', name: 'Mango', faName: 'مانگو', cat: 'مد و پوشاک', hasImage: false, fallback: 'MANGO', url: 'https://shop.mango.com/ae' },
-  { id: 'hm', name: 'H&M', faName: 'اچ اند ام', cat: 'مد و پوشاک', hasImage: false, fallback: 'H&M', url: 'https://ae.hm.com/en/' }
-];
-
-// Shopping portals database with direct UAE URLs
-const storesData = [
-  { id: 'noon', name: 'Noon', desc: 'فروشگاه آنلاین چندمنظوره با ارسال سریع در دبی', url: 'https://www.noon.com/uae-en/', hasImage: true, img: '/images/logo/Noon.webp' },
-  { id: 'namshi', name: 'Namshi', desc: 'مد و پوشاک، کیف، کفش و اکسسوری', url: 'https://www.namshi.com/uae-en/', hasImage: false, fallback: 'NAMSHI' },
-  { id: 'ounass', name: 'Ounass', desc: 'فروشگاه لوکس برندهای جهانی', url: 'https://www.ounass.ae', hasImage: false, fallback: 'OUNASS' },
-  { id: 'amazon', name: 'Amazon.ae', desc: 'خرید انواع کالا با ارسال سریع به امارات و دبی', url: 'https://www.amazon.ae', hasImage: true, img: '/images/logo/amazon.png' },
-  { id: '6thstreet', name: '6thStreet', desc: 'مد و فشن با بهترین برندها', url: 'https://www.6thstreet.com/ae/en/', hasImage: false, fallback: '6thSTREET' },
-  { id: 'modanisa', name: 'Modanisa', desc: 'فروشگاه آنلاین پوشاک مناسب بانوان', url: 'https://www.modanisa.com/en/', hasImage: false, fallback: 'modanisa' }
-];
-
 export default function BrandsPage() {
   const [brands, setBrands] = useState([]);
   const [stores, setStores] = useState([]);
@@ -60,62 +21,29 @@ export default function BrandsPage() {
   const [sortOption, setSortOption] = useState('');
 
   useEffect(() => {
-    Promise.resolve().then(() => {
-    try {
-      const savedBrands = localStorage.getItem('dubaiKharidBrands');
-      if (savedBrands) {
-        const parsed = JSON.parse(savedBrands);
-        let updated = [...parsed];
-        let hasChanges = false;
-        brandsData.forEach(defaultBrand => {
-          if (!parsed.some(b => b.id === defaultBrand.id)) {
-            updated.push(defaultBrand);
-            hasChanges = true;
-          } else {
-            const idx = updated.findIndex(b => b.id === defaultBrand.id);
-            if (idx !== -1 && (updated[idx].hasImage !== defaultBrand.hasImage || updated[idx].img !== defaultBrand.img)) {
-              updated[idx] = { ...updated[idx], hasImage: defaultBrand.hasImage, img: defaultBrand.img };
-              hasChanges = true;
-            }
-          }
-        });
-        if (hasChanges) {
-          localStorage.setItem('dubaiKharidBrands', JSON.stringify(updated));
-          setBrands(updated);
-        } else {
-          setBrands(parsed);
-        }
-      } else {
-        localStorage.setItem('dubaiKharidBrands', JSON.stringify(brandsData));
-        setBrands(brandsData);
-      }
-    } catch (e) {
-      console.error('Error loading brands:', e);
-      setBrands(brandsData);
-    }
-
-    try {
-      const savedStores = localStorage.getItem('dubaiKharidStores');
-      if (savedStores) {
-        setStores(JSON.parse(savedStores));
-      } else {
-        localStorage.setItem('dubaiKharidStores', JSON.stringify(storesData));
-        setStores(storesData);
-      }
-    } catch (e) {
-      console.error('Error loading stores:', e);
-      setStores(storesData);
-    }
-    });
+    const controller = new AbortController();
+    fetch('/api/catalog/discovery?limit=100', { cache: 'no-store', signal: controller.signal })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || 'دریافت برندها و فروشگاه‌ها با خطا مواجه شد.');
+        setBrands(Array.isArray(payload.brands) ? payload.brands : []);
+        setStores(Array.isArray(payload.stores) ? payload.stores : []);
+      })
+      .catch(error => {
+        if (error.name !== 'AbortError') console.error('Error loading public brands and stores:', error);
+      });
+    return () => controller.abort();
   }, []);
+
+  const categories = ['همه برندها', ...new Set(brands.map(brand => brand.cat).filter(Boolean))];
 
   const filteredBrands = brands.filter(brand => {
     const query = searchQuery.toLowerCase().trim();
     if (query) {
       return (
         brand.name.toLowerCase().includes(query) || 
-        brand.faName.includes(query) ||
-        brand.cat.includes(query)
+        String(brand.faName || '').includes(query) ||
+        String(brand.cat || '').includes(query)
       );
     }
     return activeCat === 'همه/برندها' || activeCat === 'همه برندها' || brand.cat === activeCat;
@@ -124,8 +52,8 @@ export default function BrandsPage() {
   const sortedBrands = [...filteredBrands].sort((a, b) => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      const aNameMatch = a.name.toLowerCase().startsWith(q) || a.faName.includes(q);
-      const bNameMatch = b.name.toLowerCase().startsWith(q) || b.faName.includes(q);
+      const aNameMatch = a.name.toLowerCase().startsWith(q) || String(a.faName || '').includes(q);
+      const bNameMatch = b.name.toLowerCase().startsWith(q) || String(b.faName || '').includes(q);
       
       if (aNameMatch && !bNameMatch) return -1;
       if (!aNameMatch && bNameMatch) return 1;
@@ -161,7 +89,7 @@ export default function BrandsPage() {
             <div className={styles.statItem}>
               <svg className={styles.statIcon} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M7 8V6a5 5 0 0 1 10 0v2"/></svg>
               <div className={styles.statText}>
-                <div className={styles.statValue}>1000+</div>
+                <div className={styles.statValue}>{brands.length.toLocaleString('fa-IR')}+</div>
                 <div className={styles.statLabel}>برند معتبر</div>
               </div>
             </div>
@@ -269,10 +197,9 @@ export default function BrandsPage() {
               <p className={styles.brandFaName}>{brand.faName}</p>
               <p className={styles.brandCategory}>{brand.cat}</p>
               <a 
-                href={brand.url} 
+                href={brand.url || `/brands/${brand.id}`}
                 className={styles.linkBtn}
-                target="_blank" 
-                rel="noopener noreferrer"
+                {...(brand.url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 ورود به سایت رسمی
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -295,12 +222,11 @@ export default function BrandsPage() {
               </div>
               <h3 className={styles.brandName}>{store.name}</h3>
               <p className={styles.brandCategory} style={{minHeight: '36px'}}>{store.desc}</p>
-              <p className={styles.brandCategory} style={{color: '#f87820', direction: 'ltr'}}>{store.url.replace('https://', '')}</p>
+              <p className={styles.brandCategory} style={{color: '#f87820', direction: 'ltr'}}>{store.url ? store.url.replace('https://', '') : 'آدرس ثبت نشده'}</p>
               <a 
-                href={store.url} 
+                href={store.url || `/stores/${store.id}`}
                 className={styles.linkBtn}
-                target="_blank" 
-                rel="noopener noreferrer"
+                {...(store.url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 ورود به سایت امارات
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>

@@ -1,66 +1,35 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CatalogPagination from '@/components/CatalogPagination';
 import MinimalIcon from '@/components/ui/MinimalIcon';
-import { getAllProducts } from '@/data/products';
+import { usePublicCatalog } from '@/hooks/usePublicCatalog';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from './Search.module.css';
 
 // Replaced hardcoded exchange rate
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
-// Brands database
-const mockDatabase = [
-  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI' },
-  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV' },
-  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL' },
-  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA' },
-  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR' },
-  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS' },
-  { id: 'aldo', name: 'Aldo', faName: 'آلدو', cat: 'کیف و کفش', hasImage: true, img: '/images/logo/aldo.png' },
-  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX' },
-  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier' },
-  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg' },
-  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png' },
-  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png' },
-  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '' },
-  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG' },
-  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA' },
-  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson' },
-  { id: 'noon', name: 'Noon', faName: 'نون', cat: 'فروشگاه آنلاین', hasImage: true, img: '/images/logo/Noon.webp' },
-  { id: 'amazon', name: 'Amazon.ae', faName: 'آمازون امیدی امارات', cat: 'فروشگاه آنلاین', hasImage: true, img: '/images/logo/amazon.png' }
-];
-
 function SearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { settings } = useSiteSettings();
 
-  const qLower = query.toLowerCase().trim();
-  const [allProducts, setAllProducts] = useState([]);
-
-  useEffect(() => {
-    let merged = getAllProducts();
-    try {
-      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      if (saved) {
-        const uploaded = JSON.parse(saved);
-        uploaded.forEach(p => {
-          if (!merged.some(m => m.id === p.id)) {
-            merged.unshift(p);
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging products for search:', e);
-    }
-    Promise.resolve().then(() => setAllProducts(merged));
-  }, []);
+  const cleanQuery = query.trim();
+  const {
+    products: productResults,
+    discovery,
+    pagination,
+    setPage,
+    loading,
+    error,
+  } = usePublicCatalog({ search: cleanQuery, enabled: Boolean(cleanQuery), limit: 24 });
 
   useEffect(() => {
     if (query) {
@@ -79,28 +48,12 @@ function SearchContent() {
     }
   }, [query]);
 
-  // 1. Search in Brand Catalog
-  const brandResults = qLower
-    ? mockDatabase.filter(item => 
-        item.name.toLowerCase().includes(qLower) || 
-        (item.faName && item.faName.includes(qLower)) ||
-        item.cat.includes(qLower)
-      )
-    : [];
-
-  // 2. Search in Products Database (extended)
-  const productResults = qLower
-    ? allProducts.filter(product => 
-        product.name.toLowerCase().includes(qLower) ||
-        product.brand.toLowerCase().includes(qLower) ||
-        (product.store && product.store.toLowerCase().includes(qLower)) ||
-        (product.category && product.category.toLowerCase().includes(qLower)) ||
-        (product.spec && product.spec.toLowerCase().includes(qLower)) ||
-        (product.description && product.description.toLowerCase().includes(qLower))
-      )
-    : [];
-
-  const totalResultsCount = brandResults.length + productResults.length;
+  const discoveryResults = [
+    ...discovery.brands.map(item => ({ ...item, resultType: 'brand', href: `/brands/${item.id}`, subtitle: item.cat })),
+    ...discovery.stores.map(item => ({ ...item, resultType: 'store', href: `/stores/${item.id}`, subtitle: item.desc })),
+    ...discovery.categories.map(item => ({ ...item, resultType: 'category', href: `/search?q=${encodeURIComponent(item.name)}`, subtitle: 'دسته‌بندی محصولات', fallback: item.name })),
+  ];
+  const totalResultsCount = pagination.total + discoveryResults.length;
 
   return (
     <div className={styles.pageWrapper}>
@@ -118,16 +71,16 @@ function SearchContent() {
           )}
         </div>
 
-        {query && totalResultsCount > 0 ? (
+        {query && (loading || totalResultsCount > 0) ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '50px' }}>
             
             {/* Section 1: Found Brands */}
-            {brandResults.length > 0 && (
+            {discoveryResults.length > 0 && (
               <div>
-                <h2 className={styles.sectionTitle}>برندهای یافت شده</h2>
+                <h2 className={styles.sectionTitle}>برندها، فروشگاه‌ها و دسته‌بندی‌های یافت‌شده</h2>
                 <div className={styles.grid}>
-                  {brandResults.map(item => (
-                    <div key={item.id} className={styles.card}>
+                  {discoveryResults.map(item => (
+                    <div key={`${item.resultType}-${item.id}`} className={styles.card}>
                       <div className={styles.logoWrap}>
                         {item.hasImage ? (
                           <img src={item.img} alt={item.name} className={styles.logoImg} />
@@ -136,16 +89,16 @@ function SearchContent() {
                         )}
                       </div>
                       <h3 className={styles.brandName}>{item.name}</h3>
-                      <p className={styles.brandCategory}>{item.cat}</p>
+                      <p className={styles.brandCategory}>{item.subtitle}</p>
                       <a 
-                        href={`/brands?id=${item.id}`} 
+                        href={item.href}
                         className={styles.linkBtn}
                         onClick={(e) => {
                           e.preventDefault();
-                          router.push(`/brands`);
+                          router.push(item.href);
                         }}
                       >
-                        مشاهده برند
+                        مشاهده نتیجه
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                       </a>
                     </div>
@@ -155,7 +108,11 @@ function SearchContent() {
             )}
 
             {/* Section 2: Found Products */}
-            {productResults.length > 0 && (
+            {loading ? (
+              <div className={styles.noResults}><p className={styles.noResultsText}>در حال جستجو در محصولات...</p></div>
+            ) : error ? (
+              <div className={styles.noResults}><p className={styles.noResultsText}>{error}</p></div>
+            ) : productResults.length > 0 && (
               <div>
                 <h2 className={styles.sectionTitle}>محصولات یافت شده</h2>
                 <div className={styles.productsGrid}>
@@ -221,6 +178,7 @@ function SearchContent() {
                     );
                   })}
                 </div>
+                <CatalogPagination pagination={pagination} onPageChange={setPage} />
               </div>
             )}
 
@@ -239,7 +197,6 @@ function SearchContent() {
 }
 
 export default function SearchPage() {
-  const { settings } = useSiteSettings();
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال جستجو...</div>}>
       <SearchContent />

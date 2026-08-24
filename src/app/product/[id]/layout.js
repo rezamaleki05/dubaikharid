@@ -30,8 +30,7 @@ export async function generateMetadata({ params }) {
 export default async function ProductSeoLayout({ children, params }) {
   const { id } = await params;
   const item = await getSeoProduct(id);
-  if (!item && (/^c[a-z0-9-]{20,}$/i.test(id) || id.length > 180)) notFound();
-  if (!item) return children;
+  if (!item) notFound();
 
   const brandName = item.kind === 'product' ? item.brand?.faName || item.brand?.name : item.brand;
   const crumbs = [

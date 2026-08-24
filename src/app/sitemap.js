@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { absoluteUrl } from '@/lib/seo';
 import { isPreviewDeployment } from '@/lib/env';
+import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,10 +25,10 @@ export default async function sitemap() {
   ];
   try {
     const [products, laptops, stores, brands] = await Promise.all([
-      prisma.product.findMany({ where: { status: 'active' }, select: { id: true, updatedAt: true } }),
+      prisma.product.findMany({ where: PUBLIC_PRODUCT_VISIBILITY, select: { id: true, updatedAt: true } }),
       prisma.laptop.findMany({ where: { status: 'AVAILABLE', archivedAt: null }, select: { id: true, updatedAt: true } }),
       prisma.store.findMany({ select: { id: true } }),
-      prisma.brand.findMany({ where: { products: { some: { status: 'active' } } }, select: { id: true } }),
+      prisma.brand.findMany({ where: { products: { some: PUBLIC_PRODUCT_VISIBILITY } }, select: { id: true } }),
     ]);
     return [
       ...staticEntries,

@@ -1,12 +1,13 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CatalogPagination from '@/components/CatalogPagination';
 import MinimalIcon from '@/components/ui/MinimalIcon';
-import { trendingProducts, getAllProducts } from '@/data/products';
+import { usePublicCatalog } from '@/hooks/usePublicCatalog';
 import { useWishlist } from '@/context/WishlistContext';
 import styles from '../men/Men.module.css';
 
@@ -20,98 +21,22 @@ function BestSellersContent() {
 
   // Sorting state
   const [sortOption, setSortOption] = useState('');
-  const [bestSellersList, setBestSellersList] = useState([]);
-
-  useEffect(() => {
-    let merged = getAllProducts();
-    
-    // Load non-laptop legacy uploads; laptop stock is sourced only from PostgreSQL.
-    try {
-      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      if (saved) {
-        const uploaded = JSON.parse(saved);
-        uploaded.filter(p => p.category !== 'electronics' && p.category !== 'laptops').forEach(p => {
-          const index = merged.findIndex(m => m.id === p.id);
-          if (index !== -1) {
-            merged[index] = p; // Apply edit override
-          } else {
-            merged.unshift(p); // Prepend new upload
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging uploaded products for best sellers:', e);
-    }
-
-    // Load warehouse products & apply overrides
-    try {
-      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
-      if (savedWarehouse) {
-        const warehouse = JSON.parse(savedWarehouse);
-        warehouse.filter(p => p.category !== 'electronics' && p.category !== 'laptops').forEach(p => {
-          if (p && !p.isArchived) {
-            const finalProduct = {
-              ...p,
-              store: p.store || 'انبار ایران',
-              product_type: p.product_type || 'iran_inventory'
-            };
-            const index = merged.findIndex(m => m.id === finalProduct.id);
-            if (index !== -1) {
-              merged[index] = finalProduct; // Apply edit override
-            } else {
-              merged.unshift(finalProduct); // Prepend new warehouse product
-            }
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging warehouse products for best sellers:', e);
-    }
-
-    // Sales ranking is database-backed; no browser-only order history is used here.
-    const soldProductNames = [];
-
-    // 4. Load actually searched queries
-    let searchHistory = [];
-    try {
-      const historySaved = localStorage.getItem('dubaiKharidSearchHistory');
-      if (historySaved) {
-        searchHistory = JSON.parse(historySaved).filter(Boolean);
-      }
-    } catch (e) {
-      console.error('Error loading search history for best sellers:', e);
-    }
-
-    const filteredBest = merged.filter((p, index, self) => {
-      // Condition A: marked as best seller or trending manually
-      const isManualBest = p.isBestSeller === true || trendingProducts.some(t => t.id === p.id);
-      
-      // Condition B: matches actually sold order names
-      const isSold = soldProductNames.some(name => 
-        p.name.toLowerCase().includes(name) || name.includes(p.name.toLowerCase())
-      );
-      
-      // Condition C: matches searched queries
-      const isSearched = searchHistory.some(query => 
-        p.name.toLowerCase().includes(query) || 
-        p.brand.toLowerCase().includes(query) || 
-        (p.category && p.category.toLowerCase().includes(query))
-      );
-
-      const matchesAny = isManualBest || isSold || isSearched;
-      const isUnique = self.findIndex(t => t.id === p.id) === index;
-      
-      return matchesAny && isUnique;
-    });
-
-    queueMicrotask(() => setBestSellersList(filteredBest));
-  }, []);
-
-  // Extract unique brands present in best sellers list
-  const availableBrands = Array.from(new Set(bestSellersList.map(p => p.brand)));
 
   // Selected brands filter state
   const [selectedBrands, setSelectedBrands] = useState([]);
+
+  const {
+    products: sortedProducts,
+    availableBrands,
+    pagination,
+    setPage,
+    loading,
+    error,
+  } = usePublicCatalog({
+    brands: selectedBrands,
+    bestSeller: true,
+    sort: sortOption || 'best_sellers',
+  });
 
   // Toggle brand filtering selection
   const handleBrandToggle = (brand) => {
@@ -119,35 +44,6 @@ function BestSellersContent() {
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
     );
   };
-
-  // Filter products based on selected brands
-  const filteredProducts = bestSellersList.filter(product => {
-    return selectedBrands.length === 0 || selectedBrands.includes(product.brand);
-  });
-
-  // Sort products based on sort select option
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const origPriceA = getProductTomanPrice(a, settings);
-    const salePriceA = a.discountPercent && a.discountPercent > 0 
-      ? origPriceA * (1 - a.discountPercent / 100) 
-      : origPriceA;
-
-    const origPriceB = getProductTomanPrice(b, settings);
-    const salePriceB = b.discountPercent && b.discountPercent > 0 
-      ? origPriceB * (1 - b.discountPercent / 100) 
-      : origPriceB;
-
-    if (sortOption === 'price_asc') {
-      return salePriceA - salePriceB; // price low-to-high
-    }
-    if (sortOption === 'price_desc') {
-      return salePriceB - salePriceA; // price high-to-low
-    }
-    if (sortOption === 'newest') {
-      return b.id.localeCompare(a.id); // newest first
-    }
-    return 0;
-  });
 
   return (
     <div className={styles.pageWrapper}>
@@ -167,15 +63,15 @@ function BestSellersContent() {
             <div className={styles.filterBlock}>
               <h3 className={styles.filterTitle}>فیلتر بر اساس برندها</h3>
               <div className={styles.brandList}>
-                {availableBrands.map((brand, idx) => (
-                  <label key={idx} className={styles.brandItem}>
+                {availableBrands.map(brand => (
+                  <label key={brand.id} className={styles.brandItem}>
                     <input 
                       type="checkbox"
                       className={styles.checkbox}
-                      checked={selectedBrands.includes(brand)}
-                      onChange={() => handleBrandToggle(brand)}
+                      checked={selectedBrands.includes(brand.id)}
+                      onChange={() => handleBrandToggle(brand.id)}
                     />
-                    <span>{brand}</span>
+                    <span>{brand.displayName}</span>
                   </label>
                 ))}
               </div>
@@ -203,7 +99,11 @@ function BestSellersContent() {
             </div>
 
             {/* Catalog Grid */}
-            {sortedProducts.length === 0 ? (
+            {loading ? (
+              <div className={styles.noProducts}><p>در حال دریافت محصولات پرفروش...</p></div>
+            ) : error ? (
+              <div className={styles.noProducts}><p>{error}</p></div>
+            ) : sortedProducts.length === 0 ? (
               <div className={styles.noProducts}>
                 <div className={styles.noProductsIcon}><MinimalIcon name="fire" size={50} weight="thin" /></div>
                 <p>هیچ محصولی با فیلترهای انتخاب شده یافت نشد.</p>
@@ -273,6 +173,8 @@ function BestSellersContent() {
                 })}
               </div>
             )}
+
+            <CatalogPagination pagination={pagination} onPageChange={setPage} />
 
           </section>
 

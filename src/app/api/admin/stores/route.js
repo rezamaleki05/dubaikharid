@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { logAdminActivity } from '@/lib/adminActivity';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 export async function GET(request) {
   const { response } = await authorizeAdminApiRequest(request, ADMIN_PERMISSIONS.STORES_MANAGE);
@@ -37,6 +38,7 @@ export async function POST(request) {
       }
     });
     await logAdminActivity({ adminId: admin.id, action: 'STORE_CREATED', entityType: 'Store', entityId: newStore.id, request });
+    revalidatePublicCatalog();
     return NextResponse.json(newStore, { status: 201 });
   } catch (error) {
     console.error('Error creating store:', error);

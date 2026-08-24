@@ -5,12 +5,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { trendingProducts } from '@/data/products';
 import styles from './ProductSlider.module.css';
 
 export default function ProductSlider({ onSelectProduct }) {
   const { settings } = useSiteSettings();
-  const [wishlist, setWishlist] = useState({});
   const router = useRouter();
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -19,7 +17,6 @@ export default function ProductSlider({ onSelectProduct }) {
   const [allTrending, setAllTrending] = useState([]);
 
   useEffect(() => {
-    let mergedTrending = [...trendingProducts];
     const controller = new AbortController();
     fetch('/api/laptops?limit=12', { cache: 'no-store', signal: controller.signal })
       .then(async response => {
@@ -30,45 +27,15 @@ export default function ProductSlider({ onSelectProduct }) {
       .catch(error => {
         if (error.name !== 'AbortError') console.error('Error fetching laptops for ProductSlider:', error);
       });
-    try {
-      const saved = localStorage.getItem('dubaiKharidUploadedProducts');
-      if (saved) {
-        const uploaded = JSON.parse(saved);
-        uploaded.forEach(p => {
-          if (p.category !== 'electronics' && p.category !== 'laptops') {
-            if (!mergedTrending.some(m => m.id === p.id)) {
-              mergedTrending.unshift(p);
-            }
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging uploaded products for ProductSlider:', e);
-    }
-
-    try {
-      const savedWarehouse = localStorage.getItem('dubaiKharidWarehouseProducts');
-      if (savedWarehouse) {
-        const warehouse = JSON.parse(savedWarehouse);
-        warehouse.forEach(p => {
-          if (p && !p.isArchived) {
-            const finalProduct = {
-              ...p,
-              store: p.store || 'انبار ایران',
-              product_type: p.product_type || 'iran_inventory'
-            };
-            if (finalProduct.category !== 'electronics' && finalProduct.category !== 'laptops') {
-              if (!mergedTrending.some(m => m.id === finalProduct.id)) {
-                mergedTrending.unshift(finalProduct);
-              }
-            }
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error merging warehouse products for ProductSlider:', e);
-    }
-    queueMicrotask(() => setAllTrending(mergedTrending));
+    fetch('/api/products?limit=12&bestSeller=true&sort=best_sellers', { cache: 'no-store', signal: controller.signal })
+      .then(async response => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'دریافت محصولات با خطا مواجه شد.');
+        setAllTrending(Array.isArray(payload.data) ? payload.data : []);
+      })
+      .catch(error => {
+        if (error.name !== 'AbortError') console.error('Error fetching catalog products for ProductSlider:', error);
+      });
     return () => controller.abort();
   }, []);
 

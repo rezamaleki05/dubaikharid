@@ -9,6 +9,7 @@ import {
 } from '@/lib/adminProducts';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { prisma } from '@/lib/prisma';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 function isValidProductId(id) {
   return typeof id === 'string' && id.length > 0 && id.length <= 128;
@@ -66,6 +67,7 @@ export async function PATCH(request, { params }) {
       },
       request,
     });
+    revalidatePublicCatalog(product.id);
     return NextResponse.json(serializeAdminProduct(product));
   } catch (error) {
     if (error?.code === 'P2002') {
@@ -102,6 +104,7 @@ export async function DELETE(request, { params }) {
       metadata: { previousStatus: previous.status, newStatus: 'hidden' },
       request,
     });
+    revalidatePublicCatalog(product.id);
     return NextResponse.json(serializeAdminProduct(product));
   } catch (error) {
     console.error('Error deactivating admin product:', error);

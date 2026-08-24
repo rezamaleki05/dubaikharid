@@ -2,11 +2,12 @@ import 'server-only';
 
 import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
+import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
 
 export const getSeoProduct = cache(async id => {
   if (typeof id !== 'string' || !id || id.length > 180) return null;
   const product = await prisma.product.findFirst({
-    where: { OR: [{ id }, { slug: id }], status: 'active' },
+    where: { OR: [{ id }, { slug: id }], ...PUBLIC_PRODUCT_VISIBILITY },
     select: {
       id: true, slug: true, name: true, image: true, priceAed: true, weight: true,
       discountPercent: true, hasDiscount: true, updatedAt: true,
@@ -30,24 +31,14 @@ export const getSeoStore = cache(async id => prisma.store.findUnique({
   where: { id },
   select: {
     id: true, name: true, desc: true, url: true, img: true,
-    products: {
-      where: { status: 'active' },
-      orderBy: { updatedAt: 'desc' },
-      take: 24,
-      select: { id: true, name: true, image: true, updatedAt: true },
-    },
+    _count: { select: { products: { where: PUBLIC_PRODUCT_VISIBILITY } } },
   },
-}));
+}).then(store => store ? { ...store, productCount: store._count.products } : null));
 
 export const getSeoBrand = cache(async id => prisma.brand.findUnique({
   where: { id },
   select: {
     id: true, name: true, faName: true, cat: true, img: true,
-    products: {
-      where: { status: 'active' },
-      orderBy: { updatedAt: 'desc' },
-      take: 24,
-      select: { id: true, name: true, image: true, updatedAt: true },
-    },
+    _count: { select: { products: { where: PUBLIC_PRODUCT_VISIBILITY } } },
   },
-}));
+}).then(brand => brand ? { ...brand, productCount: brand._count.products } : null));
