@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminShell, { useAdminShellData } from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
+import AdminBrandSelector from '@/components/admin/AdminBrandSelector';
+import AdminProductImageField, { createProductImageState } from '@/components/admin/AdminProductImageField';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { calculateProductPricing } from '@/lib/pricing';
@@ -23,6 +25,24 @@ async function readApiResponse(response) {
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload.error || 'عملیات با خطا مواجه شد.');
   return payload;
+}
+
+async function uploadProductImage(imageState) {
+  if (imageState.method === 'url') {
+    const value = imageState.url.trim() || null;
+    return { value, changed: value !== (imageState.existingUrl || null) };
+  }
+  if (imageState.file) {
+    const formData = new FormData();
+    formData.set('file', imageState.file);
+    const uploaded = await readApiResponse(await fetch('/api/admin/products/upload', {
+      method: 'POST',
+      body: formData,
+    }));
+    return { value: uploaded.url, changed: true };
+  }
+  if (imageState.removed) return { value: null, changed: Boolean(imageState.existingUrl) };
+  return { value: imageState.existingUrl || null, changed: false };
 }
 
 function ProductSalesCount() {
@@ -52,6 +72,9 @@ export default function AdminProductsPage() {
     name: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
     category: 'clothing', gender: 'men', discountPercent: 0, hasDiscount: false, isBestSeller: false
   });
+  const [editProductImage, setEditProductImage] = useState(() => createProductImageState());
+  const [addProductImage, setAddProductImage] = useState(() => createProductImageState());
+  const [productImageUploading, setProductImageUploading] = useState('');
   const [adminProducts, setAdminProducts] = useState([]);
   const [productSearchQuery, setProductSearchQuery] = useState('');
   const [productStatusFilter, setProductStatusFilter] = useState('همه');
@@ -150,6 +173,7 @@ export default function AdminProductsPage() {
         hasDiscount: false,
         isBestSeller: false,
       });
+      setAddProductImage(createProductImageState(product.imageUrl || '', 'url'));
       setIsAddProductManualOpen(true);
       setProductLinkInput('');
       if (payload.error === 'PRICE_NOT_FOUND') {
@@ -194,17 +218,29 @@ export default function AdminProductsPage() {
       originalLink: getProductOriginalLink(prod), foreignStatus: getProductForeignStatus(prod), image: prod.image || '',
       gender: prod.gender || '', discountPercent: prod.discountPercent || 0, isBestSeller: !!prod.isBestSeller,
     });
+    setEditProductImage(createProductImageState(prod.image || ''));
     setIsEditProductModalOpen(true);
   };
 
   const handleEditProductSubmitLocal = async event => {
     event.preventDefault();
+    let imageResult;
+    setProductImageUploading('edit');
     try {
+      imageResult = await uploadProductImage(editProductImage);
+    } catch (error) {
+      setEditProductImage(previous => ({ ...previous, error: error.message || 'آپلود تصویر با خطا مواجه شد.' }));
+      setProductImageUploading('');
+      return;
+    }
+    setProductImageUploading('');
+    try {
+      const imageUpdate = imageResult.changed ? { image: imageResult.value } : {};
       await readApiResponse(await fetch(`/api/admin/products/${encodeURIComponent(editProductForm.id)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
           name: editProductForm.name, brandId: editProductForm.brandId, categoryId: editProductForm.category,
           storeId: editProductForm.storeId, priceAed: editProductForm.priceAed, weight: editProductForm.weight,
-          originalLink: editProductForm.originalLink || null, image: editProductForm.image || null,
+          originalLink: editProductForm.originalLink || null, ...imageUpdate,
           status: editProductForm.foreignStatus, gender: editProductForm.gender || null,
           discountPercent: Number(editProductForm.discountPercent) || 0, isBestSeller: !!editProductForm.isBestSeller,
           hasDiscount: Number(editProductForm.discountPercent) > 0,
@@ -218,12 +254,22 @@ export default function AdminProductsPage() {
 
   const handleManualAddProductSubmit = async event => {
     event.preventDefault();
+    let imageResult;
+    setProductImageUploading('add');
+    try {
+      imageResult = await uploadProductImage(addProductImage);
+    } catch (error) {
+      setAddProductImage(previous => ({ ...previous, error: error.message || 'آپلود تصویر با خطا مواجه شد.' }));
+      setProductImageUploading('');
+      return;
+    }
+    setProductImageUploading('');
     try {
       const created = await readApiResponse(await fetch('/api/admin/products', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
           name: addProductManualForm.name, brandId: addProductManualForm.brandId, categoryId: addProductManualForm.category,
           storeId: addProductManualForm.storeId, priceAed: addProductManualForm.priceAed, weight: addProductManualForm.weight,
-          originalLink: addProductManualForm.originalLink || null, image: addProductManualForm.image || null,
+          originalLink: addProductManualForm.originalLink || null, image: imageResult.value,
           gender: addProductManualForm.gender || null, hasDiscount: !!addProductManualForm.hasDiscount,
           discountPercent: addProductManualForm.hasDiscount ? (Number(addProductManualForm.discountPercent) || 0) : 0,
           isBestSeller: !!addProductManualForm.isBestSeller,
@@ -284,10 +330,11 @@ export default function AdminProductsPage() {
             {can(ADMIN_PERMISSIONS.PRODUCTS_CREATE) && <button 
               onClick={() => {
                 setAddProductManualForm({
-                  name: '', brandId: brands[0]?.id || '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
+                  name: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
                   originalLink: '', image: '', category: categories[0]?.id || '', gender: '', discountPercent: 0,
                   hasDiscount: false, isBestSeller: false,
                 });
+                setAddProductImage(createProductImageState());
                 setIsAddProductManualOpen(true);
               }}
               style={{ padding: '8px 16px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -640,7 +687,7 @@ export default function AdminProductsPage() {
 
           {isEditProductModalOpen && (
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
-              <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
+              <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
                   <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0 }}>✏️ ویرایش اطلاعات محصول خارجی</h2>
                   <button onClick={() => setIsEditProductModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
@@ -659,13 +706,13 @@ export default function AdminProductsPage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', position: 'relative' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
-                      <select required value={editProductForm.brandId} onChange={e => setEditProductForm({ ...editProductForm, brandId: e.target.value })} style={{ padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}>
-                        <option value="">انتخاب برند</option>
-                        {safeBrands.map(brand => <option key={brand.id} value={brand.id}>{brand.name}{brand.faName ? ` — ${brand.faName}` : ''}</option>)}
-                      </select>
-                    </div>
+                    <AdminBrandSelector
+                      brands={safeBrands}
+                      value={editProductForm.brandId}
+                      onChange={brandId => setEditProductForm(previous => ({ ...previous, brandId }))}
+                      onBrandsChange={setBrands}
+                      disabled={productImageUploading === 'edit'}
+                    />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                       <label style={{ fontSize: '11px', color: '#8b92a5' }}>فروشگاه مبدا:</label>
@@ -720,16 +767,11 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>تصویر محصول:</label>
-                    <input 
-                      type="text" 
-                      value={editProductForm.image || ""}
-                      onChange={(e) => setEditProductForm({...editProductForm, image: e.target.value})}
-                      placeholder="آدرس امن http/https تصویر را وارد کنید"
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', marginTop: '6px' }}
-                    />
-                  </div>
+                  <AdminProductImageField
+                    value={editProductImage}
+                    onChange={setEditProductImage}
+                    uploading={productImageUploading === 'edit'}
+                  />
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '11px', color: '#8b92a5' }}>نمایش در دسته‌بندی‌های سایت:</label>
@@ -797,7 +839,7 @@ export default function AdminProductsPage() {
 
                   <div style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'flex-end' }}>
                     <button type="button" onClick={() => setIsEditProductModalOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '11.5px' }}>انصراف</button>
-                    <button type="submit" style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '11.5px' }}>ذخیره تغییرات</button>
+                    <button type="submit" disabled={productImageUploading === 'edit'} style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: productImageUploading === 'edit' ? 'wait' : 'pointer', fontSize: '11.5px' }}>{productImageUploading === 'edit' ? 'در حال آپلود…' : 'ذخیره تغییرات'}</button>
                   </div>
                 </form>
               </div>
@@ -807,7 +849,7 @@ export default function AdminProductsPage() {
           {/* Add Product Manual Modal */}
           {isAddProductManualOpen && (
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
-              <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
+              <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
                   <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0 }}>➕ افزودن دستی محصول خارجی</h2>
                   <button onClick={() => setIsAddProductManualOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
@@ -827,13 +869,13 @@ export default function AdminProductsPage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', position: 'relative' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
-                      <select required value={addProductManualForm.brandId} onChange={e => setAddProductManualForm({ ...addProductManualForm, brandId: e.target.value })} style={{ padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}>
-                        <option value="">انتخاب برند</option>
-                        {safeBrands.map(brand => <option key={brand.id} value={brand.id}>{brand.name}{brand.faName ? ` — ${brand.faName}` : ''}</option>)}
-                      </select>
-                    </div>
+                    <AdminBrandSelector
+                      brands={safeBrands}
+                      value={addProductManualForm.brandId}
+                      onChange={brandId => setAddProductManualForm(previous => ({ ...previous, brandId }))}
+                      onBrandsChange={setBrands}
+                      disabled={productImageUploading === 'add'}
+                    />
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                       <label style={{ fontSize: '11px', color: '#8b92a5' }}>فروشگاه مبدا:</label>
@@ -889,16 +931,11 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>تصویر محصول:</label>
-                    <input 
-                      type="text" 
-                      value={addProductManualForm.image || ""}
-                      onChange={(e) => setAddProductManualForm({...addProductManualForm, image: e.target.value})}
-                      placeholder="آدرس امن http/https تصویر را وارد کنید"
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', marginTop: '6px' }}
-                    />
-                  </div>
+                  <AdminProductImageField
+                    value={addProductImage}
+                    onChange={setAddProductImage}
+                    uploading={productImageUploading === 'add'}
+                  />
 
                   {/* Category select - warehouse style */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -983,7 +1020,7 @@ export default function AdminProductsPage() {
 
                   <div style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'flex-end' }}>
                     <button type="button" onClick={() => setIsAddProductManualOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '11.5px' }}>انصراف</button>
-                    <button type="submit" style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '11.5px' }}>ثبت محصول</button>
+                    <button type="submit" disabled={productImageUploading === 'add'} style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: productImageUploading === 'add' ? 'wait' : 'pointer', fontSize: '11.5px' }}>{productImageUploading === 'add' ? 'در حال آپلود…' : 'ثبت محصول'}</button>
                   </div>
                 </form>
               </div>

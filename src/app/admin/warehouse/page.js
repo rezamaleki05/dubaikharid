@@ -2,35 +2,10 @@
 
 import React, { useCallback, useState, useEffect } from 'react';
 import { AdminIcons } from '@/components/admin/AdminIcons';
+import AdminBrandSelector from '@/components/admin/AdminBrandSelector';
 import AdminShell from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
-
-const DEFAULT_BRANDS_SEED = [
-  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI', url: 'https://www.gucci.com/ae/en/' },
-  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV', url: 'https://ae.louisvuitton.com/eng-ae/homepage' },
-  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL', url: 'https://www.chanel.com/ae/' },
-  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
-  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
-  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
-  { id: 'aldo', name: 'Aldo', faName: 'آلدو', cat: 'کیف و کفش', hasImage: true, img: '/images/logo/aldo.png', url: 'https://aldoshoes.me/ae/en/' },
-  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
-  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
-  { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
-  { id: 'fendi', name: 'Fendi', faName: 'فندی', cat: 'مد و پوشاک', hasImage: false, fallback: 'FENDI', url: 'https://www.fendi.com/ae-en/' },
-  { id: 'balenciaga', name: 'Balenciaga', faName: 'بالنسیاگا', cat: 'مد و پوشاک', hasImage: false, fallback: 'BALENCIAGA', url: 'https://www.balenciaga.com/en-ae' },
-  { id: 'saintlaurent', name: 'Saint Laurent', faName: 'سن لورن', cat: 'مد و پوشاک', hasImage: false, fallback: 'YSL', url: 'https://www.ysl.com/en-ae' },
-  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg', url: 'https://www.nike.com/ae/' },
-  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png', url: 'https://www.adidas.ae' },
-  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png', url: 'https://m.shein.com/ae' },
-  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '', url: 'https://www.apple.com/ae/' },
-  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG', url: 'https://www.samsung.com/ae/' },
-  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA', url: 'https://www.sephora.ae' },
-  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' },
-  { id: 'zara', name: 'Zara', faName: 'زارا', cat: 'مد و پوشاک', hasImage: false, fallback: 'ZARA', url: 'https://www.zara.com/ae/en/' },
-  { id: 'mango', name: 'Mango', faName: 'مانگو', cat: 'مد و پوشاک', hasImage: false, fallback: 'MANGO', url: 'https://shop.mango.com/ae' },
-  { id: 'hm', name: 'H&M', faName: 'اچ اند ام', cat: 'مد و پوشاک', hasImage: false, fallback: 'H&M', url: 'https://ae.hm.com/en/' }
-];
 
 const getCategorySelectValue = (category, gender) => {
   if (gender === 'men') {
@@ -130,7 +105,6 @@ export default function AdminWarehousePage() {
   const [selectedWarehouseProductId, setSelectedWarehouseProductId] = useState('');
   const [warehouseSearchQuery, setWarehouseSearchQuery] = useState('');
   const [brands, setBrands] = useState([]);
-  const [brandDropdownOpen, setBrandDropdownOpen] = useState(null);
   const [warehouseCategoryFilter, setWarehouseCategoryFilter] = useState('همه');
   const [warehouseBrandFilter, setWarehouseBrandFilter] = useState('همه');
   const [warehouseStatusFilter, setWarehouseStatusFilter] = useState('همه');
@@ -140,7 +114,7 @@ export default function AdminWarehousePage() {
   const [isAddWarehouseOpen, setIsAddWarehouseOpen] = useState(false);
   const [isEditWarehouseOpen, setIsEditWarehouseOpen] = useState(false);
   const [editWarehouseForm, setEditWarehouseForm] = useState({
-    id: '', name: '', brand: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    id: '', name: '', brandId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   
   const [warehouseAdjustStockOpen, setWarehouseAdjustStockOpen] = useState(false);
@@ -153,7 +127,7 @@ export default function AdminWarehousePage() {
   const [warehouseReportOpen, setWarehouseReportOpen] = useState(false);
   const [activeWarehouseMenuId, setActiveWarehouseMenuId] = useState(null);
   const [addWarehouseForm, setAddWarehouseForm] = useState({
-    name: '', brand: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    name: '', brandId: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   const [warehousePage, setWarehousePage] = useState(1);
   const [warehouseLimit, setWarehouseLimit] = useState(10);
@@ -168,11 +142,11 @@ export default function AdminWarehousePage() {
     fetch('/api/admin/brands')
       .then(res => res.json())
       .then(data => {
-        setBrands(Array.isArray(data) && data.length > 0 ? data : DEFAULT_BRANDS_SEED);
+        setBrands(Array.isArray(data) ? data : []);
       })
       .catch(error => {
         console.error('Error fetching brands:', error);
-        setBrands(DEFAULT_BRANDS_SEED);
+        setBrands([]);
       });
   }, []);
 
@@ -309,9 +283,8 @@ export default function AdminWarehousePage() {
     event.preventDefault();
     if (!can(ADMIN_PERMISSIONS.WAREHOUSE_EDIT)) return;
     const name = String(addWarehouseForm?.name ?? '').trim();
-    const brand = String(addWarehouseForm?.brand ?? '').trim();
     const price = String(addWarehouseForm?.price ?? '').trim();
-    if (!name || !brand || !price) return alert('لطفاً فیلدهای ضروری را پر کنید.');
+    if (!name || !price) return alert('لطفاً فیلدهای ضروری را پر کنید.');
 
     try {
       const created = await readWarehouseApi(await fetch('/api/admin/warehouse', {
@@ -320,7 +293,7 @@ export default function AdminWarehousePage() {
       setSelectedWarehouseProductId(created.id);
       setIsAddWarehouseOpen(false);
       setAddWarehouseForm({
-        name: '', brand: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+        name: '', brandId: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
       });
       setWarehousePage(1);
       await loadWarehouse();
@@ -332,14 +305,13 @@ export default function AdminWarehousePage() {
     event.preventDefault();
     if (!can(ADMIN_PERMISSIONS.WAREHOUSE_EDIT)) return;
     const name = String(editWarehouseForm?.name ?? '').trim();
-    const brand = String(editWarehouseForm?.brand ?? '').trim();
     const price = String(editWarehouseForm?.price ?? '').trim();
-    if (!name || !brand || !price) return alert('لطفاً فیلدهای ضروری را پر کنید.');
+    if (!name || !price) return alert('لطفاً فیلدهای ضروری را پر کنید.');
 
     try {
       await readWarehouseApi(await fetch(`/api/admin/warehouse/${encodeURIComponent(editWarehouseForm.id)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          name, brand, category: String(editWarehouseForm?.category ?? ''), gender: String(editWarehouseForm?.gender ?? ''),
+          name, brandId: editWarehouseForm?.brandId || null, category: String(editWarehouseForm?.category ?? ''), gender: String(editWarehouseForm?.gender ?? ''),
           sku: String(editWarehouseForm?.sku ?? ''), price, stock: Number(editWarehouseForm?.stock),
           reserved: Number(editWarehouseForm?.reserved), location: String(editWarehouseForm?.location ?? ''),
           minStock: Number(editWarehouseForm?.minStock), image: String(editWarehouseForm?.image ?? '') || null,
@@ -1233,85 +1205,12 @@ export default function AdminWarehousePage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
-                      <div style={{ position: 'relative' }}>
-                        <input
-                          type="text"
-                          required
-                          value={addWarehouseForm?.brand ?? ''}
-                          onChange={e => {
-                            setAddWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
-                            setBrandDropdownOpen('addWarehouse');
-                          }}
-                          onFocus={() => setBrandDropdownOpen('addWarehouse')}
-                          onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
-                          style={{ width: '100%', padding: '8px 12px 8px 32px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                        />
-                        <div style={{
-                          position: 'absolute',
-                          left: '10px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          pointerEvents: 'none',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8b92a5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                          </svg>
-                        </div>
-                        {brandDropdownOpen === 'addWarehouse' && (() => {
-                        const searchVal = String(addWarehouseForm?.brand ?? '').toLowerCase();
-                        const filtered = safeBrands.filter(b =>
-                          !searchVal || 
-                          String(b?.name ?? '').toLowerCase().includes(searchVal) ||
-                          String(b?.faName ?? '').toLowerCase().includes(searchVal)
-                        );
-                        if (filtered.length === 0) return null;
-                        return (
-                          <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            right: 0,
-                            background: '#141622',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            maxHeight: '180px',
-                            overflowY: 'auto',
-                            zIndex: 1000,
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                            marginTop: '4px'
-                          }}>
-                            {filtered.map((b, idx) => (
-                              <div
-                                key={`${b.id || idx}-${idx}`}
-                                onMouseDown={() => {
-                                  setAddWarehouseForm(prev => ({ ...prev, brand: String(b?.name ?? '') }));
-                                  setBrandDropdownOpen(null);
-                                }}
-                                style={{
-                                  padding: '8px 12px',
-                                  cursor: 'pointer',
-                                  borderBottom: '1px solid rgba(255,255,255,0.03)',
-                                  fontSize: '12px',
-                                  color: '#fff',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  background: 'rgba(255,255,255,0.01)'
-                                }}
-                              >
-                                <span style={{ fontWeight: 'bold' }}>{b.name}</span>
-                                <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                      </div>
-                    </div>
+                    <AdminBrandSelector
+                      brands={safeBrands}
+                      value={addWarehouseForm.brandId}
+                      onChange={brandId => setAddWarehouseForm(previous => ({ ...previous, brandId }))}
+                      onBrandsChange={setBrands}
+                    />
                     <div>
                       <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
                       <select
@@ -1556,87 +1455,12 @@ export default function AdminWarehousePage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div>
-                      <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>برند (ضروری)</label>
-                      <div style={{ position: 'relative' }}>
-                        <input
-                          type="text"
-                          required
-                          value={editWarehouseForm?.brand ?? ''}
-                          onChange={e => {
-                            setEditWarehouseForm(prev => ({ ...prev, brand: e.target.value }));
-                            setBrandDropdownOpen('editWarehouse');
-                          }}
-                          onFocus={() => setBrandDropdownOpen('editWarehouse')}
-                          onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
-                          style={{ width: '100%', padding: '8px 32px 8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                        />
-                        <div
-                          style={{
-                            position: 'absolute',
-                            right: '10px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            pointerEvents: 'none',
-                            opacity: 0.5,
-                            display: 'flex',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 9l6 6 6-6" />
-                          </svg>
-                        </div>
-                        {brandDropdownOpen === 'editWarehouse' && (() => {
-                        const searchVal = String(editWarehouseForm?.brand ?? '').toLowerCase();
-                        const filtered = safeBrands.filter(b =>
-                          !searchVal || 
-                          String(b?.name ?? '').toLowerCase().includes(searchVal) ||
-                          String(b?.faName ?? '').toLowerCase().includes(searchVal)
-                        );
-                        if (filtered.length === 0) return null;
-                        return (
-                          <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: 0,
-                            right: 0,
-                            background: '#141622',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px',
-                            maxHeight: '180px',
-                            overflowY: 'auto',
-                            zIndex: 1000,
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                            marginTop: '4px'
-                          }}>
-                            {filtered.map((b, idx) => (
-                              <div
-                                key={`${b.id || idx}-${idx}`}
-                                onMouseDown={() => {
-                                  setEditWarehouseForm(prev => ({ ...prev, brand: String(b?.name ?? '') }));
-                                  setBrandDropdownOpen(null);
-                                }}
-                                style={{
-                                  padding: '8px 12px',
-                                  cursor: 'pointer',
-                                  borderBottom: '1px solid rgba(255,255,255,0.03)',
-                                  fontSize: '12px',
-                                  color: '#fff',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  background: 'rgba(255,255,255,0.01)'
-                                }}
-                              >
-                                <span style={{ fontWeight: 'bold' }}>{b.name}</span>
-                                <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                      </div>
-                    </div>
+                    <AdminBrandSelector
+                      brands={safeBrands}
+                      value={editWarehouseForm.brandId}
+                      onChange={brandId => setEditWarehouseForm(previous => ({ ...previous, brandId }))}
+                      onBrandsChange={setBrands}
+                    />
                     <div>
                       <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
                       <select

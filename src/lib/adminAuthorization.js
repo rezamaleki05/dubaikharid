@@ -48,3 +48,17 @@ export async function requireAdminPermission(cookieStore, permission) {
 
   return admin;
 }
+
+export async function requireAnyAdminPermission(cookieStore, permissions) {
+  const admin = await getCurrentAdmin(cookieStore);
+
+  if (!admin) {
+    throw new AdminAuthorizationError(401, 'Unauthorized');
+  }
+
+  if (!Array.isArray(permissions) || !permissions.some(permission => hasPermission(admin, permission))) {
+    throw new AdminAuthorizationError(403, 'Forbidden');
+  }
+
+  return admin;
+}

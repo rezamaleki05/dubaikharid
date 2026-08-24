@@ -64,10 +64,17 @@ export function validateProductPayload(body, { partial = false } = {}) {
     data.name = name;
   }
 
-  for (const field of ['brandId', 'categoryId', 'storeId']) {
+  if (!partial || Object.hasOwn(body, 'brandId')) {
+    const brandId = cleanOptionalString(body.brandId, 128);
+    if (brandId === undefined) return { error: 'برند انتخاب‌شده معتبر نیست.' };
+    data.brandId = brandId;
+    if (brandId) relationIds.brandId = brandId;
+  }
+
+  for (const field of ['categoryId', 'storeId']) {
     if (!partial || Object.hasOwn(body, field)) {
       const value = cleanOptionalString(body[field], 128);
-      if (!value) return { error: 'برند، دسته‌بندی و فروشگاه معتبر الزامی هستند.' };
+      if (!value) return { error: 'دسته‌بندی و فروشگاه معتبر الزامی هستند.' };
       data[field] = value;
       relationIds[field] = value;
     }

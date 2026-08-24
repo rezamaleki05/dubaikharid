@@ -110,14 +110,12 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
 
   if (Object.hasOwn(body, 'brandId')) {
     const value = cleanOptionalString(body.brandId, 128);
-    if (!value) return { error: 'برند انتخاب‌شده معتبر نیست.' };
+    if (value === undefined) return { error: 'برند انتخاب‌شده معتبر نیست.' };
     relations.brandId = value;
   } else if (Object.hasOwn(body, 'brand')) {
     const value = cleanOptionalString(body.brand, 160);
-    if (!value) return { error: 'برند کالا الزامی است.' };
+    if (value === undefined) return { error: 'برند انتخاب‌شده معتبر نیست.' };
     relations.brandName = value;
-  } else if (!partial) {
-    return { error: 'برند کالا الزامی است.' };
   }
 
   if (Object.hasOwn(body, 'categoryId')) {
@@ -186,10 +184,19 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
 
 export async function resolveWarehouseRelations(client, relations) {
   const data = {};
-  if (relations.brandId || relations.brandName) {
-    const brand = relations.brandId
-      ? await client.brand.findUnique({ where: { id: relations.brandId }, select: { id: true } })
-      : await client.brand.findFirst({ where: { name: { equals: relations.brandName, mode: 'insensitive' } }, select: { id: true } });
+  if (Object.hasOwn(relations, 'brandId')) {
+    if (relations.brandId === null) {
+      data.brandId = null;
+    } else {
+      const brand = await client.brand.findUnique({ where: { id: relations.brandId }, select: { id: true } });
+      if (!brand) throw new WarehouseDomainError('برند انتخاب‌شده پیدا نشد.', 404, 'BRAND_NOT_FOUND');
+      data.brandId = brand.id;
+    }
+  } else if (relations.brandName) {
+    const brand = await client.brand.findFirst({
+      where: { name: { equals: relations.brandName, mode: 'insensitive' } },
+      select: { id: true },
+    });
     if (!brand) throw new WarehouseDomainError('برند انتخاب‌شده پیدا نشد.', 404, 'BRAND_NOT_FOUND');
     data.brandId = brand.id;
   }
