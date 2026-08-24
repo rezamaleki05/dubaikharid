@@ -286,13 +286,24 @@ export async function getPublicDiscovery({ search = '', category = '', limit = 6
   const cleanSearch = typeof search === 'string' ? search.trim().slice(0, 160) : '';
   const cleanCategory = typeof category === 'string' ? category.trim().slice(0, 160) : '';
   const take = Number.isSafeInteger(Number(limit)) && Number(limit) >= 1 && Number(limit) <= 100 ? Number(limit) : 60;
-  const brandWhereClause = {
-    ...(cleanCategory ? { cat: { equals: cleanCategory, mode: 'insensitive' } } : {}),
-    ...(cleanSearch ? { OR: [
+  const brandClauses = [
+    cleanCategory ? { OR: [
+      { cat: { equals: cleanCategory, mode: 'insensitive' } },
+      { categoryMappings: { some: { category: { OR: [
+        { id: cleanCategory },
+        { name: { equals: cleanCategory, mode: 'insensitive' } },
+        { query: { equals: cleanCategory, mode: 'insensitive' } },
+      ] } } } },
+    ] } : null,
+    cleanSearch ? { OR: [
       { name: { contains: cleanSearch, mode: 'insensitive' } },
       { faName: { contains: cleanSearch, mode: 'insensitive' } },
       { cat: { contains: cleanSearch, mode: 'insensitive' } },
-    ] } : {}),
+    ] } : null,
+  ].filter(Boolean);
+  const brandWhereClause = {
+    showInBrandDirectory: true,
+    ...(brandClauses.length ? { AND: brandClauses } : {}),
   };
   const storeWhereClause = cleanSearch ? { OR: [
     { name: { contains: cleanSearch, mode: 'insensitive' } },
@@ -306,7 +317,13 @@ export async function getPublicDiscovery({ search = '', category = '', limit = 6
   const [brands, stores, categories] = await Promise.all([
     prisma.brand.findMany({
       where: brandWhereClause,
-      select: { id: true, name: true, faName: true, cat: true, url: true, img: true, fallback: true, hasImage: true },
+      select: {
+        id: true, name: true, faName: true, cat: true, url: true, img: true, fallback: true, hasImage: true,
+        categoryMappings: {
+          select: { category: { select: { id: true, name: true, query: true } } },
+          orderBy: { category: { name: 'asc' } },
+        },
+      },
       orderBy: { name: 'asc' },
       take,
     }),
@@ -323,5 +340,12 @@ export async function getPublicDiscovery({ search = '', category = '', limit = 6
       take,
     }),
   ]);
-  return { brands, stores, categories };
+  return {
+    brands: brands.map(({ categoryMappings, ...brand }) => ({
+      ...brand,
+      categories: categoryMappings.map(mapping => mapping.category),
+    })),
+    stores,
+    categories,
+  };
 }

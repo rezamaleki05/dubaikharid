@@ -7,6 +7,16 @@ import AdminShell from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 
+const WAREHOUSE_CATEGORY_QUERY_MAP = Object.freeze({
+  electronics: 'tech', clothing: 'fashion', pants: 'fashion', shoes: 'shoes', bags: 'shoes',
+  accessories: 'accessories', watches_glasses: 'accessories', wallets_belts: 'shoes', trending: 'fashion',
+});
+
+const findWarehouseCategoryId = (categories, categoryKey) => {
+  const query = WAREHOUSE_CATEGORY_QUERY_MAP[categoryKey] || categoryKey;
+  return categories.find(category => category.query === query || category.id === categoryKey)?.id || '';
+};
+
 const getCategorySelectValue = (category, gender) => {
   if (gender === 'men') {
     if (category === 'clothing') return 'men_clothing';
@@ -29,7 +39,7 @@ const getCategorySelectValue = (category, gender) => {
   if (category === 'bags') return 'bags';
   if (category === 'watches_glasses') return 'watches_glasses';
   if (category === 'wallets_belts') return 'wallets_belts';
-  return 'trending';
+  return '';
 };
 
 const parseCategorySelectValue = (value) => {
@@ -49,7 +59,7 @@ const parseCategorySelectValue = (value) => {
     case 'bags': return { category: 'bags', gender: '' };
     case 'watches_glasses': return { category: 'watches_glasses', gender: '' };
     case 'wallets_belts': return { category: 'wallets_belts', gender: '' };
-    default: return { category: 'trending', gender: '' };
+    default: return { category: '', gender: '' };
   }
 };
 
@@ -105,6 +115,7 @@ export default function AdminWarehousePage() {
   const [selectedWarehouseProductId, setSelectedWarehouseProductId] = useState('');
   const [warehouseSearchQuery, setWarehouseSearchQuery] = useState('');
   const [brands, setBrands] = useState([]);
+  const [catalogCategories, setCatalogCategories] = useState([]);
   const [warehouseCategoryFilter, setWarehouseCategoryFilter] = useState('همه');
   const [warehouseBrandFilter, setWarehouseBrandFilter] = useState('همه');
   const [warehouseStatusFilter, setWarehouseStatusFilter] = useState('همه');
@@ -114,7 +125,7 @@ export default function AdminWarehousePage() {
   const [isAddWarehouseOpen, setIsAddWarehouseOpen] = useState(false);
   const [isEditWarehouseOpen, setIsEditWarehouseOpen] = useState(false);
   const [editWarehouseForm, setEditWarehouseForm] = useState({
-    id: '', name: '', brandId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    id: '', name: '', brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   
   const [warehouseAdjustStockOpen, setWarehouseAdjustStockOpen] = useState(false);
@@ -127,7 +138,7 @@ export default function AdminWarehousePage() {
   const [warehouseReportOpen, setWarehouseReportOpen] = useState(false);
   const [activeWarehouseMenuId, setActiveWarehouseMenuId] = useState(null);
   const [addWarehouseForm, setAddWarehouseForm] = useState({
-    name: '', brandId: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    name: '', brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   const [warehousePage, setWarehousePage] = useState(1);
   const [warehouseLimit, setWarehouseLimit] = useState(10);
@@ -139,14 +150,19 @@ export default function AdminWarehousePage() {
   const [warehouseError, setWarehouseError] = useState('');
 
   useEffect(() => {
-    fetch('/api/admin/brands')
-      .then(res => res.json())
-      .then(data => {
-        setBrands(Array.isArray(data) ? data : []);
+    Promise.all([
+      fetch('/api/admin/brands', { cache: 'no-store' }).then(readWarehouseApi),
+      fetch('/api/admin/categories', { cache: 'no-store' }).then(readWarehouseApi),
+    ])
+      .then(([brandData, categoryData]) => {
+        setBrands(Array.isArray(brandData) ? brandData : []);
+        const loadedCategories = Array.isArray(categoryData) ? categoryData : [];
+        setCatalogCategories(loadedCategories);
       })
       .catch(error => {
-        console.error('Error fetching brands:', error);
+        console.error('Error fetching warehouse brand/category options:', error);
         setBrands([]);
+        setCatalogCategories([]);
       });
   }, []);
 
@@ -287,13 +303,15 @@ export default function AdminWarehousePage() {
     if (!name || !price) return alert('لطفاً فیلدهای ضروری را پر کنید.');
 
     try {
+      const warehousePayload = { ...addWarehouseForm };
+      delete warehousePayload.categoryId;
       const created = await readWarehouseApi(await fetch('/api/admin/warehouse', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(addWarehouseForm),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(warehousePayload),
       }));
       setSelectedWarehouseProductId(created.id);
       setIsAddWarehouseOpen(false);
       setAddWarehouseForm({
-        name: '', brandId: '', category: 'clothing', gender: 'men', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+        name: '', brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
       });
       setWarehousePage(1);
       await loadWarehouse();
@@ -1205,12 +1223,6 @@ export default function AdminWarehousePage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <AdminBrandSelector
-                      brands={safeBrands}
-                      value={addWarehouseForm.brandId}
-                      onChange={brandId => setAddWarehouseForm(previous => ({ ...previous, brandId }))}
-                      onBrandsChange={setBrands}
-                    />
                     <div>
                       <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
                       <select
@@ -1221,11 +1233,13 @@ export default function AdminWarehousePage() {
                           setAddWarehouseForm(prev => ({
                             ...prev,
                             category: parsed.category,
+                            categoryId: findWarehouseCategoryId(catalogCategories, parsed.category),
                             gender: parsed.gender
                           }));
                         }}
                         style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
                       >
+                        <option value="">انتخاب دسته‌بندی</option>
                         <option value="men_clothing">پوشاک مردانه</option>
                         <option value="men_pants">شلوار مردانه</option>
                         <option value="men_shoes">کفش مردانه</option>
@@ -1243,6 +1257,13 @@ export default function AdminWarehousePage() {
                         <option value="wallets_belts">کیف پول و کمربند</option>
                       </select>
                     </div>
+                    <AdminBrandSelector
+                      brands={safeBrands}
+                      categoryId={addWarehouseForm.categoryId}
+                      value={addWarehouseForm.brandId}
+                      onChange={brandId => setAddWarehouseForm(previous => ({ ...previous, brandId }))}
+                      onBrandsChange={setBrands}
+                    />
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -1455,12 +1476,6 @@ export default function AdminWarehousePage() {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <AdminBrandSelector
-                      brands={safeBrands}
-                      value={editWarehouseForm.brandId}
-                      onChange={brandId => setEditWarehouseForm(previous => ({ ...previous, brandId }))}
-                      onBrandsChange={setBrands}
-                    />
                     <div>
                       <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>دسته‌بندی (ضروری)</label>
                       <select
@@ -1471,11 +1486,13 @@ export default function AdminWarehousePage() {
                           setEditWarehouseForm(prev => ({
                             ...prev,
                             category: parsed.category,
+                            categoryId: findWarehouseCategoryId(catalogCategories, parsed.category),
                             gender: parsed.gender
                           }));
                         }}
                         style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
                       >
+                        <option value="">انتخاب دسته‌بندی</option>
                         <option value="men_clothing">پوشاک مردانه</option>
                         <option value="men_pants">شلوار مردانه</option>
                         <option value="men_shoes">کفش مردانه</option>
@@ -1493,6 +1510,13 @@ export default function AdminWarehousePage() {
                         <option value="wallets_belts">کیف پول و کمربند</option>
                       </select>
                     </div>
+                    <AdminBrandSelector
+                      brands={safeBrands}
+                      categoryId={editWarehouseForm.categoryId}
+                      value={editWarehouseForm.brandId}
+                      onChange={brandId => setEditWarehouseForm(previous => ({ ...previous, brandId }))}
+                      onBrandsChange={setBrands}
+                    />
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

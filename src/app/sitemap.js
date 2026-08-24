@@ -28,7 +28,10 @@ export default async function sitemap() {
       prisma.product.findMany({ where: PUBLIC_PRODUCT_VISIBILITY, select: { id: true, updatedAt: true } }),
       prisma.laptop.findMany({ where: { status: 'AVAILABLE', archivedAt: null }, select: { id: true, updatedAt: true } }),
       prisma.store.findMany({ select: { id: true } }),
-      prisma.brand.findMany({ where: { products: { some: PUBLIC_PRODUCT_VISIBILITY } }, select: { id: true } }),
+      prisma.brand.findMany({
+        where: { showInBrandDirectory: true, products: { some: PUBLIC_PRODUCT_VISIBILITY } },
+        select: { id: true },
+      }),
     ]);
     return [
       ...staticEntries,

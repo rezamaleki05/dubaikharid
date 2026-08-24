@@ -11,7 +11,7 @@ export const getSeoProduct = cache(async id => {
     select: {
       id: true, slug: true, name: true, image: true, priceAed: true, weight: true,
       discountPercent: true, hasDiscount: true, updatedAt: true,
-      brand: { select: { id: true, name: true, faName: true } },
+      brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
       store: { select: { id: true, name: true } },
       category: { select: { id: true, name: true } },
     },
@@ -35,8 +35,8 @@ export const getSeoStore = cache(async id => prisma.store.findUnique({
   },
 }).then(store => store ? { ...store, productCount: store._count.products } : null));
 
-export const getSeoBrand = cache(async id => prisma.brand.findUnique({
-  where: { id },
+export const getSeoBrand = cache(async id => prisma.brand.findFirst({
+  where: { id, showInBrandDirectory: true },
   select: {
     id: true, name: true, faName: true, cat: true, img: true,
     _count: { select: { products: { where: PUBLIC_PRODUCT_VISIBILITY } } },
