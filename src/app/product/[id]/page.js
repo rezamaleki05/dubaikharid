@@ -401,7 +401,7 @@ export default function ProductPage({ params }) {
               </div>
             )}
             
-            <div className={styles.productDescription}>
+            <div className={styles.productDescription} style={{ whiteSpace: 'pre-wrap' }}>
               {product.description || 'اطلاعات کامل و جزئیات دقیق این محصول را می‌توانید از طریق لینک فروشگاه اصلی مشاهده کنید. ما این کالا را به صورت مستقیم از دبی خریداری کرده و درب منزل به شما تحویل می‌دهیم.'}
             </div>
 

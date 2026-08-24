@@ -64,12 +64,12 @@ export default function AdminProductsPage() {
   const [isFetchingProductLink, setIsFetchingProductLink] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [editProductForm, setEditProductForm] = useState({
-    id: '', name: '', brandId: '', priceAed: '', weight: '', storeId: '', originalLink: '', foreignStatus: 'active',
+    id: '', name: '', description: '', brandId: '', priceAed: '', weight: '', storeId: '', originalLink: '', foreignStatus: 'active',
     image: '', gender: '', category: '', discountPercent: 0, isBestSeller: false
   });
   const [isAddProductManualOpen, setIsAddProductManualOpen] = useState(false);
   const [addProductManualForm, setAddProductManualForm] = useState({
-    name: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
+    name: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
     category: 'clothing', gender: 'men', discountPercent: 0, hasDiscount: false, isBestSeller: false
   });
   const [editProductImage, setEditProductImage] = useState(() => createProductImageState());
@@ -161,6 +161,7 @@ export default function AdminProductsPage() {
       const matchedCategory = categories.find(item => item.query === product.category || item.name.includes(product.category || ''));
       setAddProductManualForm({
         name: product.name || '',
+        description: product.description || '',
         brandId: matchedBrand?.id || '',
         category: matchedCategory?.id || '',
         storeId: matchedStore?.id || '',
@@ -213,7 +214,7 @@ export default function AdminProductsPage() {
   const handleEditClick = prod => {
     if (!can(ADMIN_PERMISSIONS.PRODUCTS_EDIT)) return;
     setEditProductForm({
-      id: prod.id, name: prod.name, brandId: prod.brandId || '', category: prod.categoryId || '',
+      id: prod.id, name: prod.name, description: prod.description || '', brandId: prod.brandId || '', category: prod.categoryId || '',
       storeId: prod.storeId || '', priceAed: getProductAedPrice(prod), weight: getProductWeight(prod),
       originalLink: getProductOriginalLink(prod), foreignStatus: getProductForeignStatus(prod), image: prod.image || '',
       gender: prod.gender || '', discountPercent: prod.discountPercent || 0, isBestSeller: !!prod.isBestSeller,
@@ -238,7 +239,8 @@ export default function AdminProductsPage() {
       const imageUpdate = imageResult.changed ? { image: imageResult.value } : {};
       await readApiResponse(await fetch(`/api/admin/products/${encodeURIComponent(editProductForm.id)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          name: editProductForm.name, brandId: editProductForm.brandId, categoryId: editProductForm.category,
+          name: editProductForm.name, description: editProductForm.description || null,
+          brandId: editProductForm.brandId, categoryId: editProductForm.category,
           storeId: editProductForm.storeId, priceAed: editProductForm.priceAed, weight: editProductForm.weight,
           originalLink: editProductForm.originalLink || null, ...imageUpdate,
           status: editProductForm.foreignStatus, gender: editProductForm.gender || null,
@@ -267,7 +269,8 @@ export default function AdminProductsPage() {
     try {
       const created = await readApiResponse(await fetch('/api/admin/products', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          name: addProductManualForm.name, brandId: addProductManualForm.brandId, categoryId: addProductManualForm.category,
+          name: addProductManualForm.name, description: addProductManualForm.description || null,
+          brandId: addProductManualForm.brandId, categoryId: addProductManualForm.category,
           storeId: addProductManualForm.storeId, priceAed: addProductManualForm.priceAed, weight: addProductManualForm.weight,
           originalLink: addProductManualForm.originalLink || null, image: imageResult.value,
           gender: addProductManualForm.gender || null, hasDiscount: !!addProductManualForm.hasDiscount,
@@ -330,7 +333,7 @@ export default function AdminProductsPage() {
             {can(ADMIN_PERMISSIONS.PRODUCTS_CREATE) && <button 
               onClick={() => {
                 setAddProductManualForm({
-                  name: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
+                  name: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
                   originalLink: '', image: '', category: categories[0]?.id || '', gender: '', discountPercent: 0,
                   hasDiscount: false, isBestSeller: false,
                 });
@@ -705,6 +708,18 @@ export default function AdminProductsPage() {
                     />
                   </div>
 
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>توضیحات محصول:</label>
+                    <textarea
+                      rows={7}
+                      maxLength={20000}
+                      value={editProductForm.description || ''}
+                      onChange={(e) => setEditProductForm({ ...editProductForm, description: e.target.value })}
+                      placeholder="توضیحات کامل محصول را وارد کنید..."
+                      style={{ minHeight: '160px', resize: 'vertical', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', lineHeight: '1.8', outline: 'none', fontFamily: 'inherit' }}
+                    />
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                     <AdminBrandSelector
                       brands={safeBrands}
@@ -865,6 +880,18 @@ export default function AdminProductsPage() {
                       onChange={(e) => setAddProductManualForm({...addProductManualForm, name: e.target.value})}
                       placeholder="مثال: Apple Watch Ultra 2"
                       style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>توضیحات محصول:</label>
+                    <textarea
+                      rows={7}
+                      maxLength={20000}
+                      value={addProductManualForm.description || ''}
+                      onChange={(e) => setAddProductManualForm({ ...addProductManualForm, description: e.target.value })}
+                      placeholder="توضیحات کامل محصول را وارد کنید..."
+                      style={{ minHeight: '160px', resize: 'vertical', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', lineHeight: '1.8', outline: 'none', fontFamily: 'inherit' }}
                     />
                   </div>
 

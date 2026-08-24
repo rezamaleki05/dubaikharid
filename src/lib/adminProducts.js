@@ -13,7 +13,7 @@ export const adminProductInclude = Object.freeze({
 });
 
 const EDITABLE_FIELDS = new Set([
-  'name', 'slug', 'code', 'brandId', 'categoryId', 'storeId', 'priceAed', 'weight',
+  'name', 'description', 'slug', 'code', 'brandId', 'categoryId', 'storeId', 'priceAed', 'weight',
   'originalLink', 'image', 'gender', 'discountPercent', 'hasDiscount', 'isBestSeller', 'status',
 ]);
 
@@ -62,6 +62,18 @@ export function validateProductPayload(body, { partial = false } = {}) {
     const name = cleanOptionalString(body.name, 240);
     if (!name) return { error: 'نام محصول الزامی و حداکثر ۲۴۰ کاراکتر است.' };
     data.name = name;
+  }
+
+  if (Object.hasOwn(body, 'description')) {
+    if (body.description === null || body.description === '') {
+      data.description = null;
+    } else if (typeof body.description !== 'string') {
+      return { error: 'توضیحات محصول معتبر نیست.' };
+    } else {
+      const description = body.description.trim();
+      if (description.length > 20_000) return { error: 'توضیحات محصول حداکثر ۲۰٬۰۰۰ کاراکتر است.' };
+      data.description = description || null;
+    }
   }
 
   if (!partial || Object.hasOwn(body, 'brandId')) {
@@ -188,6 +200,7 @@ export function serializeAdminProduct(product) {
     id: product.id,
     code: product.code,
     name: product.name,
+    description: product.description,
     slug: product.slug,
     priceAed: Number(product.priceAed),
     weight: product.weight,

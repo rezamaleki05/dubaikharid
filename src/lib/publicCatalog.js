@@ -9,6 +9,7 @@ export const PUBLIC_PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg';
 const PUBLIC_PRODUCT_SELECT = Object.freeze({
   id: true,
   name: true,
+  description: true,
   slug: true,
   priceAed: true,
   weight: true,
@@ -178,6 +179,7 @@ export function serializePublicProduct(product) {
     productId: product.id,
     product_type: 'iran_inventory',
     name: product.name,
+    description: product.description || '',
     slug: product.slug,
     priceAed: Number(product.priceAed),
     weight: product.weight,
