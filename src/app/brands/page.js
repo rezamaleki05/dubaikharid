@@ -13,6 +13,8 @@ const steps = [
   { id: 4, title: '۴. ارسال لینک محصول', desc: 'لینک محصول یا عکس از محصول انتخابی خود را برای ما ارسال کنید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> }
 ];
 
+const isAldoBrand = brand => String(brand.name || '').trim().toLowerCase() === 'aldo';
+
 export default function BrandsPage() {
   const [brands, setBrands] = useState([]);
   const [stores, setStores] = useState([]);
@@ -188,12 +190,25 @@ export default function BrandsPage() {
           </select>
         </div>
 
-        <div className={styles.grid}>
+        <div className={`${styles.grid} ${styles.brandGrid}`}>
           {sortedBrands.map(brand => (
-            <div key={brand.id} className={styles.card}>
+            <div key={brand.id} className={`${styles.card} ${styles.brandCard}`}>
               <div className={styles.logoWrap}>
                 {brand.hasImage ? (
-                  <img src={brand.img} alt={brand.name} className={styles.logoImg} />
+                  <>
+                    <img
+                      src={brand.img}
+                      alt={brand.name}
+                      className={`${styles.logoImg} ${isAldoBrand(brand) ? styles.originalAldoLogo : ''}`}
+                    />
+                    {isAldoBrand(brand) ? (
+                      <span
+                        className={styles.lightAldoLogo}
+                        role="img"
+                        aria-label={brand.name}
+                      />
+                    ) : null}
+                  </>
                 ) : (
                   <div className={styles.logoFallback}>{brand.fallback}</div>
                 )}
@@ -204,7 +219,7 @@ export default function BrandsPage() {
               <p className={styles.brandCategory}>{brand.cat}</p>
               <a 
                 href={brand.url || `/brands/${brand.id}`}
-                className={styles.linkBtn}
+                className={`${styles.linkBtn} ${brand.url ? '' : styles.internalBrandLink}`}
                 {...(brand.url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 ورود به سایت رسمی
