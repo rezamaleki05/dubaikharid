@@ -184,7 +184,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
 
   return (
     <div className={styles.modalOverlay}>
-      <div className={styles.modalContainer}>
+      <div className={`${styles.modalContainer} ${step === 4 && resultKind === 'order' && manualPayment ? styles.manualPaymentModal : ''}`}>
         {/* Close Button */}
         <button onClick={handleClose} className={styles.closeBtn} aria-label="بستن">
           <MinimalIcon name="x" size={19} />
@@ -381,13 +381,15 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             </div>
 
             {resultKind === 'order' && authoritativeTotal !== null && manualPayment && (
-              <ManualPaymentPanel
-                orderCode={trackingCode}
-                totalToman={authoritativeTotal}
-                access={manualPayment}
-                uploadToken={manualPayment.uploadToken}
-                onSkip={handleClose}
-              />
+              <div className={styles.manualPaymentArea}>
+                <ManualPaymentPanel
+                  orderCode={trackingCode}
+                  totalToman={authoritativeTotal}
+                  access={manualPayment}
+                  uploadToken={manualPayment.uploadToken}
+                  onSkip={handleClose}
+                />
+              </div>
             )}
 
             <p className={styles.successDesc} style={{ textAlign: 'right' }}>
