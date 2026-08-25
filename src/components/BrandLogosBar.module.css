@@ -106,19 +106,19 @@
 }
 
 :global(html[data-theme='light']) .sectionWrapper { padding-block: 22px; background: #fff; border-block: 1px solid var(--border-subtle); }
-:global(html[data-theme='light']) .brandBar { padding-block: 4px; background: #1b1b1a; border: 0; border-radius: 0; }
+:global(html[data-theme='light']) .brandBar { padding-block: 4px; background: #fff; border: 0; border-radius: 0; }
 :global(html[data-theme='light']) .brandCard {
   min-width: 132px;
   padding: 13px 34px;
-  color: #fff;
+  color: #171717;
   background: transparent;
-  border-color: rgba(255,255,255,.1);
+  border-color: transparent;
   box-shadow: none;
-  opacity: .78;
+  opacity: .72;
 }
-:global(html[data-theme='light']) .brandCard:hover { opacity: 1; border-color: rgba(255,255,255,.18); box-shadow: none; }
-:global(html[data-theme='light']) .brandLogoWrap { color: #fff; }
-:global(html[data-theme='light']) .brandLogoWrap img { filter: brightness(0) invert(1) !important; }
+:global(html[data-theme='light']) .brandCard:hover { opacity: 1; border-color: transparent; box-shadow: none; }
+:global(html[data-theme='light']) .brandLogoWrap { color: #171717; }
+:global(html[data-theme='light']) .brandLogoWrap img { filter: brightness(0) !important; }
 :global(html[data-theme='light']) .brandCard:hover .brandLogoWrap { filter: none; transform: translateY(-1px); }
 
 @media (max-width: 768px) {

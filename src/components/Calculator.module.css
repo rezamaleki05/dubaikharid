@@ -495,27 +495,227 @@
   }
 }
 
-:global(html[data-theme='light']) .calculatorSection { color: var(--text-primary); background: #f7f7f5; }
-:global(html[data-theme='light']) .calculatorSection::before { opacity: .12; }
+:global(html[data-theme='light']) .calculatorSection {
+  color: var(--text-primary);
+  background: #fff;
+}
+
+:global(html[data-theme='light']) .calculatorSection::before {
+  background-image: none;
+  filter: none;
+  opacity: 0;
+}
+
+:global(html[data-theme='light']) .calcContainer {
+  align-items: center;
+}
+
+:global(html[data-theme='light']) .heroTextContent {
+  color: #191919;
+  text-shadow: none;
+}
+
 :global(html[data-theme='light']) .heroTextContent h1,
-:global(html[data-theme='light']) .heroTextContent h2,
-:global(html[data-theme='light']) .trustText h4,
+:global(html[data-theme='light']) .heroTextContent h2 {
+  color: #171717;
+}
+
+:global(html[data-theme='light']) .heroTextContent p {
+  color: #66635f;
+}
+
+:global(html[data-theme='light']) .trustBar {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:global(html[data-theme='light']) .trustItem {
+  background: #fff;
+  border-color: #e6e4e1;
+  box-shadow: 0 10px 26px rgba(24, 24, 22, .05);
+  backdrop-filter: none;
+}
+
+:global(html[data-theme='light']) .trustText h4 {
+  color: #1a1a19;
+}
+
+:global(html[data-theme='light']) .trustText p {
+  color: #696662;
+}
+
+:global(html[data-theme='light']) .formCard {
+  background: linear-gradient(145deg, #191919 0%, #111 100%);
+  border-color: rgba(255, 255, 255, .08);
+  box-shadow: 0 24px 56px rgba(18, 18, 18, .2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+:global(html[data-theme='light']) .formHeader {
+  border-bottom-color: rgba(255, 255, 255, .08);
+}
+
 :global(html[data-theme='light']) .headerTitleWrap h2,
-:global(html[data-theme='light']) .productInfo h3,
-:global(html[data-theme='light']) .totalAmount { color: var(--text-primary); }
-:global(html[data-theme='light']) .heroTextContent p,
-:global(html[data-theme='light']) .trustText p,
+:global(html[data-theme='light']) .productInfo h3 {
+  color: #fff;
+}
+
 :global(html[data-theme='light']) .formHeader p,
 :global(html[data-theme='light']) .fieldHint,
+:global(html[data-theme='light']) .totalLabel,
 :global(html[data-theme='light']) .totalNote,
-:global(html[data-theme='light']) .secureNote { color: var(--text-tertiary); }
-:global(html[data-theme='light']) .trustBar { background: transparent; border-color: var(--border-subtle); box-shadow: none; }
-:global(html[data-theme='light']) .formCard,
-:global(html[data-theme='light']) .productPreview,
-:global(html[data-theme='light']) .actionBox { background: #fff; border-color: var(--border-subtle); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .secureNote {
+  color: rgba(255, 255, 255, .58);
+}
+
+:global(html[data-theme='light']) .fieldWrapper label {
+  color: rgba(255, 255, 255, .9);
+}
+
 :global(html[data-theme='light']) .inputContainer,
-:global(html[data-theme='light']) .segmentedControl { background: #f4f4f2; border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .segmentedControl {
+  background: rgba(0, 0, 0, .34);
+  border-color: rgba(255, 255, 255, .12);
+}
+
+:global(html[data-theme='light']) .inputContainer:focus-within {
+  background: rgba(0, 0, 0, .5);
+  border-color: #f87820;
+  box-shadow: 0 0 0 3px rgba(248, 120, 32, .1);
+}
+
 :global(html[data-theme='light']) .inputContainer input,
-:global(html[data-theme='light']) .inputContainer select,
-:global(html[data-theme='light']) .segmentBtn { color: var(--text-primary); }
-:global(html[data-theme='light']) .inputContainer select option { color: var(--text-primary); background: var(--surface-elevated); }
+:global(html[data-theme='light']) .inputContainer select {
+  min-width: 0;
+  color: #fff;
+}
+
+:global(html[data-theme='light']) .inputContainer input::placeholder {
+  color: rgba(255, 255, 255, .38);
+}
+
+:global(html[data-theme='light']) .inputContainer select option {
+  color: #fff;
+  background: #171717;
+}
+
+:global(html[data-theme='light']) .inputIcon {
+  color: rgba(255, 255, 255, .58);
+}
+
+:global(html[data-theme='light']) .segmentedControl {
+  overflow: hidden;
+}
+
+:global(html[data-theme='light']) .segmentBtn {
+  color: rgba(255, 255, 255, .58);
+  border-left-color: rgba(255, 255, 255, .1);
+}
+
+:global(html[data-theme='light']) .segmentBtn:hover {
+  color: rgba(255, 255, 255, .86);
+  background: rgba(255, 255, 255, .04);
+}
+
+:global(html[data-theme='light']) .segmentBtn.active {
+  color: #f87820;
+  background: rgba(248, 120, 32, .12);
+  border-color: #f87820;
+}
+
+:global(html[data-theme='light']) .productPreview,
+:global(html[data-theme='light']) .actionBox {
+  background: rgba(0, 0, 0, .34);
+  border-color: rgba(255, 255, 255, .1);
+  box-shadow: none;
+}
+
+:global(html[data-theme='light']) .productThumb {
+  background: #222;
+  border: 1px solid rgba(255, 255, 255, .1);
+}
+
+:global(html[data-theme='light']) .storeTag {
+  color: rgba(255, 255, 255, .82);
+  background: rgba(0, 0, 0, .45);
+}
+
+:global(html[data-theme='light']) .productPreviewLoading {
+  color: #f87820;
+  background: rgba(248, 120, 32, .08);
+  border: 1px solid rgba(248, 120, 32, .16);
+}
+
+:global(html[data-theme='light']) .actionBox {
+  border-color: rgba(248, 120, 32, .2);
+}
+
+:global(html[data-theme='light']) .submitBtn {
+  box-shadow: 0 10px 28px rgba(248, 120, 32, .3);
+}
+
+:global(html[data-theme='light']) .submitBtn:hover {
+  box-shadow: 0 14px 34px rgba(248, 120, 32, .4);
+}
+
+@media (max-width: 1024px) {
+  :global(html[data-theme='light']) .calculatorSection {
+    min-height: auto;
+    padding-block: 68px;
+  }
+
+  :global(html[data-theme='light']) .calcContainer {
+    gap: 36px;
+  }
+
+  :global(html[data-theme='light']) .leftCol {
+    width: 100%;
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  :global(html[data-theme='light']) .calculatorSection {
+    padding-block: 48px;
+  }
+
+  :global(html[data-theme='light']) .calcContainer {
+    gap: 30px;
+  }
+
+  :global(html[data-theme='light']) .heroTextContent h1,
+  :global(html[data-theme='light']) .heroTextContent h2 {
+    font-size: 2.15rem;
+  }
+
+  :global(html[data-theme='light']) .heroTextContent p {
+    padding-inline: 8px;
+    font-size: 1rem;
+  }
+
+  :global(html[data-theme='light']) .trustBar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  :global(html[data-theme='light']) .trustItem {
+    width: 100%;
+  }
+
+  :global(html[data-theme='light']) .formHeader {
+    padding: 20px 18px;
+  }
+
+  :global(html[data-theme='light']) .formBody {
+    padding: 20px 16px;
+  }
+
+  :global(html[data-theme='light']) .secureNote {
+    align-items: flex-start;
+    text-align: right;
+    line-height: 1.7;
+  }
+}
