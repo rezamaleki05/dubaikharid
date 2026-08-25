@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { getAdminDeletionBlocker } from '@/lib/adminUserSafety';
 import { prisma } from '@/lib/prisma';
 
 const ADMIN_ROLES = new Set(['SUPER_ADMIN', 'ADMIN', 'OPERATIONS', 'FINANCE', 'CONTENT']);
@@ -117,5 +118,49 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'تغییر هم‌زمان دیگری ثبت شد؛ دوباره تلاش کنید.' }, { status: 409 });
     }
     throw error;
+  }
+}
+
+export async function DELETE(request, { params }) {
+  const { admin, response } = await authorizeAdminApiRequest(request, ADMIN_PERMISSIONS.ADMIN_USERS_MANAGE);
+  if (response) return response;
+  const { id } = await params;
+  if (!id || id.length > 160) return NextResponse.json({ error: 'شناسه مدیر معتبر نیست.' }, { status: 400 });
+
+  try {
+    const result = await prisma.$transaction(async tx => {
+      const target = await tx.adminUser.findUnique({ where: { id }, select: safeAdminSelect });
+      const activeSuperAdminCount = target?.role === 'SUPER_ADMIN' && target.status === 'ACTIVE'
+        ? await tx.adminUser.count({ where: { role: 'SUPER_ADMIN', status: 'ACTIVE' } })
+        : 0;
+      const blocker = getAdminDeletionBlocker({ actingAdminId: admin.id, target, activeSuperAdminCount });
+      if (blocker) return { error: blocker };
+      await tx.adminUser.delete({ where: { id } });
+      return { target };
+    }, { isolationLevel: 'Serializable' });
+
+    const errors = {
+      NOT_FOUND: ['مدیر موردنظر پیدا نشد.', 404],
+      SELF_DELETE: ['نمی‌توانید حساب مدیر فعلی را حذف کنید.', 409],
+      LAST_SUPER_ADMIN: ['آخرین مدیر ارشد فعال را نمی‌توان حذف کرد.', 409],
+    };
+    if (result.error) {
+      const [message, status] = errors[result.error];
+      return NextResponse.json({ error: message }, { status });
+    }
+
+    await logAdminActivity({
+      adminId: admin.id,
+      action: 'ADMIN_USER_DELETED',
+      entityType: 'AdminUser',
+      entityId: id,
+      metadata: { email: result.target.email, role: result.target.role, status: result.target.status },
+      request,
+    });
+    return NextResponse.json({ data: { id } });
+  } catch (error) {
+    if (error?.code === 'P2034') return NextResponse.json({ error: 'تغییر هم‌زمان دیگری ثبت شد؛ دوباره تلاش کنید.' }, { status: 409 });
+    console.error('Admin user delete failed:', error);
+    return NextResponse.json({ error: 'حذف مدیر با خطا مواجه شد.' }, { status: 500 });
   }
 }

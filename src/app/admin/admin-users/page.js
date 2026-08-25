@@ -89,6 +89,19 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleDelete = async (item) => {
+    if (!window.confirm('آیا از حذف این مدیر مطمئن هستید؟\n\nاین عملیات قابل بازگشت نیست.')) return;
+    setError('');
+    setMessage('');
+    const response = await fetch(`/api/admin/admin-users/${encodeURIComponent(item.id)}`, { method: 'DELETE' });
+    const result = await response.json();
+    if (!response.ok) { setError(result.error || 'حذف مدیر ناموفق بود.'); return; }
+    setAdmins(items => items.filter(admin => admin.id !== item.id));
+    setMessage('مدیر با موفقیت حذف شد. سوابق عملیاتی و مالی مرتبط حفظ شدند.');
+  };
+
+  const activeSuperAdminCount = admins.filter(item => item.role === 'SUPER_ADMIN' && item.status === 'ACTIVE').length;
+
   return (
     <AdminShell activeTab="admin_users">
       <div style={{ direction: 'rtl' }}>
@@ -139,6 +152,14 @@ export default function AdminUsersPage() {
                       <td style={{ display: 'flex', gap: '8px', padding: '10px 0' }}>
                         <button type="button" disabled={item.id === currentAdmin?.id} onClick={() => sendUpdate(item.id, { status: item.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE' })} className={styles.advFilterBtn}>{item.status === 'ACTIVE' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}</button>
                         <button type="button" onClick={() => { setResetTargetId(item.id); setResetPassword(''); }} className={styles.advFilterBtn}>تغییر رمز</button>
+                        <button
+                          type="button"
+                          disabled={item.id === currentAdmin?.id || (item.role === 'SUPER_ADMIN' && item.status === 'ACTIVE' && activeSuperAdminCount <= 1)}
+                          onClick={() => handleDelete(item)}
+                          title={item.id === currentAdmin?.id ? 'حذف حساب فعلی مجاز نیست.' : item.role === 'SUPER_ADMIN' && item.status === 'ACTIVE' && activeSuperAdminCount <= 1 ? 'آخرین مدیر ارشد فعال قابل حذف نیست.' : 'حذف مدیر'}
+                          className={styles.advFilterBtn}
+                          style={{ color: '#ef7777', borderColor: 'rgba(239,68,68,.35)', opacity: item.id === currentAdmin?.id || (item.role === 'SUPER_ADMIN' && item.status === 'ACTIVE' && activeSuperAdminCount <= 1) ? .45 : 1 }}
+                        >حذف</button>
                       </td>
                     </tr>
                   ))}

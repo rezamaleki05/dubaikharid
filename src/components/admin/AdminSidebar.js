@@ -2,20 +2,19 @@ import React from 'react';
 import Link from 'next/link';
 import { ADMIN_ROUTES } from '@/config/adminNavigation';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { shouldRenderAdminBadge } from '@/lib/adminAlertRules';
 import { useAdminAccess } from './AdminAccessProvider';
 import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from './AdminIcons';
 
 export default function AdminSidebar({
   activeTab,
-  leads = [],
+  alertSummary,
   handleLogout,
   onNavigate
 }) {
   const { admin, can } = useAdminAccess();
-  const ordersCount = leads.filter(l => ['paid', 'processing', 'purchased', 'warehouse_dubai', 'shipped', 'delivered'].includes(l.status)).length;
-  const leadsCount = leads.filter(l => ['pending', 'pricing', 'price_tagged', 'approved'].includes(l.status)).length;
-  const warehouseCount = leads.filter(l => l.status === 'warehouse_dubai').length;
+  const counts = alertSummary?.counts || {};
 
   const menuItems = [
     {
@@ -31,7 +30,7 @@ export default function AdminSidebar({
       href: ADMIN_ROUTES.orders,
       permission: ADMIN_PERMISSIONS.ORDERS_VIEW,
       icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
-      badge: ordersCount
+      badge: counts.orders
     },
     {
       key: 'leads',
@@ -39,7 +38,7 @@ export default function AdminSidebar({
       href: ADMIN_ROUTES.leads,
       permission: ADMIN_PERMISSIONS.PURCHASE_REQUESTS_VIEW,
       icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="16" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-      badge: leadsCount
+      badge: counts.purchaseRequests
     },
     {
       key: 'products',
@@ -54,7 +53,7 @@ export default function AdminSidebar({
       href: ADMIN_ROUTES.warehouse,
       permission: ADMIN_PERMISSIONS.WAREHOUSE_VIEW,
       icon: AdminIcons.building(16),
-      badge: warehouseCount
+      badge: counts.warehouse
     },
     {
       key: 'stock_laptops',
@@ -75,7 +74,8 @@ export default function AdminSidebar({
       label: 'پرداخت ها',
       href: ADMIN_ROUTES.payments,
       permission: ADMIN_PERMISSIONS.PAYMENTS_VIEW,
-      icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+      badge: counts.payments
     },
     {
       key: 'bank_accounts',
@@ -89,7 +89,8 @@ export default function AdminSidebar({
       label: 'ارسال ها',
       href: ADMIN_ROUTES.shipments,
       permission: ADMIN_PERMISSIONS.SHIPMENTS_VIEW,
-      icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13" rx="2" ry="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>,
+      badge: counts.shipments
     },
     {
       key: 'financial_reports',
@@ -163,7 +164,7 @@ export default function AdminSidebar({
               >
                 <span className={styles.navIcon}>{item.icon}</span>
                 {item.label}
-                {item.badge !== undefined && (
+                {shouldRenderAdminBadge(item.badge) && (
                   <span className={`${styles.navBadge} ${styles.badgeOrange}`}>
                     {item.badge}
                   </span>

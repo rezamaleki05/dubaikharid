@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ADMIN_ROUTES } from '@/config/adminNavigation';
 import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from '@/components/admin/AdminIcons';
-import AdminShell from '@/components/admin/AdminShell';
+import AdminShell, { useAdminShellData } from '@/components/admin/AdminShell';
 
 const EMPTY_DASHBOARD = Object.freeze({
   summary: { todayRevenue: '0', monthNetCashFlow: '0', activeOrders: 0, pendingPayments: 0, activeCustomers: 0 },
@@ -29,23 +29,27 @@ function formatDate(value) {
 
 function DashboardContent() {
   const router = useRouter();
+  const { alertSummary } = useAdminShellData();
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/admin/dashboard', { cache: 'no-store', signal: controller.signal })
-      .then(async response => {
-        const body = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(body.error || 'دریافت اطلاعات داشبورد ناموفق بود.');
-        setDashboard(body);
-      })
-      .catch(fetchError => {
-        if (fetchError.name !== 'AbortError') setError(fetchError.message);
-      })
-      .finally(() => setLoading(false));
-    return () => controller.abort();
+    const loadDashboard = () => fetch('/api/admin/dashboard', { cache: 'no-store', signal: controller.signal })
+        .then(async response => {
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(body.error || 'دریافت اطلاعات داشبورد ناموفق بود.');
+          setDashboard(body);
+          setError('');
+        })
+        .catch(fetchError => {
+          if (fetchError.name !== 'AbortError') setError(fetchError.message);
+        })
+        .finally(() => setLoading(false));
+    loadDashboard();
+    const interval = window.setInterval(loadDashboard, 30_000);
+    return () => { controller.abort(); window.clearInterval(interval); };
   }, []);
 
   const setActiveTab = (tab) => {
@@ -59,13 +63,14 @@ function DashboardContent() {
   return (
     <>
       {(() => {
-            const pendingLeadsCount = dashboard.purchaseRequests.pending;
+            const alertCounts = alertSummary?.counts || { orders: 0, purchaseRequests: 0, payments: 0, warehouse: 0, shipments: 0, total: 0 };
+            const pendingLeadsCount = alertCounts.purchaseRequests;
             const activeOrders = dashboard.summary.activeOrders;
-            const readyToShipCount = dashboard.shipments.readyToShip;
-            const unverifiedPaymentsCount = dashboard.summary.pendingPayments;
-            const lowStockCount = dashboard.warehouse.lowStock;
-            const unansweredCount = dashboard.purchaseRequests.pending;
-            const actionItemsCount = pendingLeadsCount + readyToShipCount + unverifiedPaymentsCount + lowStockCount;
+            const actionableOrdersCount = alertCounts.orders;
+            const readyToShipCount = alertCounts.shipments;
+            const unverifiedPaymentsCount = alertCounts.payments;
+            const lowStockCount = alertCounts.warehouse;
+            const actionItemsCount = alertCounts.total;
             const todayRevenue = dashboard.summary.todayRevenue;
             const monthProfit = dashboard.summary.monthNetCashFlow;
             const todayRevenuePositive = BigInt(todayRevenue || '0') > 0n;
@@ -83,9 +88,11 @@ function DashboardContent() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {[
                     ...(dashboard.alerts.exchangeRateMissing ? [{ text: 'نرخ درهم به‌روزرسانی نشده', urgent: true, onClick: () => setActiveTab('settings') }] : []),
-                    { text: `${dashboard.shipments.unshipped} سفارش ارسال‌نشده`, urgent: true, onClick: () => window.location.assign('/admin/shipments') },
-                    { text: `${pendingLeadsCount} درخواست منتظر قیمت`, urgent: false, onClick: () => window.location.assign('/admin/leads?status=pending') },
-                    { text: `${lowStockCount} محصول کم‌موجود`, urgent: false, onClick: () => window.location.assign('/admin/warehouse') },
+                    ...(actionableOrdersCount > 0 ? [{ text: `${actionableOrdersCount} سفارش نیازمند بررسی`, urgent: true, onClick: () => window.location.assign('/admin/orders?status=pending') }] : []),
+                    ...(readyToShipCount > 0 ? [{ text: `${readyToShipCount} ارسال نیازمند اقدام`, urgent: true, onClick: () => window.location.assign('/admin/shipments') }] : []),
+                    ...(pendingLeadsCount > 0 ? [{ text: `${pendingLeadsCount} درخواست منتظر قیمت`, urgent: false, onClick: () => window.location.assign('/admin/leads?status=pending') }] : []),
+                    ...(unverifiedPaymentsCount > 0 ? [{ text: `${unverifiedPaymentsCount} پرداخت منتظر بررسی`, urgent: false, onClick: () => window.location.assign('/admin/payments?status=pending') }] : []),
+                    ...(lowStockCount > 0 ? [{ text: `${lowStockCount} محصول کم‌موجود`, urgent: false, onClick: () => window.location.assign('/admin/warehouse?status=low-stock') }] : []),
                   ].map((item, i) => (
                     <div
                       key={i}
@@ -104,6 +111,7 @@ function DashboardContent() {
                       {item.urgent ? AdminIcons.alert(11) : AdminIcons.clock(11)} {item.text}
                     </div>
                   ))}
+                  {!dashboard.alerts.exchangeRateMissing && actionItemsCount === 0 && <span style={{ color: '#8b92a5', fontSize: '11.5px' }}>مورد نیازمند اقدامی وجود ندارد.</span>}
                 </div>
               </div>
 
@@ -167,12 +175,12 @@ function DashboardContent() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {[
+                      { label: 'سفارش‌های نیازمند بررسی', count: actionableOrdersCount, color: '#f87820', bg: 'rgba(248,120,32,0.08)', icon: AdminIcons.clipboard(13), onClick: () => window.location.assign('/admin/orders?status=pending') },
                       { label: 'درخواست‌های منتظر قیمت', count: pendingLeadsCount, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: AdminIcons.clock(13), onClick: () => window.location.assign('/admin/leads?status=pending') },
                       { label: 'سفارش‌های آماده ارسال', count: readyToShipCount, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: AdminIcons.truck(13), onClick: () => window.location.assign('/admin/shipments') },
                       { label: 'پرداخت‌های تایید نشده', count: unverifiedPaymentsCount, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', icon: AdminIcons.card(13), onClick: () => window.location.assign('/admin/payments') },
                       { label: 'محصولات کم‌موجود', count: lowStockCount, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', icon: AdminIcons.alert(13), onClick: () => window.location.assign('/admin/warehouse') },
-                      { label: 'درخواست‌های بدون پاسخ', count: unansweredCount, color: '#06b6d4', bg: 'rgba(6,182,212,0.08)', icon: AdminIcons.chat(13), onClick: () => window.location.assign('/admin/leads') },
-                    ].map((item, i) => (
+                    ].filter(item => item.count > 0).map((item, i) => (
                       <div key={i} onClick={item.onClick}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', cursor: 'pointer', background: item.bg, border: `1px solid ${item.color}20`, transition: 'opacity 0.2s' }}
                         onMouseOver={e => e.currentTarget.style.opacity = '0.8'}
@@ -185,6 +193,7 @@ function DashboardContent() {
                         <span style={{ fontSize: '13px', fontWeight: '900', color: item.color }}>{item.count}</span>
                       </div>
                     ))}
+                    {actionItemsCount === 0 && <div style={{ padding: '18px 10px', color: '#8b92a5', fontSize: '11.5px', textAlign: 'center' }}>موردی برای اقدام وجود ندارد.</div>}
                   </div>
                 </div>
 
