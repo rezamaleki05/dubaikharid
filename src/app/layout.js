@@ -1,4 +1,5 @@
 import { Vazirmatn } from "next/font/google";
+import Script from 'next/script';
 import "./globals.css";
 import JsonLd from '@/components/seo/JsonLd';
 import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -41,6 +42,8 @@ import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import { getPublicSettings } from "@/lib/settings";
+import { ThemeProvider } from '@/context/ThemeContext';
+import { THEME_BOOTSTRAP_SCRIPT } from '@/lib/theme';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,18 +88,23 @@ export default async function RootLayout({ children }) {
     },
   };
   return (
-    <html lang="fa" dir="rtl" className={vazirmatn.variable} data-scroll-behavior="smooth">
+    <html lang="fa" dir="rtl" className={vazirmatn.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
+        <Script id="dubai-kharid-theme" strategy="beforeInteractive">
+          {THEME_BOOTSTRAP_SCRIPT}
+        </Script>
         <JsonLd data={[organizationSchema, websiteSchema]} />
-        <SiteSettingsProvider initialSettings={initialSettings}>
-          <AuthProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <MaintenanceGate>{children}</MaintenanceGate>
-              </CartProvider>
-            </WishlistProvider>
-          </AuthProvider>
-        </SiteSettingsProvider>
+        <ThemeProvider>
+          <SiteSettingsProvider initialSettings={initialSettings}>
+            <AuthProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <MaintenanceGate>{children}</MaintenanceGate>
+                </CartProvider>
+              </WishlistProvider>
+            </AuthProvider>
+          </SiteSettingsProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

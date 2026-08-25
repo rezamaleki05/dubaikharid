@@ -222,3 +222,13 @@
 @media (max-width: 400px) {
   .productGrid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
 }
+
+:global(html[data-theme='light']) .sectionTitle,
+:global(html[data-theme='light']) .productName { color: var(--text-primary); }
+:global(html[data-theme='light']) .productCard { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .productCard:hover { border-color: rgba(216,94,12,.25); box-shadow: var(--shadow-md); }
+:global(html[data-theme='light']) .imageWrap { background: #f1eee9; }
+:global(html[data-theme='light']) .brandName,
+:global(html[data-theme='light']) .priceToman { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .cartBtn { color: var(--text-primary); background: #f1ede8; }
+:global(html[data-theme='light']) .cartBtn:hover { color: #fff; background: var(--accent); }

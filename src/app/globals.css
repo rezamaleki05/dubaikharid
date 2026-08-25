@@ -2,6 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
+  color-scheme: dark;
   --orange: #F87820;
   --orange-dark: #E06A10;
   --orange-light: #4A2810;
@@ -24,6 +25,80 @@
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-full: 999px;
+
+  /* Semantic theme foundation. Existing dark values remain authoritative. */
+  --bg-primary: #000000;
+  --bg-secondary: #07080b;
+  --surface-primary: #0b0d11;
+  --surface-secondary: #11131a;
+  --surface-elevated: #181b24;
+  --surface-hover: rgba(255, 255, 255, 0.055);
+  --control-bg: rgba(255, 255, 255, 0.035);
+  --text-primary: #ffffff;
+  --text-secondary: #c8cbd5;
+  --text-tertiary: #8b92a5;
+  --border-primary: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.055);
+  --accent: #F87820;
+  --accent-hover: #E06A10;
+  --accent-soft: rgba(248, 120, 32, 0.1);
+  --accent-border: rgba(248, 120, 32, 0.3);
+  --danger: #f87171;
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --success: #4ade80;
+  --success-soft: rgba(22, 163, 74, 0.12);
+  --warning: #f5a45d;
+  --info: #7ea7e8;
+  --overlay: rgba(0, 0, 0, 0.76);
+  --focus-ring: rgba(248, 120, 32, 0.78);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+  --orange-dark: #d85e0c;
+  --orange-light: #fff0e4;
+  --green: #12833d;
+  --green-light: #e9f8ef;
+  --text-dark: #1e1b18;
+  --text-mid: #4f4a45;
+  --text-muted: #706a63;
+  --text-light: #8b847c;
+  --border: rgba(43, 35, 28, 0.13);
+  --border-light: rgba(43, 35, 28, 0.075);
+  --bg-gradient: #f7f4ef;
+  --white: #ffffff;
+  --card-bg: rgba(255, 255, 255, 0.82);
+  --card-border: rgba(43, 35, 28, 0.1);
+  --shadow-sm: 0 2px 7px rgba(62, 45, 31, 0.06);
+  --shadow-md: 0 12px 34px rgba(62, 45, 31, 0.09);
+  --shadow-lg: 0 24px 70px rgba(62, 45, 31, 0.13);
+
+  --bg-primary: #f7f4ef;
+  --bg-secondary: #f0ece6;
+  --surface-primary: #fffdfa;
+  --surface-secondary: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-hover: rgba(74, 57, 44, 0.055);
+  --control-bg: rgba(255, 255, 255, 0.8);
+  --text-primary: #1e1b18;
+  --text-secondary: #514b45;
+  --text-tertiary: #756e67;
+  --border-primary: rgba(43, 35, 28, 0.14);
+  --border-subtle: rgba(43, 35, 28, 0.08);
+  --accent: #F87820;
+  --accent-hover: #d85e0c;
+  --accent-soft: rgba(248, 120, 32, 0.09);
+  --accent-border: rgba(216, 94, 12, 0.3);
+  --danger: #c73535;
+  --danger-soft: rgba(199, 53, 53, 0.09);
+  --success: #167c45;
+  --success-soft: rgba(22, 124, 69, 0.09);
+  --warning: #a75b13;
+  --info: #356aa8;
+  --overlay: rgba(35, 28, 22, 0.48);
+  --focus-ring: rgba(216, 94, 12, 0.65);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
 * {
@@ -48,6 +123,16 @@ html, body {
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; font-family: inherit; }
 input, select, textarea { font-family: inherit; outline: none; }
+
+html[data-theme='light'] input::placeholder,
+html[data-theme='light'] textarea::placeholder { color: var(--text-tertiary); opacity: 1; }
+
+button,
+input,
+select,
+textarea { color-scheme: inherit; }
+
+::selection { color: #fff; background: var(--accent); }
 
 .container {
   width: 100%;
@@ -122,6 +207,9 @@ input[type="range"]::-webkit-slider-thumb {
 ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
 ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #666666; }
+html[data-theme='light'] ::-webkit-scrollbar-track { background: var(--border-subtle); }
+html[data-theme='light'] ::-webkit-scrollbar-thumb { background: #9a9289; }
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover { background: #766f68; }
 
 /* ── Toman Price Font Rule ── */
 .priceToman,
@@ -138,4 +226,3 @@ input[type="range"]::-webkit-slider-thumb {
 .toman-price {
   font-family: var(--font-vazirmatn), Tahoma, sans-serif !important;
 }
-

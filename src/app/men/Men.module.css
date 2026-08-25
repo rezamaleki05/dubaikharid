@@ -390,3 +390,25 @@
 @media (max-width: 350px) {
   .grid { grid-template-columns: 1fr; }
 }
+
+:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .heroSection { background: linear-gradient(135deg, #fffaf5, #f0ece6); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .title,
+:global(html[data-theme='light']) .filterTitle,
+:global(html[data-theme='light']) .productName { color: var(--text-primary); }
+:global(html[data-theme='light']) .subtitle,
+:global(html[data-theme='light']) .productSpec,
+:global(html[data-theme='light']) .priceLabel,
+:global(html[data-theme='light']) .noProducts { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .sidebar,
+:global(html[data-theme='light']) .productCard,
+:global(html[data-theme='light']) .noProducts { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .filterBlock { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .brandItem,
+:global(html[data-theme='light']) .tab { color: var(--text-secondary); }
+:global(html[data-theme='light']) .sortSelect { color: var(--text-primary); background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .sortSelect option { color: var(--text-primary); background: var(--surface-elevated); }
+:global(html[data-theme='light']) .imageWrap { background: #f1eee9; }
+:global(html[data-theme='light']) .cartBtn { color: var(--text-primary); background: #efebe5; }
+:global(html[data-theme='light']) .productCard:hover .cartBtn { color: #fff; }
+:global(html[data-theme='light']) .wishlistBtn { background: rgba(255,255,255,.78); color: #342e29; border-color: var(--border-primary); }

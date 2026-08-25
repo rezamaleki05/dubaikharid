@@ -24,3 +24,18 @@
 .cta .primary { margin-top: 18px; }
 @media (max-width: 800px) { .steps { grid-template-columns: 1fr 1fr; } .split { grid-template-columns: 1fr; gap: 28px; } }
 @media (max-width: 520px) { .main { width: min(100% - 24px, 1180px); padding-top: 28px; } .hero { padding: 34px 0 52px; } .hero > p:not(.eyebrow) { font-size: 16px; } .steps { grid-template-columns: 1fr; } }
+
+:global(html[data-theme='light']) .page { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .hero > p:not(.eyebrow),
+:global(html[data-theme='light']) .section p,
+:global(html[data-theme='light']) .split p,
+:global(html[data-theme='light']) .cta p { color: var(--text-secondary); }
+:global(html[data-theme='light']) .secondary,
+:global(html[data-theme='light']) .categoryLinks a,
+:global(html[data-theme='light']) .section,
+:global(html[data-theme='light']) .split,
+:global(html[data-theme='light']) .cta,
+:global(html[data-theme='light']) .faqs details { border-color: var(--border-primary); }
+:global(html[data-theme='light']) .secondary,
+:global(html[data-theme='light']) .categoryLinks a,
+:global(html[data-theme='light']) .steps h3 { color: var(--text-primary); }

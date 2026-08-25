@@ -827,3 +827,43 @@
   border-color: rgba(255, 255, 255, 0.06);
 }
 
+:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .productGrid,
+:global(html[data-theme='light']) .reviewsSection,
+:global(html[data-theme='light']) .technicalPanel { background: var(--surface-secondary); border-color: var(--border-primary); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .imageSection,
+:global(html[data-theme='light']) .mainImage { background: #f1eee9; border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .productName,
+:global(html[data-theme='light']) .specValue,
+:global(html[data-theme='light']) .priceValue,
+:global(html[data-theme='light']) .storeName,
+:global(html[data-theme='light']) .attributeLabel,
+:global(html[data-theme='light']) .reviewsTitle,
+:global(html[data-theme='light']) .averageScore,
+:global(html[data-theme='light']) .formTitle,
+:global(html[data-theme='light']) .userName,
+:global(html[data-theme='light']) .technicalTitle,
+:global(html[data-theme='light']) .techCard h3 { color: var(--text-primary); }
+:global(html[data-theme='light']) .specLabel,
+:global(html[data-theme='light']) .productSpec,
+:global(html[data-theme='light']) .productDescription,
+:global(html[data-theme='light']) .priceLabel,
+:global(html[data-theme='light']) .storeLabel,
+:global(html[data-theme='light']) .colorName,
+:global(html[data-theme='light']) .totalReviewsText,
+:global(html[data-theme='light']) .barLabel,
+:global(html[data-theme='light']) .barPercent,
+:global(html[data-theme='light']) .reviewText,
+:global(html[data-theme='light']) .reviewMeta,
+:global(html[data-theme='light']) .techList li span { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .specItem,
+:global(html[data-theme='light']) .productDescription,
+:global(html[data-theme='light']) .storeInfo,
+:global(html[data-theme='light']) .reviewFormCard,
+:global(html[data-theme='light']) .reviewCard,
+:global(html[data-theme='light']) .techCard,
+:global(html[data-theme='light']) .checkItem { background: #faf7f3; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .sizeOption,
+:global(html[data-theme='light']) .reviewInput,
+:global(html[data-theme='light']) .cancelReviewBtn { color: var(--text-primary); background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .progressBarContainer { background: #e8e2db; }

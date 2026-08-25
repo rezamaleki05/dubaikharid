@@ -6,6 +6,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { useAuth } from '@/context/AuthContext';
+import ThemeSwitcher from './ThemeSwitcher';
 import styles from './Header.module.css';
 
 export default function Header() {
@@ -202,6 +203,7 @@ export default function Header() {
 
             {/* Icons — LEFT in RTL */}
             <div className={styles.iconGroup}>
+              <ThemeSwitcher compact />
               {/* Wishlist */}
               <button className={styles.iconBtn} aria-label="علاقه‌مندی‌ها" onClick={() => router.push('/wishlist')}>
                 <div className={styles.iconWrap}>

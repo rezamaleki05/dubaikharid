@@ -1479,4 +1479,50 @@ select.inputField {
   .dashboardCols { gap: 16px; }
 }
 
+:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .sidebarCard,
+:global(html[data-theme='light']) .contentCard,
+:global(html[data-theme='light']) .summaryCard,
+:global(html[data-theme='light']) .panelCard,
+:global(html[data-theme='light']) .orderDetailCard,
+:global(html[data-theme='light']) .addressCard,
+:global(html[data-theme='light']) .ticketBox,
+:global(html[data-theme='light']) .couponCard,
+:global(html[data-theme='light']) .detailCard { background: var(--surface-secondary); border-color: var(--border-primary); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .profileName,
+:global(html[data-theme='light']) .welcomeTitle,
+:global(html[data-theme='light']) .summaryValue,
+:global(html[data-theme='light']) .cardHeaderTitle,
+:global(html[data-theme='light']) .prodName,
+:global(html[data-theme='light']) .tableProdName,
+:global(html[data-theme='light']) .detailTitle,
+:global(html[data-theme='light']) .detailVal,
+:global(html[data-theme='light']) .totalPriceVal,
+:global(html[data-theme='light']) .verticalStepTitle,
+:global(html[data-theme='light']) .label { color: var(--text-primary); }
+:global(html[data-theme='light']) .profileMeta,
+:global(html[data-theme='light']) .welcomeSubtitle,
+:global(html[data-theme='light']) .summaryLabel,
+:global(html[data-theme='light']) .prodSub,
+:global(html[data-theme='light']) .activityDesc,
+:global(html[data-theme='light']) .activityTime,
+:global(html[data-theme='light']) .detailLabel,
+:global(html[data-theme='light']) .priceItemLabel,
+:global(html[data-theme='light']) .verticalStepDate { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .menuBtn,
+:global(html[data-theme='light']) .filterTabBtn { color: var(--text-secondary); }
+:global(html[data-theme='light']) .menuBtn:hover:not(.menuBtnActive),
+:global(html[data-theme='light']) .filterTabBtn:hover:not(.filterTabBtnActive) { color: var(--text-primary); background: var(--surface-hover); }
+:global(html[data-theme='light']) .tableContainer,
+:global(html[data-theme='light']) .recentOrdersTable th,
+:global(html[data-theme='light']) .recentOrdersTable td,
+:global(html[data-theme='light']) .detailTable td,
+:global(html[data-theme='light']) .activityItem { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .recentOrdersTable th { color: var(--text-tertiary); background: #f4f0eb; }
+:global(html[data-theme='light']) .recentOrdersTable td { color: var(--text-secondary); }
+:global(html[data-theme='light']) .inputField,
+:global(html[data-theme='light']) .textareaField,
+:global(html[data-theme='light']) .linkInputContainer,
+:global(html[data-theme='light']) .qtyStepper { color: var(--text-primary); background: #fffdfa; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .uploaderZone { background: #faf7f3; border-color: var(--border-primary); }
 

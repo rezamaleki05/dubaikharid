@@ -215,3 +215,17 @@
     text-align: center;
   }
 }
+
+:global(html[data-theme='light']) .footer { color: var(--text-secondary); background: #eee9e2; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .footerTop,
+:global(html[data-theme='light']) .footerBottom { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .logoMain,
+:global(html[data-theme='light']) .linksCol h4,
+:global(html[data-theme='light']) .contactItem strong,
+:global(html[data-theme='light']) .copyright strong { color: var(--text-primary); }
+:global(html[data-theme='light']) .aboutText,
+:global(html[data-theme='light']) .linksCol a,
+:global(html[data-theme='light']) .contactItem,
+:global(html[data-theme='light']) .copyright { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .socials a,
+:global(html[data-theme='light']) .trustBadge { color: var(--text-secondary); background: rgba(255,255,255,.62); border-color: var(--border-primary); }

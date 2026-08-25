@@ -475,3 +475,27 @@
 @media (max-width: 350px) {
   .grid { grid-template-columns: 1fr; }
 }
+
+:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .heroSection { background: linear-gradient(135deg, #fffaf5, #eee9e2); border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .heroTitle,
+:global(html[data-theme='light']) .sectionTitle,
+:global(html[data-theme='light']) .brandName,
+:global(html[data-theme='light']) .stepText h4,
+:global(html[data-theme='light']) .supportText h4 { color: var(--text-primary); }
+:global(html[data-theme='light']) .heroSubtitle,
+:global(html[data-theme='light']) .statLabel,
+:global(html[data-theme='light']) .stepText p,
+:global(html[data-theme='light']) .brandFaName,
+:global(html[data-theme='light']) .brandCategory,
+:global(html[data-theme='light']) .supportText p { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .searchBox,
+:global(html[data-theme='light']) .stepItem,
+:global(html[data-theme='light']) .card,
+:global(html[data-theme='light']) .supportItem { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .searchInput,
+:global(html[data-theme='light']) .filterBtn,
+:global(html[data-theme='light']) .sortSelect { color: var(--text-primary); }
+:global(html[data-theme='light']) .sortSelect { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .sortSelect option { color: var(--text-primary); background: var(--surface-elevated); }
+:global(html[data-theme='light']) .logoWrap { background: #f3efea; }

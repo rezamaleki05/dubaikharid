@@ -2,3 +2,21 @@
 @media(max-width:900px){.form{grid-template-columns:1fr 1fr}}@media(max-width:620px){.form{grid-template-columns:1fr;padding:14px}.formTitle,.account footer{align-items:stretch;flex-direction:column;gap:10px}.rowActions{flex-wrap:wrap}.rowActions button{flex:1}.page header{align-items:start}}
 .featureFlags{display:grid;grid-template-columns:minmax(240px,1fr) auto auto;align-items:center;gap:18px;padding:17px 20px;margin-bottom:16px;background:#0b0d11;border:1px solid rgba(255,255,255,.07)}.featureFlags>div{display:flex;flex-direction:column;gap:4px}.featureFlags>div span{color:#8b92a5;font-size:10px}.featureFlags label{display:flex;align-items:center;gap:8px;color:#d7dae1;font-size:11px;font-weight:750}.featureFlags label small{color:#f2a368}.featureFlags input{accent-color:#f87820}
 @media(max-width:900px){.featureFlags{grid-template-columns:1fr 1fr}.featureFlags>div{grid-column:1/-1}}@media(max-width:620px){.featureFlags{grid-template-columns:1fr}.featureFlags>div{grid-column:auto}}
+
+:global(html[data-theme='light']) .page { color: var(--text-primary); }
+:global(html[data-theme='light']) .page header p,
+:global(html[data-theme='light']) .formTitle span,
+:global(html[data-theme='light']) .featureFlags > div span { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .form,
+:global(html[data-theme='light']) .account,
+:global(html[data-theme='light']) .featureFlags,
+:global(html[data-theme='light']) .empty,
+:global(html[data-theme='light']) .error,
+:global(html[data-theme='light']) .success { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .formTitle,
+:global(html[data-theme='light']) .account footer { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .form label,
+:global(html[data-theme='light']) .featureFlags label { color: var(--text-secondary); }
+:global(html[data-theme='light']) .form input { color: var(--text-primary); background: #faf8f5; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .actions button,
+:global(html[data-theme='light']) .rowActions button { color: var(--text-primary); border-color: var(--border-primary); }

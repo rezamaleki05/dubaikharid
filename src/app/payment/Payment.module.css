@@ -664,3 +664,32 @@
     width: 100%;
   }
 }
+
+:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .header { background: rgba(255,253,250,.92); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .headerText h1,
+:global(html[data-theme='light']) .merchantHeader h2,
+:global(html[data-theme='light']) .merchantRow span,
+:global(html[data-theme='light']) .amountVal,
+:global(html[data-theme='light']) .formTitle,
+:global(html[data-theme='light']) .inputGroup label,
+:global(html[data-theme='light']) .keypadTitle,
+:global(html[data-theme='light']) .guidelineText h4 { color: var(--text-primary); }
+:global(html[data-theme='light']) .headerText span,
+:global(html[data-theme='light']) .merchantHeader span,
+:global(html[data-theme='light']) .merchantRow label,
+:global(html[data-theme='light']) .amountLabel,
+:global(html[data-theme='light']) .guidelineText p { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .merchantCard,
+:global(html[data-theme='light']) .formCard,
+:global(html[data-theme='light']) .keypadCard,
+:global(html[data-theme='light']) .guidelineCard,
+:global(html[data-theme='light']) .receiptCard { background: var(--surface-secondary); border-color: var(--border-primary); box-shadow: var(--shadow-md); }
+:global(html[data-theme='light']) .merchantRow,
+:global(html[data-theme='light']) .receiptRow { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .cardNumberWrapper,
+:global(html[data-theme='light']) .formInput,
+:global(html[data-theme='light']) .otpWrapper,
+:global(html[data-theme='light']) .keypadBtn { color: var(--text-primary); background: #f8f5f0; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .loadingOverlay,
+:global(html[data-theme='light']) .receiptOverlay { background: var(--overlay); }

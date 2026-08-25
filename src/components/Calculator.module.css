@@ -494,3 +494,28 @@
     width: 100%;
   }
 }
+
+:global(html[data-theme='light']) .calculatorSection { color: var(--text-primary); background: #f0ece6; }
+:global(html[data-theme='light']) .calculatorSection::before { opacity: .28; }
+:global(html[data-theme='light']) .heroTextContent h1,
+:global(html[data-theme='light']) .heroTextContent h2,
+:global(html[data-theme='light']) .trustText h4,
+:global(html[data-theme='light']) .headerTitleWrap h2,
+:global(html[data-theme='light']) .productInfo h3,
+:global(html[data-theme='light']) .totalAmount { color: var(--text-primary); }
+:global(html[data-theme='light']) .heroTextContent p,
+:global(html[data-theme='light']) .trustText p,
+:global(html[data-theme='light']) .formHeader p,
+:global(html[data-theme='light']) .fieldHint,
+:global(html[data-theme='light']) .totalNote,
+:global(html[data-theme='light']) .secureNote { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .trustBar,
+:global(html[data-theme='light']) .formCard,
+:global(html[data-theme='light']) .productPreview,
+:global(html[data-theme='light']) .actionBox { background: var(--surface-secondary); border-color: var(--border-primary); box-shadow: var(--shadow-md); }
+:global(html[data-theme='light']) .inputContainer,
+:global(html[data-theme='light']) .segmentedControl { background: #f8f5f0; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .inputContainer input,
+:global(html[data-theme='light']) .inputContainer select,
+:global(html[data-theme='light']) .segmentBtn { color: var(--text-primary); }
+:global(html[data-theme='light']) .inputContainer select option { color: var(--text-primary); background: var(--surface-elevated); }

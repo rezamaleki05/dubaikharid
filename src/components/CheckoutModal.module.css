@@ -645,3 +645,36 @@
   background-color: #f87820;
   color: #fff;
 }
+
+:global(html[data-theme='light']) .modalOverlay { background: var(--overlay); }
+:global(html[data-theme='light']) .modalContainer { color: var(--text-primary); background: var(--surface-elevated); border-color: var(--border-primary); box-shadow: var(--shadow-lg); }
+:global(html[data-theme='light']) .closeBtn { color: var(--text-secondary); background: #f2eee8; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .modalHeader h2,
+:global(html[data-theme='light']) .summaryTitle,
+:global(html[data-theme='light']) .prodName,
+:global(html[data-theme='light']) .totalPrice,
+:global(html[data-theme='light']) .label,
+:global(html[data-theme='light']) .loadingContainer h3,
+:global(html[data-theme='light']) .successContainer h2,
+:global(html[data-theme='light']) .trackingCode,
+:global(html[data-theme='light']) .paymentTitle,
+:global(html[data-theme='light']) .paymentCardTitle,
+:global(html[data-theme='light']) .bankDetailsTitle,
+:global(html[data-theme='light']) .bankValue,
+:global(html[data-theme='light']) .cardNum { color: var(--text-primary); }
+:global(html[data-theme='light']) .modalHeader p,
+:global(html[data-theme='light']) .prodBrand,
+:global(html[data-theme='light']) .loadingContainer p,
+:global(html[data-theme='light']) .successDesc,
+:global(html[data-theme='light']) .paymentDesc,
+:global(html[data-theme='light']) .paymentCardDesc,
+:global(html[data-theme='light']) .bankLabel { color: var(--text-tertiary); }
+:global(html[data-theme='light']) .summaryCard,
+:global(html[data-theme='light']) .trackingCard,
+:global(html[data-theme='light']) .paymentCard,
+:global(html[data-theme='light']) .bankDetailsBox { background: #f8f5f0; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .input,
+:global(html[data-theme='light']) .textarea { color: var(--text-primary); background: #fffdfa; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .cancelBtn { color: var(--text-primary); background: #f1ede7; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .paymentRadio { background: #fff; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .bankRow { border-color: var(--border-subtle); }

@@ -23,3 +23,25 @@
 @keyframes payload{to{background-position:-200% 0}}
 @media(max-width:820px){.bankSection{grid-template-columns:minmax(0,1fr);grid-template-areas:"card" "details" "actions" "status";grid-template-rows:auto;padding:14px}.visualCard{max-width:420px}.bankDetails{width:100%}}
 @media(max-width:600px){.panel{margin-top:0}.paymentHeader{grid-template-columns:1fr 1fr}.paymentHeader>div{padding:11px 12px}.paymentHeader>div:nth-child(2){grid-column:1/-1;grid-row:1}.statusBanner{margin:10px 0;padding:10px 12px}.bankSection{gap:14px;padding:10px}.visualCard{max-width:100%;padding:clamp(16px,5vw,21px);border-radius:15px}.chip{margin:clamp(16px,5vw,22px) 0 clamp(12px,4vw,18px)}.cardNumber{font-size:clamp(12px,4vw,16px);letter-spacing:.045em}.bankDetails>div{grid-template-columns:88px minmax(0,1fr);gap:8px;padding:9px 0}.bankDetails dd[dir="ltr"]{font-size:clamp(10px,3vw,12px)}.copyActions,.secondaryActions{flex-direction:column}.copyActions button,.secondaryActions button,.secondaryActions a{width:100%;min-height:44px}.instruction{margin:10px 0}.uploadSection{padding:13px}.receiptPreview{min-width:0}.receiptPreview span{min-width:0}.secondaryActions{margin-top:10px}}
+
+:global(html[data-theme='light']) .panel { --pay-surface: #fffdfa; --pay-muted: #736c65; color: var(--text-primary); }
+:global(html[data-theme='light']) .paymentHeader { background: var(--border-primary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .bankSection { background: #f8f5f0; border-color: var(--border-primary); }
+/* The graphical bank card intentionally stays dark in both themes. */
+:global(html[data-theme='light']) .visualCard { color: #f7f4ef; }
+:global(html[data-theme='light']) .bankDetails > div { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .bankDetails dd,
+:global(html[data-theme='light']) .instruction,
+:global(html[data-theme='light']) .uploadLabel { color: var(--text-primary); }
+:global(html[data-theme='light']) .copyActions button,
+:global(html[data-theme='light']) .secondaryActions button,
+:global(html[data-theme='light']) .secondaryActions a { color: var(--text-primary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .uploadSection { background: #fffdfa; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .receiptPreview { background: #eee9e2; }
+:global(html[data-theme='light']) .receiptPreview span { color: var(--text-secondary); }
+:global(html[data-theme='light']) .copyStatus { color: #9a5419; }
+:global(html[data-theme='light']) .successMessage { color: #126d43; background: rgba(18,109,67,.07); }
+:global(html[data-theme='light']) .notice { color: #814c20; }
+:global(html[data-theme='light']) .rejection,
+:global(html[data-theme='light']) .inlineError,
+:global(html[data-theme='light']) .error { color: #9f3030; }

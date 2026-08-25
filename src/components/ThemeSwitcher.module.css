@@ -1,0 +1,93 @@
+.root {
+  position: relative;
+  z-index: 120;
+  color: var(--text-primary);
+}
+
+.trigger {
+  display: inline-flex;
+  min-width: 40px;
+  height: 40px;
+  padding-inline: 11px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  background: var(--control-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: 9px 13px 9px 13px;
+  box-shadow: var(--shadow-inset);
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.trigger:active { transform: scale(.96); }
+.trigger:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.trigger svg,
+.menu svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.resolvedIcon,
+.resolvedIcon > span { display: grid; place-items: center; }
+.darkIcon { display: none !important; }
+:global(html[data-theme='dark']) .lightIcon { display: none !important; }
+:global(html[data-theme='dark']) .darkIcon { display: grid !important; }
+.compact .trigger { width: 40px; padding: 0; }
+
+.menu {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 0;
+  width: 154px;
+  padding: 6px;
+  overflow: hidden;
+  color: var(--text-primary);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px 16px 10px 16px;
+  box-shadow: var(--shadow-lg);
+  animation: themeMenuIn 160ms ease both;
+}
+
+.menu button {
+  display: grid;
+  width: 100%;
+  min-height: 39px;
+  padding: 7px 9px;
+  grid-template-columns: 23px 1fr 7px;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  text-align: right;
+  background: transparent;
+  border-radius: 7px 11px 7px 11px;
+  font-size: 11.5px;
+  font-weight: 650;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.menu button:hover,
+.menu button:focus-visible,
+.menu .active { color: var(--text-primary); background: var(--surface-hover); }
+.menu button:focus-visible { outline: 1px solid var(--focus-ring); outline-offset: -1px; }
+.menu .active svg { color: var(--accent); }
+.menu i { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
+.menu .active i { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+@keyframes themeMenuIn {
+  from { opacity: 0; transform: translateY(-5px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 640px) {
+  .menu { position: fixed; top: 72px; left: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu { animation: none; }
+  .trigger, .menu button { transition: none; }
+}

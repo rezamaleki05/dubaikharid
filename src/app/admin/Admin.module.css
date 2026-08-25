@@ -331,6 +331,25 @@
   justify-content: center;
 }
 
+.notificationRoot { position: relative; display: inline-block; }
+.notificationDropdown { position: absolute; top: 50px; left: 0; z-index: 999; width: min(340px, calc(100vw - 24px)); overflow: hidden; color: var(--admin-white); direction: rtl; text-align: right; background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 12px; box-shadow: 0 18px 42px rgba(0,0,0,.42); }
+.notificationHeader { display: flex; padding: 12px 16px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--admin-border); }
+.notificationHeader > span { display: inline-flex; align-items: center; gap: 6px; color: var(--admin-white); font-size: 13px; font-weight: 800; }
+.notificationCount { padding: 1px 7px; color: #fff; background: var(--admin-orange); border-radius: 20px; font-size: 10px; }
+.notificationList { max-height: 300px; overflow-y: auto; }
+.notificationEmpty { padding: 24px; color: var(--admin-grey-text); text-align: center; font-size: 12px; }
+.notificationItem { display: flex; padding: 11px 16px; align-items: flex-start; gap: 10px; background: rgba(248,120,32,.035); border-bottom: 1px solid var(--admin-border); cursor: pointer; transition: background-color .2s ease; }
+.notificationItem:hover { background: rgba(255,255,255,.03); }
+.notificationDot { width: 7px; height: 7px; margin-top: 5px; flex-shrink: 0; background: var(--admin-orange); border-radius: 50%; }
+.notificationBody { flex: 1; min-width: 0; }
+.notificationBody p { margin: 0; color: var(--admin-white); font-size: 11.5px; font-weight: 650; line-height: 1.5; }
+.notificationMeta { display: flex; margin-top: 4px; align-items: center; justify-content: space-between; gap: 8px; }
+.notificationMeta span { min-width: 0; color: var(--admin-grey-text); font-size: 9.5px; overflow-wrap: anywhere; }
+.notificationMeta strong { padding: 2px 7px; flex-shrink: 0; color: var(--admin-orange); background: var(--admin-orange-glow); border-radius: 6px; font-size: 9px; }
+
+:global(html[data-theme='light']) .notificationDropdown { box-shadow: 0 18px 42px rgba(62,45,31,.14); }
+:global(html[data-theme='light']) .notificationItem:hover { background: rgba(43,35,28,.035); }
+
 .headerProfileBadge {
   display: flex;
   align-items: center;
@@ -4122,3 +4141,118 @@
   font-size: 11px;
   font-family: var(--font-vazirmatn), system-ui;
 }
+
+/* ── Shared light theme: same Admin structure, lighter semantic surfaces ── */
+:global(html[data-theme='light']) .pageWrapper {
+  --admin-bg: #f4f1ec;
+  --admin-card-bg: #ffffff;
+  --admin-input-bg: #faf8f5;
+  --admin-border: rgba(43, 35, 28, .1);
+  --admin-orange-glow: rgba(248, 120, 32, .085);
+  --admin-green: #167c45;
+  --admin-green-bg: #edf8f1;
+  --admin-grey-text: #706a63;
+  --admin-white: #211d19;
+  background-color: var(--admin-bg);
+  color: var(--admin-white);
+}
+
+:global(html[data-theme='light']) .sidebar,
+:global(html[data-theme='light']) .topHeader,
+:global(html[data-theme='light']) .cardPanel,
+:global(html[data-theme='light']) .metricCard,
+:global(html[data-theme='light']) .stickyDetailsPanel,
+:global(html[data-theme='light']) .filterStrip,
+:global(html[data-theme='light']) .modalContent,
+:global(html[data-theme='light']) .shipmentsDoughnutCard,
+:global(html[data-theme='light']) .finReportsMetricCard,
+:global(html[data-theme='light']) .finChartCard,
+:global(html[data-theme='light']) .laptopsMetricCard,
+:global(html[data-theme='light']) .detailsContainer {
+  background-color: var(--admin-card-bg);
+  border-color: var(--admin-border);
+  box-shadow: 0 12px 34px rgba(62,45,31,.07);
+}
+
+:global(html[data-theme='light']) .topHeader { background: rgba(250,248,245,.88); }
+:global(html[data-theme='light']) .mobileMenuButton { color: var(--admin-white); background: rgba(255,253,250,.94); box-shadow: 0 10px 30px rgba(62,45,31,.12); }
+:global(html[data-theme='light']) .mobileMenuButton:hover,
+:global(html[data-theme='light']) .mobileMenuButton:focus-visible { background: #fffaf5; box-shadow: 0 10px 30px rgba(62,45,31,.14), 0 0 18px rgba(248,120,32,.12); }
+:global(html[data-theme='light']) .sidebarProfileCard,
+:global(html[data-theme='light']) .notesWidget,
+:global(html[data-theme='light']) .categoryListItem,
+:global(html[data-theme='light']) .brandListItem { background: rgba(72,55,41,.025); border-color: var(--admin-border); }
+:global(html[data-theme='light']) .searchWrapper,
+:global(html[data-theme='light']) .iconControlBtn,
+:global(html[data-theme='light']) .headerProfileBadge,
+:global(html[data-theme='light']) .pagerBtn,
+:global(html[data-theme='light']) .actionCircleBtn,
+:global(html[data-theme='light']) .searchBarInput,
+:global(html[data-theme='light']) .filterSelect,
+:global(html[data-theme='light']) .advFilterBtn,
+:global(html[data-theme='light']) .notesContentBlock,
+:global(html[data-theme='light']) .perfItem {
+  color: var(--admin-white);
+  background-color: #f8f5f0;
+  border-color: var(--admin-border);
+}
+
+:global(html[data-theme='light']) .searchWrapper:focus-within,
+:global(html[data-theme='light']) .iconControlBtn:hover,
+:global(html[data-theme='light']) .pagerBtn:hover,
+:global(html[data-theme='light']) .actionCircleBtn:hover,
+:global(html[data-theme='light']) .advFilterBtn:hover { color: var(--admin-white); background-color: #f1ece6; border-color: rgba(43,35,28,.18); }
+:global(html[data-theme='light']) .inputField,
+:global(html[data-theme='light']) .selectField,
+:global(html[data-theme='light']) .textareaField,
+:global(html[data-theme='light']) .notesTextarea,
+:global(html[data-theme='light']) .pageWrapper input:not([type='checkbox']):not([type='radio']),
+:global(html[data-theme='light']) .pageWrapper select,
+:global(html[data-theme='light']) .pageWrapper textarea {
+  color: var(--admin-white);
+  background-color: var(--admin-input-bg);
+  border-color: var(--admin-border);
+}
+:global(html[data-theme='light']) .inputField:focus,
+:global(html[data-theme='light']) .selectField:focus,
+:global(html[data-theme='light']) .textareaField:focus { background-color: #fffdfa; }
+:global(html[data-theme='light']) .pageWrapper option { color: var(--admin-white); background: var(--admin-card-bg); }
+:global(html[data-theme='light']) .adminTable th,
+:global(html[data-theme='light']) .adminTable td,
+:global(html[data-theme='light']) .cardHeaderRow,
+:global(html[data-theme='light']) .detailsHeader,
+:global(html[data-theme='light']) .quickActionsRow,
+:global(html[data-theme='light']) .detailsTabContainer,
+:global(html[data-theme='light']) .profileDetailField,
+:global(html[data-theme='light']) .modalHeader,
+:global(html[data-theme='light']) .modalFooter,
+:global(html[data-theme='light']) .shipmentsCardTitle,
+:global(html[data-theme='light']) .finChartTitle { border-color: var(--admin-border); }
+:global(html[data-theme='light']) .adminTable td { color: #403a34; }
+:global(html[data-theme='light']) .adminTable tbody tr:hover { background-color: rgba(72,55,41,.035) !important; }
+:global(html[data-theme='light']) .metricValue,
+:global(html[data-theme='light']) .detailsName,
+:global(html[data-theme='light']) .fieldValue,
+:global(html[data-theme='light']) .notesWidgetTitle,
+:global(html[data-theme='light']) .performanceTitle,
+:global(html[data-theme='light']) .perfValue,
+:global(html[data-theme='light']) .shipmentsCardTitle,
+:global(html[data-theme='light']) .finChartTitle,
+:global(html[data-theme='light']) .finBreakdownVal,
+:global(html[data-theme='light']) .categoryListText,
+:global(html[data-theme='light']) .brandListText,
+:global(html[data-theme='light']) .modalHeader h3 { color: var(--admin-white); }
+:global(html[data-theme='light']) .finBreakdownName,
+:global(html[data-theme='light']) .checklistLabel,
+:global(html[data-theme='light']) .detailsActionBtn,
+:global(html[data-theme='light']) .actionCircleBtn { color: #514b45; }
+:global(html[data-theme='light']) .performanceGrid,
+:global(html[data-theme='light']) .progressBarTrack { background-color: rgba(43,35,28,.09); border-color: var(--admin-border); }
+:global(html[data-theme='light']) .badgeActive { color: #116c3e; background: rgba(17,108,62,.09); }
+:global(html[data-theme='light']) .badgeInactive { color: #b52f2f; background: rgba(181,47,47,.08); }
+:global(html[data-theme='light']) .badgeGrey { color: #625b54; background: rgba(43,35,28,.06); }
+:global(html[data-theme='light']) .modalOverlay,
+:global(html[data-theme='light']) .mobileMenuBackdrop { background-color: rgba(43,35,28,.48); }
+:global(html[data-theme='light']) .dragDropArea,
+:global(html[data-theme='light']) .addImageCard { background: #faf8f5; border-color: rgba(43,35,28,.17); }
+:global(html[data-theme='light']) .imageThumbCard { background: #eee9e2; }
