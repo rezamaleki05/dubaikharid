@@ -124,10 +124,15 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
   };
 
   const handleOrder = () => {
+    if (!/^https?:\/\//i.test(link.trim())) {
+      setLookupError('لطفاً لینک کامل و معتبر محصول را وارد کنید.');
+      return;
+    }
     if (onOrderSubmit) {
       onOrderSubmit({
-        link,
+        link: link.trim(),
         productName: detectedItem ? detectedItem.name : `${currentCategoryConfig.name} دبی`,
+        store: detectedItem?.store || 'فروشگاه دبی',
         priceAed: numPrice,
         weight: weightVal,
         totalToman,
@@ -190,7 +195,7 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
             <div className={styles.formHeader}>
               <div className={styles.headerTitleWrap}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87820" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                <h2>استعلام و ثبت سفارش خرید از دبی</h2>
+                <h2>استعلام و ثبت درخواست خرید از دبی</h2>
               </div>
               <p>اطلاعات محصول و شماره تماس خود را وارد کنید</p>
             </div>
@@ -306,24 +311,24 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="16" y1="18" x2="16.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="8" y1="18" x2="8.01" y2="18"/></svg>
                   </div>
                   <div className={styles.totalContent}>
-                    <div className={styles.totalLabel}>هزینه تقریبی نهایی:</div>
+                    <div className={styles.totalLabel}>برآورد اولیه:</div>
                     <div className={styles.totalAmount}>
                       <span className={styles.totalValue}>{totalToman > 0 ? formatNumber(totalToman) : '۰'}</span>
                       <span className={styles.totalCurrency}>تومان</span>
                     </div>
-                    <p className={styles.totalNote}>قیمت نهایی پس از بررسی لینک محصول در واتساپ اعلام می‌شود.</p>
+                    <p className={styles.totalNote}>مبلغ نهایی پس از بررسی کارشناسان دبی خرید اعلام می‌شود.</p>
                   </div>
                 </div>
                 
                 <button className={styles.submitBtn} onClick={handleOrder}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                  ثبت سفارش خرید
+                  ثبت درخواست خرید
                 </button>
               </div>
 
               <div className={styles.secureNote}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f87820" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                با ثبت سفارش، کارشناسان ما در واتساپ با شما تماس خواهند گرفت.
+                با ثبت درخواست، کارشناسان ما برای بررسی قیمت نهایی با شما تماس خواهند گرفت.
               </div>
 
             </div>

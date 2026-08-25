@@ -9,6 +9,7 @@ import Calculator from '@/components/Calculator';
 import ProductSlider from '@/components/ProductSlider';
 import Footer from '@/components/Footer';
 import CheckoutModal from '@/components/CheckoutModal';
+import QuickPurchaseRequestModal from '@/components/QuickPurchaseRequestModal';
 import styles from './page.module.css';
 
 const categoryIconPaths = {
@@ -35,6 +36,7 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrderData, setModalOrderData] = useState(null);
+  const [quickRequestData, setQuickRequestData] = useState(null);
 
   const handleSelectProduct = (product) => {
     setSelectedProduct({
@@ -49,8 +51,12 @@ export default function Home() {
   };
 
   const handleOrderSubmit = (orderData) => {
-    setModalOrderData(orderData);
-    setIsModalOpen(true);
+    if (Array.isArray(orderData.items) && orderData.items.length > 0) {
+      setModalOrderData(orderData);
+      setIsModalOpen(true);
+      return;
+    }
+    setQuickRequestData(orderData);
   };
 
   const handleCloseModal = () => {
@@ -113,6 +119,11 @@ export default function Home() {
         isOpen={isModalOpen}
         orderData={modalOrderData}
         onClose={handleCloseModal}
+      />
+      <QuickPurchaseRequestModal
+        isOpen={Boolean(quickRequestData)}
+        requestData={quickRequestData}
+        onClose={() => setQuickRequestData(null)}
       />
     </div>
   );
