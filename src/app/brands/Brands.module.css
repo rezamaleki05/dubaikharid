@@ -484,18 +484,26 @@
 }
 
 :global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
-:global(html[data-theme='light']) .heroSection { min-height: 560px; background: #181818; border-color: var(--border-subtle); }
-:global(html[data-theme='light']) .heroSection::before { opacity: .72; }
-:global(html[data-theme='light']) .heroSection::after { height: 220px; background: linear-gradient(to bottom, transparent, #fff); }
-:global(html[data-theme='light']) .heroContent { text-shadow: 0 2px 18px rgba(0,0,0,.36); }
+:global(html[data-theme='light']) .heroSection {
+  min-height: 560px;
+  background-color: #f7f4ef;
+  background-image: url('/images/brands/brands-hero-light.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-color: var(--border-subtle);
+}
+:global(html[data-theme='light']) .heroSection::before { background-image: none; opacity: 0; }
+:global(html[data-theme='light']) .heroSection::after { content: none; background: none; }
+:global(html[data-theme='light']) .heroContent { text-shadow: none; }
 :global(html[data-theme='light']) .sectionTitle,
 :global(html[data-theme='light']) .brandName,
 :global(html[data-theme='light']) .stepText h4,
 :global(html[data-theme='light']) .supportText h4 { color: var(--text-primary); }
 :global(html[data-theme='light']) .heroTitle,
-:global(html[data-theme='light']) .statValue { color: #fff; }
-:global(html[data-theme='light']) .heroSubtitle,
-:global(html[data-theme='light']) .statLabel { color: rgba(255,255,255,.78); }
+:global(html[data-theme='light']) .statValue { color: #171717; }
+:global(html[data-theme='light']) .heroSubtitle { color: #555; }
+:global(html[data-theme='light']) .statLabel { color: #686868; }
 :global(html[data-theme='light']) .stepText p,
 :global(html[data-theme='light']) .brandFaName,
 :global(html[data-theme='light']) .brandCategory,
