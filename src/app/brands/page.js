@@ -231,9 +231,9 @@ export default function BrandsPage() {
 
         {/* ── ONLINE STORES ── */}
         <h2 className={styles.sectionTitle} style={{textAlign: 'right', fontSize: '1.2rem', marginBottom: '20px', marginTop: '50px'}}>فروشگاه‌های آنلاین دبی</h2>
-        <div className={styles.grid} style={{marginBottom: '40px'}}>
+        <div className={`${styles.grid} ${styles.brandGrid}`} style={{marginBottom: '40px'}}>
           {stores.map(store => (
-            <div key={store.id} className={styles.card}>
+            <div key={store.id} className={`${styles.card} ${styles.brandCard}`}>
               <div className={styles.logoWrap}>
                 {store.hasImage ? (
                   <img src={store.img} alt={store.name} className={styles.logoImg} />
