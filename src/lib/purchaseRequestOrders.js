@@ -8,13 +8,13 @@ function orderCode() {
 }
 
 export async function convertPurchaseRequestInTransaction(tx, current, { overrides = {}, markPaid = false, confirmedById = null } = {}) {
-  const { allowUnpricedStatus = false, ...requestData } = overrides;
+  const requestData = overrides;
   if (current.order) return current;
   const finalToman = Number(requestData.finalToman ?? current.finalToman);
   const priceAed = Number(requestData.priceAed ?? current.priceAed ?? 0);
   const weight = Number(requestData.weight ?? current.weight ?? 0);
   if (!Number.isFinite(finalToman) || finalToman <= 0) throw new Error('FINAL_PRICE_REQUIRED');
-  if (!['price_tagged', 'approved'].includes(current.status) && !allowUnpricedStatus) throw new Error('REQUEST_NOT_PAYABLE');
+  if (!['price_tagged', 'approved'].includes(current.status)) throw new Error('REQUEST_NOT_PAYABLE');
   const order = await tx.order.create({
     data: {
       orderCode: orderCode(),

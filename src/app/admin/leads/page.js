@@ -7,7 +7,14 @@ import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell, { useAdminShellData } from '@/components/admin/AdminShell';
 import { calculateProductPricing } from '@/lib/pricing';
 
-const REQUEST_STATUSES = ['pending', 'price_tagged', 'approved', 'new_order'];
+const REQUEST_STATUS_DEFINITIONS = [
+  { value: 'pending', label: 'در انتظار بررسی' },
+  { value: 'price_tagged', label: 'قیمت‌گذاری شده' },
+  { value: 'approved', label: 'تأیید شده' },
+  { value: 'converted', label: 'تبدیل‌شده به سفارش' },
+  { value: 'cancelled', label: 'لغوشده' },
+];
+const REQUEST_STATUSES = REQUEST_STATUS_DEFINITIONS.map(item => item.value);
 const EMPTY_SETTINGS = {};
 
 const getStatusStyle = (status) => {
@@ -15,12 +22,7 @@ const getStatusStyle = (status) => {
     pending: { label: 'در انتظار بررسی', color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
     price_tagged: { label: 'قیمت‌گذاری شده', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)' },
     approved: { label: 'تایید شده', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-    processing: { label: 'در حال پردازش', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-    purchased: { label: 'در نون دبی', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
-    noon_dubai: { label: 'در نون دبی', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
-    warehouse_dubai: { label: 'در انبار دبی', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)' },
-    shipped: { label: 'ارسال شده', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-    delivered: { label: 'تحویل شده', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+    converted: { label: 'تبدیل‌شده به سفارش', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
     cancelled: { label: 'لغو شده', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
   };
   return stylesMap[status] || stylesMap.pending;
@@ -56,6 +58,9 @@ function LeadsContent() {
   const [calcShippingAed, setCalcShippingAed] = useState(0);
   const [calcCommissionAed, setCalcCommissionAed] = useState(0);
   const [calcAedRate, setCalcAedRate] = useState(0);
+  const [manualFinalToman, setManualFinalToman] = useState('');
+  const [pricingBusy, setPricingBusy] = useState(false);
+  const [pricingError, setPricingError] = useState('');
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -67,8 +72,9 @@ function LeadsContent() {
   }, []);
 
   useEffect(() => {
-    const selectedLead = leads.find(lead => lead?.id === selectedOrderId);
+    const selectedLead = leads.find(lead => lead?.id === selectedOrderId) || leads[0];
     if (!selectedLead) return;
+    if (selectedLead.id !== selectedOrderId) setSelectedOrderId(selectedLead.id);
 
     const priceValue = Number.parseFloat(selectedLead.priceAed) || 0;
     const weightValue = Number.parseFloat(selectedLead.weight) || 0.5;
@@ -80,13 +86,10 @@ function LeadsContent() {
     setCalcAedRate(pricing.exchangeRate);
     setCalcCommissionAed(Math.round(pricing.commissionAed));
     setCalcShippingAed(Math.round(pricing.shippingAed));
+    setManualFinalToman(selectedLead.pricing?.hasFinalOverride ? String(selectedLead.totalToman || '') : '');
+    setPricingError('');
   }, [leads, safeSettings, selectedOrderId]);
   /* eslint-enable react-hooks/set-state-in-effect */
-
-  const persistLeads = (nextLeads) => {
-    const safeLeads = Array.isArray(nextLeads) ? nextLeads : [];
-    setLeads(safeLeads);
-  };
 
   const patchLead = async (leadId, body) => {
     const response = await fetch(`/api/admin/purchase-requests/${encodeURIComponent(leadId)}`, {
@@ -96,18 +99,42 @@ function LeadsContent() {
     });
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || 'به‌روزرسانی درخواست با خطا مواجه شد.');
-    persistLeads(leads.map(lead => lead.id === leadId ? payload : lead));
+    setLeads(current => (Array.isArray(current) ? current : []).map(lead => lead.id === leadId ? payload : lead));
     return payload;
   };
 
   const calcTotalAed = calcPriceAed + calcShippingAed + calcCommissionAed;
   const calcTotalToman = Math.round(calcTotalAed * calcAedRate);
 
-  const handleSaveFinalPrice = async () => {
+  const handleCalculatePrice = () => {
+    setPricingError('');
     try {
-      await patchLead(selectedOrderId, { status: 'price_tagged', priceAed: calcPriceAed, weight: calcWeight, finalToman: calcTotalToman });
-      alert(`قیمت نهایی ${calcTotalToman.toLocaleString('fa-IR')} تومان ثبت و وضعیت درخواست به «قیمت اعلام شده» تغییر یافت.`);
-    } catch (error) { alert(error.message); }
+      const pricing = calculateProductPricing({ priceAed: calcPriceAed, weight: calcWeight }, safeSettings);
+      setCalcAedRate(pricing.exchangeRate);
+      setCalcCommissionAed(Math.round(pricing.commissionAed));
+      setCalcShippingAed(Math.round(pricing.shippingAed));
+    } catch {
+      setPricingError('تنظیمات مالی یا مقادیر قیمت و وزن معتبر نیست.');
+    }
+  };
+
+  const handleSaveFinalPrice = async () => {
+    if (!selectedLead?.id) return;
+    setPricingBusy(true);
+    setPricingError('');
+    try {
+      const payload = await patchLead(selectedLead.id, {
+        action: 'price',
+        priceAed: calcPriceAed,
+        weight: calcWeight,
+        ...(String(manualFinalToman).trim() ? { finalToman: Number(manualFinalToman) } : {}),
+      });
+      alert(`قیمت نهایی ${Number(payload.totalToman).toLocaleString('fa-IR')} تومان ثبت و وضعیت درخواست به «قیمت اعلام شده» تغییر یافت.`);
+    } catch (error) {
+      setPricingError(error.message || 'ثبت قیمت نهایی با خطا مواجه شد.');
+    } finally {
+      setPricingBusy(false);
+    }
   };
 
   const getWhatsAppPaymentLink = (lead) => {
@@ -115,14 +142,14 @@ function LeadsContent() {
     const productName = String(safeLead.productName ?? '');
     const customerName = String(safeLead.customerName ?? '');
     const phone = String(safeLead.phone ?? '');
-    const link = `${window.location.origin}/payment?amount=${Number(safeLead.totalToman ?? 0)}&tracking=${encodeURIComponent(String(safeLead.id ?? ''))}&prodName=${encodeURIComponent(productName)}&customer=${encodeURIComponent(customerName)}&phone=${encodeURIComponent(phone)}`;
+    const link = `${window.location.origin}/profile?request=${encodeURIComponent(String(safeLead.id ?? ''))}`;
     const text = `سلام جناب ${customerName} عزیز،\nقیمت نهایی محصول مورد نظر شما (${productName}) بررسی و اعلام گردید:\n\nقیمت محصول: ${Number(safeLead.priceAed ?? 0)} درهم\nوزن واقعی: ${Number(safeLead.weight ?? 0)} کیلوگرم\nقیمت نهایی به تومان: ${Number(safeLead.totalToman ?? 0).toLocaleString('fa-IR')} تومان\n\nجهت تکمیل پرداخت آنلاین از طریق درگاه شتاب بانکی می‌توانید روی لینک زیر کلیک کنید:\n${link}\n\nبا تشکر، دبی خرید`;
     return `https://wa.me/${phone.replace(/^[0]/, '+98')}?text=${encodeURIComponent(text)}`;
   };
 
   const handleSendPaymentLink = (lead) => {
     const safeLead = lead && typeof lead === 'object' ? lead : {};
-    const link = `${window.location.origin}/payment?amount=${Number(safeLead.totalToman ?? 0)}&tracking=${encodeURIComponent(String(safeLead.id ?? ''))}&prodName=${encodeURIComponent(String(safeLead.productName ?? ''))}&customer=${encodeURIComponent(String(safeLead.customerName ?? ''))}&phone=${encodeURIComponent(String(safeLead.phone ?? ''))}`;
+    const link = `${window.location.origin}/profile?request=${encodeURIComponent(String(safeLead.id ?? ''))}`;
     navigator.clipboard.writeText(link);
     alert('لینک پرداخت با موفقیت به کلیپ‌بورد کپی شد!');
     window.open(getWhatsAppPaymentLink(safeLead), '_blank');
@@ -130,7 +157,7 @@ function LeadsContent() {
 
   const handleConvertToOrder = async (leadId) => {
     const lead = leads.find(item => item?.id === leadId);
-    if (!lead || ['purchased', 'noon_dubai', 'warehouse_dubai', 'shipped', 'delivered'].includes(lead.status)) {
+    if (!lead || ['converted', 'cancelled'].includes(lead.status)) {
       return;
     }
     try {
@@ -187,10 +214,7 @@ function LeadsContent() {
     );
     if (!matchesSearch || !REQUEST_STATUSES.includes(lead.status)) return false;
 
-    const matchesStatus = activeStatusFilter === 'all' ||
-      (activeStatusFilter === 'noon_dubai'
-        ? lead.status === 'noon_dubai' || lead.status === 'purchased'
-        : lead.status === activeStatusFilter);
+    const matchesStatus = activeStatusFilter === 'all' || lead.status === activeStatusFilter;
     const matchesPayment = activePaymentFilter === 'all' || lead.paymentMethod === activePaymentFilter;
     return matchesStatus && matchesPayment;
   });
@@ -200,7 +224,7 @@ function LeadsContent() {
     { key: 'approved', label: 'تایید شده', count: leads.filter(lead => lead?.status === 'approved').length, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
     { key: 'price_tagged', label: 'قیمت‌گذاری شده', count: leads.filter(lead => lead?.status === 'price_tagged').length, icon: AdminIcons.tag(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
     { key: 'pending', label: 'در انتظار بررسی', count: leads.filter(lead => lead?.status === 'pending').length, icon: AdminIcons.clock(18), color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
-    { key: 'new_order', label: 'سفارش جدید', count: leads.filter(lead => lead?.status === 'new_order').length, icon: AdminIcons.download(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
+    { key: 'converted', label: 'تبدیل‌شده', count: leads.filter(lead => lead?.status === 'converted').length, icon: AdminIcons.download(18), color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
     { key: 'all', label: 'همه درخواست‌ها', count: leads.filter(lead => REQUEST_STATUSES.includes(lead?.status)).length, icon: AdminIcons.clipboard(18), color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)' }
   ];
 
@@ -342,14 +366,7 @@ function LeadsContent() {
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <select value={activeStatusFilter ?? 'all'} onChange={event => setActiveStatusFilter(event.target.value)} style={filterSelectStyle}>
                 <option value="all">همه وضعیت‌ها</option>
-                <option value="pending">در انتظار بررسی</option>
-                <option value="price_tagged">قیمت‌گذاری شده</option>
-                <option value="approved">تایید شده</option>
-                <option value="warehouse_dubai">در انبار دبی</option>
-                <option value="noon_dubai">در نون دبی</option>
-                <option value="shipped">ارسال شده</option>
-                <option value="delivered">تحویل شده</option>
-                <option value="cancelled">لغو شده</option>
+                {REQUEST_STATUS_DEFINITIONS.map(status => <option key={status.value} value={status.value}>{status.label}</option>)}
               </select>
               <select value={activePaymentFilter ?? 'all'} onChange={event => setActivePaymentFilter(event.target.value)} style={filterSelectStyle}>
                 <option value="all">همه روش‌های پرداخت</option>
@@ -399,7 +416,7 @@ function LeadsContent() {
                         borderRight: isSelected ? '3px solid #f87820' : '3px solid transparent'
                       }}
                     >
-                      <td style={{ fontWeight: '800', fontFamily: 'monospace', color: '#ff9d00', fontSize: '12px' }}>{String(lead.id ?? '')}</td>
+                      <td style={{ fontWeight: '800', fontFamily: 'monospace', color: '#ff9d00', fontSize: '12px' }}>{String(lead.requestCode || lead.id || '')}</td>
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: '750', color: '#fff', fontSize: '12.5px' }}>{String(lead.customerName ?? '')}</span>
@@ -485,10 +502,10 @@ function LeadsContent() {
                 </span>
               </div>
               <div className={styles.detailsOrderCodeRow}>
-                <span className={styles.detailsOrderCode}>{String(selectedLead.id ?? '')}</span>
+                <span className={styles.detailsOrderCode}>{String(selectedLead.requestCode || selectedLead.id || '')}</span>
                 <span
                   onClick={() => {
-                    navigator.clipboard.writeText(String(selectedLead.id ?? ''));
+                    navigator.clipboard.writeText(String(selectedLead.requestCode || selectedLead.id || ''));
                     alert('کد سفارش کپی شد!');
                   }}
                   style={{ fontSize: '12px', color: '#8b92a5', cursor: 'pointer', userSelect: 'none' }}
@@ -570,6 +587,7 @@ function LeadsContent() {
                     <div className={styles.detailsProductInfo}>
                       <h4 className={styles.detailsProductTitle}>{String(selectedLead.productName ?? '')}</h4>
                       <span className={styles.detailsProductDesc}>{String(selectedLead.store || 'فروشگاه ثبت نشده')}{selectedLead.brand ? ` | برند ${String(selectedLead.brand)}` : ''}</span>
+                      {selectedLead.originalUrl && <a href={String(selectedLead.originalUrl)} target="_blank" rel="noopener noreferrer" style={{ color: '#f87820', fontSize: '10px', marginTop: '4px' }}>مشاهده لینک محصول خارجی</a>}
                     </div>
                     <span className={styles.detailsProductQty}>۱ عدد</span>
                   </div>
@@ -584,6 +602,9 @@ function LeadsContent() {
               <div className={styles.detailsCollapsibleBody}>
                 {selectedLead.isRequest === true && ['pending', 'price_tagged'].includes(selectedLead.status) ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ fontSize: '11px', color: '#8b92a5' }}>
+                      قیمت استخراج‌شده/پیشنهادی: <strong style={{ color: '#fff' }}>{Number(selectedLead.priceAed || 0).toLocaleString('fa-IR')} درهم</strong>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>قیمت خرید (درهم):</label>
@@ -622,21 +643,27 @@ function LeadsContent() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>هزینه ارسال (درهم):</label>
-                        <input type="number" value={calcShippingAed ?? 0} onChange={event => setCalcShippingAed(Number.parseFloat(event.target.value) || 0)} style={compactInputStyle} />
+                        <input type="number" value={calcShippingAed ?? 0} readOnly style={{ ...compactInputStyle, opacity: 0.75 }} />
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>کارمزد دبی‌خرید (درهم):</label>
-                        <input type="number" value={calcCommissionAed ?? 0} onChange={event => setCalcCommissionAed(Number.parseFloat(event.target.value) || 0)} style={compactInputStyle} />
+                        <input type="number" value={calcCommissionAed ?? 0} readOnly style={{ ...compactInputStyle, opacity: 0.75 }} />
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>نرخ درهم (تومان):</label>
-                        <input type="number" value={calcAedRate ?? 0} onChange={event => setCalcAedRate(Number.parseFloat(event.target.value) || 0)} style={compactInputStyle} />
+                        <input type="number" value={calcAedRate ?? 0} readOnly style={{ ...compactInputStyle, opacity: 0.75 }} />
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                        <button onClick={handleSaveFinalPrice} className={styles.addOrderBtn}>{AdminIcons.tag(13)} محاسبه و ثبت قیمت</button>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>قیمت نهایی دستی (اختیاری، تومان):</label>
+                        <input type="number" value={manualFinalToman} onChange={event => setManualFinalToman(event.target.value)} placeholder={String(calcTotalToman)} style={compactInputStyle} />
                       </div>
+                    </div>
+                    {pricingError && <div role="alert" style={{ color: '#fca5a5', fontSize: '11px' }}>{pricingError}</div>}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <button type="button" onClick={handleCalculatePrice} disabled={pricingBusy} className={styles.detailsActionBtn}>{AdminIcons.dollar(13)} محاسبه قیمت</button>
+                      <button type="button" onClick={handleSaveFinalPrice} disabled={pricingBusy} className={styles.addOrderBtn}>{AdminIcons.tag(13)} {selectedLead.status === 'price_tagged' ? 'ویرایش قیمت' : 'ثبت قیمت نهایی'}</button>
                     </div>
                     <div style={{ background: 'rgba(248, 120, 32, 0.04)', border: '1px dashed rgba(248, 120, 32, 0.2)', borderRadius: '8px', padding: '10px', marginTop: '4px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>
@@ -701,15 +728,7 @@ function LeadsContent() {
                   <div className={styles.detailsActionsRow}>
                     <button className={styles.detailsActionBtn} onClick={() => handleUpdateNotes(selectedLead)}>{AdminIcons.edit(13)} یادداشت داخلی</button>
                     <select value={String(selectedLead.status ?? '')} onChange={event => handleStatusChange(selectedLead.id, event.target.value)} className={styles.detailsActionBtn} style={{ flex: 1, background: 'transparent', color: 'var(--admin-white)' }}>
-                      <option value="pending">وضعیت: بررسی</option>
-                      <option value="price_tagged">وضعیت: قیمت‌گذاری</option>
-                      <option value="approved">وضعیت: تایید شده</option>
-                      <option value="processing">وضعیت: در حال پردازش</option>
-                      <option value="warehouse_dubai">وضعیت: انبار دبی</option>
-                      <option value="noon_dubai">وضعیت: در نون دبی</option>
-                      <option value="shipped">وضعیت: ارسال شده</option>
-                      <option value="delivered">وضعیت: تحویل شده</option>
-                      <option value="cancelled">وضعیت: لغو شده</option>
+                      {REQUEST_STATUS_DEFINITIONS.map(status => <option key={status.value} value={status.value}>وضعیت: {status.label}</option>)}
                     </select>
                   </div>
                   <div className={styles.detailsActionsRow} style={{ marginTop: '8px' }}>

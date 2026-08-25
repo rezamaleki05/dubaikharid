@@ -6,6 +6,7 @@ import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { ORDER_STATUS_DEFINITIONS, getAvailableOrderStatusOptions, getOrderStatusMeta } from '@/lib/orderStatuses';
 const getSafeDateLabel = (value, includeTime = false) => {
   const parsedDate = new Date(value || '');
   if (Number.isNaN(parsedDate.getTime())) return '';
@@ -110,11 +111,16 @@ function OrdersContent({ onOrdersChange }) {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'به‌روزرسانی سفارش با خطا مواجه شد.');
-      setLeads(current => current.map(order => order.id === leadId ? payload : order));
+      setLeads(current => {
+        const nextOrders = current.map(order => order.id === leadId ? payload : order);
+        onOrdersChange(nextOrders);
+        return nextOrders;
+      });
       setRefreshToken(current => current + 1);
       return payload;
     } catch (updateError) {
       setError(updateError.message || 'به‌روزرسانی سفارش با خطا مواجه شد.');
+      setRefreshToken(current => current + 1);
       return null;
     } finally {
       setPendingActionId(null);
@@ -150,21 +156,6 @@ function OrdersContent({ onOrdersChange }) {
     await updateOrder(selectedLead.id, { adminNotes: note });
   };
 
-  const getStatusStyle = (status) => {
-    const stylesMap = {
-      pending: { label: 'در انتظار بررسی', color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
-      pricing: { label: 'قیمت‌گذاری شده', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)' },
-      paid: { label: 'تایید شده', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-      processing: { label: 'در حال پردازش', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-      purchased: { label: 'در نون دبی', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
-      warehouse_dubai: { label: 'در انبار دبی', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)' },
-      shipped: { label: 'ارسال شده', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-      delivered: { label: 'تحویل شده', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-      cancelled: { label: 'لغو شده', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
-    };
-    return stylesMap[status] || stylesMap.pending;
-  };
-
   const filteredOrders = leads;
   const totalStatusCount = Object.values(statusCounts).reduce((total, count) => total + Number(count || 0), 0);
 
@@ -173,7 +164,7 @@ function OrdersContent({ onOrdersChange }) {
     { key: 'delivered', label: 'تحویل شده', count: statusCounts.delivered || 0, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
     { key: 'shipped', label: 'ارسال شده', count: statusCounts.shipped || 0, icon: AdminIcons.truck(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
     { key: 'warehouse_dubai', label: 'در انبار دبی', count: statusCounts.warehouse_dubai || 0, icon: AdminIcons.building(18), color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)' },
-    { key: 'purchased', label: 'در نون دبی', count: statusCounts.purchased || 0, icon: AdminIcons.package(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
+    { key: 'purchased', label: 'در روند دبی', count: statusCounts.purchased || 0, icon: AdminIcons.package(18), color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
     { key: 'processing', label: 'در حال پردازش', count: statusCounts.processing || 0, icon: AdminIcons.clock(18), color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
     { key: 'all', label: 'همه سفارشات', count: totalStatusCount, icon: AdminIcons.clipboard(18), color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)' }
   ];
@@ -192,6 +183,12 @@ function OrdersContent({ onOrdersChange }) {
           </p>
         </div>
       </div>
+
+      {error && (
+        <div role="alert" style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '10px', color: '#fecaca', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', fontSize: '12px' }}>
+          {error}
+        </div>
+      )}
 
       <div className={styles.statOrdersRow}>
         {statCards.map((card) => {
@@ -273,15 +270,7 @@ function OrdersContent({ onOrdersChange }) {
                 }}
               >
                 <option value="all">همه وضعیت‌ها</option>
-                <option value="pending">در انتظار بررسی</option>
-                <option value="pricing">قیمت‌گذاری شده</option>
-                <option value="paid">تایید شده</option>
-                <option value="processing">در حال پردازش</option>
-                <option value="warehouse_dubai">در انبار دبی</option>
-                <option value="purchased">در نون دبی</option>
-                <option value="shipped">ارسال شده</option>
-                <option value="delivered">تحویل شده</option>
-                <option value="cancelled">لغو شده</option>
+                {ORDER_STATUS_DEFINITIONS.map(status => <option key={status.value} value={status.value}>{status.label}</option>)}
               </select>
 
               <select
@@ -357,7 +346,7 @@ function OrdersContent({ onOrdersChange }) {
                   </tr>
                 ) : filteredOrders.map((lead) => {
                   const isSelected = selectedOrderId === lead.id;
-                  const statusSpec = getStatusStyle(lead.status);
+                  const statusSpec = getOrderStatusMeta(lead.status);
 
                   return (
                     <tr
@@ -467,11 +456,11 @@ function OrdersContent({ onOrdersChange }) {
                 <span
                   style={{
                     padding: '3px 8px', borderRadius: '6px', fontSize: '9.5px', fontWeight: '750',
-                    color: getStatusStyle(selectedLead.status).color,
-                    backgroundColor: getStatusStyle(selectedLead.status).bg
+                    color: getOrderStatusMeta(selectedLead.status).color,
+                    backgroundColor: getOrderStatusMeta(selectedLead.status).bg
                   }}
                 >
-                  {getStatusStyle(selectedLead.status).label}
+                  {getOrderStatusMeta(selectedLead.status).label}
                 </span>
               </div>
               <div className={styles.detailsOrderCodeRow}>
@@ -658,15 +647,9 @@ function OrdersContent({ onOrdersChange }) {
                       border: '1px solid var(--admin-border)', color: 'var(--admin-white)', cursor: 'pointer', outline: 'none'
                     }}
                   >
-                    <option value="pending">وضعیت: بررسی</option>
-                    <option value="pricing">وضعیت: قیمت‌گذاری</option>
-                    <option value="paid">وضعیت: تایید شده</option>
-                    <option value="processing">وضعیت: در حال پردازش</option>
-                    <option value="warehouse_dubai">وضعیت: انبار دبی</option>
-                    <option value="purchased">وضعیت: در نون دبی</option>
-                    <option value="shipped">وضعیت: ارسال شده</option>
-                    <option value="delivered">وضعیت: تحویل شده</option>
-                    <option value="cancelled">وضعیت: لغو شده</option>
+                    {getAvailableOrderStatusOptions(selectedLead.status).map(status => (
+                      <option key={status.value} value={status.value}>وضعیت: {status.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>

@@ -70,7 +70,7 @@ export function serializeCustomerRequest(item, customer) {
     details: item.note || '',
     orderCode: item.order?.orderCode || null,
     orderId: item.order?.id || null,
-    pricingAvailable: Number(item.finalToman || 0) > 0 && ['price_tagged', 'approved', 'converted'].includes(item.status),
+    pricingAvailable: Number(item.finalToman || 0) > 0 && ['price_tagged', 'approved'].includes(item.status) && !item.order,
     paymentMethod: latestPayment?.method === 'ONLINE' ? 'gateway' : latestPayment ? 'card' : null,
     payment: latestPayment ? {
       id: latestPayment.id,

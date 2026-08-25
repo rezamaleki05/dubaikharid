@@ -2,7 +2,7 @@ import 'server-only';
 
 export const PURCHASE_REQUEST_STATUSES = new Set(['pending', 'price_tagged', 'approved', 'converted', 'cancelled']);
 
-export function serializeAdminPurchaseRequest(request) {
+export function serializeAdminPurchaseRequest(request, pricing = null) {
   return {
     id: request.id,
     requestCode: request.requestCode || request.id,
@@ -17,6 +17,13 @@ export function serializeAdminPurchaseRequest(request) {
     priceAed: request.priceAed || 0,
     weight: request.weight || 0,
     totalToman: request.finalToman || 0,
+    pricing: pricing ? {
+      exchangeRate: pricing.exchangeRate,
+      shippingAed: pricing.shippingAed,
+      commissionAed: pricing.commissionAed,
+      calculatedFinalToman: pricing.calculatedFinalToman,
+      hasFinalOverride: pricing.hasFinalOverride,
+    } : null,
     qty: request.quantity,
     notes: request.note || '',
     status: request.status,

@@ -34,3 +34,33 @@ export function calculateProductPricing({ priceAed, weight }, settings) {
     shippingPerKgAed,
   };
 }
+
+export function resolvePurchaseRequestPricing({ priceAed, weight, finalToman }, settings) {
+  const confirmedPriceAed = Number(priceAed);
+  const confirmedWeight = Number(weight);
+  if (!Number.isFinite(confirmedPriceAed) || confirmedPriceAed < 0) {
+    throw new TypeError('Confirmed AED price must be a non-negative finite number.');
+  }
+  if (!Number.isFinite(confirmedWeight) || confirmedWeight < 0 || confirmedWeight > 10000) {
+    throw new TypeError('Confirmed weight must be between 0 and 10000 kilograms.');
+  }
+
+  const quote = calculateProductPricing({ priceAed: confirmedPriceAed, weight: confirmedWeight }, settings);
+  const hasFinalOverride = finalToman !== undefined && finalToman !== null && String(finalToman).trim() !== '';
+  const manualFinalToman = hasFinalOverride ? Number(finalToman) : null;
+  if (hasFinalOverride && (!Number.isFinite(manualFinalToman) || manualFinalToman <= 0)) {
+    throw new TypeError('Manual final price must be a positive finite number.');
+  }
+  if (!hasFinalOverride && quote.totalToman <= 0) {
+    throw new RangeError('Calculated final price must be positive.');
+  }
+
+  return {
+    ...quote,
+    priceAed: confirmedPriceAed,
+    weight: confirmedWeight,
+    calculatedFinalToman: quote.totalToman,
+    finalToman: hasFinalOverride ? Math.round(manualFinalToman) : quote.totalToman,
+    hasFinalOverride,
+  };
+}

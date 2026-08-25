@@ -120,8 +120,9 @@ test('19. re-upload updates the same Payment and clears rejection state', () => 
 });
 
 test('20. unpriced PurchaseRequest does not expose a payment action', () => {
-  assert.match(profile, /قیمت نهایی پس از بررسی/);
-  assert.match(profile, /req\.totalToman > 0/);
+  assert.match(profile, /قیمت نهایی در حال بررسی است/);
+  assert.match(profile, /req\.pricingAvailable/);
+  assert.match(account, /pricingAvailable: Number\(item\.finalToman \|\| 0\) > 0/);
 });
 
 test('21. priced PurchaseRequest uses real finalToman from account data', () => {

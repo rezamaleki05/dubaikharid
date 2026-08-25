@@ -1,30 +1,7 @@
 import 'server-only';
+import { canTransitionOrder } from '@/lib/orderStatuses';
 
-export const ORDER_STATUSES = Object.freeze([
-  'pending',
-  'pricing',
-  'paid',
-  'processing',
-  'purchased',
-  'warehouse_dubai',
-  'shipped',
-  'delivered',
-  'cancelled',
-]);
-
-export const ORDER_STATUS_SET = new Set(ORDER_STATUSES);
-
-const ORDER_TRANSITIONS = Object.freeze({
-  pending: new Set(['pricing', 'paid', 'processing', 'cancelled']),
-  pricing: new Set(['paid', 'cancelled']),
-  paid: new Set(['processing', 'purchased', 'cancelled']),
-  processing: new Set(['purchased', 'warehouse_dubai', 'cancelled']),
-  purchased: new Set(['warehouse_dubai', 'cancelled']),
-  warehouse_dubai: new Set(['shipped', 'cancelled']),
-  shipped: new Set(['delivered']),
-  delivered: new Set(),
-  cancelled: new Set(),
-});
+export { ORDER_STATUSES, ORDER_STATUS_SET } from '@/lib/orderStatuses';
 
 export class OrderDomainError extends Error {
   constructor(message, status = 409, code = 'ORDER_CONFLICT') {
@@ -32,10 +9,6 @@ export class OrderDomainError extends Error {
     this.status = status;
     this.code = code;
   }
-}
-
-export function canTransitionOrder(previous, next) {
-  return previous === next || ORDER_TRANSITIONS[previous]?.has(next) || false;
 }
 
 export const adminOrderInclude = Object.freeze({

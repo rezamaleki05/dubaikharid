@@ -1141,8 +1141,8 @@ function ProfileContent() {
                         </div>
                         <div className={styles.detailCard}>
                           <span className={styles.detailLabel}>مبلغ نهایی</span>
-                          {req.totalToman > 0 ? <strong className={styles.totalPriceVal}>{fmtToman(req.totalToman)} تومان</strong> : <p style={{ color: '#8b92a5', lineHeight: 1.8 }}>درخواست خرید شما ثبت شد. قیمت نهایی پس از بررسی توسط کارشناسان دبی خرید اعلام می‌شود.</p>}
-                          {req.status === 'price_tagged' && req.totalToman > 0 && !req.orderCode && !paymentResult && <button className={styles.payActiveBtn} onClick={() => handlePayPurchaseRequest(req.id)}>پرداخت سفارش</button>}
+                          {req.totalToman > 0 ? <strong className={styles.totalPriceVal}>{fmtToman(req.totalToman)} تومان</strong> : <p style={{ color: '#8b92a5', lineHeight: 1.8 }}>قیمت نهایی در حال بررسی است.</p>}
+                          {req.pricingAvailable && !paymentResult && <button className={styles.payActiveBtn} onClick={() => handlePayPurchaseRequest(req.id)}>پرداخت سفارش</button>}
                         </div>
                       </div>
                       {paymentResult && <ManualPaymentPanel orderCode={paymentResult.orderCode} totalToman={paymentResult.totalToman} access={paymentResult.manualPayment} uploadToken={paymentResult.manualPayment?.uploadToken} />}
@@ -1387,7 +1387,7 @@ function ProfileContent() {
                                   </td>
                                   <td>
                                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                      {r.status === 'price_tagged' && r.paymentStatus !== 'paid' && (
+                                      {r.pricingAvailable && r.paymentStatus !== 'paid' && (
                                         <button 
                                           className={styles.payActiveBtn}
                                           style={{ padding: '4px 10px', fontSize: '10.5px' }}
