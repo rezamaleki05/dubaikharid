@@ -477,25 +477,48 @@
 }
 
 :global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
-:global(html[data-theme='light']) .heroSection { background: linear-gradient(135deg, #fffaf5, #eee9e2); border-color: var(--border-subtle); }
-:global(html[data-theme='light']) .heroTitle,
+:global(html[data-theme='light']) .heroSection { min-height: 560px; background: #181818; border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .heroSection::before { opacity: .72; }
+:global(html[data-theme='light']) .heroSection::after { height: 220px; background: linear-gradient(to bottom, transparent, #fff); }
+:global(html[data-theme='light']) .heroContent { text-shadow: 0 2px 18px rgba(0,0,0,.36); }
 :global(html[data-theme='light']) .sectionTitle,
 :global(html[data-theme='light']) .brandName,
 :global(html[data-theme='light']) .stepText h4,
 :global(html[data-theme='light']) .supportText h4 { color: var(--text-primary); }
+:global(html[data-theme='light']) .heroTitle,
+:global(html[data-theme='light']) .statValue { color: #fff; }
 :global(html[data-theme='light']) .heroSubtitle,
-:global(html[data-theme='light']) .statLabel,
+:global(html[data-theme='light']) .statLabel { color: rgba(255,255,255,.78); }
 :global(html[data-theme='light']) .stepText p,
 :global(html[data-theme='light']) .brandFaName,
 :global(html[data-theme='light']) .brandCategory,
 :global(html[data-theme='light']) .supportText p { color: var(--text-tertiary); }
-:global(html[data-theme='light']) .searchBox,
-:global(html[data-theme='light']) .stepItem,
-:global(html[data-theme='light']) .card,
-:global(html[data-theme='light']) .supportItem { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .searchInput { color: #171717; background: rgba(255,255,255,.94); border-color: rgba(255,255,255,.7); box-shadow: 0 14px 40px rgba(0,0,0,.16); }
+:global(html[data-theme='light']) .searchIcon { color: #686868; }
+:global(html[data-theme='light']) .stepsSection { padding-block: 52px; }
+:global(html[data-theme='light']) .stepsGrid { gap: 0; }
+:global(html[data-theme='light']) .stepItem { padding: 8px 18px; background: transparent; border: 0; }
+:global(html[data-theme='light']) .stepItem + .stepItem { border-inline-start: 1px solid var(--border-subtle); }
+:global(html[data-theme='light']) .stepIcon { background: #fff; border-color: var(--accent-border); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .card { padding: 18px 16px; background: #fff; border-color: var(--border-subtle); box-shadow: none; }
+:global(html[data-theme='light']) .card:hover { border-color: rgba(23,23,23,.14); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .supportItem { background: transparent; border-color: transparent; }
 :global(html[data-theme='light']) .searchInput,
 :global(html[data-theme='light']) .filterBtn,
 :global(html[data-theme='light']) .sortSelect { color: var(--text-primary); }
 :global(html[data-theme='light']) .sortSelect { background: var(--surface-secondary); border-color: var(--border-primary); }
 :global(html[data-theme='light']) .sortSelect option { color: var(--text-primary); background: var(--surface-elevated); }
-:global(html[data-theme='light']) .logoWrap { background: #f3efea; }
+:global(html[data-theme='light']) .logoWrap { height: 54px; padding: 9px 12px; background: #1c1c1b; border-radius: 8px; }
+:global(html[data-theme='light']) .logoFallback { color: #fff; }
+:global(html[data-theme='light']) .linkBtn { color: var(--text-secondary); border-color: var(--border-subtle); }
+
+@media (max-width: 1024px) {
+  :global(html[data-theme='light']) .stepsGrid { gap: 16px; }
+  :global(html[data-theme='light']) .stepItem + .stepItem { border-inline-start: 0; }
+}
+
+@media (max-width: 640px) {
+  :global(html[data-theme='light']) .heroSection { min-height: 500px; }
+  :global(html[data-theme='light']) .stepsSection { padding-block: 36px; }
+  :global(html[data-theme='light']) .stepItem { padding-inline: 0; }
+}

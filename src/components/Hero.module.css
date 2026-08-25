@@ -205,16 +205,27 @@
   .stats { gap: 15px; flex-wrap: wrap; }
 }
 
-:global(html[data-theme='light']) .hero { background: #eee9e2; }
-:global(html[data-theme='light']) .overlay { background: linear-gradient(90deg, rgba(247,244,239,.94) 4%, rgba(247,244,239,.82) 48%, rgba(247,244,239,.34) 100%); }
+:global(html[data-theme='light']) .hero { background: #f3f3f1; }
+:global(html[data-theme='light']) .overlay {
+  background:
+    linear-gradient(to bottom, transparent 52%, rgba(255,255,255,.25) 78%, #fff 100%),
+    linear-gradient(to left, rgba(255,255,255,.96) 0%, rgba(255,255,255,.84) 31%, rgba(255,255,255,.34) 61%, rgba(255,255,255,.04) 100%);
+}
 :global(html[data-theme='light']) .breadcrumb,
 :global(html[data-theme='light']) .desc,
 :global(html[data-theme='light']) .statLabel { color: var(--text-secondary); }
 :global(html[data-theme='light']) .title,
 :global(html[data-theme='light']) .statNum { color: var(--text-primary); }
-:global(html[data-theme='light']) .btnSecondary,
-:global(html[data-theme='light']) .statItem { color: var(--text-primary); background: rgba(255,255,255,.7); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .title { text-shadow: 0 1px 0 rgba(255,255,255,.8); }
+:global(html[data-theme='light']) .highlight { text-shadow: none; }
+:global(html[data-theme='light']) .breadcrumb { background: rgba(255,255,255,.76); border-color: var(--accent-border); backdrop-filter: blur(10px); }
+:global(html[data-theme='light']) .btnSecondary { color: var(--text-primary); background: rgba(255,255,255,.78); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .statItem { color: var(--text-primary); background: transparent; border-color: transparent; }
+:global(html[data-theme='light']) .statDivider { background: var(--border-primary); }
+:global(html[data-theme='light']) .btnPrimary { box-shadow: 0 8px 24px rgba(216,94,12,.2); }
 
 @media (max-width: 640px) {
-  :global(html[data-theme='light']) .overlay { background: linear-gradient(to bottom, rgba(247,244,239,.54), #f7f4ef 100%); }
+  :global(html[data-theme='light']) .overlay {
+    background: linear-gradient(to bottom, rgba(255,255,255,.42) 0%, rgba(255,255,255,.82) 52%, #fff 100%);
+  }
 }

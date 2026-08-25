@@ -1488,7 +1488,7 @@ select.inputField {
 :global(html[data-theme='light']) .addressCard,
 :global(html[data-theme='light']) .ticketBox,
 :global(html[data-theme='light']) .couponCard,
-:global(html[data-theme='light']) .detailCard { background: var(--surface-secondary); border-color: var(--border-primary); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .detailCard { background: #fff; border-color: var(--border-subtle); box-shadow: none; }
 :global(html[data-theme='light']) .profileName,
 :global(html[data-theme='light']) .welcomeTitle,
 :global(html[data-theme='light']) .summaryValue,
@@ -1518,11 +1518,10 @@ select.inputField {
 :global(html[data-theme='light']) .recentOrdersTable td,
 :global(html[data-theme='light']) .detailTable td,
 :global(html[data-theme='light']) .activityItem { border-color: var(--border-subtle); }
-:global(html[data-theme='light']) .recentOrdersTable th { color: var(--text-tertiary); background: #f4f0eb; }
+:global(html[data-theme='light']) .recentOrdersTable th { color: var(--text-tertiary); background: #f4f4f2; }
 :global(html[data-theme='light']) .recentOrdersTable td { color: var(--text-secondary); }
 :global(html[data-theme='light']) .inputField,
 :global(html[data-theme='light']) .textareaField,
 :global(html[data-theme='light']) .linkInputContainer,
-:global(html[data-theme='light']) .qtyStepper { color: var(--text-primary); background: #fffdfa; border-color: var(--border-primary); }
-:global(html[data-theme='light']) .uploaderZone { background: #faf7f3; border-color: var(--border-primary); }
-
+:global(html[data-theme='light']) .qtyStepper { color: var(--text-primary); background: #fff; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .uploaderZone { background: #f7f7f5; border-color: var(--border-primary); }

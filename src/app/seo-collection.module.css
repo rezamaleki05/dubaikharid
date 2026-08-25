@@ -17,6 +17,7 @@
 @media (max-width: 700px) { .main { width: min(100% - 24px, 1180px); } .header { align-items: flex-start; flex-direction: column; } .grid { grid-template-columns: 1fr; } }
 
 :global(html[data-theme='light']) .page { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .main { padding-top: 52px; }
 :global(html[data-theme='light']) .header,
 :global(html[data-theme='light']) .intro,
 :global(html[data-theme='light']) .process,
@@ -26,4 +27,9 @@
 :global(html[data-theme='light']) .intro p,
 :global(html[data-theme='light']) .process li,
 :global(html[data-theme='light']) .notice p { color: var(--text-secondary); }
-:global(html[data-theme='light']) .grid a { color: var(--text-primary); background: var(--surface-secondary); }
+:global(html[data-theme='light']) .header { padding-block: 26px 34px; }
+:global(html[data-theme='light']) .logo { background: #1c1c1b; border-color: #1c1c1b; }
+:global(html[data-theme='light']) .grid a { color: var(--text-primary); background: #fff; border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .grid a:hover { border-color: var(--accent); }
+
+@media (max-width: 700px) { :global(html[data-theme='light']) .main { padding-top: 34px; } }

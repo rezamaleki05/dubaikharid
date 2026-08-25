@@ -216,9 +216,11 @@
   }
 }
 
-:global(html[data-theme='light']) .footer { color: var(--text-secondary); background: #eee9e2; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .footer { color: var(--text-secondary); background: #f7f7f5; border-top: 1px solid var(--border-subtle); }
 :global(html[data-theme='light']) .footerTop,
 :global(html[data-theme='light']) .footerBottom { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .footerTop { padding-block: 64px 48px; }
+:global(html[data-theme='light']) .footerBottom { background: #f1f1ef; }
 :global(html[data-theme='light']) .logoMain,
 :global(html[data-theme='light']) .linksCol h4,
 :global(html[data-theme='light']) .contactItem strong,
@@ -227,5 +229,6 @@
 :global(html[data-theme='light']) .linksCol a,
 :global(html[data-theme='light']) .contactItem,
 :global(html[data-theme='light']) .copyright { color: var(--text-tertiary); }
-:global(html[data-theme='light']) .socials a,
-:global(html[data-theme='light']) .trustBadge { color: var(--text-secondary); background: rgba(255,255,255,.62); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .socials a { color: var(--text-secondary); background: #fff; border: 1px solid var(--border-subtle); }
+:global(html[data-theme='light']) .socials a:hover { color: #fff; background: var(--accent); border-color: var(--accent); }
+:global(html[data-theme='light']) .trustBadge { color: var(--text-secondary); background: transparent; border-color: var(--border-subtle); }

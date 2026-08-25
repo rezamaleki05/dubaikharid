@@ -326,8 +326,8 @@
   }
 }
 
-:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: radial-gradient(circle at 50% 10%, #fffaf5, #f0ece6 64%); }
-:global(html[data-theme='light']) .authCard { background: rgba(255,255,255,.88); border-color: var(--border-primary); box-shadow: var(--shadow-lg); }
+:global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: radial-gradient(circle at 50% 0%, rgba(248,120,32,.055), transparent 34%), #f7f7f5; }
+:global(html[data-theme='light']) .authCard { background: #fff; border-color: var(--border-subtle); box-shadow: 0 24px 64px rgba(23,23,23,.08); }
 :global(html[data-theme='light']) .subtitle,
 :global(html[data-theme='light']) .tab,
 :global(html[data-theme='light']) .helperRow,
@@ -335,9 +335,11 @@
 :global(html[data-theme='light']) .activeTab,
 :global(html[data-theme='light']) .label,
 :global(html[data-theme='light']) .inputField { color: var(--text-primary); }
-:global(html[data-theme='light']) .tabs,
+:global(html[data-theme='light']) .tabs { background: #f4f4f2; border-color: transparent; }
 :global(html[data-theme='light']) .inputWrapper,
-:global(html[data-theme='light']) .socialBtn { background: #f7f3ee; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .socialBtn { background: #fff; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .inputField { background: #fff; }
+:global(html[data-theme='light']) .socialBtn:hover { background: #f7f7f5; border-color: rgba(23,23,23,.18); }
 :global(html[data-theme='light']) .inputField,
 :global(html[data-theme='light']) .socialBtn { color: var(--text-primary); }
 :global(html[data-theme='light']) .divider::before,

@@ -120,11 +120,17 @@
   .categoriesGrid { grid-template-columns: repeat(2, 1fr); }
 }
 
-:global(html[data-theme='light']) .categoriesSection { border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .categoriesSection { padding-block: 44px 38px; background: #f7f7f5; border-color: transparent; }
+:global(html[data-theme='light']) .catHeader { margin-bottom: 26px; }
 :global(html[data-theme='light']) .catTitle,
 :global(html[data-theme='light']) .catName { color: var(--text-primary); }
 :global(html[data-theme='light']) .catSubtitle,
 :global(html[data-theme='light']) .catCount { color: var(--text-tertiary); }
-:global(html[data-theme='light']) .catCard { background: var(--surface-secondary); border-color: var(--border-primary); box-shadow: 0 10px 30px rgba(73,54,39,.045); }
-:global(html[data-theme='light']) .catCard:hover { background: #fffaf5; border-color: var(--accent); }
-:global(html[data-theme='light']) .catIcon { color: #504942; background: #faf7f3; border-color: var(--border-primary); }
+:global(html[data-theme='light']) .catCard { padding-block: 16px; background: transparent; border-color: transparent; border-radius: 8px; box-shadow: none; }
+:global(html[data-theme='light']) .catCard:hover { background: #fff; border-color: transparent; box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .catIcon { color: #333; background: #fff; border-color: var(--border-subtle); box-shadow: none; }
+
+@media (max-width: 640px) {
+  :global(html[data-theme='light']) .categoriesSection { padding-block: 32px; }
+  :global(html[data-theme='light']) .catCard { padding: 12px 5px; }
+}

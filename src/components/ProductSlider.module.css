@@ -225,10 +225,21 @@
 
 :global(html[data-theme='light']) .sectionTitle,
 :global(html[data-theme='light']) .productName { color: var(--text-primary); }
-:global(html[data-theme='light']) .productCard { background: var(--surface-secondary); border-color: var(--border-primary); }
-:global(html[data-theme='light']) .productCard:hover { border-color: rgba(216,94,12,.25); box-shadow: var(--shadow-md); }
-:global(html[data-theme='light']) .imageWrap { background: #f1eee9; }
+:global(html[data-theme='light']) .slider { padding-block: 46px; background: #fff; }
+:global(html[data-theme='light']) .sectionHeader { margin-bottom: 22px; }
+:global(html[data-theme='light']) .productCard { background: #fff; border-color: var(--border-subtle); border-radius: 12px; box-shadow: none; }
+:global(html[data-theme='light']) .productCard:hover { border-color: rgba(23,23,23,.14); box-shadow: var(--shadow-sm); transform: translateY(-3px); }
+:global(html[data-theme='light']) .imageWrap { background: #f4f4f2; }
+:global(html[data-theme='light']) .productImg[role='img'] { background: linear-gradient(135deg, #f7f7f5, #ececea); }
+:global(html[data-theme='light']) .productImg[role='img']::after { content: ''; }
 :global(html[data-theme='light']) .brandName,
 :global(html[data-theme='light']) .priceToman { color: var(--text-tertiary); }
-:global(html[data-theme='light']) .cartBtn { color: var(--text-primary); background: #f1ede8; }
+:global(html[data-theme='light']) .priceToman { color: var(--text-primary) !important; font-weight: 800; }
+:global(html[data-theme='light']) .wishlistBtn { color: #2d2d2d; background: rgba(255,255,255,.9); border-color: rgba(23,23,23,.09); box-shadow: 0 2px 10px rgba(23,23,23,.06); }
+:global(html[data-theme='light']) .storeBadge { color: #fff; background: rgba(23,23,23,.74); }
+:global(html[data-theme='light']) .cartBtn { color: var(--text-primary); background: #f4f4f2; }
 :global(html[data-theme='light']) .cartBtn:hover { color: #fff; background: var(--accent); }
+
+@media (max-width: 768px) {
+  :global(html[data-theme='light']) .slider { padding-block: 34px; }
+}

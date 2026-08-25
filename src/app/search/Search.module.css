@@ -330,10 +330,12 @@
 }
 
 :global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
+:global(html[data-theme='light']) .mainContainer { padding-top: 52px; }
 :global(html[data-theme='light']) .searchContainer,
-:global(html[data-theme='light']) .card,
-:global(html[data-theme='light']) .productCard,
-:global(html[data-theme='light']) .noResults { background: var(--surface-secondary); border-color: var(--border-primary); }
+:global(html[data-theme='light']) .card { background: #fff; border-color: var(--border-subtle); }
+:global(html[data-theme='light']) .productCard { background: #fff; border-color: var(--border-subtle); box-shadow: none; }
+:global(html[data-theme='light']) .productCard:hover { border-color: rgba(23,23,23,.14); box-shadow: var(--shadow-sm); }
+:global(html[data-theme='light']) .noResults { max-width: 560px; margin-inline: auto; padding: 52px 20px; background: #f7f7f5; border: 0; border-radius: 14px; }
 :global(html[data-theme='light']) .searchTitle,
 :global(html[data-theme='light']) .sectionTitle,
 :global(html[data-theme='light']) .brandName,
@@ -344,7 +346,10 @@
 :global(html[data-theme='light']) .resultsCount,
 :global(html[data-theme='light']) .noResultsText { color: var(--text-tertiary); }
 :global(html[data-theme='light']) .imageWrap,
-:global(html[data-theme='light']) .logoWrap { background: #f1eee9; }
-:global(html[data-theme='light']) .cartBtn { color: var(--text-primary); background: #efebe5; }
+:global(html[data-theme='light']) .logoWrap { background: #1c1c1b; border-radius: 8px; }
+:global(html[data-theme='light']) .logoFallback { color: #fff; }
+:global(html[data-theme='light']) .cartBtn { color: var(--text-primary); background: #f4f4f2; border-color: transparent; }
 :global(html[data-theme='light']) .productCard:hover .cartBtn { color: #fff; }
 :global(html[data-theme='light']) .wishlistBtn { background: rgba(255,255,255,.78); color: #342e29; border-color: var(--border-primary); }
+
+@media (max-width: 768px) { :global(html[data-theme='light']) .mainContainer { padding-top: 34px; } }

@@ -60,32 +60,32 @@ html[data-theme='light'] {
   --orange-light: #fff0e4;
   --green: #12833d;
   --green-light: #e9f8ef;
-  --text-dark: #1e1b18;
-  --text-mid: #4f4a45;
-  --text-muted: #706a63;
-  --text-light: #8b847c;
-  --border: rgba(43, 35, 28, 0.13);
-  --border-light: rgba(43, 35, 28, 0.075);
-  --bg-gradient: #f7f4ef;
+  --text-dark: #171717;
+  --text-mid: #484848;
+  --text-muted: #686868;
+  --text-light: #858585;
+  --border: rgba(23, 23, 23, 0.12);
+  --border-light: rgba(23, 23, 23, 0.07);
+  --bg-gradient: #ffffff;
   --white: #ffffff;
-  --card-bg: rgba(255, 255, 255, 0.82);
-  --card-border: rgba(43, 35, 28, 0.1);
-  --shadow-sm: 0 2px 7px rgba(62, 45, 31, 0.06);
-  --shadow-md: 0 12px 34px rgba(62, 45, 31, 0.09);
-  --shadow-lg: 0 24px 70px rgba(62, 45, 31, 0.13);
+  --card-bg: #ffffff;
+  --card-border: rgba(23, 23, 23, 0.09);
+  --shadow-sm: 0 2px 12px rgba(23, 23, 23, 0.045);
+  --shadow-md: 0 14px 36px rgba(23, 23, 23, 0.075);
+  --shadow-lg: 0 28px 72px rgba(23, 23, 23, 0.11);
 
-  --bg-primary: #f7f4ef;
-  --bg-secondary: #f0ece6;
-  --surface-primary: #fffdfa;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f7f5;
+  --surface-primary: #ffffff;
   --surface-secondary: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-hover: rgba(74, 57, 44, 0.055);
-  --control-bg: rgba(255, 255, 255, 0.8);
-  --text-primary: #1e1b18;
-  --text-secondary: #514b45;
-  --text-tertiary: #756e67;
-  --border-primary: rgba(43, 35, 28, 0.14);
-  --border-subtle: rgba(43, 35, 28, 0.08);
+  --surface-hover: rgba(23, 23, 23, 0.035);
+  --control-bg: #f7f7f5;
+  --text-primary: #171717;
+  --text-secondary: #494949;
+  --text-tertiary: #707070;
+  --border-primary: rgba(23, 23, 23, 0.12);
+  --border-subtle: rgba(23, 23, 23, 0.07);
   --accent: #F87820;
   --accent-hover: #d85e0c;
   --accent-soft: rgba(248, 120, 32, 0.09);
@@ -96,9 +96,21 @@ html[data-theme='light'] {
   --success-soft: rgba(22, 124, 69, 0.09);
   --warning: #a75b13;
   --info: #356aa8;
-  --overlay: rgba(35, 28, 22, 0.48);
+  --overlay: rgba(18, 18, 18, 0.48);
   --focus-ring: rgba(216, 94, 12, 0.65);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+html[data-theme='light'] body {
+  background: #fff;
+}
+
+html[data-theme='light'] main {
+  scroll-margin-top: 148px;
+}
+
+html[data-theme='light'] img[src$='product-placeholder.svg'] {
+  opacity: .2;
 }
 
 * {
@@ -208,8 +220,8 @@ input[type="range"]::-webkit-slider-thumb {
 ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #666666; }
 html[data-theme='light'] ::-webkit-scrollbar-track { background: var(--border-subtle); }
-html[data-theme='light'] ::-webkit-scrollbar-thumb { background: #9a9289; }
-html[data-theme='light'] ::-webkit-scrollbar-thumb:hover { background: #766f68; }
+html[data-theme='light'] ::-webkit-scrollbar-thumb { background: #b5b5b2; }
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover { background: #8f8f8b; }
 
 /* ── Toman Price Font Rule ── */
 .priceToman,

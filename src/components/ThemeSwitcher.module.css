@@ -91,3 +91,14 @@
   .menu { animation: none; }
   .trigger, .menu button { transition: none; }
 }
+
+:global(html[data-theme='light']) .trigger {
+  color: #3e3e3e;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+:global(html[data-theme='light']) .trigger:hover,
+:global(html[data-theme='light']) .trigger:focus-visible { background: var(--accent-soft); border-color: var(--accent-border); }
+:global(html[data-theme='light']) .menu { background: #fff; border-color: var(--border-subtle); box-shadow: var(--shadow-md); }
