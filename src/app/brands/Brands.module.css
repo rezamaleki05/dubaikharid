@@ -486,6 +486,9 @@
 :global(html[data-theme='light']) .pageWrapper { color: var(--text-primary); background: var(--bg-primary); }
 :global(html[data-theme='light']) .heroSection {
   min-height: 560px;
+  justify-content: flex-start;
+  padding: 80px clamp(40px, 6vw, 112px);
+  text-align: right;
   background-color: #f7f4ef;
   background-image: url('/images/brands/brands-hero-light.png');
   background-size: cover;
@@ -495,15 +498,38 @@
 }
 :global(html[data-theme='light']) .heroSection::before { background-image: none; opacity: 0; }
 :global(html[data-theme='light']) .heroSection::after { content: none; background: none; }
-:global(html[data-theme='light']) .heroContent { text-shadow: none; }
+:global(html[data-theme='light']) .heroContent {
+  width: 48%;
+  max-width: 780px;
+  min-width: 0;
+  direction: rtl;
+  text-align: right;
+  text-shadow: none;
+}
 :global(html[data-theme='light']) .sectionTitle,
 :global(html[data-theme='light']) .brandName,
 :global(html[data-theme='light']) .stepText h4,
 :global(html[data-theme='light']) .supportText h4 { color: var(--text-primary); }
 :global(html[data-theme='light']) .heroTitle,
 :global(html[data-theme='light']) .statValue { color: #171717; }
+:global(html[data-theme='light']) .heroTitle,
+:global(html[data-theme='light']) .heroSubtitle { text-align: right; }
 :global(html[data-theme='light']) .heroSubtitle { color: #555; }
 :global(html[data-theme='light']) .statLabel { color: #686868; }
+:global(html[data-theme='light']) .heroStats {
+  width: 100%;
+  justify-content: space-between;
+  gap: clamp(14px, 2vw, 36px);
+}
+:global(html[data-theme='light']) .statItem {
+  min-width: 0;
+  justify-content: center;
+}
+:global(html[data-theme='light']) .searchBox {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
 :global(html[data-theme='light']) .stepText p,
 :global(html[data-theme='light']) .brandFaName,
 :global(html[data-theme='light']) .brandCategory,
@@ -607,13 +633,25 @@
 :global(html[data-theme='light']) .linkBtn { color: var(--text-secondary); border-color: var(--border-subtle); }
 
 @media (max-width: 1024px) {
+  :global(html[data-theme='light']) .heroSection { padding-inline: clamp(24px, 4vw, 48px); }
+  :global(html[data-theme='light']) .heroContent { width: 58%; max-width: 560px; }
+  :global(html[data-theme='light']) .heroTitle { font-size: clamp(2rem, 4vw, 2.5rem); }
   :global(html[data-theme='light']) .stepsGrid { gap: 16px; }
   :global(html[data-theme='light']) .stepItem + .stepItem { border-inline-start: 0; }
   :global(html[data-theme='light']) .brandGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 640px) {
-  :global(html[data-theme='light']) .heroSection { min-height: 500px; }
+  :global(html[data-theme='light']) .heroSection {
+    min-height: 500px;
+    justify-content: center;
+    padding: 58px 12px 44px;
+    text-align: center;
+  }
+  :global(html[data-theme='light']) .heroContent { width: 100%; max-width: 560px; text-align: center; }
+  :global(html[data-theme='light']) .heroTitle,
+  :global(html[data-theme='light']) .heroSubtitle { text-align: center; }
+  :global(html[data-theme='light']) .searchBox { margin-inline: auto; }
   :global(html[data-theme='light']) .stepsSection { padding-block: 36px; }
   :global(html[data-theme='light']) .stepItem { padding-inline: 0; }
   :global(html[data-theme='light']) .brandGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
