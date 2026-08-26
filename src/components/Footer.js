@@ -72,7 +72,7 @@ export default function Footer() {
         <div className="container">
           <div className={styles.footerBottomInner}>
             <p className={styles.copyright}>
-              © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>{settings.siteName} ({settings.siteUrl})</strong> می‌باشد.
+              © ۱۴۰۵ تمامی حقوق مادی و معنوی این وب‌سایت متعلق به <strong>{settings.siteName} (Dubaikharid.shop)</strong> می‌باشد.
               <Link href="/admin" className={styles.adminLink} title="ورود به پنل مدیریت"><MinimalIcon name="key" size={13} /> ورود ادمین</Link>
             </p>
             <div className={styles.trustLogos}>

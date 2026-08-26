@@ -113,6 +113,7 @@ export default function Header() {
             <div className={styles.topBarRight}>
               <span className={styles.servicePulse} aria-hidden="true" />
               <span>سفارش از فروشگاه‌های دبی، تحویل در ایران</span>
+              <span className={styles.topBarCaption}>خرید بی‌واسطه از دبی</span>
               <Link href="/buy-from-dubai" className={styles.topBarGuide}>راهنمای خرید</Link>
             </div>
             <div className={styles.topBarLeft}>
@@ -161,7 +162,6 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className={styles.logo}>
               <img src={settings.siteLogoUrl} alt={settings.siteName} className={styles.logoImg} />
-              <span className={styles.logoCaption}>خرید بی‌واسطه از دبی</span>
             </Link>
 
             {/* Search — CENTER */}
