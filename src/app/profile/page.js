@@ -65,12 +65,6 @@ const ProfileIcons = {
       <circle cx="12" cy="7" r="4" />
     </svg>
   ),
-  coupons: (s = 18) => (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 5H18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2H9" />
-      <path d="M12 11h4M12 15h4M12 7h.01M8 11h.01M8 15h.01" />
-    </svg>
-  ),
   support: (s = 18) => (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -201,7 +195,6 @@ function ProfileContent() {
   const [tickets, setTickets] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [purchaseRequests, setPurchaseRequests] = useState([]);
-  const [activeCouponFilter, setActiveCouponFilter] = useState('active');
   const [activeOrderFilter, setActiveOrderFilter] = useState('all');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [viewingRequestId, setViewingRequestId] = useState(null);
@@ -657,16 +650,6 @@ function ProfileContent() {
                 <div className={styles.menuBtnInner}>
                   {ProfileIcons.account()}
                   <span>اطلاعات حساب</span>
-                </div>
-              </button>
-
-              <button 
-                className={`${styles.menuBtn} ${activeMenu === 'coupons' ? styles.menuBtnActive : ''}`}
-                onClick={() => setActiveMenu('coupons')}
-              >
-                <div className={styles.menuBtnInner}>
-                  {ProfileIcons.coupons()}
-                  <span>کدهای تخفیف</span>
                 </div>
               </button>
 
@@ -1692,60 +1675,7 @@ function ProfileContent() {
               </div>
             )}
 
-            {/* 9. VIEW: DISCOUNT CODES */}
-            {activeMenu === 'coupons' && (
-              <div>
-                <h2 className={styles.welcomeTitle} style={{ marginBottom: '24px' }}>کدهای تخفیف و جوایز</h2>
-                
-                {/* Horizontal tabs */}
-                <div className={styles.filterTabs}>
-                  <button 
-                    className={`${styles.filterTabBtn} ${activeCouponFilter === 'active' ? styles.filterTabBtnActive : ''}`}
-                    onClick={() => setActiveCouponFilter('active')}
-                  >
-                    کدهای فعال و آماده استفاده
-                  </button>
-                  <button 
-                    className={`${styles.filterTabBtn} ${activeCouponFilter === 'used' ? styles.filterTabBtnActive : ''}`}
-                    onClick={() => setActiveCouponFilter('used')}
-                  >
-                    تاریخچه کدهای استفاده شده
-                  </button>
-                </div>
-
-                {activeCouponFilter === 'active' ? (
-                  <div className={styles.couponList}>
-                    <div className={styles.couponCard}>
-                      <div>
-                        <strong style={{ color: '#fff', fontSize: '13px', display: 'block', marginBottom: '6px' }}>کد خوش‌آمدگویی دبی‌خرید</strong>
-                        <span style={{ fontSize: '11px', color: '#8b92a5' }}>کد تخفیف ۱۰ درصدی برای اولین سفارش خرید دبی</span>
-                      </div>
-                      <span className={styles.couponCode}>DUBAISTART</span>
-                    </div>
-
-                    <div className={styles.couponCard}>
-                      <div>
-                        <strong style={{ color: '#fff', fontSize: '13px', display: 'block', marginBottom: '6px' }}>تخفیف ویژه کارگو هوایی</strong>
-                        <span style={{ fontSize: '11px', color: '#8b92a5' }}>تخفیف ۱۵ درصدی حمل کالا برای محصولات سنگین وزن</span>
-                      </div>
-                      <span className={styles.couponCode}>CARGO15</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.couponList}>
-                    <div className={styles.couponCard} style={{ opacity: 0.6 }}>
-                      <div>
-                        <strong style={{ color: '#fff', fontSize: '13px', display: 'block', marginBottom: '6px' }}>کد جشنواره نوروز</strong>
-                        <span style={{ fontSize: '11px', color: '#8b92a5' }}>استفاده شده در سفارش #1252</span>
-                      </div>
-                      <span className={styles.couponCode} style={{ textDecoration: 'line-through' }}>NOWRUZ1403</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 10. VIEW: SUPPORT */}
+            {/* 9. VIEW: SUPPORT */}
             {activeMenu === 'support' && (
               <div>
                 <h2 className={styles.welcomeTitle} style={{ marginBottom: '24px' }}>پشتیبانی کاربری و تیکت‌ها</h2>

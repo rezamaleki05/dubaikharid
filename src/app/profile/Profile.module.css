@@ -841,30 +841,6 @@
   margin-top: 12px;
 }
 
-/* ── COUPONS ── */
-.couponList {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.couponCard {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.couponCode {
-  font-family: monospace;
-  font-size: 16px;
-  color: #f87820;
-  font-weight: bold;
-}
-
 /* ── RESPONSIVE STYLES ── */
 @media (max-width: 1150px) {
   .dashboardCols {
@@ -889,9 +865,6 @@
     grid-template-columns: 1fr;
   }
   .addressGrid {
-    grid-template-columns: 1fr;
-  }
-  .couponList {
     grid-template-columns: 1fr;
   }
 }
@@ -1487,7 +1460,6 @@ select.inputField {
 :global(html[data-theme='light']) .orderDetailCard,
 :global(html[data-theme='light']) .addressCard,
 :global(html[data-theme='light']) .ticketBox,
-:global(html[data-theme='light']) .couponCard,
 :global(html[data-theme='light']) .detailCard { background: #fff; border-color: var(--border-subtle); box-shadow: none; }
 :global(html[data-theme='light']) .profileName,
 :global(html[data-theme='light']) .welcomeTitle,
