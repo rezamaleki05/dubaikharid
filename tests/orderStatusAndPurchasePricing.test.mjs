@@ -22,6 +22,8 @@ const purchasePayRoute = await source('../src/app/api/account/purchase-requests/
 const customerAccount = await source('../src/lib/customerAccount.js');
 const profile = await source('../src/app/profile/page.js');
 const extraction = await source('../src/app/api/fetch-product/route.js');
+const publicOrders = await source('../src/lib/publicOrders.js');
+const adminOrders = await source('../src/lib/adminOrders.js');
 
 test('1. order dropdown values exactly match the Prisma OrderStatus enum', () => {
   const enumBody = schema.match(/enum OrderStatus\s*\{([^}]+)\}/)?.[1] || '';
@@ -31,7 +33,11 @@ test('1. order dropdown values exactly match the Prisma OrderStatus enum', () =>
 
 test('2. impossible transitions are omitted while current and valid transitions remain', () => {
   assert.deepEqual(statuses.getAvailableOrderStatusOptions('shipped').map(item => item.value), ['shipped', 'delivered']);
+  assert.deepEqual(statuses.getAvailableOrderStatusOptions('pending').map(item => item.value), ['pending', 'paid', 'cancelled']);
+  assert.deepEqual(statuses.getAvailableOrderStatusOptions('pricing').map(item => item.value), ['pricing', 'paid', 'cancelled']);
   assert.equal(statuses.canTransitionOrder('delivered', 'pending'), false);
+  assert.equal(statuses.canTransitionOrder('pending', 'pricing'), false);
+  assert.equal(statuses.canTransitionOrder('pending', 'processing'), false);
   assert.equal(statuses.canTransitionOrder('pending', 'cancelled'), true);
 });
 
@@ -56,7 +62,10 @@ test('4a. order summary groups use only the approved real status sets', () => {
 });
 
 test('4b. next actions reuse lifecycle transitions and cancellation visibility matches server rules', () => {
-  assert.match(ordersPage, /pending: \{ label: 'بررسی سفارش', kind: 'status', nextStatus: 'pricing'/);
+  assert.doesNotMatch(ordersPage, /nextStatus: 'pricing'/);
+  assert.match(ordersPage, /function getOrderNextAction\(order\)/);
+  assert.match(ordersPage, /label: paymentIsPending[\s\S]*?'بررسی پرداخت'/);
+  assert.match(ordersPage, /href: paymentIsPending \? ADMIN_ROUTES\.payments/);
   assert.match(ordersPage, /warehouse_dubai: \{ label: 'آماده ارسال', kind: 'link', href: ADMIN_ROUTES\.shipments/);
   assert.match(ordersPage, /shipped: \{ label: 'پیگیری تحویل', kind: 'link', href: ADMIN_ROUTES\.shipments/);
   const cancellableBlock = ordersPage.match(/const CANCELLABLE_ORDER_STATUSES = new Set\(\[([\s\S]*?)\]\);/)?.[1] || '';
@@ -110,4 +119,47 @@ test('10. extraction failure remains compatible with later manual pricing', () =
   assert.match(extraction, /priceAed/);
   assert.match(purchaseRoute, /body\.action === 'price'/);
   assert.match(purchaseRoute, /priceAed: body\.priceAed/);
+});
+
+test('11. catalog and laptop-stock checkouts create confirmed-price pending Orders', () => {
+  assert.match(publicOrders, /type: hasLaptop \? 'LAPTOP_STOCK' : 'CATALOG_PRODUCT'/);
+  assert.match(publicOrders, /pricingStatus: 'CONFIRMED',[\s\S]*?status: 'pending'/);
+  assert.match(publicOrders, /payments: \{ create: \{[\s\S]*?status: 'pending'/);
+});
+
+test('12. paid lifecycle transition still requires successful payments covering the full total', () => {
+  assert.match(adminOrders, /nextStatus === 'paid'/);
+  assert.match(adminOrders, /payment\.status === 'success'/);
+  assert.match(adminOrders, /paid < Number\(current\.totalToman\)/);
+  assert.match(adminOrders, /PAYMENT_REQUIRED/);
+});
+
+test('13. priced Purchase Requests convert to pending unless explicitly using the existing markPaid path', () => {
+  assert.match(purchaseConversion, /FINAL_PRICE_REQUIRED/);
+  assert.match(purchaseConversion, /\['price_tagged', 'approved'\]\.includes\(current\.status\)/);
+  assert.match(purchaseConversion, /pricingStatus: 'CONFIRMED'/);
+  assert.match(purchaseConversion, /status: markPaid \? 'paid' : 'pending'/);
+  assert.doesNotMatch(purchaseConversion, /status: markPaid \? 'paid' : 'pricing'/);
+});
+
+test('14. legacy pricing Orders retain only paid and cancellation recovery paths', () => {
+  assert.equal(statuses.canTransitionOrder('pricing', 'paid'), true);
+  assert.equal(statuses.canTransitionOrder('pricing', 'cancelled'), true);
+  assert.equal(statuses.canTransitionOrder('pricing', 'processing'), false);
+});
+
+test('15. Admin Orders pending action delegates payment review instead of entering pricing', () => {
+  assert.match(ordersPage, /order\?\.status === 'pending' \|\| order\?\.status === 'pricing'/);
+  assert.match(ordersPage, /ADMIN_PERMISSIONS\.PAYMENTS_VIEW/);
+  assert.match(ordersPage, /در انتظار تکمیل پرداخت/);
+  assert.doesNotMatch(ordersPage, /سفارش را وارد مرحله قیمت‌گذاری کنید/);
+});
+
+test('16. Profile Order UI no longer treats PurchaseRequest price_tagged as an Order status', () => {
+  const orderTimeline = profile.match(/const DETAILED_STEPS = \[[\s\S]*?\n\];/)?.[0] || '';
+  assert.doesNotMatch(orderTimeline, /price_tagged/);
+  assert.doesNotMatch(profile, /o\.status === 'price_tagged'/);
+  assert.doesNotMatch(profile, /latestOrder\.status === 'price_tagged'/);
+  assert.doesNotMatch(profile, /orders\.filter\([^\n]*price_tagged/);
+  assert.match(profile, /req\.status === 'price_tagged'/);
 });

@@ -13,15 +13,7 @@ export async function getAdminAlertSummary(client = prisma) {
   const [orders, purchaseRequests, payments, warehouseRows, shipments] = await Promise.all([
     client.order.count({ where: { status: { in: ACTIONABLE_ORDER_STATUSES } } }),
     client.purchaseRequest.count({ where: { status: { in: ACTIONABLE_PURCHASE_REQUEST_STATUSES } } }),
-    client.payment.count({
-      where: {
-        status: 'pending',
-        OR: [
-          { method: 'CARD', receiptBlobPathname: { not: null } },
-          { method: { not: 'CARD' } },
-        ],
-      },
-    }),
+    client.payment.count({ where: { status: 'pending' } }),
     client.$queryRaw`SELECT COUNT(*)::int AS "count" FROM "WarehouseItem" WHERE "isArchived" = false AND "stock" <= "minStock"`,
     client.shipment.count({ where: { status: { in: ACTIONABLE_SHIPMENT_STATUSES } } }),
   ]);

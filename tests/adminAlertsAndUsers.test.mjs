@@ -54,9 +54,9 @@ test('7. a positive badge renders its exact count', () => {
   assert.equal(rules.normalizeAlertCount(7), 7);
 });
 
-test('8. submitted CARD receipts awaiting review contribute to Payments', () => {
+test('8. all pending payments, including CARD without a receipt, contribute to Payments', () => {
   assert.match(alertService, /status: 'pending'/);
-  assert.match(alertService, /method: 'CARD', receiptBlobPathname: \{ not: null \}/);
+  assert.doesNotMatch(alertService, /receiptBlobPathname: \{ not: null \}/);
 });
 
 test('9. resolved payments stop contributing when the pending count becomes zero', () => {

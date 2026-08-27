@@ -38,6 +38,10 @@ function PaymentsContent() {
   const [paymentEndDate, setPaymentEndDate] = useState('');
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+  const [manualConfirmationPaymentId, setManualConfirmationPaymentId] = useState('');
+  const [manualVerificationNote, setManualVerificationNote] = useState('');
+  const [manualConfirmationError, setManualConfirmationError] = useState('');
+  const [isManualConfirmationPending, setIsManualConfirmationPending] = useState(false);
   const [newPaymentForm, setNewPaymentForm] = useState(EMPTY_FORM);
   const [refreshToken, setRefreshToken] = useState(0);
 
@@ -80,10 +84,47 @@ function PaymentsContent() {
     return payload;
   };
 
-  const handleApprovePayment = async (paymentId) => {
+  const handleApprovePayment = async (paymentId, confirmationMode) => {
     if (!can(ADMIN_PERMISSIONS.PAYMENTS_EDIT)) return;
-    try { await patchPayment(paymentId, { status: 'success' }); alert('فیش واریزی با موفقیت تایید و سفارش مربوطه فعال گردید!'); }
+    const body = { status: 'success', ...(confirmationMode ? { confirmationMode } : {}) };
+    try { await patchPayment(paymentId, body); alert(confirmationMode === 'receipt' ? 'رسید و پرداخت با موفقیت تأیید شد.' : 'پرداخت با موفقیت تأیید شد.'); }
     catch (error) { alert(error.message); }
+  };
+
+  const openManualConfirmation = (paymentId) => {
+    if (!can(ADMIN_PERMISSIONS.PAYMENTS_EDIT)) return;
+    setManualConfirmationPaymentId(paymentId);
+    setManualVerificationNote('');
+    setManualConfirmationError('');
+  };
+
+  const closeManualConfirmation = () => {
+    if (isManualConfirmationPending) return;
+    setManualConfirmationPaymentId('');
+    setManualVerificationNote('');
+    setManualConfirmationError('');
+  };
+
+  const handleManualConfirmation = async (event) => {
+    event.preventDefault();
+    if (!can(ADMIN_PERMISSIONS.PAYMENTS_EDIT) || !manualConfirmationPaymentId) return;
+    const notes = manualVerificationNote.trim();
+    if (!notes) {
+      setManualConfirmationError('یادداشت بررسی بانکی الزامی است.');
+      return;
+    }
+    setIsManualConfirmationPending(true);
+    setManualConfirmationError('');
+    try {
+      await patchPayment(manualConfirmationPaymentId, { status: 'success', confirmationMode: 'manual', notes });
+      alert('پرداخت پس از بررسی بانکی به‌صورت دستی تأیید شد.');
+      setManualConfirmationPaymentId('');
+      setManualVerificationNote('');
+    } catch (error) {
+      setManualConfirmationError(error.message);
+    } finally {
+      setIsManualConfirmationPending(false);
+    }
   };
 
   const handleRejectPayment = async (paymentId) => {
@@ -935,7 +976,7 @@ function PaymentsContent() {
                               <div className={styles.addressRow} style={{ marginTop: '10px' }}><span className={styles.addressLabel}>نام فایل:</span><span className={styles.addressVal}>{selectedTxn.receiptOriginalName || 'ثبت نشده'}</span></div>
                               <div className={styles.addressRow} style={{ marginTop: '6px' }}><span className={styles.addressLabel}>نوع / حجم:</span><span className={styles.addressVal} dir="ltr">{selectedTxn.receiptMimeType || '-'} · {selectedTxn.receiptSizeBytes ? `${Math.ceil(selectedTxn.receiptSizeBytes / 1024).toLocaleString('fa-IR')} KB` : '-'}</span></div>
                             </div>
-                          ) : selectedTxn.methodCode === 'CARD' ? <div className={styles.addressSection} style={{ marginBottom: '20px', color: '#8b92a5' }}>هنوز رسیدی برای این پرداخت ارسال نشده است.</div> : null}
+                          ) : selectedTxn.methodCode === 'CARD' ? <div className={styles.addressSection} style={{ marginBottom: '20px', color: '#8b92a5' }}><strong style={{ color: '#fff' }}>رسیدی برای این پرداخت ارسال نشده است.</strong><p style={{ margin: '8px 0 0', lineHeight: '1.8' }}>تأیید دستی فقط پس از بررسی مستقل حساب بانکی و اطمینان از واریز وجه انجام شود.</p></div> : null}
 
                           {selectedTxn.rejectionReason && <div className={styles.addressSection} style={{ marginBottom: '20px', borderColor: 'rgba(239,68,68,.25)', color: '#efaaaa' }}><strong>دلیل رد ثبت‌شده برای مشتری:</strong><p style={{ margin: '8px 0 0' }}>{selectedTxn.rejectionReason}</p></div>}
 
@@ -984,27 +1025,26 @@ function PaymentsContent() {
                           )}
 
                           {/* Action Buttons based on status */}
-                          {selectedTxn.status === 'pending' ? (
+                          {selectedTxn.status === 'pending' && can(ADMIN_PERMISSIONS.PAYMENTS_EDIT) ? selectedTxn.methodCode === 'CARD' ? selectedTxn.hasReceipt ? (
                             <div style={{ display: 'flex', gap: '10px' }}>
-                              <button 
-                                type="button" 
-                                onClick={() => handleApprovePayment(selectedTxn.id)}
-                                disabled={selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt}
-                                className={styles.printLabelActionBtn}
-                                style={{ flexGrow: 2, height: '42px', padding: 0, opacity: selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt ? .45 : 1 }}
-                              >
-                                {AdminIcons.check(12)} تایید پرداخت
+                              <button type="button" onClick={() => handleApprovePayment(selectedTxn.id, 'receipt')} className={styles.printLabelActionBtn} style={{ flexGrow: 2, height: '42px', padding: 0 }}>
+                                {AdminIcons.check(12)} تأیید رسید
                               </button>
-                              <button 
-                                type="button" 
-                                onClick={() => handleRejectPayment(selectedTxn.id)}
-                                disabled={selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt}
-                                style={{ flexGrow: 1, background: 'none', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt ? 'not-allowed' : 'pointer', opacity: selectedTxn.methodCode === 'CARD' && !selectedTxn.hasReceipt ? .45 : 1 }}
-                              >
+                              <button type="button" onClick={() => handleRejectPayment(selectedTxn.id)} style={{ flexGrow: 1, background: 'none', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
                                 {AdminIcons.close(12)} رد رسید
                               </button>
                             </div>
                           ) : (
+                            <button type="button" onClick={() => openManualConfirmation(selectedTxn.id)} className={styles.printLabelActionBtn} style={{ width: '100%', height: '42px', padding: 0 }}>
+                              {AdminIcons.check(12)} تأیید دستی پرداخت
+                            </button>
+                          ) : selectedTxn.methodCode === 'ONLINE' ? (
+                            <div className={styles.addressSection} style={{ color: '#8b92a5' }}>پرداخت آنلاین فقط با پاسخ معتبر درگاه قابل تأیید است.</div>
+                          ) : (
+                            <button type="button" onClick={() => handleApprovePayment(selectedTxn.id)} className={styles.printLabelActionBtn} style={{ width: '100%', height: '42px', padding: 0 }}>
+                              {AdminIcons.check(12)} تأیید پرداخت
+                            </button>
+                          ) : selectedTxn.status !== 'pending' ? (
                             <button 
                               type="button" 
                               onClick={() => alert('صدور فایل PDF برای این تراکنش هنوز پیاده‌سازی نشده است.')}
@@ -1012,7 +1052,7 @@ function PaymentsContent() {
                             >
                               {AdminIcons.download(12)} دانلود فاکتور و رسید تراکنش (PDF)
                             </button>
-                          )}
+                          ) : null}
                         </div>
                       );
                     })()}
@@ -1152,6 +1192,34 @@ function PaymentsContent() {
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                           <button type="submit" className={styles.addOrderBtn} style={{ flexGrow: 2 }}>ثبت نهایی و ثبت سند</button>
                           <button type="button" onClick={() => setIsAddPaymentOpen(false)} className={styles.advFilterBtn} style={{ flexGrow: 1 }}>انصراف</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+
+                {/* MODAL: MANUAL CARD PAYMENT CONFIRMATION */}
+                {manualConfirmationPaymentId && (
+                  <div className={styles.modalOverlay} onClick={closeManualConfirmation}>
+                    <div className={styles.modalContent} role="dialog" aria-modal="true" aria-labelledby="manual-payment-confirmation-title" onClick={(event) => event.stopPropagation()} style={{ width: '460px', maxWidth: '90%' }}>
+                      <div className={styles.modalHeader}>
+                        <h2 id="manual-payment-confirmation-title">{AdminIcons.check(16)} تأیید دستی پرداخت</h2>
+                        <button type="button" className={styles.modalCloseBtn} onClick={closeManualConfirmation} disabled={isManualConfirmationPending} aria-label="بستن">×</button>
+                      </div>
+                      <form onSubmit={handleManualConfirmation} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '12px' }}>
+                        <div className={styles.addressSection} style={{ color: '#e7bd9f', lineHeight: '1.9', margin: 0 }}>
+                          این اقدام پرداخت را موفق ثبت می‌کند. فقط پس از تطبیق مبلغ واریزی با حساب بانکی ادامه دهید.
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label htmlFor="manual-verification-note">یادداشت بررسی بانکی</label>
+                          <textarea id="manual-verification-note" rows="4" maxLength="1000" required value={manualVerificationNote} onChange={(event) => setManualVerificationNote(event.target.value)} placeholder="مثلاً: واریز در حساب بانکی بررسی و تأیید شد" className={styles.inputField} style={{ resize: 'vertical' }} />
+                        </div>
+                        {manualConfirmationError && <div role="alert" style={{ color: '#efaaaa', fontSize: '11px' }}>{manualConfirmationError}</div>}
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button type="submit" className={styles.addOrderBtn} disabled={isManualConfirmationPending || !manualVerificationNote.trim()} style={{ flexGrow: 2 }}>
+                            {isManualConfirmationPending ? 'در حال تأیید...' : 'تأیید نهایی پرداخت'}
+                          </button>
+                          <button type="button" className={styles.advFilterBtn} onClick={closeManualConfirmation} disabled={isManualConfirmationPending} style={{ flexGrow: 1 }}>انصراف</button>
                         </div>
                       </form>
                     </div>

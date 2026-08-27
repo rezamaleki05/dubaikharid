@@ -26,7 +26,7 @@ export async function convertPurchaseRequestInTransaction(tx, current, { overrid
       customerPhoneSnapshot: current.customer?.normalizedPhone,
       customerEmailSnapshot: current.customer?.email,
       deliveryAddress: current.deliveryAddress,
-      status: markPaid ? 'paid' : 'pricing',
+      status: markPaid ? 'paid' : 'pending',
       totalAed: priceAed,
       totalToman: finalToman,
       notes: current.note,

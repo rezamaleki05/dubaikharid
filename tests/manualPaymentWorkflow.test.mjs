@@ -21,6 +21,10 @@ const receiptRoute = await source('../src/app/api/payments/[id]/receipt/route.js
 const adminReceiptRoute = await source('../src/app/api/admin/payments/[id]/receipt/route.js');
 const receiptStorage = await source('../src/lib/paymentReceiptStorage.js');
 const adminPaymentRoute = await source('../src/app/api/admin/payments/[id]/route.js');
+const adminPaymentsService = await source('../src/lib/adminPayments.js');
+const adminPaymentsPage = await source('../src/app/admin/payments/page.js');
+const adminAlerts = await source('../src/lib/adminAlerts.js');
+const paymentConfirmation = await importSource('../src/lib/paymentConfirmation.js');
 const purchaseConversion = await source('../src/lib/purchaseRequestOrders.js');
 const purchasePayRoute = await source('../src/app/api/account/purchase-requests/[id]/pay/route.js');
 const profile = await source('../src/app/profile/page.js');
@@ -151,4 +155,52 @@ test('25. migration is additive and preserves existing payment/order data', () =
   assert.match(migration, /ALTER TABLE "Payment"\s+ADD COLUMN/);
   assert.match(migration, /CREATE TABLE "BankAccount"/);
   assert.doesNotMatch(migration, /\b(?:DROP|TRUNCATE|DELETE)\b/i);
+});
+
+test('26. CARD receipt approval accepts receipt mode only when a receipt exists', () => {
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'CARD', hasReceipt: true, confirmationMode: 'receipt', notes: '' }), null);
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'CARD', hasReceipt: false, confirmationMode: 'receipt', notes: '' }), 'RECEIPT_REQUIRED');
+});
+
+test('27. CARD manual confirmation requires no receipt and a non-empty verification note', () => {
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'CARD', hasReceipt: false, confirmationMode: 'manual', notes: '  واریز بانکی تأیید شد  ' }), null);
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'CARD', hasReceipt: false, confirmationMode: 'manual', notes: '   ' }), 'MANUAL_NOTE_REQUIRED');
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'CARD', hasReceipt: false, confirmationMode: 'manual', notes: 'x'.repeat(1001) }), 'MANUAL_NOTE_TOO_LONG');
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'CARD', hasReceipt: true, confirmationMode: 'manual', notes: 'تأیید شد' }), 'INVALID_CONFIRMATION_MODE');
+});
+
+test('28. ONLINE manual confirmation remains rejected by the gateway protection', () => {
+  assert.equal(paymentConfirmation.getPaymentConfirmationError({ method: 'ONLINE', hasReceipt: false, confirmationMode: 'manual', notes: 'تأیید شد' }), 'UNTRUSTED_GATEWAY');
+  assert.match(adminPaymentRoute, /UNTRUSTED_GATEWAY/);
+});
+
+test('29. manual confirmation keeps exact amount, cancelled-order, permission, and side-effect protections', () => {
+  assert.match(adminPaymentRoute, /authorizeAdminApiRequest\(request, ADMIN_PERMISSIONS\.PAYMENTS_EDIT\)/);
+  assert.match(adminPaymentRoute, /paid\.plus\(current\.amount\)\.equals\(expected\)/);
+  assert.match(adminPaymentRoute, /AMOUNT_MISMATCH/);
+  assert.match(adminPaymentRoute, /applySuccessfulPaymentOrderEffects\(tx, current\.orderId\)/);
+  assert.match(adminPaymentRoute, /isolationLevel: 'Serializable'/);
+  assert.match(adminPaymentsService, /order\.status === 'cancelled'.*ORDER_CANCELLED/);
+  assert.match(adminPaymentsService, /\['pending', 'pricing'\]\.includes\(order\.status\).*status: 'paid'/);
+  assert.match(adminPaymentsService, /status: 'RESERVED'.*status: 'SOLD'.*soldAt: new Date\(\)/);
+});
+
+test('30. activity logs distinguish receipt and manual confirmations without storing a new schema field', () => {
+  assert.match(adminPaymentRoute, /confirmationMode: result\.confirmationMode \|\| null/);
+  assert.match(adminPaymentRoute, /PAYMENT_MARKED_PAID/);
+  assert.match(adminPaymentRoute, /ORDER_STATUS_CHANGED/);
+});
+
+test('31. Admin UI separates receipt review from deliberate manual confirmation', () => {
+  assert.match(adminPaymentsPage, /handleApprovePayment\(selectedTxn\.id, 'receipt'\)/);
+  assert.match(adminPaymentsPage, /تأیید رسید/);
+  assert.match(adminPaymentsPage, /رد رسید/);
+  assert.match(adminPaymentsPage, /تأیید دستی پرداخت/);
+  assert.match(adminPaymentsPage, /confirmationMode: 'manual', notes/);
+  assert.match(adminPaymentsPage, /یادداشت بررسی بانکی/);
+});
+
+test('32. pending CARD payments without receipts remain actionable in Admin alerts', () => {
+  assert.match(adminAlerts, /payment\.count\(\{ where: \{ status: 'pending' \} \}\)/);
+  assert.doesNotMatch(adminAlerts, /receiptBlobPathname: \{ not: null \}/);
 });

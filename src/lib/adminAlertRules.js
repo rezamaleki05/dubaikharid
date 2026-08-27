@@ -26,7 +26,7 @@ export function buildAdminAlertItems(counts) {
   return [
     { key: 'purchaseRequests', label: 'درخواست خرید جدید', description: 'درخواست منتظر بررسی و قیمت‌گذاری', href: '/admin/leads?status=pending' },
     { key: 'orders', label: 'سفارش جدید', description: 'سفارش نیازمند بررسی مدیر', href: '/admin/orders?status=pending' },
-    { key: 'payments', label: 'رسید پرداخت در انتظار بررسی', description: 'پرداخت نیازمند تأیید یا رد', href: '/admin/payments?status=pending' },
+    { key: 'payments', label: 'پرداخت در انتظار بررسی', description: 'رسید یا واریز بانکی نیازمند بررسی', href: '/admin/payments?status=pending' },
     { key: 'shipments', label: 'ارسال نیازمند اقدام', description: 'مرسوله آماده اقدام یا دارای مشکل', href: '/admin/shipments' },
     { key: 'warehouse', label: 'موجودی نیازمند اقدام', description: 'کالا با موجودی کمتر یا مساوی حداقل', href: '/admin/warehouse?status=low-stock' },
   ].flatMap(item => counts[item.key] > 0 ? [{ ...item, count: counts[item.key] }] : []);

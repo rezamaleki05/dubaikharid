@@ -31,8 +31,6 @@ const CANCELLABLE_ORDER_STATUSES = new Set([
 ]);
 
 const NEXT_ACTIONS = Object.freeze({
-  pending: { label: 'بررسی سفارش', kind: 'status', nextStatus: 'pricing', description: 'سفارش را وارد مرحله قیمت‌گذاری کنید.' },
-  pricing: { label: 'ثبت / تکمیل قیمت نهایی', kind: 'info', description: 'قیمت نهایی باید در جریان قیمت‌گذاری مرتبط تکمیل شود.' },
   paid: { label: 'شروع پردازش سفارش', kind: 'status', nextStatus: 'processing', description: 'پرداخت تأیید شده و سفارش آماده پردازش است.' },
   processing: { label: 'ثبت خرید / ادامه پردازش', kind: 'status', nextStatus: 'purchased', description: 'پس از انجام خرید، مرحله روند دبی را ثبت کنید.' },
   purchased: { label: 'ارسال به انبار دبی', kind: 'status', nextStatus: 'warehouse_dubai', description: 'ورود کالا به انبار دبی را ثبت کنید.' },
@@ -41,6 +39,25 @@ const NEXT_ACTIONS = Object.freeze({
   delivered: { label: 'سفارش تکمیل شده', kind: 'complete', description: 'چرخه سفارش با تحویل به مشتری کامل شده است.' },
   cancelled: { label: 'سفارش لغو شده', kind: 'cancelled', description: 'برای سفارش لغوشده اقدام عملیاتی دیگری وجود ندارد.' },
 });
+
+function getOrderNextAction(order) {
+  if (order?.status === 'pending' || order?.status === 'pricing') {
+    const isLegacyPricingOrder = order.status === 'pricing';
+    const paymentIsPending = order.payment?.status === 'pending';
+    return {
+      label: paymentIsPending
+        ? 'بررسی پرداخت'
+        : isLegacyPricingOrder ? 'در انتظار تکمیل پرداخت' : 'در انتظار پرداخت',
+      kind: paymentIsPending ? 'link' : 'info',
+      href: paymentIsPending ? ADMIN_ROUTES.payments : undefined,
+      permission: paymentIsPending ? ADMIN_PERMISSIONS.PAYMENTS_VIEW : undefined,
+      description: isLegacyPricingOrder
+        ? 'این سفارش قدیمی در وضعیت قیمت‌گذاری است و پس از تأیید پرداخت قابل ادامه است.'
+        : 'قیمت سفارش تأیید شده و ادامه چرخه منوط به تأیید پرداخت است.',
+    };
+  }
+  return NEXT_ACTIONS[order?.status] || null;
+}
 
 const SHIPMENT_STATUS_LABELS = Object.freeze({
   PENDING: 'در انتظار',
@@ -292,7 +309,7 @@ function OrdersContent({ onOrdersChange }) {
   const activeFilterCount = [activeStatusFilter, activePaymentFilter, activeDateFilter].filter(value => value !== 'all').length;
   const selectedOrder = orders.find(order => order.id === selectedOrderId) || orders[0] || null;
   const selectedLead = selectedOrder;
-  const selectedNextAction = selectedOrder ? NEXT_ACTIONS[selectedOrder.status] : null;
+  const selectedNextAction = getOrderNextAction(selectedOrder);
   const canCancelSelectedOrder = Boolean(selectedOrder && CANCELLABLE_ORDER_STATUSES.has(selectedOrder.status));
 
   return (

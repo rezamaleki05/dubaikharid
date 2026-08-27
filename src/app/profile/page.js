@@ -96,7 +96,7 @@ const ProfileIcons = {
 const DETAILED_STEPS = [
   { id: 'pending', text: 'ثبت سفارش', code: 'pending' },
   { id: 'reviewing', text: 'در حال بررسی', code: 'reviewing' },
-  { id: 'price_tagged', text: 'قیمت‌گذاری شد', code: 'price_tagged' },
+  { id: 'pricing', text: 'در انتظار پرداخت', code: 'pricing' },
   { id: 'paid', text: 'پرداخت انجام شد', code: 'paid' },
   { id: 'purchased', text: 'خرید از امارات', code: 'purchased' },
   { id: 'warehouse_dubai', text: 'انبار دبی', code: 'warehouse_dubai' },
@@ -110,7 +110,7 @@ const getDetailedStepIndex = (status) => {
   const map = {
     pending: 1,
     reviewing: 2,
-    price_tagged: 3,
+    pricing: 3,
     approved: 4,
     paid: 4,
     purchased: 5,
@@ -161,7 +161,7 @@ const getRequestStepIndex = (status) => {
 const DASHBOARD_STEPS = [
   { text: 'ثبت سفارش', step: 1 },
   { text: 'در حال بررسی', step: 2 },
-  { text: 'قیمت نهایی اعلام شد', step: 3 },
+  { text: 'در انتظار پرداخت', step: 3 },
   { text: 'پرداخت', step: 4 },
   { text: 'خرید به ایران', step: 5 },
   { text: 'تحویل به مشتری', step: 6 }
@@ -487,8 +487,6 @@ function ProfileContent() {
     }
   };
 
-  const handlePayOrder = (orderId) => router.push(`/payment?id=${orderId}`);
-
   const handlePayPurchaseRequest = async (requestId) => {
     try {
       const response = await fetch(`/api/account/purchase-requests/${encodeURIComponent(requestId)}/pay`, { method: 'POST' });
@@ -504,7 +502,7 @@ function ProfileContent() {
   // Active status checks
   const activeOrdersCount = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled').length;
   const pendingRequestsCount = purchaseRequests.filter(r => r.status === 'pending').length;
-  const readyToPayCount = orders.filter(o => o.status === 'price_tagged' && o.paymentStatus !== 'paid').length;
+  const readyToPayCount = orders.filter(o => ['pending', 'pricing'].includes(o.status) && o.paymentStatus !== 'paid').length;
   const shippingCount = orders.filter(o => o.status === 'shipped' || o.status === 'local_shipping').length;
   const deliveredCount = orders.filter(o => o.status === 'delivered').length;
 
@@ -515,7 +513,7 @@ function ProfileContent() {
     // Status translation maps
     const map = {
       pending: 'pending',
-      price_tagged: 'price_tagged',
+      pricing: 'pricing',
       purchased: 'purchased',
       noon_dubai: 'purchased',
       warehouse_dubai: 'processing',
@@ -530,7 +528,7 @@ function ProfileContent() {
     return orders.filter(o => {
       const mapped = map[o.status] || 'pending';
       if (activeOrderFilter === 'pending') return mapped === 'pending';
-      if (activeOrderFilter === 'ready_to_pay') return o.status === 'price_tagged' && o.paymentStatus !== 'paid';
+      if (activeOrderFilter === 'ready_to_pay') return ['pending', 'pricing'].includes(o.status) && o.paymentStatus !== 'paid';
       if (activeOrderFilter === 'purchasing') return mapped === 'purchased';
       if (activeOrderFilter === 'shipped_uae') return mapped === 'shipped';
       if (activeOrderFilter === 'customs') return mapped === 'customs';
@@ -806,14 +804,9 @@ function ProfileContent() {
                             <div style={{ textAlign: 'right' }}>
                               <div className={styles.statusTextLabel}>وضعیت فعلی:</div>
                               <div className={styles.statusValueText}>
-                                {latestOrder.status === 'price_tagged' ? 'قیمت نهایی اعلام شد' : latestOrder.status === 'pending' ? 'در حال بررسی' : 'خرید و بسته‌بندی در دبی'}
+                                {latestOrder.status === 'pricing' ? 'در انتظار تکمیل پرداخت' : latestOrder.status === 'pending' ? 'در انتظار پرداخت' : 'خرید و بسته‌بندی در دبی'}
                               </div>
                             </div>
-                            {latestOrder.status === 'price_tagged' && latestOrder.paymentStatus !== 'paid' && (
-                              <button className={styles.payActiveBtn} onClick={() => handlePayOrder(latestOrder.id)}>
-                                مشاهده و پرداخت
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -851,17 +844,17 @@ function ProfileContent() {
                                   </td>
                                   <td>{new Date(o.date).toLocaleDateString('fa-IR')}</td>
                                   <td style={{ fontWeight: 'bold', color: '#f87820' }}>{o.totalToman > 0 ? `${fmtToman(o.totalToman)} تومان` : 'در انتظار محاسبه'}</td>
-                                  <td>{o.paymentStatus === 'paid' ? '● پرداخت شده' : '● قیمت اعلام شده'}</td>
+                                  <td>{o.paymentStatus === 'paid' ? '● پرداخت شده' : '● در انتظار پرداخت'}</td>
                                   <td>
                                     <span style={{
                                       fontSize: '11px',
                                       padding: '4px 8px',
                                       borderRadius: '6px',
-                                      background: o.status === 'price_tagged' ? 'rgba(59,130,246,0.1)' : o.status === 'delivered' ? 'rgba(16,185,129,0.1)' : 'rgba(249,115,22,0.1)',
-                                      color: o.status === 'price_tagged' ? '#3b82f6' : o.status === 'delivered' ? '#10b981' : '#f97316',
+                                      background: o.status === 'pricing' ? 'rgba(59,130,246,0.1)' : o.status === 'delivered' ? 'rgba(16,185,129,0.1)' : 'rgba(249,115,22,0.1)',
+                                      color: o.status === 'pricing' ? '#3b82f6' : o.status === 'delivered' ? '#10b981' : '#f97316',
                                       fontWeight: 'bold'
                                     }}>
-                                      {o.status === 'price_tagged' ? 'آماده پرداخت' : o.status === 'delivered' ? 'تحویل شده' : o.status === 'pending' ? 'در حال بررسی' : 'در حال ارسال'}
+                                      {o.status === 'pricing' ? 'در انتظار تکمیل پرداخت' : o.status === 'delivered' ? 'تحویل شده' : o.status === 'pending' ? 'در انتظار پرداخت' : 'در حال ارسال'}
                                     </span>
                                   </td>
                                   <td>
@@ -1015,10 +1008,10 @@ function ProfileContent() {
                                   padding: '6px 12px',
                                   borderRadius: '8px',
                                   fontWeight: 'bold',
-                                  background: o.status === 'price_tagged' ? 'rgba(59, 130, 246, 0.1)' : o.status === 'delivered' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(249, 115, 22, 0.1)',
-                                  color: o.status === 'price_tagged' ? '#3b82f6' : o.status === 'delivered' ? '#10b981' : '#f97316'
+                                  background: o.status === 'pricing' ? 'rgba(59, 130, 246, 0.1)' : o.status === 'delivered' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(249, 115, 22, 0.1)',
+                                  color: o.status === 'pricing' ? '#3b82f6' : o.status === 'delivered' ? '#10b981' : '#f97316'
                                 }}>
-                                  {o.status === 'price_tagged' ? 'آماده پرداخت' : o.status === 'delivered' ? 'تحویل شده' : o.status === 'pending' ? 'در حال بررسی' : 'در حال ترخیص/ارسال'}
+                                  {o.status === 'pricing' ? 'در انتظار تکمیل پرداخت' : o.status === 'delivered' ? 'تحویل شده' : o.status === 'pending' ? 'در انتظار پرداخت' : 'در حال ترخیص/ارسال'}
                                 </span>
                               </div>
                             </div>
@@ -1079,15 +1072,6 @@ function ProfileContent() {
                                       <><MinimalIcon name="hourglass" size={14} style={{ marginLeft: '5px' }} /> در انتظار پرداخت</>
                                     )}
                                   </span>
-                                  {o.status === 'price_tagged' && o.paymentStatus !== 'paid' && (
-                                    <button 
-                                      className={styles.payActiveBtn} 
-                                      style={{ marginTop: '8px', padding: '6px 14px', fontSize: '10.5px' }}
-                                      onClick={() => handlePayOrder(o.id)}
-                                    >
-                                      پرداخت آنلاین فاکتور
-                                    </button>
-                                  )}
                                 </div>
                               </div>
                               {o.paymentMethod === 'card' && <OrderPaymentPanel orderCode={o.orderCode || o.id} />}
