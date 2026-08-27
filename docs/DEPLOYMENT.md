@@ -134,4 +134,4 @@ Never create a real payment or destructive transaction in a Production smoke tes
 
 ## Domain strategy
 
-The current canonical host is `https://dubaykharid.ir`. Assign it to the Production Vercel project and verify HTTPS. After ownership is confirmed, configure `www` as a permanent redirect to the canonical non-`www` host in Vercel/DNS. DNS is intentionally not changed by repository code.
+The current canonical host is `https://dubaikharid.shop`. Assign it to the Production Vercel project and verify HTTPS. After ownership is confirmed, configure `www` as a permanent redirect to the canonical non-`www` host in Vercel/DNS. DNS is intentionally not changed by repository code.

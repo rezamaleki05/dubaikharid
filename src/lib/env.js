@@ -1,6 +1,6 @@
 import 'server-only';
 
-const DEFAULT_SITE_URL = 'https://dubaykharid.ir';
+const DEFAULT_SITE_URL = 'https://dubaikharid.shop';
 
 function value(name) {
   const raw = process.env[name];
@@ -59,4 +59,3 @@ export function getSiteUrl() {
 export function isPreviewDeployment() {
   return process.env.VERCEL_ENV === 'preview';
 }
-

@@ -7,7 +7,7 @@ const SiteSettingsContext = createContext();
 
 const DEFAULTS = {
   siteName: 'دبی خرید',
-  siteUrl: 'dubaykharid.ir',
+  siteUrl: 'dubaikharid.shop',
   siteLogoUrl: '/images/logo dubai kharid.png',
   faviconUrl: '/favicon.ico',
   adminName: 'مدیر سایت',

@@ -52,7 +52,7 @@ function SettingsContent() {
 
   const [lastLoginIp, setLastLoginIp] = useState('5.119.82.106 (تهران، ایران)');
 
-  const [siteSettings, setSiteSettings] = useState({ siteName: 'دبی خرید', siteUrl: 'dubaykharid.ir', supportPhone: '021-88001234', supportEmail: 'support@dubaykharid.ir', telegramId: '@dubaykharid', whatsapp: '+971501234567', instagramId: '@dubaykharid', dubaiAddress: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور', iranAddress: 'شیراز، شهرک گلستان، خیابان گل آرا', address: 'دبی، امارات متحده عربی', workingHours: 'شنبه تا پنجشنبه ۹ تا ۱۸', minOrderAed: '500', commissionPercent: '8', shippingBaseRate: '1200000', shippingPerKg: '350000', freeShippingThreshold: '80000000', maintenanceMode: false, allowRegistration: true, autoNotify: true, notifyNewOrder: true, notifyPayment: true, notifyShipment: true });
+  const [siteSettings, setSiteSettings] = useState({ siteName: 'دبی خرید', siteUrl: 'dubaikharid.shop', supportPhone: '021-88001234', supportEmail: 'support@dubaykharid.ir', telegramId: '@dubaykharid', whatsapp: '+971501234567', instagramId: '@dubaykharid', dubaiAddress: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور', iranAddress: 'شیراز، شهرک گلستان، خیابان گل آرا', address: 'دبی، امارات متحده عربی', workingHours: 'شنبه تا پنجشنبه ۹ تا ۱۸', minOrderAed: '500', commissionPercent: '8', shippingBaseRate: '1200000', shippingPerKg: '350000', freeShippingThreshold: '80000000', maintenanceMode: false, allowRegistration: true, autoNotify: true, notifyNewOrder: true, notifyPayment: true, notifyShipment: true });
 
   const [localGeneral, setLocalGeneral] = useState({
       siteName: 'دبی خرید',

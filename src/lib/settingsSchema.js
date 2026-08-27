@@ -1,6 +1,6 @@
 export const SETTING_DEFINITIONS = Object.freeze({
   siteName: { dbKey: 'siteName', type: 'text', max: 120, defaultValue: 'دبی خرید' },
-  siteUrl: { dbKey: 'siteUrl', type: 'text', max: 240, defaultValue: 'dubaykharid.ir' },
+  siteUrl: { dbKey: 'siteUrl', type: 'text', max: 240, defaultValue: 'dubaikharid.shop' },
   siteLogoUrl: { dbKey: 'siteLogoUrl', type: 'asset', max: 1_500_000, defaultValue: '/images/logo dubai kharid.png' },
   faviconUrl: { dbKey: 'faviconUrl', type: 'asset', max: 500_000, defaultValue: '/favicon.ico' },
   adminName: { dbKey: 'adminName', type: 'text', max: 120, defaultValue: 'مدیر سایت' },
