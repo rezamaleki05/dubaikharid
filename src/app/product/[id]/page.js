@@ -1,13 +1,14 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { inferCollectionItemType } from '@/lib/clientCollectionState';
 import { useCart } from '@/context/CartContext';
 import CheckoutModal from '@/components/CheckoutModal';
 import MinimalIcon from '@/components/ui/MinimalIcon';
+import { trackViewItem } from '@/lib/analytics';
 import styles from './Product.module.css';
 
 // Replaced hardcoded exchange rate
@@ -50,6 +51,7 @@ export default function ProductPage({ params }) {
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const viewedProductRef = useRef(null);
 
   // Selector states
   const [selectedColor, setSelectedColor] = useState(null);
@@ -249,6 +251,12 @@ export default function ProductPage({ params }) {
     loadProduct();
     return () => controller.abort();
   }, [id]);
+
+  useEffect(() => {
+    if (!loading && product && viewedProductRef.current !== product.id && trackViewItem(product)) {
+      viewedProductRef.current = product.id;
+    }
+  }, [loading, product]);
 
   if (loading) {
     return (

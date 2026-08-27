@@ -1,9 +1,10 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
+import { markPurchasePending, trackBeginCheckout } from '@/lib/analytics';
 import styles from './CheckoutModal.module.css';
 
 export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrement }) {
@@ -26,6 +27,12 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   const idempotencyKeyRef = useRef(null);
   const submittingRef = useRef(false);
   const completedResultRef = useRef(null);
+  const checkoutTrackedRef = useRef(false);
+  const checkoutItems = useMemo(() => orderData?.items || [], [orderData]);
+  const canCreateDatabaseOrder = checkoutItems.length > 0 && (
+    checkoutItems.every(item => item.laptopId || item.product_type === 'laptop_stock')
+    || checkoutItems.every(item => item.productId && !item.laptopId)
+  );
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -40,6 +47,12 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen && canCreateDatabaseOrder && !checkoutTrackedRef.current) {
+      checkoutTrackedRef.current = trackBeginCheckout(checkoutItems);
+    }
+  }, [canCreateDatabaseOrder, checkoutItems, isOpen]);
+
   if (!isOpen || !orderData) return null;
 
   const calculateFallbackTotal = () => {
@@ -47,12 +60,6 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     const price = Number(orderData.priceAed ?? orderData.price);
     return Number.isFinite(rate) && rate > 0 && Number.isFinite(price) && price >= 0 ? Math.round(price * rate) : 0;
   };
-
-  const checkoutItems = orderData.items || [];
-  const canCreateDatabaseOrder = checkoutItems.length > 0 && (
-    checkoutItems.every(item => item.laptopId || item.product_type === 'laptop_stock')
-    || checkoutItems.every(item => item.productId && !item.laptopId)
-  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -143,6 +150,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
       }
       const isOrder = endpoint === '/api/orders';
       const code = isOrder ? result.data.orderCode : result.data.requestCode;
+      if (isOrder) markPurchasePending(code);
       setTrackingCode(code);
       setResultKind(isOrder ? 'order' : 'request');
       setAuthoritativeTotal(isOrder ? Number(result.data.totalToman) : null);
@@ -173,6 +181,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     setManualPayment(null);
     idempotencyKeyRef.current = null;
     submittingRef.current = false;
+    checkoutTrackedRef.current = false;
     if (completedResultRef.current && onCartIncrement) onCartIncrement(completedResultRef.current);
     completedResultRef.current = null;
     onClose();

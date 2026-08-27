@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
+import { trackWhatsAppClick } from '@/lib/analytics';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -24,7 +25,7 @@ export default function Footer() {
               <div className={styles.socials}>
                 <a href={`https://instagram.com/${settings.instagramId?.replace('@', '')}`} target="_blank" rel="noopener noreferrer" aria-label="اینستاگرام"><MinimalIcon name="instagram" size={19} /></a>
                 <a href={`https://t.me/${settings.telegramId?.replace('@', '')}`} target="_blank" rel="noopener noreferrer" aria-label="تلگرام"><MinimalIcon name="telegram" size={19} /></a>
-                <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="واتساپ"><MinimalIcon name="whatsapp" size={19} /></a>
+                <a href={`https://wa.me/${settings.whatsapp}`} target="_blank" rel="noopener noreferrer" aria-label="واتساپ" onClick={() => trackWhatsAppClick('footer')}><MinimalIcon name="whatsapp" size={19} /></a>
               </div>
             </div>
 

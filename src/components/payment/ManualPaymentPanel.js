@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import BankCard from './BankCard';
+import { trackWhatsAppClick } from '@/lib/analytics';
 import styles from './ManualPayment.module.css';
 
 const STATUS_LABELS = {
@@ -101,7 +102,7 @@ export default function ManualPaymentPanel({ orderCode, totalToman, access, uplo
 
       <div className={styles.secondaryActions}>
         {onSkip && <button type="button" onClick={onSkip}>بعداً ارسال می‌کنم</button>}
-        {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer">ارسال از طریق واتساپ</a>}
+        {whatsappUrl && <a href={whatsappUrl} target="_blank" rel="noreferrer" onClick={() => trackWhatsAppClick('manual_payment')}>ارسال از طریق واتساپ</a>}
       </div>
     </div>
   );

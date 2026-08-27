@@ -30,6 +30,8 @@ export function serializeCustomerOrder(order, customer) {
     productName: order.items.map(item => item.name).join(' + '),
     items: order.items.map(item => ({
       id: item.id,
+      productId: item.productId,
+      laptopId: item.laptopId,
       name: item.name,
       quantity: item.quantity,
       priceAed: item.priceAed,

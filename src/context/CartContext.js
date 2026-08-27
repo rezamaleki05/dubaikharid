@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { trackAddToCart, trackRemoveFromCart } from '@/lib/analytics';
 import {
   CART_STORAGE_KEY,
   LEGACY_CART_STORAGE_KEY,
@@ -44,6 +45,14 @@ export function CartProvider({ children }) {
   const [resolvedItems, setResolvedItems] = useState(new Map());
   const [hydrated, setHydrated] = useState(false);
   const [resolveError, setResolveError] = useState('');
+  const storedItemsRef = useRef([]);
+
+  const replaceStoredItems = useCallback(updater => {
+    const previous = storedItemsRef.current;
+    const next = updater(previous);
+    storedItemsRef.current = next;
+    setStoredItems(next);
+  }, []);
 
   const loadStorage = useCallback(() => {
     const current = localStorage.getItem(CART_STORAGE_KEY);
@@ -58,11 +67,17 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     Promise.resolve().then(() => {
-      setStoredItems(loadStorage());
+      const next = loadStorage();
+      storedItemsRef.current = next;
+      setStoredItems(next);
       setHydrated(true);
     });
     const sync = event => {
-      if (event.key === CART_STORAGE_KEY) setStoredItems(parseCartStorage(event.newValue || '[]'));
+      if (event.key === CART_STORAGE_KEY) {
+        const next = parseCartStorage(event.newValue || '[]');
+        storedItemsRef.current = next;
+        setStoredItems(next);
+      }
     };
     window.addEventListener('storage', sync);
     return () => window.removeEventListener('storage', sync);
@@ -107,38 +122,64 @@ export function CartProvider({ children }) {
   const addToCart = useCallback((product, size = null, color = null) => {
     const candidate = normalizeCartItem({ ...product, selectedSize: size ?? product?.selectedSize, selectedColor: color ?? product?.selectedColor, quantity: 1 });
     if (!candidate) return false;
-    setStoredItems(previous => {
+    let addedQuantity = 0;
+    replaceStoredItems(previous => {
       const existing = previous.find(item => item.key === candidate.key);
-      if (!existing) return [...previous, candidate];
+      if (!existing) {
+        addedQuantity = candidate.quantity;
+        return [...previous, candidate];
+      }
       if (existing.type === 'LAPTOP') return previous;
+      const nextQuantity = Math.min(MAX_PRODUCT_QUANTITY, existing.quantity + 1);
+      if (nextQuantity === existing.quantity) return previous;
+      addedQuantity = nextQuantity - existing.quantity;
       return previous.map(item => item.key === candidate.key
-        ? { ...item, quantity: Math.min(MAX_PRODUCT_QUANTITY, item.quantity + 1) }
+        ? { ...item, quantity: nextQuantity }
         : item);
     });
+    if (addedQuantity > 0) trackAddToCart({ ...candidate.snapshot, ...candidate }, addedQuantity);
     return true;
-  }, []);
+  }, [replaceStoredItems]);
 
   const updateQuantity = useCallback((key, quantity) => {
-    setStoredItems(previous => previous.map(item => {
+    let changedItem = null;
+    let quantityDelta = 0;
+    replaceStoredItems(previous => previous.map(item => {
       if (item.key !== key) return item;
       if (item.type === 'LAPTOP') return { ...item, quantity: 1 };
       const next = Number(quantity);
       if (!Number.isSafeInteger(next) || next < 1) return item;
-      return { ...item, quantity: Math.min(MAX_PRODUCT_QUANTITY, next) };
+      const nextQuantity = Math.min(MAX_PRODUCT_QUANTITY, next);
+      quantityDelta = nextQuantity - item.quantity;
+      changedItem = item;
+      return quantityDelta === 0 ? item : { ...item, quantity: nextQuantity };
     }));
-  }, []);
+    if (changedItem && quantityDelta > 0) trackAddToCart({ ...changedItem.snapshot, ...changedItem }, quantityDelta);
+    if (changedItem && quantityDelta < 0) trackRemoveFromCart({ ...changedItem.snapshot, ...changedItem }, Math.abs(quantityDelta));
+  }, [replaceStoredItems]);
 
   const decrementQuantity = useCallback(key => {
-    setStoredItems(previous => previous.map(item => item.key === key
-      ? { ...item, quantity: item.type === 'LAPTOP' ? 1 : Math.max(1, item.quantity - 1) }
-      : item));
-  }, []);
-  const removeFromCart = useCallback(key => setStoredItems(previous => previous.filter(item => item.key !== key)), []);
+    let decrementedItem = null;
+    replaceStoredItems(previous => previous.map(item => {
+      if (item.key !== key || item.type === 'LAPTOP' || item.quantity <= 1) return item;
+      decrementedItem = item;
+      return { ...item, quantity: item.quantity - 1 };
+    }));
+    if (decrementedItem) trackRemoveFromCart({ ...decrementedItem.snapshot, ...decrementedItem }, 1);
+  }, [replaceStoredItems]);
+  const removeFromCart = useCallback(key => {
+    let removedItem = null;
+    replaceStoredItems(previous => {
+      removedItem = previous.find(item => item.key === key) || null;
+      return removedItem ? previous.filter(item => item.key !== key) : previous;
+    });
+    if (removedItem) trackRemoveFromCart({ ...removedItem.snapshot, ...removedItem }, removedItem.quantity);
+  }, [replaceStoredItems]);
   const removePurchasedItems = useCallback(keys => {
     const selected = new Set(keys);
-    setStoredItems(previous => previous.filter(item => !selected.has(item.key)));
-  }, []);
-  const clearCart = useCallback(() => setStoredItems([]), []);
+    replaceStoredItems(previous => previous.filter(item => !selected.has(item.key)));
+  }, [replaceStoredItems]);
+  const clearCart = useCallback(() => replaceStoredItems(() => []), [replaceStoredItems]);
   const hasItem = useCallback((id, type = null) => storedItems.some(item => item.id === id && (!type || item.type === type)), [storedItems]);
   const cartCount = storedItems.reduce((total, item) => total + item.quantity, 0);
 

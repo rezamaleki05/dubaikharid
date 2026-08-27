@@ -10,6 +10,7 @@ import Footer from '@/components/Footer';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
 import OrderPaymentPanel from '@/components/payment/OrderPaymentPanel';
+import { trackPurchaseOnce, trackWhatsAppClick } from '@/lib/analytics';
 import styles from './Profile.module.css';
 
 // ── SVG OUTLINE MONOCHROME ICONS ──
@@ -246,6 +247,13 @@ function ProfileContent() {
       });
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    const paidOrders = orders.filter(order => order.paymentStatus === 'paid');
+    paidOrders.forEach(trackPurchaseOnce);
+    const retryTimer = window.setTimeout(() => paidOrders.forEach(trackPurchaseOnce), 1000);
+    return () => window.clearTimeout(retryTimer);
+  }, [orders]);
 
   // Load server-backed order history and the customer's existing local preferences.
   useEffect(() => {
@@ -912,6 +920,7 @@ function ProfileContent() {
                           href="https://wa.me/971501234567" 
                           target="_blank" 
                           rel="noreferrer" 
+                          onClick={() => trackWhatsAppClick('profile_support')}
                           className={`${styles.supportBtn} ${styles.whatsappBtn}`}
                           style={{ textDecoration: 'none' }}
                         >

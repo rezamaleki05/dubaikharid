@@ -1,13 +1,14 @@
 'use client';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CheckoutModal from '@/components/CheckoutModal';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import { useCart } from '@/context/CartContext';
+import { trackViewCart } from '@/lib/analytics';
 import styles from './Cart.module.css';
 
 // EXCHANGE_RATE replaced dynamically
@@ -20,6 +21,7 @@ export default function CartPage() {
   // Checkout Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalOrderData, setModalOrderData] = useState(null);
+  const cartViewTrackedRef = useRef(false);
 
   // Calculate original and discounted subtotals
   const billableItems = cartItems.filter(item => !item.unavailable);
@@ -48,6 +50,12 @@ export default function CartPage() {
   const isResolving = cartItems.some(item => item.resolving);
   const checkoutTypes = new Set(cartItems.map(item => item.type));
   const hasMixedDatabaseTypes = checkoutTypes.size > 1;
+
+  useEffect(() => {
+    if (hydrated && !isResolving && !cartViewTrackedRef.current && trackViewCart(cartItems)) {
+      cartViewTrackedRef.current = true;
+    }
+  }, [cartItems, hydrated, isResolving]);
 
   // Trigger pre-invoice checkout modal for entire cart
   const handleProceedToCheckout = () => {
