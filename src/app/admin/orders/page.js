@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useDeferredValue, useEffect, useState } from 'react';
 import styles from '@/app/admin/Admin.module.css';
 import { ADMIN_ROUTES } from '@/config/adminNavigation';
@@ -8,6 +9,7 @@ import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { ensureOrderShipment, getShipmentAdminHref } from '@/lib/adminShipmentPreparation';
 import {
   ORDER_STATUS_DEFINITIONS,
   getAvailableOrderStatusOptions,
@@ -34,7 +36,7 @@ const NEXT_ACTIONS = Object.freeze({
   paid: { label: 'شروع پردازش سفارش', kind: 'status', nextStatus: 'processing', description: 'پرداخت تأیید شده و سفارش آماده پردازش است.' },
   processing: { label: 'ثبت خرید / ادامه پردازش', kind: 'status', nextStatus: 'purchased', description: 'پس از انجام خرید، مرحله روند دبی را ثبت کنید.' },
   purchased: { label: 'ارسال به انبار دبی', kind: 'status', nextStatus: 'warehouse_dubai', description: 'ورود کالا به انبار دبی را ثبت کنید.' },
-  warehouse_dubai: { label: 'آماده ارسال', kind: 'link', href: ADMIN_ROUTES.shipments, permission: ADMIN_PERMISSIONS.SHIPMENTS_VIEW, description: 'اطلاعات مرسوله را در بخش ارسال‌ها ثبت کنید.' },
+  warehouse_dubai: { label: 'آماده ارسال', kind: 'shipment', permission: ADMIN_PERMISSIONS.SHIPMENTS_VIEW, description: 'مرسوله سفارش را ایجاد یا باز کنید و اطلاعات ارسال را تکمیل کنید.' },
   shipped: { label: 'پیگیری تحویل', kind: 'link', href: ADMIN_ROUTES.shipments, permission: ADMIN_PERMISSIONS.SHIPMENTS_VIEW, description: 'رهگیری و تحویل مرسوله در بخش ارسال‌ها مدیریت می‌شود.' },
   delivered: { label: 'سفارش تکمیل شده', kind: 'complete', description: 'چرخه سفارش با تحویل به مشتری کامل شده است.' },
   cancelled: { label: 'سفارش لغو شده', kind: 'cancelled', description: 'برای سفارش لغوشده اقدام عملیاتی دیگری وجود ندارد.' },
@@ -114,6 +116,7 @@ function OrderDetailSection({ title, icon, children, defaultOpen = false, traili
 }
 
 function OrdersContent({ onOrdersChange }) {
+  const router = useRouter();
   const { can } = useAdminAccess();
   const [orders, setOrders] = useState([]);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -272,6 +275,24 @@ function OrdersContent({ onOrdersChange }) {
   const handleStatusChange = async (orderId, newStatus) => {
     if (!can(ADMIN_PERMISSIONS.ORDERS_EDIT)) return;
     await updateOrder(orderId, { status: newStatus });
+  };
+
+  const handlePrepareShipment = async order => {
+    if (!can(ADMIN_PERMISSIONS.SHIPMENTS_VIEW) || !order?.id) return;
+    setPendingActionId(order.id);
+    setError('');
+    try {
+      const result = await ensureOrderShipment({
+        order,
+        canCreate: can(ADMIN_PERMISSIONS.SHIPMENTS_EDIT),
+        fetcher: fetch,
+      });
+      router.push(getShipmentAdminHref(result.shipment.id, ADMIN_ROUTES.shipments));
+    } catch (shipmentError) {
+      setError(shipmentError.message || 'آماده‌سازی مرسوله با خطا مواجه شد.');
+    } finally {
+      setPendingActionId(null);
+    }
   };
 
   const handleCancelOrder = async orderId => {
@@ -475,6 +496,7 @@ function OrdersContent({ onOrdersChange }) {
               <section className={`${styles.orderNextAction} ${styles[`orderNextAction_${selectedNextAction.kind}`] || ''}`}>
                 <div><span>اقدام بعدی</span><strong>{selectedNextAction.label}</strong><p>{selectedNextAction.description}</p></div>
                 {selectedNextAction.kind === 'status' && <button type="button" className={styles.orderNextActionButton} disabled={!can(ADMIN_PERMISSIONS.ORDERS_EDIT) || pendingActionId === selectedOrder.id} onClick={() => handleStatusChange(selectedOrder.id, selectedNextAction.nextStatus)}>{pendingActionId === selectedOrder.id ? 'در حال ثبت...' : selectedNextAction.label}{AdminIcons.back(15)}</button>}
+                {selectedNextAction.kind === 'shipment' && can(selectedNextAction.permission) && <button type="button" className={styles.orderNextActionButton} disabled={pendingActionId === selectedOrder.id} onClick={() => handlePrepareShipment(selectedOrder)}>{pendingActionId === selectedOrder.id ? 'در حال آماده‌سازی...' : selectedNextAction.label}{AdminIcons.back(15)}</button>}
                 {selectedNextAction.kind === 'link' && can(selectedNextAction.permission) && <Link className={styles.orderNextActionButton} href={selectedNextAction.href}>{selectedNextAction.label}{AdminIcons.back(15)}</Link>}
               </section>
             )}

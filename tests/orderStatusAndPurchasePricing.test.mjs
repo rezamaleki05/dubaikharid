@@ -66,7 +66,7 @@ test('4b. next actions reuse lifecycle transitions and cancellation visibility m
   assert.match(ordersPage, /function getOrderNextAction\(order\)/);
   assert.match(ordersPage, /label: paymentIsPending[\s\S]*?'بررسی پرداخت'/);
   assert.match(ordersPage, /href: paymentIsPending \? ADMIN_ROUTES\.payments/);
-  assert.match(ordersPage, /warehouse_dubai: \{ label: 'آماده ارسال', kind: 'link', href: ADMIN_ROUTES\.shipments/);
+  assert.match(ordersPage, /warehouse_dubai: \{ label: 'آماده ارسال', kind: 'shipment', permission: ADMIN_PERMISSIONS\.SHIPMENTS_VIEW/);
   assert.match(ordersPage, /shipped: \{ label: 'پیگیری تحویل', kind: 'link', href: ADMIN_ROUTES\.shipments/);
   const cancellableBlock = ordersPage.match(/const CANCELLABLE_ORDER_STATUSES = new Set\(\[([\s\S]*?)\]\);/)?.[1] || '';
   assert.match(cancellableBlock, /'warehouse_dubai'/);

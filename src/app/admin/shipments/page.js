@@ -151,7 +151,7 @@ function ShipmentsContent() {
     };
   }, [loadShipments]);
 
-  const selectShipment = async shipmentId => {
+  const selectShipment = useCallback(async shipmentId => {
     setSelectedShipmentId(shipmentId);
     setSelectedShipment(null);
     try {
@@ -162,7 +162,14 @@ function ShipmentsContent() {
     } catch (error) {
       setErrorMessage(error.message || 'دریافت مرسوله با خطا مواجه شد.');
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const requestedShipmentId = new URLSearchParams(window.location.search).get('shipmentId')?.trim();
+    if (!requestedShipmentId) return undefined;
+    const timer = window.setTimeout(() => void selectShipment(requestedShipmentId), 0);
+    return () => window.clearTimeout(timer);
+  }, [selectShipment]);
 
   const resetNewShipmentForm = () => setNewShipmentForm({
     orderId: eligibleOrders[0]?.id || '',
