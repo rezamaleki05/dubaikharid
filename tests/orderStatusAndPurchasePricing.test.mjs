@@ -48,6 +48,22 @@ test('4. order UI uses the shared status map, refreshes successful changes, and 
   assert.match(ordersPage, /role="alert"/);
 });
 
+test('4a. order summary groups use only the approved real status sets', () => {
+  assert.match(ordersPage, /key: 'needs_action'.*statuses: \['pending', 'pricing'\]/);
+  assert.match(ordersPage, /key: 'in_progress'.*statuses: \['paid', 'processing', 'purchased', 'warehouse_dubai', 'shipped'\]/);
+  assert.match(ordersPage, /key: 'completed'.*statuses: \['delivered'\]/);
+  assert.doesNotMatch(ordersPage.match(/const SUMMARY_GROUPS[\s\S]*?\n\]\);/)?.[0] || '', /cancelled/);
+});
+
+test('4b. next actions reuse lifecycle transitions and cancellation visibility matches server rules', () => {
+  assert.match(ordersPage, /pending: \{ label: 'بررسی سفارش', kind: 'status', nextStatus: 'pricing'/);
+  assert.match(ordersPage, /warehouse_dubai: \{ label: 'آماده ارسال', kind: 'link', href: ADMIN_ROUTES\.shipments/);
+  assert.match(ordersPage, /shipped: \{ label: 'پیگیری تحویل', kind: 'link', href: ADMIN_ROUTES\.shipments/);
+  const cancellableBlock = ordersPage.match(/const CANCELLABLE_ORDER_STATUSES = new Set\(\[([\s\S]*?)\]\);/)?.[1] || '';
+  assert.match(cancellableBlock, /'warehouse_dubai'/);
+  assert.doesNotMatch(cancellableBlock, /'shipped'|'delivered'|'cancelled'/);
+});
+
 test('5. server pricing accepts confirmed AED and weight overrides and calculates from settings', () => {
   const quote = pricing.resolvePurchaseRequestPricing(
     { priceAed: 120, weight: 1.2 },
