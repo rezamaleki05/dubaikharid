@@ -1,9 +1,14 @@
 import { Vazirmatn } from "next/font/google";
+import { GoogleAnalytics } from '@next/third-parties/google';
 import Script from 'next/script';
 import "./globals.css";
 import JsonLd from '@/components/seo/JsonLd';
 import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/seo';
-import { isPreviewDeployment } from '@/lib/env';
+import {
+  getGoogleAnalyticsMeasurementId,
+  isGoogleAnalyticsEnabled,
+  isPreviewDeployment,
+} from '@/lib/env';
 
 const vazirmatn = Vazirmatn({
   variable: "--font-vazirmatn",
@@ -48,6 +53,8 @@ import { THEME_BOOTSTRAP_SCRIPT } from '@/lib/theme';
 export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({ children }) {
+  const googleAnalyticsId = getGoogleAnalyticsMeasurementId();
+  const googleAnalyticsEnabled = isGoogleAnalyticsEnabled();
   let initialSettings = null;
   try {
     initialSettings = (await getPublicSettings()).values;
@@ -106,6 +113,7 @@ export default async function RootLayout({ children }) {
           </SiteSettingsProvider>
         </ThemeProvider>
       </body>
+      {googleAnalyticsEnabled && googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}
     </html>
   );
 }

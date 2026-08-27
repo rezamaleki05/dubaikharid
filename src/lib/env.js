@@ -1,6 +1,7 @@
 import 'server-only';
 
 const DEFAULT_SITE_URL = 'https://dubaikharid.shop';
+const GA_MEASUREMENT_ID_PATTERN = /^G-[A-Z0-9]+$/;
 
 function value(name) {
   const raw = process.env[name];
@@ -54,6 +55,17 @@ export function getSiteUrl() {
   return httpUrl('NEXT_PUBLIC_SITE_URL', value('NEXT_PUBLIC_SITE_URL') || DEFAULT_SITE_URL, {
     httpsOnly: process.env.VERCEL_ENV === 'production',
   });
+}
+
+export function getGoogleAnalyticsMeasurementId() {
+  const measurementId = value('NEXT_PUBLIC_GA_MEASUREMENT_ID');
+  return measurementId && GA_MEASUREMENT_ID_PATTERN.test(measurementId) ? measurementId : null;
+}
+
+export function isGoogleAnalyticsEnabled() {
+  return process.env.VERCEL_ENV === 'production'
+    && getSiteUrl() === DEFAULT_SITE_URL
+    && Boolean(getGoogleAnalyticsMeasurementId());
 }
 
 export function isPreviewDeployment() {
