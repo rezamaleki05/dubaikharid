@@ -39,6 +39,11 @@ test('2. impossible transitions are omitted while current and valid transitions 
   assert.equal(statuses.canTransitionOrder('pending', 'pricing'), false);
   assert.equal(statuses.canTransitionOrder('pending', 'processing'), false);
   assert.equal(statuses.canTransitionOrder('pending', 'cancelled'), true);
+  assert.equal(statuses.canTransitionOrder('paid', 'purchased'), false);
+  assert.equal(statuses.canTransitionOrder('processing', 'warehouse_dubai'), false);
+  assert.equal(statuses.canTransitionOrder('paid', 'processing'), true);
+  assert.equal(statuses.canTransitionOrder('processing', 'purchased'), true);
+  assert.equal(statuses.canTransitionOrder('purchased', 'warehouse_dubai'), true);
 });
 
 test('3. admin order PATCH validates statuses and persists through lifecycle transaction', () => {

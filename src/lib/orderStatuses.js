@@ -19,8 +19,8 @@ export const ORDER_STATUS_BY_VALUE = Object.freeze(Object.fromEntries(
 export const ORDER_TRANSITIONS = Object.freeze({
   pending: Object.freeze(['paid', 'cancelled']),
   pricing: Object.freeze(['paid', 'cancelled']),
-  paid: Object.freeze(['processing', 'purchased', 'cancelled']),
-  processing: Object.freeze(['purchased', 'warehouse_dubai', 'cancelled']),
+  paid: Object.freeze(['processing', 'cancelled']),
+  processing: Object.freeze(['purchased', 'cancelled']),
   purchased: Object.freeze(['warehouse_dubai', 'cancelled']),
   warehouse_dubai: Object.freeze(['shipped', 'cancelled']),
   shipped: Object.freeze(['delivered']),
