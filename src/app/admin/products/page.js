@@ -146,28 +146,38 @@ export default function AdminProductsPage() {
     if (!productLinkInput.trim()) return;
     setIsFetchingProductLink(true);
     try {
-      const response = await fetch(`/api/fetch-product?url=${encodeURIComponent(productLinkInput.trim())}`, { cache: 'no-store' });
+      const response = await fetch('/api/product-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: productLinkInput.trim() }),
+      });
       const payload = await response.json().catch(() => ({}));
-      const product = payload.success ? payload : payload.product;
-      if (!product && !payload.success) throw new Error(payload.error === 'UNSUPPORTED_STORE'
+      if (!response.ok || !payload.success) throw new Error(payload.error === 'UNSUPPORTED_STORE'
         ? 'لطفاً یک لینک معتبر از آمازون امارات، نون یا نمشی وارد نمایید.'
         : 'اطلاعات محصول از لینک دریافت نشد.');
+      const product = payload.fields || {};
 
       const matchedBrand = brands.find(item => item.name.toLowerCase() === String(product.brand || '').toLowerCase());
       const matchedStore = stores.find(item => {
-        try { return product.store && new URL(item.url || 'https://invalid.local').hostname.includes(product.store); }
-        catch { return item.name.toLowerCase().includes(String(product.store || '').split('.')[0].toLowerCase()); }
+        try {
+          const storeHost = new URL(item.url || 'https://invalid.local').hostname.replace(/^www\./, '');
+          const productHost = new URL(payload.canonicalUrl).hostname.replace(/^www\./, '');
+          return storeHost === productHost || storeHost.endsWith(`.${productHost}`) || productHost.endsWith(`.${storeHost}`);
+        }
+        catch { return item.name.toLowerCase().includes(String(payload.sourceLabel || payload.source || '').toLowerCase()); }
       });
-      const matchedCategory = categories.find(item => item.query === product.category || item.name.includes(product.category || ''));
+      const matchedCategory = payload.confidence?.categorySuggestion === 'high'
+        ? categories.find(item => item.query === product.categorySuggestion || item.name.includes(product.categorySuggestion || ''))
+        : null;
       setAddProductManualForm({
-        name: product.name || '',
-        description: product.description || '',
+        name: product.title || '',
+        description: '',
         brandId: matchedBrand?.id || '',
         category: matchedCategory?.id || '',
         storeId: matchedStore?.id || '',
         priceAed: product.priceAed ?? '',
-        weight: String(product.weight || 1),
-        originalLink: product.sourceUrl || productLinkInput.trim(),
+        weight: '1.0',
+        originalLink: payload.canonicalUrl || productLinkInput.trim(),
         image: product.imageUrl || '',
         gender: '',
         discountPercent: 0,
@@ -177,7 +187,7 @@ export default function AdminProductsPage() {
       setAddProductImage(createProductImageState(product.imageUrl || '', 'url'));
       setIsAddProductManualOpen(true);
       setProductLinkInput('');
-      if (payload.error === 'PRICE_NOT_FOUND') {
+      if (product.priceAed == null) {
         alert('قیمت واقعی پیدا نشد. لطفاً قیمت را پس از بررسی دستی وارد کنید.');
       }
     } catch (error) {

@@ -13,12 +13,17 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
   const [loading, setLoading] = useState(false);
   const [detectedItem, setDetectedItem] = useState(null);
   const [lookupError, setLookupError] = useState('');
+  const [lookupSuccess, setLookupSuccess] = useState('');
+  const [productTitle, setProductTitle] = useState('');
+  const [categorySuggestion, setCategorySuggestion] = useState(null);
   
   const [category, setCategory] = useState('bags');
   const [priceAed, setPriceAed] = useState('');
   const [weightClass, setWeightClass] = useState('light'); // 'light', 'medium', 'heavy'
 
   const calculatorRef = useRef(null);
+  const previewControllerRef = useRef(null);
+  const previewRequestIdRef = useRef(0);
 
   // Categories config
   const categoriesConfig = {
@@ -49,6 +54,7 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
         }
         if (initialValues.category) setCategory(initialValues.category);
         if (initialValues.name) {
+          setProductTitle(initialValues.name);
           setDetectedItem({ name: initialValues.name, brand: initialValues.brand || 'برند اورجینال', store: 'فروشگاه دبی' });
         }
         calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -56,52 +62,72 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
     }
   }, [initialValues]);
 
+  useEffect(() => () => previewControllerRef.current?.abort(), []);
+
   const handleLinkChange = (e) => {
     const url = e.target.value;
+    previewControllerRef.current?.abort();
+    previewRequestIdRef.current += 1;
     setLink(url);
     setLookupError('');
+    setLookupSuccess('');
+    setDetectedItem(null);
+    setProductTitle('');
+    setCategorySuggestion(null);
+    setPriceAed('');
+    setLoading(false);
+  };
 
-    if (!url || url.trim().length < 4) {
-      setDetectedItem(null);
+  const handleProductPreview = async () => {
+    const targetUrl = link.trim();
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      setLookupError('لطفاً لینک کامل و معتبر محصول را وارد کنید.');
       return;
     }
+    previewControllerRef.current?.abort();
+    const controller = new AbortController();
+    previewControllerRef.current = controller;
+    const requestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = requestId;
+    setLoading(true);
+    setLookupError('');
+    setLookupSuccess('');
 
-    const urlLower = url.toLowerCase();
-    if (urlLower.startsWith('http') || urlLower.includes('.') || urlLower.includes('/') || urlLower.includes('www.')) {
-      setLoading(true);
+    try {
+      const response = await fetch('/api/product-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: targetUrl }),
+        signal: controller.signal,
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.success) throw new Error(payload.error || 'PRODUCT_FETCH_FAILED');
+      if (previewRequestIdRef.current !== requestId) return;
+
+      const fields = payload.fields || {};
+      setDetectedItem({
+        name: fields.title || '',
+        brand: fields.brand || '',
+        store: payload.sourceLabel || payload.source || 'فروشگاه دبی',
+        imageUrl: fields.imageUrl || '',
+        variant: fields.variant || '',
+      });
+      setProductTitle(fields.title || '');
+      setPriceAed(fields.priceAed ?? '');
+      setCategorySuggestion(fields.categorySuggestion || null);
+      if (fields.categorySuggestion && payload.confidence?.categorySuggestion === 'high') {
+        setCategory(fields.categorySuggestion);
+      }
+      setLookupSuccess(`اطلاعات محصول از ${payload.sourceLabel || payload.source || 'فروشگاه'} دریافت شد.`);
+      if (!fields.priceAed) {
+        setLookupError('قیمت معتبر AED تشخیص داده نشد؛ لطفاً قیمت واقعی را دستی وارد کنید.');
+      }
+    } catch (error) {
+      if (error?.name === 'AbortError' || previewRequestIdRef.current !== requestId) return;
       setDetectedItem(null);
-
-      fetch(`/api/fetch-product?url=${encodeURIComponent(url)}`)
-        .then(async res => ({ ok: res.ok, status: res.status, data: await res.json() }))
-        .then(({ ok, status, data }) => {
-          setLoading(false);
-          const product = ok ? data : data?.product;
-          if (product?.name) {
-            setDetectedItem({
-              name: product.name,
-              brand: product.brand,
-              store: product.store || 'فروشگاه دبی',
-              imageUrl: product.imageUrl || ''
-            });
-            setCategory(product.category || 'others');
-            setPriceAed(product.priceAed ?? '');
-            if (product.weight <= 1) setWeightClass('light');
-            else if (product.weight <= 3) setWeightClass('medium');
-            else setWeightClass('heavy');
-          }
-          if (!ok) {
-            setPriceAed('');
-            setLookupError(status === 422
-              ? 'قیمت از صفحه فروشنده قابل استخراج نبود؛ لطفاً قیمت واقعی را دستی وارد کنید.'
-              : 'بررسی خودکار لینک انجام نشد؛ لطفاً اطلاعات واقعی محصول را دستی وارد کنید.');
-          }
-        })
-        .catch(() => {
-          setLoading(false);
-          setDetectedItem(null);
-          setPriceAed('');
-          setLookupError('بررسی خودکار لینک انجام نشد؛ لطفاً اطلاعات واقعی محصول را دستی وارد کنید.');
-        });
+      setLookupError('اطلاعات محصول خودکار دریافت نشد؛ لطفاً موارد زیر را دستی وارد کنید.');
+    } finally {
+      if (previewRequestIdRef.current === requestId) setLoading(false);
     }
   };
 
@@ -131,7 +157,7 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
     if (onOrderSubmit) {
       onOrderSubmit({
         link: link.trim(),
-        productName: detectedItem ? detectedItem.name : `${currentCategoryConfig.name} دبی`,
+        productName: productTitle.trim() || `${currentCategoryConfig.name} دبی`,
         store: detectedItem?.store || 'فروشگاه دبی',
         priceAed: numPrice,
         weight: weightVal,
@@ -204,17 +230,22 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
               {/* Product Link */}
               <div className={styles.fieldWrapper}>
                 <label>لینک محصول</label>
-                <div className={styles.inputContainer}>
-                  <input
-                    type="text"
-                    placeholder="https://www.noon.com/uae-ar/product/gucci-ophidia-gg-small-shoulder-bag..."
-                    value={link}
-                    onChange={handleLinkChange}
-                    dir="ltr"
-                  />
-                  <div className={styles.inputIcon}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                <div className={styles.linkLookupRow}>
+                  <div className={styles.inputContainer}>
+                    <input
+                      type="text"
+                      placeholder="https://www.noon.com/uae-en/product/..."
+                      value={link}
+                      onChange={handleLinkChange}
+                      dir="ltr"
+                    />
+                    <div className={styles.inputIcon}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                    </div>
                   </div>
+                  <button type="button" className={styles.previewBtn} onClick={handleProductPreview} disabled={loading || !link.trim()}>
+                    {loading ? 'در حال دریافت...' : 'دریافت اطلاعات محصول'}
+                  </button>
                 </div>
               </div>
 
@@ -227,11 +258,13 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
                     </div>
                   )}
                   <div className={styles.productInfo}>
-                    <h3>{detectedItem.name}</h3>
+                    <h3>{detectedItem.name || 'عنوان محصول تشخیص داده نشد'}</h3>
                     <div className={styles.storeTag}>
                       <span className={styles.storeDot}></span>
                       {detectedItem.store}
                     </div>
+                    {detectedItem.brand && <span className={styles.detectedBrand}>{detectedItem.brand}</span>}
+                    {detectedItem.variant && <span className={styles.detectedBrand}>گزینه: {detectedItem.variant}</span>}
                   </div>
                 </div>
               )}
@@ -243,6 +276,22 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
               {lookupError && (
                 <p role="alert" style={{ color: '#fca5a5', fontSize: '12px', margin: '8px 0 0' }}>{lookupError}</p>
               )}
+              {lookupSuccess && (
+                <p role="status" className={styles.lookupSuccess}>{lookupSuccess}</p>
+              )}
+
+              <div className={styles.fieldWrapper}>
+                <label>نام محصول</label>
+                <div className={styles.inputContainer}>
+                  <input
+                    type="text"
+                    placeholder="نام کامل محصول را وارد کنید"
+                    value={productTitle}
+                    onChange={(e) => setProductTitle(e.target.value)}
+                    maxLength={300}
+                  />
+                </div>
+              </div>
 
               {/* 3 Columns Row */}
               <div className={styles.threeColGrid}>
@@ -259,6 +308,9 @@ export default function Calculator({ initialValues, onOrderSubmit }) {
                       <option value="others">سایر کالاها</option>
                     </select>
                   </div>
+                  {categoriesConfig[categorySuggestion]?.name && (
+                    <p className={styles.fieldHint}>دسته پیشنهادی: {categoriesConfig[categorySuggestion].name}</p>
+                  )}
                 </div>
 
                 {/* Weight Segmented */}
