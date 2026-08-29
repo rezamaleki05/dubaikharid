@@ -259,13 +259,31 @@ function ProfileContent() {
   useEffect(() => {
     if (!currentUser) return;
 
-    try {
-      fetch('/api/account/orders?limit=50', { cache: 'no-store' }).then(async response => {
+    let active = true;
+    let requestInFlight = null;
+    const loadAccountData = () => {
+      if (requestInFlight) return requestInFlight;
+      requestInFlight = fetch('/api/account/orders?limit=50', { cache: 'no-store' }).then(async response => {
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || 'دریافت سوابق با خطا مواجه شد.');
-        setOrders(payload.data.orders || []);
-        setPurchaseRequests(payload.data.requests || []);
-      }).catch(error => console.error(error));
+        if (active) {
+          setOrders(payload.data.orders || []);
+          setPurchaseRequests(payload.data.requests || []);
+        }
+      }).catch(error => console.error(error)).finally(() => {
+        requestInFlight = null;
+      });
+      return requestInFlight;
+    };
+    const handleWindowFocus = () => { void loadAccountData(); };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void loadAccountData();
+    };
+
+    try {
+      void loadAccountData();
+      window.addEventListener('focus', handleWindowFocus);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
 
       // 2. Load Addresses (address persistence still needs a server-backed phase)
       const savedAddr = localStorage.getItem(`dubaiKharidAddress_${currentUser.phone}`);
@@ -296,6 +314,12 @@ function ProfileContent() {
     } catch (e) {
       console.error(e);
     }
+
+    return () => {
+      active = false;
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [currentUser]);
 
   // Order click expansion handler
