@@ -160,15 +160,15 @@ export function trackPurchaseOnce(order) {
   const orderCode = cleanText(order.orderCode || order.id, 160);
   if (!orderCode) return false;
 
-  const pending = readStoredIds(PENDING_PURCHASES_KEY);
   const sent = readStoredIds(SENT_PURCHASES_KEY);
-  if (!pending.includes(orderCode) || sent.includes(orderCode)) return false;
+  if (sent.includes(orderCode)) return false;
 
   const payload = ecommercePayload(order.items || []);
   if (payload.items.length === 0) return false;
   const tracked = trackEvent('purchase', { transaction_id: orderCode, ...payload });
   if (!tracked) return false;
 
+  const pending = readStoredIds(PENDING_PURCHASES_KEY);
   writeStoredIds(SENT_PURCHASES_KEY, [...sent, orderCode]);
   writeStoredIds(PENDING_PURCHASES_KEY, pending.filter(value => value !== orderCode));
   return true;

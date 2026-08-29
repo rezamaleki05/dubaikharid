@@ -56,7 +56,7 @@ test('recommended ecommerce helpers emit storefront-safe GA4 item payloads in AE
   assert.equal(lastEvent()[1], 'begin_checkout');
 });
 
-test('purchase requires a locally initiated order and a server-confirmed paid state, then fires once', () => {
+test('server-confirmed paid purchase does not require a pending marker and fires once', () => {
   window.dataLayer.length = 0;
   storage.clear();
   const paidOrder = {
@@ -69,9 +69,6 @@ test('purchase requires a locally initiated order and a server-confirmed paid st
     items: [{ productId: 'product-1', name: 'Test Product', priceAed: 50, quantity: 2 }],
   };
 
-  assert.equal(analytics.trackPurchaseOnce(paidOrder), false);
-  assert.equal(window.dataLayer.length, 0);
-  assert.equal(analytics.markPurchasePending('DK-1001'), true);
   assert.equal(analytics.trackPurchaseOnce({ ...paidOrder, paymentStatus: 'pending' }), false);
   assert.equal(analytics.trackPurchaseOnce(paidOrder), true);
   assert.equal(analytics.trackPurchaseOnce(paidOrder), false);
@@ -83,6 +80,42 @@ test('purchase requires a locally initiated order and a server-confirmed paid st
   assert.equal(event[2].currency, 'AED');
   assert.equal(event[2].value, 100);
   assert.doesNotMatch(JSON.stringify(event[2]), /customerName|phone|email|address/i);
+});
+
+test('paid Purchase Request-derived Order can trigger purchase without a pending marker', () => {
+  window.dataLayer.length = 0;
+  storage.clear();
+  const convertedOrder = {
+    id: 'DK-REQUEST-1002',
+    orderCode: 'DK-REQUEST-1002',
+    paymentStatus: 'paid',
+    customerName: 'must-not-be-sent',
+    email: 'must-not-be-sent@example.test',
+    phone: 'must-not-be-sent',
+    address: 'must-not-be-sent',
+    items: [{ id: 'order-item-1', name: 'Requested Product', priceAed: 75, quantity: 1 }],
+  };
+
+  assert.equal(storage.has('dubaikharid_ga_pending_purchases_v1'), false);
+  assert.equal(analytics.trackPurchaseOnce(convertedOrder), true);
+  assert.equal(analytics.trackPurchaseOnce(convertedOrder), false);
+
+  const event = lastEvent();
+  assert.equal(event[1], 'purchase');
+  assert.equal(event[2].transaction_id, 'DK-REQUEST-1002');
+  assert.doesNotMatch(JSON.stringify(event[2]), /customerName|phone|email|address|receipt|adminNotes/i);
+});
+
+test('Profile refetches account Orders on focus and visibility without polling', async () => {
+  const profile = await source('../src/app/profile/page.js');
+
+  assert.match(profile, /window\.addEventListener\('focus', handleWindowFocus\)/);
+  assert.match(profile, /document\.addEventListener\('visibilitychange', handleVisibilityChange\)/);
+  assert.match(profile, /document\.visibilityState === 'visible'/);
+  assert.match(profile, /if \(requestInFlight\) return requestInFlight/);
+  assert.match(profile, /window\.removeEventListener\('focus', handleWindowFocus\)/);
+  assert.match(profile, /document\.removeEventListener\('visibilitychange', handleVisibilityChange\)/);
+  assert.doesNotMatch(profile, /setInterval\([^)]*account\/orders/s);
 });
 
 test('WhatsApp event sends placement only and no destination or customer data', () => {
