@@ -34,6 +34,10 @@ function BrandCategoryFields({ form, setForm, categories }) {
         />
         نمایش در صفحه برندها
       </label>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '16px', color: '#d4d8e8', fontSize: '12px', cursor: 'pointer' }}>
+        <input type="checkbox" checked={Boolean(form.supportsLaptop)} onChange={event => setForm(previous => ({ ...previous, supportsLaptop: event.target.checked }))} />
+        قابل استفاده در بخش Laptop Stock
+      </label>
     </>
   );
 }
@@ -48,11 +52,11 @@ export default function AdminBrandsPage() {
   const [isEditBrandOpen, setIsEditBrandOpen] = useState(false);
   const [editBrandForm, setEditBrandForm] = useState({
     id: '', name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
-    categoryIds: [], showInBrandDirectory: true
+    categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
   });
   const [addBrandForm, setAddBrandForm] = useState({
     name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
-    categoryIds: [], showInBrandDirectory: true
+    categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
   });
 
   useEffect(() => {
@@ -91,6 +95,7 @@ export default function AdminBrandsPage() {
       hasImage: !!(addBrandForm.img || '').trim(),
       categoryIds: addBrandForm.categoryIds,
       showInBrandDirectory: addBrandForm.showInBrandDirectory,
+      supportsLaptop: Boolean(addBrandForm.supportsLaptop),
     };
     
     try {
@@ -107,7 +112,7 @@ export default function AdminBrandsPage() {
       setIsAddBrandOpen(false);
       setAddBrandForm({
         name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
-        categoryIds: [], showInBrandDirectory: true
+        categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
       });
       alert(createdBrand.alreadyExists
         ? 'این برند از قبل وجود داشت و اطلاعات موجود آن حفظ شد.'
@@ -134,6 +139,7 @@ export default function AdminBrandsPage() {
       hasImage: !!(editBrandForm.img || '').trim(),
       categoryIds: editBrandForm.categoryIds,
       showInBrandDirectory: editBrandForm.showInBrandDirectory,
+      supportsLaptop: Boolean(editBrandForm.supportsLaptop),
     };
 
     try {
@@ -196,7 +202,7 @@ export default function AdminBrandsPage() {
             </h2>
             <button
               onClick={() => {
-                setAddBrandForm({ name: '', faName: '', cat: '', url: '', img: '', fallback: '🏷️', hasImage: false, categoryIds: [], showInBrandDirectory: true });
+                setAddBrandForm({ name: '', faName: '', cat: '', url: '', img: '', fallback: '🏷️', hasImage: false, categoryIds: [], showInBrandDirectory: true, supportsLaptop: false });
                 setIsAddBrandOpen(true);
               }}
               style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}
@@ -248,6 +254,7 @@ export default function AdminBrandsPage() {
                         ...brand,
                         categoryIds: Array.isArray(brand.categories) ? brand.categories.map(category => category.id) : [],
                         showInBrandDirectory: brand.showInBrandDirectory !== false,
+                        supportsLaptop: Boolean(brand.supportsLaptop),
                       });
                       setIsEditBrandOpen(true);
                     }}

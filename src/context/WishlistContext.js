@@ -72,7 +72,8 @@ export function WishlistProvider({ children }) {
       type: item.type,
       productId: item.type === 'PRODUCT' ? item.id : undefined,
       laptopId: item.type === 'LAPTOP' ? item.id : undefined,
-      product_type: item.type === 'LAPTOP' ? 'laptop_stock' : item.type === 'PRODUCT' ? 'iran_inventory' : 'external_product',
+      warehouseItemId: item.type === 'WAREHOUSE' ? item.id : undefined,
+      product_type: item.type === 'LAPTOP' ? 'laptop_stock' : item.type === 'WAREHOUSE' ? 'warehouse_stock' : item.type === 'PRODUCT' ? 'iran_inventory' : 'external_product',
       unavailable: current.available === false,
     };
   }), [resolvedItems, storedItems]);

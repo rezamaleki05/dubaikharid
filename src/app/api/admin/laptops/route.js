@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import {
+  assertLaptopCatalogSelection,
   LAPTOP_STATUS_SET,
   serializeLaptop,
   validateLaptopPayload,
 } from '@/lib/adminLaptops';
+import { countAvailableLaptopGroups, laptopSpecGroupKey } from '@/lib/laptopCatalog';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { prisma } from '@/lib/prisma';
 
@@ -53,7 +55,7 @@ export async function GET(request) {
 
   try {
     const statsWhere = { OR: [{ archivedAt: null }, { status: 'SOLD' }] };
-    const [laptops, total, statusRows, brands, soldTotals, monthlySoldRows] = await Promise.all([
+    const [laptops, total, statusRows, brands, soldTotals, monthlySoldRows, availableUnits] = await Promise.all([
       prisma.laptop.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }),
       prisma.laptop.count({ where }),
       prisma.laptop.groupBy({ by: ['status'], where: statsWhere, _count: { _all: true } }),
@@ -73,7 +75,12 @@ export async function GET(request) {
         GROUP BY date_trunc('month', "soldAt")
         ORDER BY date_trunc('month', "soldAt")
       `,
+      prisma.laptop.findMany({
+        where: { status: 'AVAILABLE', archivedAt: null, reservedOrderId: null },
+        select: { brand: true, model: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
+      }),
     ]);
+    const groupCounts = countAvailableLaptopGroups(availableUnits);
     const statusCounts = Object.fromEntries(statusRows.map(row => [row.status, row._count._all]));
     const monthlyMap = new Map(monthlySoldRows.map(row => [row.key, row]));
     const now = new Date();
@@ -89,7 +96,11 @@ export async function GET(request) {
       };
     });
     return NextResponse.json({
-      data: laptops.map(serializeLaptop),
+      data: laptops.map(laptop => ({
+        ...serializeLaptop(laptop),
+        specGroupKey: laptopSpecGroupKey(laptop),
+        groupAvailableCount: groupCounts.get(laptopSpecGroupKey(laptop)) || 0,
+      })),
       pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
       stats: {
         total: Object.values(statusCounts).reduce((sum, count) => sum + count, 0),
@@ -121,6 +132,7 @@ export async function POST(request) {
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
 
   try {
+    await assertLaptopCatalogSelection(prisma, { brandName: validated.data.brand, modelName: validated.data.model });
     const laptop = await prisma.laptop.create({
       data: {
         ...validated.data,

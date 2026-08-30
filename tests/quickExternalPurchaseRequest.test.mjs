@@ -62,7 +62,7 @@ test('8. final payable amount comes from the server-saved PurchaseRequest value'
 
 test('9. normal catalog checkout still creates an Order and pending Payment', () => {
   assert.match(checkout, /isCatalogOrder/);
-  assert.match(checkout, /isLaptopOrder \|\| isCatalogOrder \? '\/api\/orders'/);
+  assert.match(checkout, /isLaptopOrder \|\| isWarehouseOrder \|\| isCatalogOrder \? '\/api\/orders'/);
   assert.match(publicOrders, /tx\.order\.create/);
   assert.match(publicOrders, /payments:\s*\{\s*create:/s);
 });

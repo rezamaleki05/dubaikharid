@@ -121,6 +121,10 @@ function validateBrandPayload(body, { partial = false } = {}) {
     }
     data.showInBrandDirectory = body.showInBrandDirectory;
   }
+  if (Object.hasOwn(body, 'supportsLaptop')) {
+    if (typeof body.supportsLaptop !== 'boolean') return { error: 'قابلیت برند لپ‌تاپ معتبر نیست.' };
+    data.supportsLaptop = body.supportsLaptop;
+  }
   if (Object.hasOwn(body, 'quickCreate') && body.quickCreate !== true) {
     return { error: 'نوع ایجاد برند معتبر نیست.' };
   }

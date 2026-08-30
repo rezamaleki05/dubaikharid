@@ -77,6 +77,7 @@ export default function ProductPage({ params }) {
   };
 
   const handleDirectPayment = () => {
+    if (product?.inStock === false) return;
     if (product.colors && !selectedColor) {
       setWarningMessage('لطفاً رنگ مورد نظر خود را انتخاب کنید.');
       setShowWarning(true);
@@ -279,6 +280,7 @@ export default function ProductPage({ params }) {
   }
 
   const handleAddToCart = () => {
+    if (product?.inStock === false) return;
     // Validate selections if color/size options are present
     if (product.colors && !selectedColor) {
       setWarningMessage('لطفاً رنگ مورد نظر خود را انتخاب کنید.');
@@ -487,16 +489,18 @@ export default function ProductPage({ params }) {
                       type="button"
                       className={styles.addToCartBtn}
                       onClick={handleAddToCart}
-                      style={{ flex: 1 }}
+                      disabled={product.inStock === false}
+                      style={{ flex: 1, opacity: product.inStock === false ? 0.55 : 1, cursor: product.inStock === false ? 'not-allowed' : 'pointer' }}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                      افزودن به سبد خرید
+                      {product.inStock === false ? 'ناموجود' : 'افزودن به سبد خرید'}
                     </button>
                     <button 
                       type="button"
                       className={styles.addToCartBtn}
                       onClick={handleDirectPayment}
-                      style={{ background: '#2ecc71', color: '#fff', flex: 1 }}
+                      disabled={product.inStock === false}
+                      style={{ background: '#2ecc71', color: '#fff', flex: 1, opacity: product.inStock === false ? 0.55 : 1, cursor: product.inStock === false ? 'not-allowed' : 'pointer' }}
                     >
                       <MinimalIcon name="creditCard" size={20} /> پرداخت آنلاین
                     </button>

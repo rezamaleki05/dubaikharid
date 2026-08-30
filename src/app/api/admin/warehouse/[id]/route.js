@@ -10,11 +10,12 @@ import {
 } from '@/lib/adminWarehouse';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { prisma } from '@/lib/prisma';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 function validId(id) { return typeof id === 'string' && id.length > 0 && id.length <= 128; }
 function errorResponse(error) {
   if (error instanceof WarehouseDomainError) return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
-  if (error?.code === 'P2002') return NextResponse.json({ error: 'SKU یا محصول مرتبط تکراری است.' }, { status: 409 });
+  if (error?.code === 'P2002') return NextResponse.json({ error: 'SKU، نامک عمومی یا محصول مرتبط تکراری است.' }, { status: 409 });
   console.error('Warehouse item operation failed:', error);
   return NextResponse.json({ error: 'عملیات کالای انبار با خطا مواجه شد.' }, { status: 500 });
 }
@@ -52,6 +53,7 @@ export async function PATCH(request, { params }) {
       metadata: { changedFields: [...Object.keys(validated.data), ...Object.keys(validated.relations)] },
       request,
     });
+    revalidatePublicCatalog();
     return NextResponse.json(serializeWarehouseItem(item));
   } catch (error) { return errorResponse(error); }
 }

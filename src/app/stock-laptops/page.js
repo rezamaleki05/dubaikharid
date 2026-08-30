@@ -67,6 +67,7 @@ export default function StockLaptopsPage() {
           <div className={styles.brandName}>{product.brand}</div>
           <div className={styles.productName}>{product.name}</div>
           <div className={styles.productSpec}>{product.spec}</div>
+          <div className={styles.productSpec}>{product.availableCount > 1 ? `${product.availableCount} واحد مشابه موجود` : 'یک واحد موجود'}</div>
           <div className={styles.priceRow}>
             <span className={styles.priceToman}>{fmtToman(tomanPrice)} تومان</span>
           </div>

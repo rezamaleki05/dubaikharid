@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { serializePublicLaptop } from '@/lib/adminLaptops';
 import { prisma } from '@/lib/prisma';
+import { countAvailableLaptopGroups, laptopSpecGroupKey } from '@/lib/laptopCatalog';
 
 function positiveInteger(value, fallback, maximum) {
   if (value === null) return fallback;
@@ -16,12 +17,17 @@ export async function GET(request) {
   if (!page || !limit) return NextResponse.json({ error: 'پارامترهای صفحه‌بندی معتبر نیستند.' }, { status: 400 });
   const where = { status: 'AVAILABLE', archivedAt: null };
   try {
-    const [laptops, total] = await Promise.all([
+    const [laptops, total, availableUnits] = await Promise.all([
       prisma.laptop.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }),
       prisma.laptop.count({ where }),
+      prisma.laptop.findMany({
+        where: { ...where, reservedOrderId: null },
+        select: { brand: true, model: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
+      }),
     ]);
+    const groupCounts = countAvailableLaptopGroups(availableUnits);
     return NextResponse.json({
-      data: laptops.map(serializePublicLaptop),
+      data: laptops.map(laptop => ({ ...serializePublicLaptop(laptop), availableCount: groupCounts.get(laptopSpecGroupKey(laptop)) || 0 })),
       pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
     });
   } catch (error) {

@@ -126,8 +126,8 @@ test('10. extraction failure remains compatible with later manual pricing', () =
   assert.match(purchaseRoute, /priceAed: body\.priceAed/);
 });
 
-test('11. catalog and laptop-stock checkouts create confirmed-price pending Orders', () => {
-  assert.match(publicOrders, /type: hasLaptop \? 'LAPTOP_STOCK' : 'CATALOG_PRODUCT'/);
+test('11. catalog, laptop-stock, and warehouse-stock checkouts create confirmed-price pending Orders', () => {
+  assert.match(publicOrders, /type: hasLaptop \? 'LAPTOP_STOCK' : hasWarehouse \? 'WAREHOUSE_STOCK' : 'CATALOG_PRODUCT'/);
   assert.match(publicOrders, /pricingStatus: 'CONFIRMED',[\s\S]*?status: 'pending'/);
   assert.match(publicOrders, /payments: \{ create: \{[\s\S]*?status: 'pending'/);
 });

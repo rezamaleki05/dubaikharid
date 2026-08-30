@@ -3,6 +3,7 @@ import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import {
   assertLaptopTransition,
+  assertLaptopCatalogSelection,
   isValidLaptopId,
   LaptopDomainError,
   serializeLaptop,
@@ -50,6 +51,14 @@ export async function PATCH(request, { params }) {
       const previous = await tx.laptop.findUnique({ where: { id } });
       if (!previous) throw new LaptopDomainError('لپ‌تاپ پیدا نشد.', 404, 'LAPTOP_NOT_FOUND');
       const nextStatus = validated.data.status;
+      const brandChanged = validated.data.brand && validated.data.brand.trim().toLowerCase() !== String(previous.brand || '').trim().toLowerCase();
+      const modelChanged = validated.data.model && validated.data.model.trim().toLowerCase() !== String(previous.model || '').trim().toLowerCase();
+      if (brandChanged || modelChanged) {
+        await assertLaptopCatalogSelection(tx, {
+          brandName: validated.data.brand || previous.brand,
+          modelName: validated.data.model || previous.model,
+        });
+      }
       assertLaptopTransition(previous.status, nextStatus);
       const data = {
         ...validated.data,

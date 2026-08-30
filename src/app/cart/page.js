@@ -38,6 +38,7 @@ export default function CartPage() {
   const savingsToman = originalSubtotalToman - discountedSubtotalToman;
   
   const subtotalAed = billableItems.reduce((acc, item) => {
+    if (item.type !== 'PRODUCT') return acc;
     const finalPriceAed = item.discountPercent && item.discountPercent > 0
       ? item.priceAed * (1 - item.discountPercent / 100)
       : item.priceAed;
@@ -76,6 +77,7 @@ export default function CartPage() {
         type: item.type,
         ...(item.type === 'LAPTOP' ? { laptopId: item.id } : {}),
         ...(item.type === 'PRODUCT' ? { productId: item.id } : {}),
+        ...(item.type === 'WAREHOUSE' ? { warehouseItemId: item.id } : {}),
         product_type: item.product_type,
         link: item.originalLink || item.link || '',
         weight: item.weight,
@@ -85,6 +87,7 @@ export default function CartPage() {
         color: item.selectedColor || '',
         size: item.selectedSize || '',
         priceAed: item.priceAed,
+        priceToman: item.priceToman,
         discountPercent: item.discountPercent || 0
       }))
     };

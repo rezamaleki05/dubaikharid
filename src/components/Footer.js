@@ -47,6 +47,7 @@ export default function Footer() {
                   <li><Link href="/about">درباره دبی خرید</Link></li>
                   <li><Link href="/brands">برندها و فروشگاه‌های قابل بررسی</Link></li>
                   <li><Link href="/stock-laptops">لپ‌تاپ‌های استوک موجود</Link></li>
+                  <li><Link href="/warehouse">کالاهای موجود و آماده ارسال</Link></li>
                   <li><Link href="/buy-from-dubai#stores">سفارش از سایت‌های امارات</Link></li>
                 </ul>
               </div>

@@ -19,6 +19,25 @@ export class LaptopDomainError extends Error {
   }
 }
 
+export async function assertLaptopCompatibleBrand(client, brandName) {
+  const brand = await client.brand.findFirst({
+    where: { name: { equals: String(brandName || '').trim(), mode: 'insensitive' }, supportsLaptop: true },
+    select: { id: true, name: true },
+  });
+  if (!brand) throw new LaptopDomainError('برند انتخاب‌شده برای Laptop Stock فعال نیست.', 409, 'LAPTOP_BRAND_REQUIRED');
+  return brand;
+}
+
+export async function assertLaptopCatalogSelection(client, { brandName, modelName }) {
+  const brand = await assertLaptopCompatibleBrand(client, brandName);
+  const model = await client.laptopModel.findFirst({
+    where: { brandId: brand.id, name: { equals: String(modelName || '').trim(), mode: 'insensitive' }, active: true },
+    select: { id: true, name: true },
+  });
+  if (!model) throw new LaptopDomainError('مدل انتخاب‌شده برای این برند ثبت نشده است.', 409, 'LAPTOP_MODEL_REQUIRED');
+  return { brand, model };
+}
+
 function hasOwn(body, key) {
   return Object.prototype.hasOwnProperty.call(body, key);
 }
@@ -240,6 +259,7 @@ export function serializeLaptop(laptop) {
 
 export function serializePublicLaptop(laptop) {
   const serialized = serializeLaptop(laptop);
+  const inStock = laptop.status === 'AVAILABLE' && !laptop.archivedAt && !laptop.reservedOrderId && Number(laptop.priceToman) > 0;
   return {
     id: serialized.id,
     name: serialized.name,
@@ -262,5 +282,7 @@ export function serializePublicLaptop(laptop) {
     colors: serialized.colors,
     sizes: serialized.sizes,
     spec: serialized.spec,
+    inStock,
+    available: inStock,
   };
 }

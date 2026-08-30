@@ -48,8 +48,9 @@ export async function POST(request) {
   try {
     const items = parseItems(body);
     const productIds = [...new Set(items.filter(item => item.type === 'PRODUCT').map(item => item.id))];
+    const warehouseIds = [...new Set(items.filter(item => item.type === 'WAREHOUSE').map(item => item.id))];
     const laptopIds = [...new Set(items.filter(item => item.type === 'LAPTOP').map(item => item.id))];
-    const [products, laptops] = await Promise.all([
+    const [products, warehouseItems, laptops] = await Promise.all([
       productIds.length ? prisma.product.findMany({
         where: { id: { in: productIds } },
         select: {
@@ -58,6 +59,15 @@ export async function POST(request) {
           brand: { select: { name: true, faName: true } },
           store: { select: { name: true } },
           warehouseItem: { select: { stock: true, reserved: true, isArchived: true } },
+        },
+      }) : [],
+      warehouseIds.length ? prisma.warehouseItem.findMany({
+        where: { id: { in: warehouseIds } },
+        select: {
+          id: true, name: true, publicNameEn: true, price: true, stock: true, reserved: true, image: true,
+          discountPercent: true, hasDiscount: true, isPublished: true, isArchived: true,
+          brand: { select: { name: true, faName: true } },
+          category: { select: { name: true, query: true } },
         },
       }) : [],
       laptopIds.length ? prisma.laptop.findMany({
@@ -69,10 +79,15 @@ export async function POST(request) {
       }) : [],
     ]);
     const productsById = new Map(products.map(product => [product.id, product]));
+    const warehouseById = new Map(warehouseItems.map(item => [item.id, item]));
     const laptopsById = new Map(laptops.map(laptop => [laptop.id, laptop]));
     const requestedByProduct = new Map();
     for (const item of items.filter(candidate => candidate.type === 'PRODUCT')) {
       requestedByProduct.set(item.id, (requestedByProduct.get(item.id) || 0) + item.quantity);
+    }
+    const requestedByWarehouse = new Map();
+    for (const item of items.filter(candidate => candidate.type === 'WAREHOUSE')) {
+      requestedByWarehouse.set(item.id, (requestedByWarehouse.get(item.id) || 0) + item.quantity);
     }
 
     const resolved = items.map(item => {
@@ -100,6 +115,32 @@ export async function POST(request) {
           weight: product.weight,
           discountPercent: product.hasDiscount ? product.discountPercent : 0,
           productId: product.id,
+        };
+      }
+      if (item.type === 'WAREHOUSE') {
+        const warehouse = warehouseById.get(item.id);
+        if (!warehouse) return { ...item, available: false, authoritative: true, code: 'NOT_FOUND' };
+        const availableQuantity = Math.max(0, warehouse.stock - warehouse.reserved);
+        const available = warehouse.isPublished && !warehouse.isArchived && availableQuantity >= requestedByWarehouse.get(item.id);
+        const discountPercent = warehouse.hasDiscount ? warehouse.discountPercent : 0;
+        const finalPriceToman = discountPercent > 0 ? Math.round(warehouse.price * (1 - discountPercent / 100)) : warehouse.price;
+        return {
+          ...item,
+          available,
+          availableQuantity,
+          authoritative: true,
+          code: !warehouse.isPublished || warehouse.isArchived ? 'INACTIVE' : available ? null : 'OUT_OF_STOCK',
+          name: warehouse.name,
+          nameFa: warehouse.name,
+          nameEn: warehouse.publicNameEn || '',
+          brand: warehouse.brand?.faName || warehouse.brand?.name || '',
+          store: 'موجودی دبی خرید',
+          spec: warehouse.category?.name || 'موجود در انبار',
+          image: warehouse.image || '',
+          priceToman: warehouse.price,
+          finalPriceToman,
+          discountPercent,
+          warehouseItemId: warehouse.id,
         };
       }
       const laptop = laptopsById.get(item.id);

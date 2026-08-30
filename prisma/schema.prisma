@@ -22,6 +22,7 @@ enum OrderStatus {
 enum OrderType {
   EXTERNAL_PURCHASE
   CATALOG_PRODUCT
+  WAREHOUSE_STOCK
   LAPTOP_STOCK
   MANUAL_ADMIN
 }
@@ -185,6 +186,11 @@ model WarehouseItem {
   categoryId      String?
   categoryKey     String?
   productId       String?  @unique
+  slug            String?  @unique
+  publicNameEn    String?
+  description     String?
+  isPublished     Boolean  @default(false)
+  publishedAt     DateTime?
   gender          String?
   sku             String?  @unique
   price           Float
@@ -205,12 +211,14 @@ model WarehouseItem {
   product   Product?            @relation(fields: [productId], references: [id], onDelete: SetNull)
   movements InventoryMovement[]
   notes     WarehouseNote[]
+  orderItems OrderItem[]
 
   @@index([isArchived, createdAt])
   @@index([brandId])
   @@index([categoryId])
   @@index([categoryKey])
   @@index([stock])
+  @@index([isPublished, isArchived, createdAt])
 }
 
 model InventoryMovement {
@@ -408,6 +416,7 @@ model OrderItem {
   priceToman    Float?
   productId     String?
   laptopId      String?
+  warehouseItemId String?
   selectedColor String?
   selectedSize  String?
   weight        Float?
@@ -415,9 +424,11 @@ model OrderItem {
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
   product Product? @relation(fields: [productId], references: [id], onDelete: Restrict)
   laptop  Laptop?  @relation(fields: [laptopId], references: [id], onDelete: Restrict)
+  warehouseItem WarehouseItem? @relation(fields: [warehouseItemId], references: [id], onDelete: Restrict)
 
   @@index([productId])
   @@index([laptopId])
+  @@index([warehouseItemId])
 }
 
 model Payment {
@@ -502,10 +513,26 @@ model Brand {
   fallback             String?
   hasImage             Boolean @default(false)
   showInBrandDirectory Boolean @default(true)
+  supportsLaptop       Boolean @default(false)
 
   products         Product[]
   warehouseItems   WarehouseItem[]
   categoryMappings BrandCategory[]
+  laptopModels     LaptopModel[]
+}
+
+model LaptopModel {
+  id        String   @id @default(cuid())
+  brandId   String
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, name])
+  @@index([brandId, active])
 }
 
 model Store {

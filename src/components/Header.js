@@ -251,6 +251,7 @@ export default function Header() {
             <li><Link href="/" aria-current={isActive('/') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/') ? styles.navActive : ''}>صفحه اصلی</Link></li>
             <li><Link href="/brands" aria-current={isActive('/brands') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/brands') ? styles.navActive : ''}>برندها</Link></li>
             <li><Link href="/stock-laptops" aria-current={isActive('/stock-laptops') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/stock-laptops') ? styles.navActive : ''}>لپتاپ استوک</Link></li>
+            <li><Link href="/warehouse" aria-current={isActive('/warehouse') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/warehouse') ? styles.navActive : ''}>موجودی آماده</Link></li>
             <li className={styles.navDropdown}>
               <Link href="/men" aria-current={isActive('/men') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/men') ? styles.navActive : ''}>مردانه</Link>
               <div className={styles.dropdownBridge}>

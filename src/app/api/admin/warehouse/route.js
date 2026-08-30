@@ -3,6 +3,8 @@ import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import {
   adminWarehouseInclude,
+  assertNotLaptopWarehouseItem,
+  assertPublishableWarehouseItem,
   resolveWarehouseRelations,
   serializeMovement,
   serializeWarehouseItem,
@@ -11,6 +13,7 @@ import {
 } from '@/lib/adminWarehouse';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { prisma } from '@/lib/prisma';
+import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
 function parsePositiveInteger(value, fallback, maximum = Number.MAX_SAFE_INTEGER) {
   if (value === null) return fallback;
@@ -24,7 +27,7 @@ function warehouseErrorResponse(error, fallback) {
     return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
   }
   if (error?.code === 'P2002') {
-    return NextResponse.json({ error: 'کالایی با این SKU یا محصول مرتبط قبلاً ثبت شده است.' }, { status: 409 });
+    return NextResponse.json({ error: 'کالایی با این SKU، نامک عمومی یا محصول مرتبط قبلاً ثبت شده است.' }, { status: 409 });
   }
   console.error(fallback, error);
   return NextResponse.json({ error: 'عملیات انبار با خطا مواجه شد.' }, { status: 500 });
@@ -148,7 +151,14 @@ export async function POST(request) {
   try {
     const item = await prisma.$transaction(async tx => {
       const relationData = await resolveWarehouseRelations(tx, validated.relations);
-      const created = await tx.warehouseItem.create({ data: { ...validated.data, ...relationData } });
+      const createData = {
+        ...validated.data,
+        ...relationData,
+        ...(validated.data.isPublished ? { publishedAt: new Date() } : {}),
+      };
+      assertNotLaptopWarehouseItem({ name: createData.name, categoryKey: createData.categoryKey });
+      assertPublishableWarehouseItem(createData);
+      const created = await tx.warehouseItem.create({ data: createData });
       await tx.inventoryMovement.create({ data: {
         warehouseItemId: created.id,
         type: 'INITIAL_STOCK',
@@ -170,6 +180,7 @@ export async function POST(request) {
       metadata: { sku: item.sku, initialStock: item.stock, reserved: item.reserved },
       request,
     });
+    revalidatePublicCatalog();
     return NextResponse.json(serializeWarehouseItem(item), { status: 201 });
   } catch (error) {
     return warehouseErrorResponse(error, 'Error creating warehouse item:');

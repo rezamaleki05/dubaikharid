@@ -5,32 +5,7 @@ import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
-
-const DEFAULT_BRANDS_SEED = [
-  { id: 'gucci', name: 'Gucci', faName: 'گوچی', cat: 'مد و پوشاک', hasImage: false, fallback: 'GUCCI', url: 'https://www.gucci.com/ae/en/' },
-  { id: 'lv', name: 'Louis Vuitton', faName: 'لویی ویتون', cat: 'مد و پوشاک', hasImage: false, fallback: 'LV', url: 'https://ae.louisvuitton.com/eng-ae/homepage' },
-  { id: 'chanel', name: 'Chanel', faName: 'شنل', cat: 'مد و پوشاک', hasImage: false, fallback: 'CHANEL', url: 'https://www.chanel.com/ae/' },
-  { id: 'prada', name: 'Prada', faName: 'پرادا', cat: 'کیف و کفش', hasImage: false, fallback: 'PRADA', url: 'https://www.prada.com/ae/en.html' },
-  { id: 'dior', name: 'Dior', faName: 'دیور', cat: 'مد و پوشاک', hasImage: false, fallback: 'DIOR', url: 'https://www.dior.com/en_ae' },
-  { id: 'hermes', name: 'Hermès', faName: 'هرمس', cat: 'کیف و کفش', hasImage: false, fallback: 'HERMÈS', url: 'https://www.hermes.com/ae/en/' },
-  { id: 'aldo', name: 'Aldo', faName: 'آلدو', cat: 'کیف و کفش', hasImage: true, img: '/images/logo/aldo.png', url: 'https://aldoshoes.me/ae/en/' },
-  { id: 'rolex', name: 'Rolex', faName: 'رولکس', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'ROLEX', url: 'https://www.rolex.com' },
-  { id: 'cartier', name: 'Cartier', faName: 'کارتیر', cat: 'ساعت و اکسسوری', hasImage: false, fallback: 'Cartier', url: 'https://www.cartier.ae/en-ae' },
-  { id: 'burberry', name: 'Burberry', faName: 'بربری', cat: 'مد و پوشاک', hasImage: false, fallback: 'BURBERRY', url: 'https://ae.burberry.com' },
-  { id: 'fendi', name: 'Fendi', faName: 'فندی', cat: 'مد و پوشاک', hasImage: false, fallback: 'FENDI', url: 'https://www.fendi.com/ae-en/' },
-  { id: 'balenciaga', name: 'Balenciaga', faName: 'بالنسیاگا', cat: 'مد و پوشاک', hasImage: false, fallback: 'BALENCIAGA', url: 'https://www.balenciaga.com/en-ae' },
-  { id: 'saintlaurent', name: 'Saint Laurent', faName: 'سن لورن', cat: 'مد و پوشاک', hasImage: false, fallback: 'YSL', url: 'https://www.ysl.com/en-ae' },
-  { id: 'nike', name: 'Nike', faName: 'نایک نایکی', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/NIKE.svg', url: 'https://www.nike.com/ae/' },
-  { id: 'adidas', name: 'Adidas', faName: 'آدیداس ادیداس', cat: 'ورزشی ( اسپورت )', hasImage: true, img: '/images/logo/adidas.png', url: 'https://www.adidas.ae' },
-  { id: 'shein', name: 'Shein', faName: 'شی این', cat: 'مد و پوشاک', hasImage: true, img: '/images/logo/Shein.png', url: 'https://m.shein.com/ae' },
-  { id: 'apple', name: 'Apple', faName: 'اپل', cat: 'تکنولوژی', hasImage: false, fallback: '', url: 'https://www.apple.com/ae/' },
-  { id: 'samsung', name: 'Samsung', faName: 'سامسونگ', cat: 'تکنولوژی', hasImage: false, fallback: 'SAMSUNG', url: 'https://www.samsung.com/ae/' },
-  { id: 'sephora', name: 'Sephora', faName: 'سفورا', cat: 'عطر و آرایشی', hasImage: false, fallback: 'SEPHORA', url: 'https://www.sephora.ae' },
-  { id: 'dyson', name: 'Dyson', faName: 'دایسون', cat: 'خانه و دکوراسیون', hasImage: false, fallback: 'dyson', url: 'https://www.dyson.ae/en-AE' },
-  { id: 'zara', name: 'Zara', faName: 'زارا', cat: 'مد و پوشاک', hasImage: false, fallback: 'ZARA', url: 'https://www.zara.com/ae/en/' },
-  { id: 'mango', name: 'Mango', faName: 'مانگو', cat: 'مد و پوشاک', hasImage: false, fallback: 'MANGO', url: 'https://shop.mango.com/ae' },
-  { id: 'hm', name: 'H&M', faName: 'اچ اند ام', cat: 'مد و پوشاک', hasImage: false, fallback: 'H&M', url: 'https://ae.hm.com/en/' }
-];
+import { duplicateLaptopForm } from '@/lib/laptopCatalog';
 
 function StockLaptopsContent() {
   const { settings } = useSiteSettings();
@@ -46,13 +21,7 @@ function StockLaptopsContent() {
   const [laptopFilterBrands, setLaptopFilterBrands] = useState([]);
 
   // Dynamic Options states for brand-filtered models, CPUs, and GPUs
-  const [modelsByBrand, setModelsByBrand] = useState({
-    Apple: ['MacBook Air M2', 'MacBook Pro M3', 'MacBook Air M1', 'MacBook Pro 16"'],
-    Dell: ['Dell XPS 13 9315', 'Dell Latitude 5430', 'Dell Inspiron 15', 'Dell G15 Gaming'],
-    Lenovo: ['ThinkPad T14', 'ThinkPad X1 Carbon', 'Yoga Slim 7', 'Legion 5'],
-    HP: ['HP Spectre x360', 'HP Pavilion 15', 'HP EliteBook 840', 'HP Omen 16'],
-    ASUS: ['ASUS ROG Zephyrus', 'ASUS ZenBook 14', 'ASUS VivoBook 15', 'ASUS TUF Gaming']
-  });
+  const [modelsByBrand, setModelsByBrand] = useState({});
 
   const [cpuOptions, setCpuOptions] = useState([
     'Apple M2', 'Apple M3', 'Intel Core i5', 'Intel Core i7', 'Intel Core i9', 'AMD Ryzen 7', 'AMD Ryzen 9'
@@ -171,14 +140,25 @@ function StockLaptopsContent() {
   }, [laptopBrandFilter, laptopCpuFilter, laptopRamFilter, laptopSearchQuery, laptopStatusFilter, laptopsPage]);
 
   useEffect(() => {
-    fetch('/api/admin/brands')
+    fetch('/api/admin/laptop-catalog')
       .then(response => response.json())
-      .then(data => {
-        setBrands(Array.isArray(data) && data.length > 0 ? data : DEFAULT_BRANDS_SEED);
+      .then(payload => {
+        if (!Array.isArray(payload.data)) throw new Error(payload.error || 'دریافت برندهای لپ‌تاپ ناموفق بود.');
+        setBrands(payload.data);
+        setModelsByBrand(Object.fromEntries(payload.data.map(brand => [brand.name, brand.laptopModels.map(model => model.name)])));
+        if (payload.data.length > 0) {
+          setLaptopForm(current => {
+            const currentBrand = payload.data.find(brand => brand.name === current.brand);
+            const brand = currentBrand || payload.data[0];
+            const models = brand.laptopModels.map(model => model.name);
+            return { ...current, brand: brand.name, model: models.includes(current.model) ? current.model : (models[0] || '') };
+          });
+        }
       })
       .catch(error => {
         console.error('Error fetching brands:', error);
-        setBrands(DEFAULT_BRANDS_SEED);
+        setBrands([]);
+        setModelsByBrand({});
       });
   }, []);
 
@@ -312,6 +292,14 @@ function StockLaptopsContent() {
   // Triggers adding a fresh new laptop uploader form
   const triggerAddLaptop = () => {
     resetLaptopForm();
+    setEditingLaptopId(null);
+    setLaptopViewMode('add');
+  };
+
+  const triggerDuplicateLaptop = (laptop) => {
+    const duplicate = duplicateLaptopForm(laptop);
+    setLaptopForm({ ...emptyLaptopForm(), ...duplicate });
+    setLaptopImages(Array.isArray(duplicate.images) ? duplicate.images : (laptop.image ? [laptop.image] : []));
     setEditingLaptopId(null);
     setLaptopViewMode('add');
   };
@@ -623,6 +611,11 @@ function StockLaptopsContent() {
                               <div style={{ fontSize: '10.5px', fontWeight: '300', color: '#8b92a5', marginTop: '4px' }}>
                                 رم: {parsedSpecs.ram}GB | حافظه: {parsedSpecs.storageSize}{parsedSpecs.storageType}
                               </div>
+                              {laptop.groupAvailableCount > 0 && (
+                                <div style={{ fontSize: '10px', color: '#f87820', marginTop: '4px' }}>
+                                  {laptop.groupAvailableCount.toLocaleString('fa-IR')} واحد موجود با مشخصات یکسان
+                                </div>
+                              )}
                             </td>
                             <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#c4c8d4' }}>{parsedSpecs.cpu}</td>
                             <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#8b92a5' }}>{parsedSpecs.gpu}</td>
@@ -654,6 +647,14 @@ function StockLaptopsContent() {
                                   title="ویرایش"
                                 >
                                   {AdminIcons.edit(13)}
+                                </button>
+                                <button
+                                  onClick={() => triggerDuplicateLaptop(laptop)}
+                                  className={styles.laptopIconButton}
+                                  style={{ background: 'transparent', border: 'none', color: '#c4c8d4', cursor: 'pointer', fontSize: '13px' }}
+                                  title="تکثیر واحد با شماره سریال و کد داخلی جدید"
+                                >
+                                  {AdminIcons.plus(13)}
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteLaptop(laptop.id)}
@@ -930,7 +931,7 @@ function StockLaptopsContent() {
                     </div>
 
                     {/* Footer action buttons */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '8px', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '15px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: '8px', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '15px' }}>
                       <button 
                         onClick={() => alert('دستور چاپ برچسب بارکد برای پرینتر انبار ارسال شد.')}
                         className={styles.cancelFormBtn}
@@ -944,6 +945,13 @@ function StockLaptopsContent() {
                         style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', borderRadius: '8px', color: '#fff', justifyContent: 'center', fontWeight: 'bold' }}
                       >
                         {AdminIcons.edit(13)} ویرایش
+                      </button>
+                      <button
+                        onClick={() => triggerDuplicateLaptop(selectedLaptop)}
+                        className={styles.cancelFormBtn}
+                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(248,120,32,0.25)', borderRadius: '8px', color: '#f87820', justifyContent: 'center' }}
+                      >
+                        {AdminIcons.plus(12)} تکثیر واحد
                       </button>
                       <button 
                         onClick={() => handleDeleteLaptop(selectedLaptop.id)}
@@ -1192,21 +1200,33 @@ function StockLaptopsContent() {
                           e.target.blur();
                         }
                       }}
-                      onBlur={() => {
+                      onBlur={async () => {
                         if (customModel.trim()) {
                           const trimmed = customModel.trim();
-                          setModelsByBrand(prev => {
-                            const currentList = prev[laptopForm.brand] || [];
-                            if (!currentList.includes(trimmed)) {
-                              return {
-                                ...prev,
-                                [laptopForm.brand]: [...currentList, trimmed]
-                              };
-                            }
-                            return prev;
-                          });
-                          setLaptopForm(prev => ({ ...prev, model: trimmed }));
-                          setShowCustomModelInput(false);
+                          const brand = brands.find(item => item.name === laptopForm.brand);
+                          if (!brand) {
+                            alert('ابتدا یک برند معتبر لپ‌تاپ انتخاب کنید.');
+                            return;
+                          }
+                          try {
+                            const response = await fetch('/api/admin/laptop-catalog', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ brandId: brand.id, name: trimmed }),
+                            });
+                            const payload = await response.json();
+                            if (!response.ok) throw new Error(payload.error || 'ثبت مدل لپ‌تاپ ناموفق بود.');
+                            setModelsByBrand(prev => {
+                              const currentList = prev[laptopForm.brand] || [];
+                              return currentList.includes(payload.data.name)
+                                ? prev
+                                : { ...prev, [laptopForm.brand]: [...currentList, payload.data.name] };
+                            });
+                            setLaptopForm(prev => ({ ...prev, model: payload.data.name }));
+                            setShowCustomModelInput(false);
+                          } catch (error) {
+                            alert(error.message || 'ثبت مدل لپ‌تاپ ناموفق بود.');
+                          }
                         } else {
                           setShowCustomModelInput(false);
                           setLaptopForm(prev => ({ ...prev, model: modelsByBrand[laptopForm.brand]?.[0] || '' }));

@@ -1,5 +1,6 @@
 import 'server-only';
 import { canTransitionOrder } from '@/lib/orderStatuses';
+import { fulfillWarehouseQuantity, releaseWarehouseQuantity } from '@/lib/warehouseSales';
 
 export { ORDER_STATUSES, ORDER_STATUS_SET } from '@/lib/orderStatuses';
 
@@ -30,6 +31,7 @@ export const adminOrderInclude = Object.freeze({
       priceToman: true,
       productId: true,
       laptopId: true,
+      warehouseItemId: true,
     },
   },
   payments: {
@@ -143,9 +145,10 @@ export async function updateOrderLifecycle(tx, id, data) {
       if (!amount) continue;
       const warehouse = await tx.warehouseItem.findUnique({ where: { id: warehouseItemId } });
       if (!warehouse) continue;
-      const reservedAfter = Math.max(0, warehouse.reserved - amount);
-      await tx.warehouseItem.update({ where: { id: warehouse.id }, data: { reserved: reservedAfter } });
-      await tx.inventoryMovement.create({ data: { warehouseItemId: warehouse.id, type: 'ORDER_RELEASE', quantityChange: 0, quantityBefore: warehouse.stock, quantityAfter: warehouse.stock, reservedBefore: warehouse.reserved, reservedAfter, reason: `آزادسازی رزرو سفارش ${current.orderCode}`, orderId: id } });
+      const released = releaseWarehouseQuantity(warehouse, amount);
+      if (!released) throw new OrderDomainError('موجودی رزروشده سفارش ناسازگار است.', 409, 'INVENTORY_CONFLICT');
+      await tx.warehouseItem.update({ where: { id: warehouse.id }, data: { reserved: released.reserved } });
+      await tx.inventoryMovement.create({ data: { warehouseItemId: warehouse.id, type: 'ORDER_RELEASE', quantityChange: 0, quantityBefore: warehouse.stock, quantityAfter: warehouse.stock, reservedBefore: warehouse.reserved, reservedAfter: released.reserved, reason: `آزادسازی رزرو سفارش ${current.orderCode}`, orderId: id } });
     }
   }
 
@@ -168,7 +171,8 @@ export async function fulfillOrderWarehouseReservations(tx, orderId, knownOrderC
   for (const [warehouseItemId, amount] of reservations) {
     if (!amount) continue;
     const warehouse = await tx.warehouseItem.findUnique({ where: { id: warehouseItemId } });
-    if (!warehouse || warehouse.stock < amount || warehouse.reserved < amount) throw new OrderDomainError('موجودی رزروشده سفارش ناسازگار است.', 409, 'INVENTORY_CONFLICT');
+    const fulfilled = fulfillWarehouseQuantity(warehouse, amount);
+    if (!fulfilled) throw new OrderDomainError('موجودی رزروشده سفارش ناسازگار است.', 409, 'INVENTORY_CONFLICT');
     const updated = await tx.warehouseItem.update({ where: { id: warehouse.id }, data: { stock: { decrement: amount }, reserved: { decrement: amount } } });
     await tx.inventoryMovement.create({ data: { warehouseItemId: warehouse.id, type: 'ORDER_FULFILLMENT', quantityChange: -amount, quantityBefore: warehouse.stock, quantityAfter: updated.stock, reservedBefore: warehouse.reserved, reservedAfter: updated.reserved, reason: `خروج قطعی سفارش ${order?.orderCode || orderId}`, orderId } });
   }

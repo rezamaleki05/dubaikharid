@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { randomUUID } from 'node:crypto';
+import { slugifyProductName } from '@/lib/adminProducts';
 
 const MAX_IMAGE_LENGTH = 2_800_000;
 const MAX_RETRIES = 4;
@@ -37,8 +38,27 @@ export const adminWarehouseInclude = Object.freeze({
 const EDITABLE_FIELDS = new Set([
   'name', 'brandId', 'brand', 'categoryId', 'category', 'productId', 'sku', 'price',
   'stock', 'reserved', 'minStock', 'location', 'image', 'gender', 'isBestSeller',
-  'hasDiscount', 'discountPercent', 'isArchived',
+  'hasDiscount', 'discountPercent', 'isArchived', 'slug', 'publicNameEn', 'description',
+  'isPublished',
 ]);
+
+const LAPTOP_WAREHOUSE_PATTERN = /(?:لپ[\s‌-]*تاپ|laptop|notebook|macbook|thinkpad|latitude|precision|elitebook|probook|zenbook|vivobook|surface[\s-]*laptop|\bxps\b)/iu;
+const LAPTOP_ACCESSORY_PATTERN = /(?:کیف|کاور|پایه|شارژر|آداپتور|داک|باتری|کیبورد|محافظ|case|sleeve|bag|stand|charger|adapter|dock|battery|keyboard|protector)/iu;
+
+export function assertNotLaptopWarehouseItem({ name, categoryKey }) {
+  const normalizedName = String(name || '');
+  if (categoryKey === 'laptop' || (LAPTOP_WAREHOUSE_PATTERN.test(normalizedName) && !LAPTOP_ACCESSORY_PATTERN.test(normalizedName))) {
+    throw new WarehouseDomainError('لپ‌تاپ را از بخش Laptop Stock اضافه کنید.', 409, 'LAPTOP_STOCK_REQUIRED');
+  }
+}
+
+export function assertPublishableWarehouseItem(item) {
+  if (!item.isPublished) return;
+  if (!item.name || !item.slug || !item.categoryId || !item.image || !Number.isFinite(Number(item.price)) || Number(item.price) <= 0) {
+    throw new WarehouseDomainError('برای انتشار، نام، نامک، دسته‌بندی، تصویر و قیمت فروش معتبر الزامی است.', 409, 'PUBLIC_FIELDS_REQUIRED');
+  }
+  if (item.isArchived) throw new WarehouseDomainError('کالای بایگانی‌شده قابل انتشار نیست.', 409, 'ARCHIVED_ITEM');
+}
 
 function cleanOptionalString(value, maxLength) {
   if (value === null || value === undefined || value === '') return null;
@@ -108,6 +128,22 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
     }
   }
 
+  for (const [field, maximum] of [['publicNameEn', 240], ['description', 20_000]]) {
+    if (Object.hasOwn(body, field)) {
+      const value = cleanOptionalString(body[field], maximum);
+      if (body[field] && value === undefined) return { error: `${field} معتبر نیست.` };
+      data[field] = value;
+    }
+  }
+
+  if (Object.hasOwn(body, 'slug')) {
+    const value = cleanOptionalString(body.slug, 140);
+    if (body.slug && (!value || !/^[\p{Letter}\p{Number}]+(?:-[\p{Letter}\p{Number}]+)*$/u.test(value))) {
+      return { error: 'نامک عمومی کالا معتبر نیست.' };
+    }
+    data.slug = value?.toLowerCase() || null;
+  }
+
   if (Object.hasOwn(body, 'brandId')) {
     const value = cleanOptionalString(body.brandId, 128);
     if (value === undefined) return { error: 'برند انتخاب‌شده معتبر نیست.' };
@@ -154,7 +190,7 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
     }
   }
 
-  for (const field of ['isBestSeller', 'hasDiscount', 'isArchived']) {
+  for (const field of ['isBestSeller', 'hasDiscount', 'isArchived', 'isPublished']) {
     if (Object.hasOwn(body, field)) {
       if (typeof body[field] !== 'boolean') return { error: 'مقدار گزینه کالا معتبر نیست.' };
       data[field] = body[field];
@@ -169,10 +205,12 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
 
   if (!partial) {
     data.sku ||= createWarehouseSku();
+    data.slug ||= slugifyProductName(data.publicNameEn || data.name);
     data.isBestSeller ??= false;
     data.hasDiscount ??= false;
     data.discountPercent ??= 0;
     data.isArchived ??= false;
+    data.isPublished ??= false;
     if (data.reserved > data.stock) return { error: 'موجودی رزروشده نمی‌تواند بیشتر از موجودی فیزیکی باشد.' };
   }
 
@@ -245,6 +283,11 @@ export function serializeWarehouseItem(item) {
     categoryId: item.categoryId,
     categoryKey: item.categoryKey,
     productId: item.productId,
+    slug: item.slug,
+    publicNameEn: item.publicNameEn,
+    description: item.description,
+    isPublished: item.isPublished,
+    publishedAt: item.publishedAt?.toISOString() || null,
     gender: item.gender,
     sku: item.sku,
     price: item.price,
@@ -327,6 +370,11 @@ export async function updateWarehouseItem(prisma, { id, data, relations, adminId
     const current = await tx.warehouseItem.findUnique({ where: { id } });
     if (!current) throw new WarehouseDomainError('کالای انبار پیدا نشد.', 404, 'ITEM_NOT_FOUND');
     const relationData = await resolveWarehouseRelations(tx, relations);
+    const next = { ...current, ...data, ...relationData };
+    if (data.isPublished === true && !current.isPublished) next.publishedAt = new Date();
+    if (data.isPublished === false) next.publishedAt = null;
+    assertNotLaptopWarehouseItem({ name: next.name, categoryKey: next.categoryKey });
+    assertPublishableWarehouseItem(next);
     const stockAfter = Object.hasOwn(data, 'stock') ? data.stock : current.stock;
     const reservedAfter = Object.hasOwn(data, 'reserved') ? data.reserved : current.reserved;
     if (stockAfter < 0 || reservedAfter < 0 || reservedAfter > stockAfter) {
@@ -334,7 +382,7 @@ export async function updateWarehouseItem(prisma, { id, data, relations, adminId
     }
     const result = await tx.warehouseItem.updateMany({
       where: { id, stock: current.stock, reserved: current.reserved },
-      data: { ...data, ...relationData },
+      data: { ...data, ...relationData, ...(Object.hasOwn(next, 'publishedAt') ? { publishedAt: next.publishedAt } : {}) },
     });
     if (result.count !== 1) throw concurrentUpdateError();
 

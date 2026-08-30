@@ -125,7 +125,7 @@ export default function AdminWarehousePage() {
   const [isAddWarehouseOpen, setIsAddWarehouseOpen] = useState(false);
   const [isEditWarehouseOpen, setIsEditWarehouseOpen] = useState(false);
   const [editWarehouseForm, setEditWarehouseForm] = useState({
-    id: '', name: '', brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    id: '', name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   
   const [warehouseAdjustStockOpen, setWarehouseAdjustStockOpen] = useState(false);
@@ -138,7 +138,7 @@ export default function AdminWarehousePage() {
   const [warehouseReportOpen, setWarehouseReportOpen] = useState(false);
   const [activeWarehouseMenuId, setActiveWarehouseMenuId] = useState(null);
   const [addWarehouseForm, setAddWarehouseForm] = useState({
-    name: '', brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   const [warehousePage, setWarehousePage] = useState(1);
   const [warehouseLimit, setWarehouseLimit] = useState(10);
@@ -311,7 +311,7 @@ export default function AdminWarehousePage() {
       setSelectedWarehouseProductId(created.id);
       setIsAddWarehouseOpen(false);
       setAddWarehouseForm({
-        name: '', brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+        name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
       });
       setWarehousePage(1);
       await loadWarehouse();
@@ -333,6 +333,10 @@ export default function AdminWarehousePage() {
           sku: String(editWarehouseForm?.sku ?? ''), price, stock: Number(editWarehouseForm?.stock),
           reserved: Number(editWarehouseForm?.reserved), location: String(editWarehouseForm?.location ?? ''),
           minStock: Number(editWarehouseForm?.minStock), image: String(editWarehouseForm?.image ?? '') || null,
+          publicNameEn: String(editWarehouseForm?.publicNameEn ?? '') || null,
+          description: String(editWarehouseForm?.description ?? '') || null,
+          slug: String(editWarehouseForm?.slug ?? '') || null,
+          isPublished: Boolean(editWarehouseForm?.isPublished),
           isBestSeller: Boolean(editWarehouseForm?.isBestSeller), hasDiscount: Boolean(editWarehouseForm?.hasDiscount),
           discountPercent: Number(editWarehouseForm?.discountPercent) || 0,
         }),
@@ -1251,11 +1255,12 @@ export default function AdminWarehousePage() {
                         <option value="kids_clothing">پوشاک بچگانه</option>
                         <option value="kids_pants">شلوار و سرهمی بچگانه</option>
                         <option value="kids_shoes">کفش بچگانه</option>
-                        <option value="electronics">لپ‌تاپ و الکترونیک</option>
+                        <option value="electronics">الکترونیک غیرلپ‌تاپ</option>
                         <option value="bags">کیف و کوله عمومی</option>
                         <option value="watches_glasses">ساعت و عینک</option>
                         <option value="wallets_belts">کیف پول و کمربند</option>
                       </select>
+                      <div style={{ marginTop: '6px', color: '#f59e0b', fontSize: '10.5px' }}>لپ‌تاپ را فقط از بخش Laptop Stock اضافه کنید.</div>
                     </div>
                     <AdminBrandSelector
                       brands={safeBrands}
@@ -1335,6 +1340,21 @@ export default function AdminWarehousePage() {
                     </div>
                   </div>
 
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>نام انگلیسی / اصلی</label>
+                      <input value={addWarehouseForm.publicNameEn} onChange={e => setAddWarehouseForm(prev => ({ ...prev, publicNameEn: e.target.value }))} style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>نامک عمومی (اختیاری)</label>
+                      <input dir="ltr" value={addWarehouseForm.slug} onChange={e => setAddWarehouseForm(prev => ({ ...prev, slug: e.target.value }))} placeholder="auto-generated" style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>توضیحات عمومی کالا</label>
+                    <textarea rows="4" value={addWarehouseForm.description} onChange={e => setAddWarehouseForm(prev => ({ ...prev, description: e.target.value }))} style={{ width: '100%', padding: '10px 12px', resize: 'vertical', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px', fontFamily: 'inherit' }} />
+                  </div>
+
                   {/* Local Image Uploader */}
                   <div>
                     <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تصویر محصول</label>
@@ -1377,6 +1397,10 @@ export default function AdminWarehousePage() {
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
                     <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>تنظیمات نمایش در وبسایت</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={addWarehouseForm.isPublished} onChange={e => setAddWarehouseForm(prev => ({ ...prev, isPublished: e.target.checked }))} />
+                        انتشار مستقیم در فروشگاه — موجودی قابل فروش: {Math.max(0, Number(addWarehouseForm.stock || 0) - Number(addWarehouseForm.reserved || 0))}
+                      </label>
                       {/* isBestSeller */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddWarehouseForm(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}>
                         <div style={{
@@ -1504,11 +1528,12 @@ export default function AdminWarehousePage() {
                         <option value="kids_clothing">پوشاک بچگانه</option>
                         <option value="kids_pants">شلوار و سرهمی بچگانه</option>
                         <option value="kids_shoes">کفش بچگانه</option>
-                        <option value="electronics">لپ‌تاپ و الکترونیک</option>
+                        <option value="electronics">الکترونیک غیرلپ‌تاپ</option>
                         <option value="bags">کیف و کوله عمومی</option>
                         <option value="watches_glasses">ساعت و عینک</option>
                         <option value="wallets_belts">کیف پول و کمربند</option>
                       </select>
+                      <div style={{ marginTop: '6px', color: '#f59e0b', fontSize: '10.5px' }}>لپ‌تاپ را فقط از بخش Laptop Stock اضافه کنید.</div>
                     </div>
                     <AdminBrandSelector
                       brands={safeBrands}
@@ -1586,6 +1611,21 @@ export default function AdminWarehousePage() {
                     </div>
                   </div>
 
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>نام انگلیسی / اصلی</label>
+                      <input value={editWarehouseForm.publicNameEn || ''} onChange={e => setEditWarehouseForm(prev => ({ ...prev, publicNameEn: e.target.value }))} style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>نامک عمومی</label>
+                      <input dir="ltr" value={editWarehouseForm.slug || ''} onChange={e => setEditWarehouseForm(prev => ({ ...prev, slug: e.target.value }))} style={{ width: '100%', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>توضیحات عمومی کالا</label>
+                    <textarea rows="4" value={editWarehouseForm.description || ''} onChange={e => setEditWarehouseForm(prev => ({ ...prev, description: e.target.value }))} style={{ width: '100%', padding: '10px 12px', resize: 'vertical', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px', fontFamily: 'inherit' }} />
+                  </div>
+
                   {/* Local Image Uploader */}
                   <div>
                     <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تصویر محصول</label>
@@ -1628,6 +1668,10 @@ export default function AdminWarehousePage() {
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
                     <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>تنظیمات نمایش در وبسایت</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontSize: '12px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={Boolean(editWarehouseForm.isPublished)} onChange={e => setEditWarehouseForm(prev => ({ ...prev, isPublished: e.target.checked }))} />
+                        انتشار مستقیم در فروشگاه — موجودی قابل فروش: {Math.max(0, Number(editWarehouseForm.stock || 0) - Number(editWarehouseForm.reserved || 0))}
+                      </label>
                       {/* isBestSeller */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setEditWarehouseForm(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}>
                         <div style={{

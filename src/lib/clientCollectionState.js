@@ -2,7 +2,7 @@ export const CART_STORAGE_KEY = 'dubaikharid_cart_v1';
 export const WISHLIST_STORAGE_KEY = 'dubaikharid_wishlist_v1';
 export const LEGACY_CART_STORAGE_KEY = 'dubaiKharidCart';
 export const LEGACY_WISHLIST_STORAGE_KEY = 'dubaiKharidWishlist';
-export const CART_ITEM_TYPES = new Set(['PRODUCT', 'LAPTOP', 'EXTERNAL_PRODUCT']);
+export const CART_ITEM_TYPES = new Set(['PRODUCT', 'WAREHOUSE', 'LAPTOP', 'EXTERNAL_PRODUCT']);
 export const MAX_PRODUCT_QUANTITY = 20;
 
 const LAPTOP_TYPES = new Set(['laptop_stock', 'stock_laptop']);
@@ -20,6 +20,7 @@ function finiteNumber(value) {
 export function inferCollectionItemType(item) {
   if (CART_ITEM_TYPES.has(item?.type)) return item.type;
   if (item?.laptopId || LAPTOP_TYPES.has(item?.product_type)) return 'LAPTOP';
+  if (item?.warehouseItemId || item?.product_type === 'warehouse_stock') return 'WAREHOUSE';
   if (item?.productId || item?.product_type === 'iran_inventory') return 'PRODUCT';
   return 'EXTERNAL_PRODUCT';
 }
@@ -27,6 +28,8 @@ export function inferCollectionItemType(item) {
 export function collectionItemId(item, type = inferCollectionItemType(item)) {
   const value = type === 'LAPTOP'
     ? (item?.laptopId || item?.id)
+    : type === 'WAREHOUSE'
+      ? (item?.warehouseItemId || item?.id)
     : type === 'PRODUCT'
       ? (item?.productId || item?.id)
       : item?.id;

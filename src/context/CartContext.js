@@ -18,6 +18,7 @@ function enrichCartItem(item, resolved) {
   const snapshot = item.snapshot || {};
   const priceChanged = Boolean(current.authoritative && (
     (item.type === 'LAPTOP' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
+    || (item.type === 'WAREHOUSE' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
     || (item.type === 'PRODUCT' && snapshot.priceAed !== null && current.priceAed !== snapshot.priceAed)
   ));
   return {
@@ -32,7 +33,8 @@ function enrichCartItem(item, resolved) {
     selectedColor: item.selectedColor,
     productId: item.type === 'PRODUCT' ? item.id : undefined,
     laptopId: item.type === 'LAPTOP' ? item.id : undefined,
-    product_type: item.type === 'LAPTOP' ? 'laptop_stock' : item.type === 'PRODUCT' ? 'iran_inventory' : 'external_product',
+    warehouseItemId: item.type === 'WAREHOUSE' ? item.id : undefined,
+    product_type: item.type === 'LAPTOP' ? 'laptop_stock' : item.type === 'WAREHOUSE' ? 'warehouse_stock' : item.type === 'PRODUCT' ? 'iran_inventory' : 'external_product',
     unavailable: current.available === false,
     resolving: !resolved && item.type !== 'EXTERNAL_PRODUCT',
     authoritative: Boolean(current.authoritative),
