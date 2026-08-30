@@ -18,9 +18,16 @@
 .stock { color: var(--site-muted, #8b92a5); font-size: 12px; }
 .empty { padding: 72px 20px; text-align: center; color: var(--site-muted, #8b92a5); }
 .detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .85fr); gap: 48px; align-items: start; }
+.gallery { min-width: 0; }
 .detailImage { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 18px; background: rgba(128,128,128,.08); }
+.thumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 10px; margin-top: 12px; }
+.thumbnailButton { aspect-ratio: 1; min-width: 0; padding: 3px; border: 1px solid var(--site-border, rgba(255,255,255,.1)); border-radius: 10px; background: var(--site-surface, #17191f); cursor: pointer; transition: border-color .18s ease, transform .18s ease; }
+.thumbnailButton:hover { transform: translateY(-1px); border-color: rgba(248,120,32,.55); }
+.thumbnailButton:focus-visible { outline: 2px solid #f87820; outline-offset: 2px; }
+.thumbnailButton img { display: block; width: 100%; height: 100%; border-radius: 7px; object-fit: cover; }
+.thumbnailActive { border-color: #f87820; box-shadow: 0 0 0 1px rgba(248,120,32,.22); }
 .detailBody { padding-top: 24px; }
 .description { white-space: pre-line; line-height: 2; color: var(--site-muted, #a6aab4); }
 .cart { width: 100%; margin-top: 24px; min-height: 50px; border: 0; border-radius: 10px; background: #f87820; color: white; font: inherit; font-weight: 900; cursor: pointer; }
 .cart:disabled { cursor: not-allowed; background: #555b66; opacity: .65; }
-@media (max-width: 760px) { .main { padding-top: 28px; } .header { display: block; } .detail { grid-template-columns: 1fr; gap: 18px; } .detailBody { padding-top: 0; } }
+@media (max-width: 760px) { .main { padding-top: 28px; } .header { display: block; } .detail { grid-template-columns: 1fr; gap: 18px; } .detailBody { padding-top: 0; } .thumbnails { display: flex; overflow-x: auto; padding: 2px 2px 6px; scroll-snap-type: x proximity; } .thumbnailButton { flex: 0 0 70px; scroll-snap-align: start; } }

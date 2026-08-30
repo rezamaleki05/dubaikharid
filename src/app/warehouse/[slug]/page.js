@@ -14,6 +14,7 @@ export default function WarehouseDetailPage({ params }) {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState('');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -22,6 +23,7 @@ export default function WarehouseDetailPage({ params }) {
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || 'کالا پیدا نشد.');
         setItem(payload);
+        setSelectedImage(payload.image || '');
       })
       .catch(fetchError => { if (fetchError.name !== 'AbortError') setError(fetchError.message); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -32,7 +34,19 @@ export default function WarehouseDetailPage({ params }) {
     {loading && <div className={styles.empty}>در حال دریافت کالا...</div>}
     {!loading && error && <div className={styles.empty}>{error}</div>}
     {item && <div className={styles.detail}>
-      <img className={styles.detailImage} src={item.image} alt={item.name} />
+      <div className={styles.gallery}>
+        <img className={styles.detailImage} src={selectedImage || item.image} alt={item.name} />
+        {item.images?.length > 1 && <div className={styles.thumbnails} aria-label="تصاویر کالا">
+          {item.images.map((image, index) => <button
+            key={image.id || image.url}
+            type="button"
+            className={`${styles.thumbnailButton} ${(selectedImage || item.image) === image.url ? styles.thumbnailActive : ''}`}
+            onClick={() => setSelectedImage(image.url)}
+            aria-label={`نمایش تصویر ${index + 1}`}
+            aria-pressed={(selectedImage || item.image) === image.url}
+          ><img src={image.url} alt="" /></button>)}
+        </div>}
+      </div>
       <section className={styles.detailBody}><div className={styles.brand}>{item.brand || 'دبی خرید'}</div><h1 className={styles.title}>{item.name}</h1>{item.nameEn && <div className={styles.english}>{item.nameEn}</div>}<p className={styles.description}>{item.description}</p><div className={styles.priceRow}><strong className={styles.price}>{toman(item.finalPriceToman)} تومان</strong><span className={styles.stock}>{item.inStock ? `${item.available} عدد موجود` : 'ناموجود'}</span></div><button className={styles.cart} disabled={!item.inStock} onClick={() => addToCart(item)}>{item.inStock ? 'افزودن به سبد خرید' : 'ناموجود'}</button></section>
     </div>}
   </main><Footer /></div>;

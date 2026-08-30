@@ -1,6 +1,7 @@
 const BRAND_FIELDS = new Set([
   'id', 'name', 'faName', 'cat', 'hasImage', 'img', 'fallback', 'url',
   'showInBrandDirectory', 'categoryIds', 'quickCreate',
+  'supportsLaptop',
 ]);
 
 function cleanOptionalText(value, maxLength) {

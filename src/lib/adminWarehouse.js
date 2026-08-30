@@ -2,6 +2,7 @@ import 'server-only';
 
 import { randomUUID } from 'node:crypto';
 import { slugifyProductName } from '@/lib/adminProducts';
+import { serializeWarehouseImages, validateWarehouseImages } from '@/lib/warehouseGallery';
 
 const MAX_IMAGE_LENGTH = 2_800_000;
 const MAX_RETRIES = 4;
@@ -33,6 +34,7 @@ export const adminWarehouseInclude = Object.freeze({
     take: 50,
     include: { admin: { select: { id: true, email: true } } },
   },
+  images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }] },
 });
 
 const EDITABLE_FIELDS = new Set([
@@ -40,6 +42,7 @@ const EDITABLE_FIELDS = new Set([
   'stock', 'reserved', 'minStock', 'location', 'image', 'gender', 'isBestSeller',
   'hasDiscount', 'discountPercent', 'isArchived', 'slug', 'publicNameEn', 'description',
   'isPublished',
+  'images',
 ]);
 
 const LAPTOP_WAREHOUSE_PATTERN = /(?:لپ[\s‌-]*تاپ|laptop|notebook|macbook|thinkpad|latitude|precision|elitebook|probook|zenbook|vivobook|surface[\s-]*laptop|\bxps\b)/iu;
@@ -112,6 +115,7 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
 
   const data = {};
   const relations = {};
+  let images;
 
   if (!partial || Object.hasOwn(body, 'name')) {
     const name = cleanOptionalString(body.name, 240);
@@ -202,6 +206,12 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
     if (image === undefined) return { error: 'تصویر کالا معتبر نیست.' };
     data.image = image;
   }
+  if (Object.hasOwn(body, 'images')) {
+    const validatedImages = validateWarehouseImages(body.images);
+    if (validatedImages.error) return validatedImages;
+    images = validatedImages.value;
+    data.image = images.find(candidate => candidate.isPrimary)?.url || images[0]?.url || null;
+  }
 
   if (!partial) {
     data.sku ||= createWarehouseSku();
@@ -217,7 +227,7 @@ export function validateWarehousePayload(body, { partial = false } = {}) {
   if (partial && Object.keys(data).length === 0 && Object.keys(relations).length === 0) {
     return { error: 'تغییری ارسال نشده است.' };
   }
-  return { data, relations };
+  return { data, relations, images };
 }
 
 export async function resolveWarehouseRelations(client, relations) {
@@ -276,6 +286,7 @@ export function serializeMovement(movement) {
 }
 
 export function serializeWarehouseItem(item) {
+  const images = serializeWarehouseImages(item);
   return {
     id: item.id,
     name: item.name,
@@ -297,6 +308,7 @@ export function serializeWarehouseItem(item) {
     minStock: item.minStock,
     location: item.location,
     image: item.image,
+    images,
     isBestSeller: item.isBestSeller,
     hasDiscount: item.hasDiscount,
     discountPercent: item.discountPercent,
@@ -365,7 +377,7 @@ export async function adjustWarehouseStock(prisma, { id, quantityChange, reason,
   });
 }
 
-export async function updateWarehouseItem(prisma, { id, data, relations, adminId }) {
+export async function updateWarehouseItem(prisma, { id, data, relations, images, adminId }) {
   return runSerializableWithRetry(prisma, async tx => {
     const current = await tx.warehouseItem.findUnique({ where: { id } });
     if (!current) throw new WarehouseDomainError('کالای انبار پیدا نشد.', 404, 'ITEM_NOT_FOUND');
@@ -385,6 +397,15 @@ export async function updateWarehouseItem(prisma, { id, data, relations, adminId
       data: { ...data, ...relationData, ...(Object.hasOwn(next, 'publishedAt') ? { publishedAt: next.publishedAt } : {}) },
     });
     if (result.count !== 1) throw concurrentUpdateError();
+
+    if (images !== undefined) {
+      await tx.warehouseItemImage.deleteMany({ where: { warehouseItemId: id } });
+      if (images.length) {
+        await tx.warehouseItemImage.createMany({
+          data: images.map(image => ({ ...image, warehouseItemId: id })),
+        });
+      }
+    }
 
     if (stockAfter !== current.stock || reservedAfter !== current.reserved) {
       await tx.inventoryMovement.create({ data: {

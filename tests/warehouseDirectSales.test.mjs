@@ -26,6 +26,9 @@ const adminLaptopPage = await source('../src/app/admin/laptops/page.js');
 const laptopRoute = await source('../src/app/api/laptops/route.js');
 const laptopDetailRoute = await source('../src/app/api/laptops/[id]/route.js');
 const productDetailPage = await source('../src/app/product/[id]/page.js');
+const warehouseGallery = await importSource('../src/lib/warehouseGallery.js');
+const galleryMigration = await source('../prisma/migrations/20260830000300_warehouse_item_gallery/migration.sql');
+const warehouseDetailPage = await source('../src/app/warehouse/[slug]/page.js');
 
 test('warehouse publication is explicit and public reads exclude unpublished or archived records', () => {
   assert.match(schema, /isPublished\s+Boolean\s+@default\(false\)/);
@@ -120,4 +123,35 @@ test('migration is additive and preserves existing Product, Laptop, and Order da
   assert.match(migration, /ADD COLUMN "warehouseItemId" TEXT/);
   assert.match(migration, /ADD COLUMN "supportsLaptop" BOOLEAN NOT NULL DEFAULT false/);
   assert.doesNotMatch(migration, /^\s*(?:DROP|TRUNCATE|DELETE)\b/im);
+});
+
+test('warehouse gallery normalizes ordering, primary cover, duplicates, and legacy fallback', () => {
+  const result = warehouseGallery.validateWarehouseImages([
+    { url: 'https://cdn.example.com/one.jpg', isPrimary: false },
+    { url: 'https://cdn.example.com/two.jpg', isPrimary: false },
+    { url: 'https://cdn.example.com/one.jpg', isPrimary: false },
+  ]);
+  assert.equal(result.value.length, 2);
+  assert.equal(result.value[0].isPrimary, true);
+  assert.deepEqual(result.value.map(image => image.sortOrder), [0, 1]);
+  assert.match(warehouseGallery.validateWarehouseImages([
+    { url: 'data:image/png;base64,AAAA', isPrimary: true },
+  ]).error, /آدرس تصویر/);
+  assert.equal(warehouseGallery.getWarehouseCoverImage({ id: 'w1', image: '/legacy.jpg' }), '/legacy.jpg');
+});
+
+test('warehouse gallery migration is additive, ordered, and cascades only gallery rows', () => {
+  assert.match(schema, /model WarehouseItemImage/);
+  assert.match(schema, /images\s+WarehouseItemImage\[\]/);
+  assert.match(galleryMigration, /CREATE TABLE "WarehouseItemImage"/);
+  assert.match(galleryMigration, /ON DELETE CASCADE/);
+  assert.match(galleryMigration, /WHERE "isPrimary" = true/);
+  assert.doesNotMatch(galleryMigration, /^\s*(?:DROP|TRUNCATE|DELETE|UPDATE)\b/im);
+});
+
+test('warehouse public detail provides a selectable gallery while catalog cards keep one cover', () => {
+  assert.match(publicWarehouse, /images:/);
+  assert.match(publicWarehouse, /getWarehouseCoverImage/);
+  assert.match(warehouseDetailPage, /setSelectedImage/);
+  assert.match(warehouseDetailPage, /thumbnailButton/);
 });

@@ -82,10 +82,8 @@ export default function AdminBrandsPage() {
       alert('لطفا نام انگلیسی برند را وارد کنید.');
       return;
     }
-    const id = (addBrandForm.name || '').trim().toLowerCase().replace(/\s+/g, '-');
     const primaryCategory = categories.find(category => addBrandForm.categoryIds.includes(category.id));
     const newBrand = {
-      id,
       name: (addBrandForm.name || '').trim(),
       faName: (addBrandForm.faName || '').trim() || (addBrandForm.name || '').trim(),
       cat: primaryCategory?.name || null,
@@ -104,8 +102,9 @@ export default function AdminBrandsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBrand)
       });
-      if (!res.ok) throw new Error('Failed to create brand');
-      const createdBrand = await res.json();
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload.error || 'ایجاد برند با خطا مواجه شد.');
+      const createdBrand = payload;
       
       const updated = [...brands.filter(brand => brand.id !== createdBrand.id), createdBrand];
       setBrands(updated);
@@ -114,12 +113,10 @@ export default function AdminBrandsPage() {
         name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
         categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
       });
-      alert(createdBrand.alreadyExists
-        ? 'این برند از قبل وجود داشت و اطلاعات موجود آن حفظ شد.'
-        : 'برند جدید با موفقیت ذخیره شد.');
+      alert('برند جدید با موفقیت ذخیره شد.');
     } catch (error) {
       console.error(error);
-      alert('خطا در ذخیره برند در سرور.');
+      alert(error.message || 'خطا در ذخیره برند در سرور.');
     }
   };
 

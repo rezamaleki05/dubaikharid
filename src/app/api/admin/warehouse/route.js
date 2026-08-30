@@ -154,6 +154,9 @@ export async function POST(request) {
       const createData = {
         ...validated.data,
         ...relationData,
+        ...(validated.images?.length ? {
+          images: { create: validated.images },
+        } : {}),
         ...(validated.data.isPublished ? { publishedAt: new Date() } : {}),
       };
       assertNotLaptopWarehouseItem({ name: createData.name, categoryKey: createData.categoryKey });

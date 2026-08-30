@@ -94,7 +94,7 @@ export default function AdminBrandSelector({
           : 'این برند از قبل وجود داشت و انتخاب شد.')
         : 'برند جدید به دسته‌بندی متصل و انتخاب شد.');
     } catch (error) {
-      setFeedback(error.message || 'ایجاد برند با خطا مواجه شد.');
+      setFeedback(`خطا: ${error.message || 'ایجاد برند با خطا مواجه شد.'}`);
     } finally {
       setIsSaving(false);
     }
