@@ -64,15 +64,18 @@ test('cart, order snapshot, warehouse and GA4 receive the Persian compatibility 
   assert.match(analytics, /source\.name \|\| source\.productName/);
 });
 
-test('migration is guarded against unexpected Product data and adds no English description', async () => {
-  const [migration, schema] = await Promise.all([
+test('expand migration preserves legacy Product.name and adds no English description', async () => {
+  const [migration, schema, adminProducts] = await Promise.all([
     read('prisma/migrations/20260830000100_bilingual_product_names/migration.sql'),
     read('prisma/schema.prisma'),
+    read('src/lib/adminProducts.js'),
   ]);
   assert.match(migration, /IF EXISTS \(SELECT 1 FROM "Product" LIMIT 1\)/);
-  assert.match(migration, /DROP COLUMN "name"/);
+  assert.doesNotMatch(migration, /DROP COLUMN "name"/);
   assert.match(migration, /ADD COLUMN "nameFa" TEXT NOT NULL/);
   assert.match(migration, /ADD COLUMN "nameEn" TEXT NOT NULL/);
+  assert.match(schema, /model Product \{[\s\S]*?\n\s+name\s+String\n\s+nameFa\s+String\n\s+nameEn\s+String/);
+  assert.match(adminProducts, /if \(Object\.hasOwn\(names\.data, 'nameFa'\)\) data\.name = names\.data\.nameFa/);
   assert.doesNotMatch(schema, /descriptionEn/);
 });
 

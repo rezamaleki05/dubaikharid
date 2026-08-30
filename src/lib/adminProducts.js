@@ -62,6 +62,9 @@ export function validateProductPayload(body, { partial = false } = {}) {
   const names = validateProductNames(body, { partial });
   if (names.error) return names;
   Object.assign(data, names.data);
+  // Expand-contract compatibility: keep the required legacy column synchronized
+  // until a later, separately deployed contract migration removes Product.name.
+  if (Object.hasOwn(names.data, 'nameFa')) data.name = names.data.nameFa;
 
   if (Object.hasOwn(body, 'description')) {
     if (body.description === null || body.description === '') {

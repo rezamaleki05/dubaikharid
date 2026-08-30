@@ -1,5 +1,6 @@
--- Product is intentionally empty in Production at the time of this migration.
--- Abort instead of discarding or ambiguously translating any unexpected rows.
+-- Expand phase: Product is intentionally empty in Production at the time of this migration.
+-- Abort instead of adding required bilingual columns to any unexpected legacy rows.
+-- The legacy "name" column remains temporarily for compatibility with the previous deployment.
 LOCK TABLE "Product" IN ACCESS EXCLUSIVE MODE;
 
 DO $$
@@ -10,6 +11,5 @@ BEGIN
 END $$;
 
 ALTER TABLE "Product"
-  DROP COLUMN "name",
   ADD COLUMN "nameFa" TEXT NOT NULL,
   ADD COLUMN "nameEn" TEXT NOT NULL;

@@ -206,6 +206,7 @@ async function main() {
     const p1 = await prisma.product.create({
       data: {
         code: 'ALDO-SHOE-001',
+        name: 'کتانی روزمره مردانه آلدو',
         nameFa: 'کتانی روزمره مردانه آلدو',
         nameEn: 'Aldo Men Casual Sneaker',
         slug: 'aldo-men-casual-sneaker',
@@ -227,6 +228,7 @@ async function main() {
     const p2 = await prisma.product.create({
       data: {
         code: 'NIKE-PEGASUS-40',
+        name: 'کفش نایک ایر زوم پگاسوس ۴۰',
         nameFa: 'کفش نایک ایر زوم پگاسوس ۴۰',
         nameEn: 'Nike Air Zoom Pegasus 40',
         slug: 'nike-air-zoom-pegasus-40',
