@@ -40,6 +40,7 @@ test('brand creation uses one server domain service and returns a meaningful dup
   const service = await readFile(new URL('../src/lib/adminBrandService.js', import.meta.url), 'utf8');
   assert.match(route, /createAdminBrand\(prisma, validated\)/);
   assert.match(service, /supportsLaptop: data\.supportsLaptop \?\? false/);
+  assert.match(service, /pg_advisory_xact_lock\(742193\)::text/);
   assert.match(service, /BRAND_ALREADY_EXISTS/);
   assert.match(service, /409/);
   assert.match(service, /categoryMappings: \{ create:/);

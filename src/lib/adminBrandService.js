@@ -35,7 +35,9 @@ export async function createAdminBrand(prisma, { data, categoryIds = [], quickCr
   return prisma.$transaction(async tx => {
     // Brand.name is not unique in the legacy schema, so serialize creation and enforce
     // a normalized, case-insensitive duplicate rule at the domain boundary.
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(742193)`;
+    // Prisma's PostgreSQL adapter cannot deserialize PostgreSQL's native `void`
+    // result, so cast the advisory-lock result to a supported scalar type.
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(742193)::text AS "lockResult"`;
     const matches = await tx.$queryRaw`
       SELECT "id" FROM "Brand"
       WHERE LOWER(BTRIM("name")) = LOWER(${data.name})
