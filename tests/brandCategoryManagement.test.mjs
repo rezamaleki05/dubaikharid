@@ -30,7 +30,19 @@ test('brand create and update payloads validate visibility and category mappings
   assert.equal(created.data.name, 'New Brand');
   assert.deepEqual(created.categoryIds, ['category_1']);
   assert.equal(created.quickCreate, true);
+  const laptopBrand = validateBrandCreatePayload({ name: 'Dell', supportsLaptop: true });
+  assert.equal(laptopBrand.data.supportsLaptop, true);
   assert.match(validateBrandUpdatePayload({ showInBrandDirectory: 'yes' }).error, /وضعیت نمایش/);
+});
+
+test('brand creation uses one server domain service and returns a meaningful duplicate conflict', async () => {
+  const route = await readFile(new URL('../src/app/api/admin/brands/route.js', import.meta.url), 'utf8');
+  const service = await readFile(new URL('../src/lib/adminBrandService.js', import.meta.url), 'utf8');
+  assert.match(route, /createAdminBrand\(prisma, validated\)/);
+  assert.match(service, /supportsLaptop: data\.supportsLaptop \?\? false/);
+  assert.match(service, /BRAND_ALREADY_EXISTS/);
+  assert.match(service, /409/);
+  assert.match(service, /categoryMappings: \{ create:/);
 });
 
 test('migration keeps existing brands visible and backfills legacy category matches', async () => {

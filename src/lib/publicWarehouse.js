@@ -3,6 +3,7 @@ import 'server-only';
 import { prisma } from '@/lib/prisma';
 import { PUBLIC_PRODUCT_PLACEHOLDER } from '@/lib/publicCatalog';
 import { getWarehouseAvailableQuantity, getWarehouseUnitPriceToman } from '@/lib/warehouseSales';
+import { getWarehouseCoverImage, serializeWarehouseImages } from '@/lib/warehouseGallery';
 
 export const PUBLIC_WAREHOUSE_VISIBILITY = Object.freeze({ isPublished: true, isArchived: false });
 
@@ -22,6 +23,10 @@ const PUBLIC_WAREHOUSE_SELECT = Object.freeze({
   isBestSeller: true,
   createdAt: true,
   updatedAt: true,
+  images: {
+    select: { id: true, url: true, sortOrder: true, isPrimary: true },
+    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
+  },
   brand: { select: { id: true, name: true, faName: true } },
   category: { select: { id: true, name: true, query: true } },
 });
@@ -30,6 +35,8 @@ export function serializePublicWarehouseItem(item) {
   const available = getWarehouseAvailableQuantity(item);
   const discountPercent = item.hasDiscount ? item.discountPercent : 0;
   const salePrice = getWarehouseUnitPriceToman(item);
+  const images = serializeWarehouseImages(item);
+  const coverImage = getWarehouseCoverImage(item, PUBLIC_PRODUCT_PLACEHOLDER);
   return {
     id: item.id,
     warehouseItemId: item.id,
@@ -43,7 +50,8 @@ export function serializePublicWarehouseItem(item) {
     priceToman: item.price,
     finalPriceToman: salePrice,
     originalPriceToman: item.price,
-    image: item.image || PUBLIC_PRODUCT_PLACEHOLDER,
+    image: coverImage,
+    images,
     available,
     inStock: available > 0,
     discountPercent,

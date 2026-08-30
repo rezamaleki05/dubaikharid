@@ -3,6 +3,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminBrandSelector from '@/components/admin/AdminBrandSelector';
+import AdminWarehouseGalleryField from '@/components/admin/AdminWarehouseGalleryField';
 import AdminShell from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
@@ -125,7 +126,7 @@ export default function AdminWarehousePage() {
   const [isAddWarehouseOpen, setIsAddWarehouseOpen] = useState(false);
   const [isEditWarehouseOpen, setIsEditWarehouseOpen] = useState(false);
   const [editWarehouseForm, setEditWarehouseForm] = useState({
-    id: '', name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    id: '', name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '', reserved: '', location: '', minStock: '', image: '', images: [], isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   
   const [warehouseAdjustStockOpen, setWarehouseAdjustStockOpen] = useState(false);
@@ -138,7 +139,7 @@ export default function AdminWarehousePage() {
   const [warehouseReportOpen, setWarehouseReportOpen] = useState(false);
   const [activeWarehouseMenuId, setActiveWarehouseMenuId] = useState(null);
   const [addWarehouseForm, setAddWarehouseForm] = useState({
-    name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+    name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', images: [], isBestSeller: false, hasDiscount: false, discountPercent: 0
   });
   const [warehousePage, setWarehousePage] = useState(1);
   const [warehouseLimit, setWarehouseLimit] = useState(10);
@@ -198,21 +199,6 @@ export default function AdminWarehousePage() {
     return () => clearTimeout(timer);
   }, [loadWarehouse]);
 
-  const handleWarehouseImageUploadLocal = (event, type) => {
-    const file = event?.target?.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result;
-      if (type === 'add') {
-        setAddWarehouseForm(previous => ({ ...previous, image: dataUrl }));
-      } else {
-        setEditWarehouseForm(previous => ({ ...previous, image: dataUrl }));
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   const safeWarehouseProducts = Array.isArray(warehouseProducts) ? warehouseProducts : [];
   const safeBrands = Array.isArray(brands) ? brands : [];
   const activeProds = safeWarehouseProducts;
@@ -239,12 +225,6 @@ export default function AdminWarehousePage() {
   const selectedProduct = safeWarehouseProducts.find(product => (
     String(product?.id ?? '') === String(selectedWarehouseProductId ?? '')
   )) || filteredProds[0] || null;
-
-  // Form uploader helper
-  const triggerWarehouseUpload = (type) => {
-    const element = document.getElementById(`warehouseUploadInput_${type}`);
-    if (element) element.click();
-  };
 
   // Stock adjustment handler
   const handleAdjustStockLocal = async (productId, type, qty, reason) => {
@@ -304,6 +284,7 @@ export default function AdminWarehousePage() {
 
     try {
       const warehousePayload = { ...addWarehouseForm };
+      warehousePayload.image = warehousePayload.images.find(image => image.isPrimary)?.url || warehousePayload.images[0]?.url || null;
       delete warehousePayload.categoryId;
       const created = await readWarehouseApi(await fetch('/api/admin/warehouse', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(warehousePayload),
@@ -311,7 +292,7 @@ export default function AdminWarehousePage() {
       setSelectedWarehouseProductId(created.id);
       setIsAddWarehouseOpen(false);
       setAddWarehouseForm({
-        name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', isBestSeller: false, hasDiscount: false, discountPercent: 0
+        name: '', publicNameEn: '', description: '', slug: '', isPublished: false, brandId: '', categoryId: '', category: '', gender: '', sku: '', price: '', stock: '0', reserved: '0', location: '', minStock: '5', image: '', images: [], isBestSeller: false, hasDiscount: false, discountPercent: 0
       });
       setWarehousePage(1);
       await loadWarehouse();
@@ -332,7 +313,9 @@ export default function AdminWarehousePage() {
           name, brandId: editWarehouseForm?.brandId || null, category: String(editWarehouseForm?.category ?? ''), gender: String(editWarehouseForm?.gender ?? ''),
           sku: String(editWarehouseForm?.sku ?? ''), price, stock: Number(editWarehouseForm?.stock),
           reserved: Number(editWarehouseForm?.reserved), location: String(editWarehouseForm?.location ?? ''),
-          minStock: Number(editWarehouseForm?.minStock), image: String(editWarehouseForm?.image ?? '') || null,
+          minStock: Number(editWarehouseForm?.minStock),
+          image: editWarehouseForm.images?.find(image => image.isPrimary)?.url || editWarehouseForm.images?.[0]?.url || null,
+          images: (editWarehouseForm.images || []).map(image => ({ url: image.url, isPrimary: Boolean(image.isPrimary) })),
           publicNameEn: String(editWarehouseForm?.publicNameEn ?? '') || null,
           description: String(editWarehouseForm?.description ?? '') || null,
           slug: String(editWarehouseForm?.slug ?? '') || null,
@@ -1355,43 +1338,10 @@ export default function AdminWarehousePage() {
                     <textarea rows="4" value={addWarehouseForm.description} onChange={e => setAddWarehouseForm(prev => ({ ...prev, description: e.target.value }))} style={{ width: '100%', padding: '10px 12px', resize: 'vertical', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px', fontFamily: 'inherit' }} />
                   </div>
 
-                  {/* Local Image Uploader */}
-                  <div>
-                    <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تصویر محصول</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input
-                        type="text"
-                        placeholder="آدرس اینترنتی تصویر..."
-                        value={addWarehouseForm?.image ?? ''}
-                        onChange={e => setAddWarehouseForm(prev => ({ ...prev, image: e.target.value }))}
-                        style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => triggerWarehouseUpload('add')}
-                        style={{
-                          padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 'bold'
-                        }}
-                      >
-                        📁 آپلود فایل
-                      </button>
-                      <input
-                        id="warehouseUploadInput_add"
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={e => handleWarehouseImageUploadLocal(e, 'add')}
-                      />
-                    </div>
-                    {addWarehouseForm.image && (
-                      <img
-                        src={addWarehouseForm.image}
-                        alt="پیش‌نمایش"
-                        style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}
-                      />
-                    )}
-                  </div>
+                  <AdminWarehouseGalleryField
+                    value={addWarehouseForm.images}
+                    onChange={images => setAddWarehouseForm(previous => ({ ...previous, images }))}
+                  />
 
                   {/* Best-seller & Discount toggles */}
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
@@ -1626,43 +1576,10 @@ export default function AdminWarehousePage() {
                     <textarea rows="4" value={editWarehouseForm.description || ''} onChange={e => setEditWarehouseForm(prev => ({ ...prev, description: e.target.value }))} style={{ width: '100%', padding: '10px 12px', resize: 'vertical', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px', fontFamily: 'inherit' }} />
                   </div>
 
-                  {/* Local Image Uploader */}
-                  <div>
-                    <label style={{ display: 'block', color: '#8b92a5', marginBottom: '4px' }}>تصویر محصول</label>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input
-                        type="text"
-                        placeholder="آدرس اینترنتی تصویر..."
-                        value={editWarehouseForm?.image ?? ''}
-                        onChange={e => setEditWarehouseForm(prev => ({ ...prev, image: e.target.value }))}
-                        style={{ flex: 1, padding: '8px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', color: '#fff', fontSize: '12px' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => triggerWarehouseUpload('edit')}
-                        style={{
-                          padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-                          borderRadius: '8px', color: '#fff', cursor: 'pointer', fontWeight: 'bold'
-                        }}
-                      >
-                        📁 آپلود فایل
-                      </button>
-                      <input
-                        id="warehouseUploadInput_edit"
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={e => handleWarehouseImageUploadLocal(e, 'edit')}
-                      />
-                    </div>
-                    {editWarehouseForm.image && (
-                      <img
-                        src={editWarehouseForm.image}
-                        alt="پیش‌نمایش"
-                        style={{ width: '60px', height: '60px', borderRadius: '6px', objectFit: 'cover', marginTop: '10px', border: '1px solid rgba(255,255,255,0.1)' }}
-                      />
-                    )}
-                  </div>
+                  <AdminWarehouseGalleryField
+                    value={editWarehouseForm.images}
+                    onChange={images => setEditWarehouseForm(previous => ({ ...previous, images }))}
+                  />
 
                   {/* Best-seller & Discount toggles */}
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>

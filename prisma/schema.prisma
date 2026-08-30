@@ -212,6 +212,7 @@ model WarehouseItem {
   movements InventoryMovement[]
   notes     WarehouseNote[]
   orderItems OrderItem[]
+  images     WarehouseItemImage[]
 
   @@index([isArchived, createdAt])
   @@index([brandId])
@@ -219,6 +220,20 @@ model WarehouseItem {
   @@index([categoryKey])
   @@index([stock])
   @@index([isPublished, isArchived, createdAt])
+}
+
+model WarehouseItemImage {
+  id              String   @id @default(cuid())
+  warehouseItemId String
+  url             String
+  sortOrder       Int      @default(0)
+  isPrimary       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  warehouseItem WarehouseItem @relation(fields: [warehouseItemId], references: [id], onDelete: Cascade)
+
+  @@index([warehouseItemId, sortOrder])
+  @@index([warehouseItemId, isPrimary])
 }
 
 model InventoryMovement {
