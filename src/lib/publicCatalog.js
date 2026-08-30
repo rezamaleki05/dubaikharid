@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/prisma';
+import { productNameApiFields } from '@/lib/productNames';
 
 export const PUBLIC_PRODUCT_STATUS = 'active';
 export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_STATUS });
@@ -8,7 +9,8 @@ export const PUBLIC_PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg';
 
 const PUBLIC_PRODUCT_SELECT = Object.freeze({
   id: true,
-  name: true,
+  nameFa: true,
+  nameEn: true,
   description: true,
   slug: true,
   priceAed: true,
@@ -151,7 +153,8 @@ function searchWhere(search) {
   if (!search) return null;
   return {
     OR: [
-      { name: { contains: search, mode: 'insensitive' } },
+      { nameFa: { contains: search, mode: 'insensitive' } },
+      { nameEn: { contains: search, mode: 'insensitive' } },
       { brand: { is: { OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { faName: { contains: search, mode: 'insensitive' } },
@@ -178,7 +181,7 @@ export function serializePublicProduct(product) {
     id: product.id,
     productId: product.id,
     product_type: 'iran_inventory',
-    name: product.name,
+    ...productNameApiFields(product),
     description: product.description || '',
     slug: product.slug,
     priceAed: Number(product.priceAed),

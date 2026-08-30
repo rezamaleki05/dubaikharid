@@ -55,7 +55,8 @@ export async function GET(request) {
   };
   if (search) {
     where.OR = [
-      { name: { contains: search, mode: 'insensitive' } },
+      { nameFa: { contains: search, mode: 'insensitive' } },
+      { nameEn: { contains: search, mode: 'insensitive' } },
       { code: { contains: search, mode: 'insensitive' } },
       { originalLink: { contains: search, mode: 'insensitive' } },
       { brand: { is: { name: { contains: search, mode: 'insensitive' } } } },
@@ -114,7 +115,7 @@ export async function POST(request) {
     if (relationError) return NextResponse.json({ error: relationError }, { status: 404 });
 
     if (!Object.hasOwn(body, 'slug')) {
-      validated.data.slug = await createUniqueSlug(slugifyProductName(validated.data.name));
+      validated.data.slug = await createUniqueSlug(slugifyProductName(validated.data.nameEn));
     }
 
     const product = await prisma.product.create({ data: validated.data, include: adminProductInclude });

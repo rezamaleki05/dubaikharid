@@ -187,7 +187,7 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
         orderItems = parsed.items.map(item => {
           const product = byId.get(item.productId);
           const unitAed = Number(product.priceAed) * (product.hasDiscount ? 1 - product.discountPercent / 100 : 1);
-          return { name: product.name, quantity: item.quantity, priceAed: unitAed, priceToman: Math.round(unitAed * pricing.exchangeRate), productId: product.id, selectedColor: item.selectedColor, selectedSize: item.selectedSize, weight: product.weight };
+          return { name: product.nameFa, quantity: item.quantity, priceAed: unitAed, priceToman: Math.round(unitAed * pricing.exchangeRate), productId: product.id, selectedColor: item.selectedColor, selectedSize: item.selectedSize, weight: product.weight };
         });
       }
 

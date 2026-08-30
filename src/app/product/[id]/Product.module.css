@@ -67,6 +67,16 @@
   line-height: 1.3;
 }
 
+.productNameEn {
+  margin: -12px 0 20px;
+  color: #aeb4c2;
+  font-family: var(--font-inter), sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
 .specsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -845,6 +855,7 @@
 :global(html[data-theme='light']) .userName,
 :global(html[data-theme='light']) .technicalTitle,
 :global(html[data-theme='light']) .techCard h3 { color: var(--text-primary); }
+:global(html[data-theme='light']) .productNameEn { color: var(--text-secondary); }
 :global(html[data-theme='light']) .specLabel,
 :global(html[data-theme='light']) .productSpec,
 :global(html[data-theme='light']) .productDescription,

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { randomUUID } from 'node:crypto';
 import { normalizeProductSourceUrl, parseExternalHttpUrl } from '@/lib/externalUrls';
+import { productNameApiFields, validateProductNames } from '@/lib/productNames';
 
 export const PRODUCT_STATUSES = Object.freeze(['active', 'hidden', 'needs_update', 'broken_link']);
 export const PRODUCT_STATUS_SET = new Set(PRODUCT_STATUSES);
@@ -13,7 +14,7 @@ export const adminProductInclude = Object.freeze({
 });
 
 const EDITABLE_FIELDS = new Set([
-  'name', 'description', 'slug', 'code', 'brandId', 'categoryId', 'storeId', 'priceAed', 'weight',
+  'nameFa', 'nameEn', 'description', 'slug', 'code', 'brandId', 'categoryId', 'storeId', 'priceAed', 'weight',
   'originalLink', 'image', 'gender', 'discountPercent', 'hasDiscount', 'isBestSeller', 'status',
 ]);
 
@@ -58,11 +59,9 @@ export function validateProductPayload(body, { partial = false } = {}) {
   const data = {};
   const relationIds = {};
 
-  if (!partial || Object.hasOwn(body, 'name')) {
-    const name = cleanOptionalString(body.name, 240);
-    if (!name) return { error: 'نام محصول الزامی و حداکثر ۲۴۰ کاراکتر است.' };
-    data.name = name;
-  }
+  const names = validateProductNames(body, { partial });
+  if (names.error) return names;
+  Object.assign(data, names.data);
 
   if (Object.hasOwn(body, 'description')) {
     if (body.description === null || body.description === '') {
@@ -169,7 +168,7 @@ export function validateProductPayload(body, { partial = false } = {}) {
   }
 
   if (!partial) {
-    data.slug ||= slugifyProductName(data.name);
+    data.slug ||= slugifyProductName(data.nameEn);
     data.code ||= createProductCode();
     data.status ||= 'active';
     data.hasDiscount ??= false;
@@ -199,7 +198,7 @@ export function serializeAdminProduct(product) {
   return {
     id: product.id,
     code: product.code,
-    name: product.name,
+    ...productNameApiFields(product),
     description: product.description,
     slug: product.slug,
     priceAed: Number(product.priceAed),

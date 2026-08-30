@@ -9,14 +9,14 @@ export const getSeoProduct = cache(async id => {
   const product = await prisma.product.findFirst({
     where: { OR: [{ id }, { slug: id }], ...PUBLIC_PRODUCT_VISIBILITY },
     select: {
-      id: true, slug: true, name: true, image: true, priceAed: true, weight: true,
+      id: true, slug: true, nameFa: true, nameEn: true, image: true, priceAed: true, weight: true,
       discountPercent: true, hasDiscount: true, updatedAt: true,
       brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
       store: { select: { id: true, name: true } },
       category: { select: { id: true, name: true } },
     },
   });
-  if (product) return { kind: 'product', ...product };
+  if (product) return { kind: 'product', ...product, name: product.nameFa };
   const laptop = await prisma.laptop.findFirst({
     where: { id, status: 'AVAILABLE', archivedAt: null },
     select: {

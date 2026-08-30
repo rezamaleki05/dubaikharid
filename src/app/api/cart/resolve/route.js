@@ -53,7 +53,7 @@ export async function POST(request) {
       productIds.length ? prisma.product.findMany({
         where: { id: { in: productIds } },
         select: {
-          id: true, name: true, priceAed: true, weight: true, originalLink: true, image: true,
+          id: true, nameFa: true, nameEn: true, priceAed: true, weight: true, originalLink: true, image: true,
           discountPercent: true, hasDiscount: true, status: true,
           brand: { select: { name: true, faName: true } },
           store: { select: { name: true } },
@@ -89,7 +89,9 @@ export async function POST(request) {
           available: product.status === 'active' && warehouseAvailable,
           authoritative: true,
           code: product.status !== 'active' ? 'INACTIVE' : warehouseAvailable ? null : 'OUT_OF_STOCK',
-          name: product.name,
+          name: product.nameFa,
+          nameFa: product.nameFa,
+          nameEn: product.nameEn,
           brand: product.brand?.faName || product.brand?.name || '',
           store: product.store?.name || '',
           image: product.image || '',

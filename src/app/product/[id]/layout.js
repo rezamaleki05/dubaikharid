@@ -8,7 +8,8 @@ function descriptionFor(item) {
     return [item.brand, item.model, item.cpu, item.ram, item.storage].filter(Boolean).join('، ');
   }
   const brand = item.brand?.faName || item.brand?.name;
-  return `مشاهده ${item.name}${brand ? ` از برند ${brand}` : ''}، بررسی مشخصات و ثبت سفارش با قیمت معتبر سرور در دبی خرید.`;
+  const originalName = item.nameEn ? ` (${item.nameEn})` : '';
+  return `مشاهده ${item.name}${originalName}${brand ? ` از برند ${brand}` : ''}، بررسی مشخصات و ثبت سفارش با قیمت معتبر سرور در دبی خرید.`;
 }
 
 export async function generateMetadata({ params }) {
@@ -47,6 +48,7 @@ export default async function ProductSeoLayout({ children, params }) {
     '@type': 'Product',
     '@id': `${absoluteUrl(`/product/${item.id}`)}#product`,
     name: item.name,
+    ...(item.kind === 'product' && item.nameEn ? { alternateName: item.nameEn } : {}),
     url: absoluteUrl(`/product/${item.id}`),
     description: descriptionFor(item),
     ...(item.image ? { image: [absoluteUrl(item.image)] } : {}),

@@ -21,7 +21,7 @@ export class WarehouseDomainError extends Error {
 export const adminWarehouseInclude = Object.freeze({
   brand: { select: { id: true, name: true, faName: true } },
   category: { select: { id: true, name: true, query: true } },
-  product: { select: { id: true, code: true, name: true, slug: true } },
+  product: { select: { id: true, code: true, nameFa: true, nameEn: true, slug: true } },
   movements: {
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -260,7 +260,7 @@ export function serializeWarehouseItem(item) {
     isArchived: item.isArchived,
     brand: item.brand || null,
     category: item.category || null,
-    product: item.product || null,
+    product: item.product ? { ...item.product, name: item.product.nameFa } : null,
     movements: Array.isArray(item.movements) ? item.movements.map(serializeMovement) : [],
     notes: Array.isArray(item.notes) ? item.notes.map(note => ({
       id: note.id,

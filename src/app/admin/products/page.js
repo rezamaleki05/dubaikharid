@@ -64,12 +64,12 @@ export default function AdminProductsPage() {
   const [isFetchingProductLink, setIsFetchingProductLink] = useState(false);
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
   const [editProductForm, setEditProductForm] = useState({
-    id: '', name: '', description: '', brandId: '', priceAed: '', weight: '', storeId: '', originalLink: '', foreignStatus: 'active',
+    id: '', nameFa: '', nameEn: '', description: '', brandId: '', priceAed: '', weight: '', storeId: '', originalLink: '', foreignStatus: 'active',
     image: '', gender: '', category: '', discountPercent: 0, isBestSeller: false
   });
   const [isAddProductManualOpen, setIsAddProductManualOpen] = useState(false);
   const [addProductManualForm, setAddProductManualForm] = useState({
-    name: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
+    nameFa: '', nameEn: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
     category: '', gender: '', discountPercent: 0, hasDiscount: false, isBestSeller: false
   });
   const [editProductImage, setEditProductImage] = useState(() => createProductImageState());
@@ -160,7 +160,8 @@ export default function AdminProductsPage() {
       });
       const matchedCategory = categories.find(item => item.query === product.category || item.name.includes(product.category || ''));
       setAddProductManualForm({
-        name: product.name || '',
+        nameFa: '',
+        nameEn: product.nameEn || product.title || '',
         description: product.description || '',
         brandId: matchedBrand?.id || '',
         category: matchedCategory?.id || '',
@@ -214,7 +215,7 @@ export default function AdminProductsPage() {
   const handleEditClick = prod => {
     if (!can(ADMIN_PERMISSIONS.PRODUCTS_EDIT)) return;
     setEditProductForm({
-      id: prod.id, name: prod.name, description: prod.description || '', brandId: prod.brandId || '', category: prod.categoryId || '',
+      id: prod.id, nameFa: prod.nameFa || prod.name, nameEn: prod.nameEn || '', description: prod.description || '', brandId: prod.brandId || '', category: prod.categoryId || '',
       storeId: prod.storeId || '', priceAed: getProductAedPrice(prod), weight: getProductWeight(prod),
       originalLink: getProductOriginalLink(prod), foreignStatus: getProductForeignStatus(prod), image: prod.image || '',
       gender: prod.gender || '', discountPercent: prod.discountPercent || 0, isBestSeller: !!prod.isBestSeller,
@@ -239,7 +240,7 @@ export default function AdminProductsPage() {
       const imageUpdate = imageResult.changed ? { image: imageResult.value } : {};
       await readApiResponse(await fetch(`/api/admin/products/${encodeURIComponent(editProductForm.id)}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          name: editProductForm.name, description: editProductForm.description || null,
+          nameFa: editProductForm.nameFa, nameEn: editProductForm.nameEn, description: editProductForm.description || null,
           brandId: editProductForm.brandId, categoryId: editProductForm.category,
           storeId: editProductForm.storeId, priceAed: editProductForm.priceAed, weight: editProductForm.weight,
           originalLink: editProductForm.originalLink || null, ...imageUpdate,
@@ -269,7 +270,7 @@ export default function AdminProductsPage() {
     try {
       const created = await readApiResponse(await fetch('/api/admin/products', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          name: addProductManualForm.name, description: addProductManualForm.description || null,
+          nameFa: addProductManualForm.nameFa, nameEn: addProductManualForm.nameEn, description: addProductManualForm.description || null,
           brandId: addProductManualForm.brandId, categoryId: addProductManualForm.category,
           storeId: addProductManualForm.storeId, priceAed: addProductManualForm.priceAed, weight: addProductManualForm.weight,
           originalLink: addProductManualForm.originalLink || null, image: imageResult.value,
@@ -333,7 +334,7 @@ export default function AdminProductsPage() {
             {can(ADMIN_PERMISSIONS.PRODUCTS_CREATE) && <button 
               onClick={() => {
                 setAddProductManualForm({
-                  name: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
+                  nameFa: '', nameEn: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
                   originalLink: '', image: '', category: '', gender: '', discountPercent: 0,
                   hasDiscount: false, isBestSeller: false,
                 });
@@ -698,13 +699,29 @@ export default function AdminProductsPage() {
                 
                 <form onSubmit={handleEditProductSubmitLocal} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'right' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام محصول:</label>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام فارسی محصول *</label>
                     <input 
                       type="text" 
                       required
-                      value={editProductForm.name || ""}
-                      onChange={(e) => setEditProductForm({...editProductForm, name: e.target.value})}
+                      maxLength={240}
+                      value={editProductForm.nameFa || ""}
+                      onChange={(e) => setEditProductForm({...editProductForm, nameFa: e.target.value})}
+                      placeholder="کفش مردانه نایک ایر مکس 270"
                       style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام انگلیسی / نام اصلی محصول *</label>
+                    <input
+                      type="text"
+                      required
+                      dir="ltr"
+                      maxLength={240}
+                      value={editProductForm.nameEn || ''}
+                      onChange={(e) => setEditProductForm({ ...editProductForm, nameEn: e.target.value })}
+                      placeholder="Nike Air Max 270 Men's Shoes"
+                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'left' }}
                     />
                   </div>
 
@@ -877,14 +894,29 @@ export default function AdminProductsPage() {
                 
                 <form onSubmit={handleManualAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'right' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام محصول:</label>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام فارسی محصول *</label>
                     <input 
                       type="text" 
                       required
-                      value={addProductManualForm.name || ""}
-                      onChange={(e) => setAddProductManualForm({...addProductManualForm, name: e.target.value})}
-                      placeholder="مثال: Apple Watch Ultra 2"
+                      maxLength={240}
+                      value={addProductManualForm.nameFa || ""}
+                      onChange={(e) => setAddProductManualForm({...addProductManualForm, nameFa: e.target.value})}
+                      placeholder="کفش مردانه نایک ایر مکس 270"
                       style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام انگلیسی / نام اصلی محصول *</label>
+                    <input
+                      type="text"
+                      required
+                      dir="ltr"
+                      maxLength={240}
+                      value={addProductManualForm.nameEn || ''}
+                      onChange={(e) => setAddProductManualForm({ ...addProductManualForm, nameEn: e.target.value })}
+                      placeholder="Nike Air Max 270 Men's Shoes"
+                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'left' }}
                     />
                   </div>
 

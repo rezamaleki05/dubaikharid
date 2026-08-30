@@ -331,6 +331,7 @@ export async function GET(request) {
 
     const productData = {
       name: translatedTitle,
+      nameEn: cleanTitleStr,
       brand,
       store: domain,
       priceAed: extractedPrice,

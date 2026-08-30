@@ -323,6 +323,9 @@ export default function ProductPage({ params }) {
           <div className={styles.infoSection} dir="rtl">
             {showBrandBadge ? <div className={styles.brandBadge}>{brandName}</div> : null}
             <h1 className={styles.productName}>{product.name}</h1>
+            {product.product_type === 'iran_inventory' && product.nameEn ? (
+              <p className={styles.productNameEn} dir="ltr" lang="en">{product.nameEn}</p>
+            ) : null}
             
             {/* dynamic Specs */}
             {laptopSpecs ? (

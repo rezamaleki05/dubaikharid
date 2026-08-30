@@ -144,7 +144,8 @@ model AdminActivityLog {
 model Product {
   id              String        @id @default(cuid())
   code            String?       @unique
-  name            String
+  nameFa          String
+  nameEn          String
   description     String?
   slug            String        @unique
   brandId         String?
