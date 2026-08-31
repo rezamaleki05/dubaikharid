@@ -189,7 +189,14 @@ export default function ProductPage({ params }) {
         storage: storageCombined,
         gpu: rs.gpu,
         screenSize: `${rs.screenSize} اینچ`,
-        batteryHealth: rs.batteryHealth ? `${rs.batteryHealth}%` : null,
+        manufactureYear:
+          rs.manufactureYear === '' || rs.manufactureYear == null
+            ? null
+            : String(rs.manufactureYear),
+        batteryHealth:
+          rs.batteryHealth === '' || rs.batteryHealth == null
+            ? null
+            : `${rs.batteryHealth}%`,
         physicalStatus: rs.physicalStatus === 'excellent' ? 'عالی (در حد نو)' :
                         rs.physicalStatus === 'very_good' ? 'خیلی خوب' :
                         rs.physicalStatus === 'good' ? 'خوب' : 'متوسط',
@@ -212,7 +219,8 @@ export default function ProductPage({ params }) {
         storage: prod.storage || null,
         gpu: prod.gpu || null,
         screenSize: prod.screenSize || prod.screen || null,
-        batteryHealth: prod.batteryHealth ? `${prod.batteryHealth}%` : null,
+        manufactureYear: prod.manufactureYear ?? null,
+        batteryHealth: prod.batteryHealth == null ? null : `${prod.batteryHealth}%`,
         physicalStatus: prod.physicalStatus || prod.condition || null,
         serial: prod.serial || null,
         warranty: prod.warranty || null,
@@ -527,10 +535,18 @@ export default function ProductPage({ params }) {
               <div className={styles.techCard}>
                 <h3><MinimalIcon name="gear" size={20} /> اصالت و سلامت فنی دستگاه</h3>
                 <ul className={styles.techList}>
-                  <li>
-                    <span>سلامت باتری:</span>
-                    <strong style={{ color: '#2ecc71' }}>{laptopSpecs.batteryHealth || 'نامشخص'}</strong>
-                  </li>
+                  {laptopSpecs.manufactureYear && (
+                    <li>
+                      <span>سال ساخت:</span>
+                      <strong>{laptopSpecs.manufactureYear}</strong>
+                    </li>
+                  )}
+                  {laptopSpecs.batteryHealth && (
+                    <li>
+                      <span>سلامت باتری:</span>
+                      <strong style={{ color: '#2ecc71' }}>{laptopSpecs.batteryHealth}</strong>
+                    </li>
+                  )}
                   <li>
                     <span>وضعیت ظاهری:</span>
                     <strong style={{ color: '#ff9d00' }}>{laptopSpecs.physicalStatus || 'عالی'}</strong>
