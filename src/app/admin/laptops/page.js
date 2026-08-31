@@ -1460,14 +1460,15 @@ function StockLaptopsContent() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>سال ساخت <span className={styles.requiredStar}>*</span></label>
+                  <label>سال ساخت</label>
                   <input 
                     type="number" 
+                    min="1980"
+                    max={new Date().getUTCFullYear() + 1}
                     value={laptopForm.manufactureYear} 
                     onChange={(e) => setLaptopForm(prev => ({ ...prev, manufactureYear: e.target.value }))}
                     placeholder="مثال: 2022"
                     className={styles.inputField}
-                    required
                   />
                 </div>
 
@@ -1536,7 +1537,7 @@ function StockLaptopsContent() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input 
                       type="number" 
-                      min="1"
+                      min="0"
                       max="100"
                       value={laptopForm.batteryHealth} 
                       onChange={(e) => setLaptopForm(prev => ({ ...prev, batteryHealth: e.target.value }))}

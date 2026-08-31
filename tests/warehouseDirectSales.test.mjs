@@ -94,8 +94,8 @@ test('Laptop brands and models are database-backed and fashion brands are exclud
   assert.doesNotMatch(adminLaptopPage, /DEFAULT_BRANDS_SEED|Balenciaga|Burberry|Cartier|Aldo/);
 });
 
-test('duplicate Laptop unit preserves reusable specs but clears unique and lifecycle fields', () => {
-  const duplicate = laptopCatalog.duplicateLaptopForm({ id: 'l1', serial: 'SERIAL', internalSku: 'SKU', stockStatus: 'sold', dateEntered: '2026-08-30', model: 'XPS', ram: '16' });
+test('duplicate Laptop unit preserves reusable specs, including present optional values, but clears unique and lifecycle fields', () => {
+  const duplicate = laptopCatalog.duplicateLaptopForm({ id: 'l1', serial: 'SERIAL', internalSku: 'SKU', stockStatus: 'sold', dateEntered: '2026-08-30', model: 'XPS', ram: '16', manufactureYear: '2022', batteryHealth: '91' });
   assert.equal(duplicate.id, undefined);
   assert.equal(duplicate.serial, '');
   assert.equal(duplicate.internalSku, '');
@@ -103,6 +103,12 @@ test('duplicate Laptop unit preserves reusable specs but clears unique and lifec
   assert.equal(duplicate.dateEntered, '');
   assert.equal(duplicate.model, 'XPS');
   assert.equal(duplicate.ram, '16');
+  assert.equal(duplicate.manufactureYear, '2022');
+  assert.equal(duplicate.batteryHealth, '91');
+
+  const withoutOptionalValues = laptopCatalog.duplicateLaptopForm({ id: 'l2', model: 'Latitude' });
+  assert.equal(Object.hasOwn(withoutOptionalValues, 'manufactureYear'), false);
+  assert.equal(Object.hasOwn(withoutOptionalValues, 'batteryHealth'), false);
 });
 
 test('Laptop availability is derived from independent AVAILABLE units in each spec group', () => {
@@ -113,6 +119,10 @@ test('Laptop availability is derived from independent AVAILABLE units in each sp
   ];
   const counts = laptopCatalog.countAvailableLaptopGroups(units);
   assert.equal(counts.get(laptopCatalog.laptopSpecGroupKey(units[0])), 2);
+  assert.equal(
+    laptopCatalog.laptopSpecGroupKey({ ...units[0], manufactureYear: 2024, batteryHealth: 100 }),
+    laptopCatalog.laptopSpecGroupKey({ ...units[0], manufactureYear: null, batteryHealth: null }),
+  );
   assert.match(laptopRoute, /availableCount/);
   assert.match(laptopRoute, /status: 'AVAILABLE'/);
   assert.match(laptopDetailRoute, /where: \{ id, archivedAt: null \}/);

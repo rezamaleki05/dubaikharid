@@ -67,8 +67,13 @@ function decimalValue(value, label, { required = false, maximum = '9999999999999
 }
 
 function integerValue(value, label, { minimum = 0, maximum = 9999 } = {}) {
-  if (value === '' || value === null || value === undefined) return null;
-  const number = Number(value);
+  if (value === null || value === undefined) return null;
+  const normalized = typeof value === 'string' ? value.trim() : value;
+  if (normalized === '') return null;
+  if (typeof normalized !== 'string' && typeof normalized !== 'number') {
+    throw new LaptopDomainError(`${label} معتبر نیست.`);
+  }
+  const number = Number(normalized);
   if (!Number.isInteger(number) || number < minimum || number > maximum) {
     throw new LaptopDomainError(`${label} معتبر نیست.`);
   }
@@ -234,8 +239,8 @@ export function serializeLaptop(laptop) {
     storageSize: primaryStorage.size, storageType: primaryStorage.type,
     storage2Size: secondaryStorage.size || '0', storage2Type: secondaryStorage.type || 'none',
     gpu: laptop.gpu || '', screenSize: String(laptop.screen || '').replace(/[^\d.]/g, ''),
-    manufactureYear: laptop.manufactureYear ? String(laptop.manufactureYear) : '', color: laptop.color || '',
-    batteryHealth: laptop.batteryHealth === null ? '' : String(laptop.batteryHealth),
+    manufactureYear: laptop.manufactureYear == null ? '' : String(laptop.manufactureYear), color: laptop.color || '',
+    batteryHealth: laptop.batteryHealth == null ? '' : String(laptop.batteryHealth),
     weight: laptop.weightKg === null ? '' : decimalString(laptop.weightKg, 2).replace(/\.?0+$/, ''),
     buyingPrice, extraCosts, sellingPrice, internalNotes: laptop.internalNotes || '', customerNotes: laptop.description || '',
     hardwareTests, accessories, physicalStatus: PHYSICAL_STATUSES.has(laptop.condition) ? laptop.condition : 'good',
@@ -270,6 +275,8 @@ export function serializePublicLaptop(laptop) {
     storage: serialized.storage,
     gpu: serialized.gpu,
     screen: serialized.screen,
+    manufactureYear: laptop.manufactureYear ?? null,
+    batteryHealth: laptop.batteryHealth ?? null,
     condition: serialized.condition,
     priceToman: serialized.priceToman,
     image: serialized.image || '/images/product-placeholder.svg',
