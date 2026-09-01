@@ -107,6 +107,15 @@ enum InventoryMovementType {
   RETURN
 }
 
+enum CatalogAttributeInputType {
+  SELECT
+  MULTI_SELECT
+  TEXT
+  NUMBER
+  BOOLEAN
+  COLOR
+}
+
 model AdminUser {
   id           String      @id @default(cuid())
   email        String      @unique
@@ -171,6 +180,7 @@ model Product {
   category      Category?      @relation(fields: [categoryId], references: [id])
   warehouseItem WarehouseItem?
   orderItems    OrderItem[]
+  attributeValues ProductAttributeValue[]
 
   @@index([status, createdAt])
   @@index([brandId])
@@ -572,6 +582,90 @@ model Category {
   products         Product[]
   warehouseItems   WarehouseItem[]
   brandMappings    BrandCategory[]
+  attributeAssignments CategoryAttribute[]
+}
+
+model CatalogAttribute {
+  id        String                    @id @default(cuid())
+  code      String                    @unique
+  nameFa    String
+  nameEn    String
+  inputType CatalogAttributeInputType
+  unitFa    String?
+  unitEn    String?
+  isActive  Boolean                   @default(true)
+  sortOrder Int                       @default(0)
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
+
+  options             AttributeOption[]
+  categoryAssignments CategoryAttribute[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AttributeOption {
+  id          String   @id @default(cuid())
+  attributeId String
+  code        String
+  labelFa     String
+  labelEn     String
+  swatchHex   String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attribute     CatalogAttribute        @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  productValues ProductAttributeValue[]
+
+  @@unique([attributeId, code])
+  @@unique([id, attributeId])
+  @@index([attributeId, isActive, sortOrder])
+}
+
+model CategoryAttribute {
+  id                String   @id @default(cuid())
+  categoryId        String
+  attributeId       String
+  isRequired        Boolean  @default(false)
+  isVariantDefining Boolean  @default(false)
+  allowsMultiple    Boolean  @default(false)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  category      Category                @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  attribute     CatalogAttribute        @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  productValues ProductAttributeValue[]
+
+  @@unique([categoryId, attributeId])
+  @@unique([id, attributeId])
+  @@index([categoryId, sortOrder])
+  @@index([attributeId])
+}
+
+model ProductAttributeValue {
+  id                  String   @id @default(cuid())
+  productId           String
+  categoryAttributeId String
+  attributeId         String
+  attributeOptionId   String?
+  textValue           String?
+  numberValue         Decimal? @db.Decimal(18, 6)
+  booleanValue        Boolean?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  product           Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  categoryAttribute CategoryAttribute @relation(fields: [categoryAttributeId, attributeId], references: [id, attributeId], onDelete: Restrict)
+  attributeOption   AttributeOption?  @relation(fields: [attributeOptionId, attributeId], references: [id, attributeId], onDelete: Restrict)
+
+  @@unique([productId, categoryAttributeId, attributeOptionId])
+  @@index([productId])
+  @@index([attributeId])
+  @@index([attributeOptionId])
+  @@index([categoryAttributeId])
 }
 
 model BrandCategory {
