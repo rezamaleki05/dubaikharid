@@ -45,6 +45,10 @@ export function serializeProductVariant(variant) {
     isDefault: variant.isDefault,
     isActive: variant.isActive,
     sortOrder: variant.sortOrder,
+    priceAedOverride: variant.priceAedOverride == null ? null : variant.priceAedOverride.toFixed(2),
+    priceTomanOverride: variant.priceTomanOverride == null ? null : variant.priceTomanOverride.toFixed(0),
+    discountPercentOverride: variant.discountPercentOverride,
+    weightOverride: variant.weightOverride,
     options: (variant.options || []).map(row => ({
       attributeId: row.attributeId,
       attributeCode: row.attribute.code,
@@ -88,7 +92,7 @@ export async function listProductVariants(client, productId) {
 async function loadVariantContext(client, productId, optionIds) {
   const product = await client.product.findUnique({
     where: { id: productId },
-    select: { id: true, categoryId: true },
+    select: { id: true, categoryId: true, supplyMode: true, priceToman: true },
   });
   if (!product) throw notFound('محصول پیدا نشد.', 'PRODUCT_NOT_FOUND');
 
@@ -157,6 +161,16 @@ async function loadVariantContext(client, productId, optionIds) {
   };
 }
 
+function assertIranVariantPricing(product, data) {
+  if (product.supplyMode !== 'IRAN_STOCK' || data.isActive === false) return;
+  if (data.priceTomanOverride == null && product.priceToman == null) {
+    throw conflict(
+      'تنوع فعال محصول موجود در ایران به قیمت تومان در سطح محصول یا تنوع نیاز دارد.',
+      'TOMAN_PRICE_REQUIRED',
+    );
+  }
+}
+
 function translatePersistenceError(error) {
   if (error instanceof ProductVariantDomainError) return error;
   if (error?.code === 'P2002') {
@@ -172,6 +186,7 @@ export async function createProductVariant(client, { productId, data }) {
   try {
     const variant = await client.$transaction(async tx => {
       const resolved = await loadVariantContext(tx, productId, data.optionIds);
+      assertIranVariantPricing(resolved.product, data);
       if (data.sku) {
         const skuConflict = await tx.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
         if (skuConflict) throw conflict('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
@@ -200,6 +215,10 @@ export async function createProductVariant(client, { productId, data }) {
           isDefault: resolved.isDefault,
           isActive: data.isActive ?? true,
           sortOrder: data.sortOrder ?? 0,
+          priceAedOverride: data.priceAedOverride ?? null,
+          priceTomanOverride: data.priceTomanOverride ?? null,
+          discountPercentOverride: data.discountPercentOverride ?? null,
+          weightOverride: data.weightOverride ?? null,
           ...(resolved.selections.length ? {
             options: {
               create: resolved.selections.map(selection => ({
@@ -259,8 +278,17 @@ export async function previewProductVariantCombinations(client, { productId, com
 
 export async function updateProductVariant(client, id, data) {
   try {
-    const current = await client.productVariant.findUnique({ where: { id }, select: { id: true } });
+    const current = await client.productVariant.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        isActive: true,
+        priceTomanOverride: true,
+        product: { select: { supplyMode: true, priceToman: true } },
+      },
+    });
     if (!current) throw notFound('تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
+    assertIranVariantPricing(current.product, { ...current, ...data });
     if (data.sku) {
       const skuConflict = await client.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
       if (skuConflict && skuConflict.id !== id) {

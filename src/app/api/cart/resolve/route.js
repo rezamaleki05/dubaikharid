@@ -54,7 +54,8 @@ export async function POST(request) {
       productIds.length ? prisma.product.findMany({
         where: { id: { in: productIds } },
         select: {
-          id: true, nameFa: true, nameEn: true, priceAed: true, weight: true, originalLink: true, image: true,
+          id: true, nameFa: true, nameEn: true, priceAed: true, priceToman: true, supplyMode: true,
+          weight: true, originalLink: true, image: true,
           discountPercent: true, hasDiscount: true, status: true,
           brand: { select: { name: true, faName: true } },
           store: { select: { name: true } },
@@ -99,11 +100,14 @@ export async function POST(request) {
         if (!product) return { ...item, available: false, authoritative: true, code: 'NOT_FOUND' };
         const warehouseAvailable = !product.warehouseItem
           || (!product.warehouseItem.isArchived && product.warehouseItem.stock - product.warehouseItem.reserved >= requestedByProduct.get(item.id));
+        const externalReady = product.supplyMode === 'EXTERNAL_DUBAI';
         return {
           ...item,
-          available: product.status === 'active' && warehouseAvailable,
+          available: externalReady && product.status === 'active' && warehouseAvailable,
           authoritative: true,
-          code: product.status !== 'active' ? 'INACTIVE' : warehouseAvailable ? null : 'OUT_OF_STOCK',
+          code: !externalReady
+            ? 'IRAN_STOCK_NOT_READY'
+            : product.status !== 'active' ? 'INACTIVE' : warehouseAvailable ? null : 'OUT_OF_STOCK',
           name: product.nameFa,
           nameFa: product.nameFa,
           nameEn: product.nameEn,
@@ -111,7 +115,9 @@ export async function POST(request) {
           store: product.store?.name || '',
           image: product.image || '',
           originalLink: product.originalLink || '',
-          priceAed: Number(product.priceAed),
+          priceAed: product.priceAed == null ? null : Number(product.priceAed),
+          priceToman: product.priceToman == null ? null : product.priceToman.toFixed(0),
+          supplyMode: product.supplyMode,
           weight: product.weight,
           discountPercent: product.hasDiscount ? product.discountPercent : 0,
           productId: product.id,

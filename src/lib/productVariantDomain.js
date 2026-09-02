@@ -1,3 +1,10 @@
+import {
+  normalizeNullableAedPrice,
+  normalizeNullableDiscount,
+  normalizeNullableTomanPrice,
+  normalizeNullableWeight,
+} from './productSupplyPricingDomain.js';
+
 export const DEFAULT_PRODUCT_VARIANT_SIGNATURE = '__default__';
 export const PRODUCT_VARIANT_WARNING_THRESHOLD = 50;
 export const MAX_PRODUCT_VARIANT_COMBINATIONS = 200;
@@ -65,7 +72,10 @@ export function buildProductVariantSignature(selections) {
 }
 
 export function validateCreateProductVariantPayload(body) {
-  const allowed = new Set(['optionIds', 'sku', 'isActive', 'sortOrder']);
+  const allowed = new Set([
+    'optionIds', 'sku', 'isActive', 'sortOrder',
+    'priceAedOverride', 'priceTomanOverride', 'discountPercentOverride', 'weightOverride',
+  ]);
   const shapeError = strictObject(body, allowed);
   if (shapeError) return shapeError;
   if (!Object.hasOwn(body, 'optionIds')) return { error: 'فهرست گزینه‌های تنوع الزامی است.' };
@@ -84,11 +94,17 @@ export function validateCreateProductVariantPayload(body) {
     if (sortOrder.error) return sortOrder;
     data.sortOrder = sortOrder.value;
   }
+  const pricing = normalizeVariantPricingFields(body);
+  if (pricing.error) return pricing;
+  Object.assign(data, pricing.data);
   return { data };
 }
 
 export function validateUpdateProductVariantPayload(body) {
-  const allowed = new Set(['sku', 'isActive', 'sortOrder']);
+  const allowed = new Set([
+    'sku', 'isActive', 'sortOrder',
+    'priceAedOverride', 'priceTomanOverride', 'discountPercentOverride', 'weightOverride',
+  ]);
   const shapeError = strictObject(body, allowed);
   if (shapeError) return shapeError;
   const data = {};
@@ -107,7 +123,27 @@ export function validateUpdateProductVariantPayload(body) {
     if (sortOrder.error) return sortOrder;
     data.sortOrder = sortOrder.value;
   }
+  const pricing = normalizeVariantPricingFields(body);
+  if (pricing.error) return pricing;
+  Object.assign(data, pricing.data);
   return Object.keys(data).length ? { data } : { error: 'تغییری ارسال نشده است.' };
+}
+
+function normalizeVariantPricingFields(body) {
+  const data = {};
+  const fields = [
+    ['priceAedOverride', normalizeNullableAedPrice, 'قیمت درهم تنوع'],
+    ['priceTomanOverride', normalizeNullableTomanPrice, 'قیمت تومان تنوع'],
+    ['discountPercentOverride', normalizeNullableDiscount, 'درصد تخفیف تنوع'],
+    ['weightOverride', normalizeNullableWeight, 'وزن تنوع'],
+  ];
+  for (const [field, normalize, label] of fields) {
+    if (!Object.hasOwn(body, field)) continue;
+    const parsed = normalize(body[field], label);
+    if (parsed.error) return parsed;
+    data[field] = parsed.value;
+  }
+  return { data };
 }
 
 export function validateReplaceProductVariantOptionsPayload(body) {

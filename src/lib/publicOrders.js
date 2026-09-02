@@ -211,6 +211,15 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
           const found = new Set(productRows.map(item => item.id));
           throw new PublicOrderError('یکی از کالاها پیدا نشد یا غیرفعال است.', 404, 'ITEM_NOT_FOUND', { items: parsed.items.filter(item => !found.has(item.productId)).map(item => ({ id: item.productId, code: 'ITEM_NOT_FOUND', message: 'کالا پیدا نشد یا غیرفعال است.' })) });
         }
+        const iranStockProduct = productRows.find(product => product.supplyMode === 'IRAN_STOCK');
+        if (iranStockProduct) {
+          throw new PublicOrderError(
+            'خرید کالای موجود در ایران تا تکمیل زیرساخت موجودی فعال نیست.',
+            409,
+            'IRAN_STOCK_NOT_READY',
+            { items: [{ id: iranStockProduct.id, code: 'IRAN_STOCK_NOT_READY', message: 'خرید این کالا هنوز فعال نیست.' }] },
+          );
+        }
         const byId = new Map(productRows.map(item => [item.id, item]));
         const subtotalAed = parsed.items.reduce((sum, item) => {
           const product = byId.get(item.productId);
