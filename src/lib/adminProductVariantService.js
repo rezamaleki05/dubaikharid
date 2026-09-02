@@ -173,6 +173,9 @@ function assertIranVariantPricing(product, data) {
 
 function translatePersistenceError(error) {
   if (error instanceof ProductVariantDomainError) return error;
+  if (error?.code === 'P2034' || error?.cause?.originalCode === '40001') {
+    return conflict('تنوع محصول هم‌زمان تغییر کرد؛ دوباره تلاش کنید.', 'PRODUCT_VARIANT_CONCURRENT_UPDATE');
+  }
   if (error?.code === 'P2002') {
     const target = Array.isArray(error.meta?.target) ? error.meta.target.join(',') : String(error.meta?.target || '');
     if (target.includes('sku')) return conflict('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
@@ -278,24 +281,34 @@ export async function previewProductVariantCombinations(client, { productId, com
 
 export async function updateProductVariant(client, id, data) {
   try {
-    const current = await client.productVariant.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        isActive: true,
-        priceTomanOverride: true,
-        product: { select: { supplyMode: true, priceToman: true } },
-      },
-    });
-    if (!current) throw notFound('تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
-    assertIranVariantPricing(current.product, { ...current, ...data });
-    if (data.sku) {
-      const skuConflict = await client.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
-      if (skuConflict && skuConflict.id !== id) {
-        throw conflict('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
+    const variant = await client.$transaction(async tx => {
+      const current = await tx.productVariant.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          isActive: true,
+          priceTomanOverride: true,
+          product: { select: { supplyMode: true, priceToman: true } },
+          inventory: {
+            select: {
+              reservations: { where: { status: 'ACTIVE' }, select: { id: true }, take: 1 },
+            },
+          },
+        },
+      });
+      if (!current) throw notFound('تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
+      assertIranVariantPricing(current.product, { ...current, ...data });
+      if (data.isActive === false && current.isActive && current.inventory?.reservations.length) {
+        throw conflict('تنوع دارای رزرو فعال است و قابل غیرفعال‌سازی نیست.', 'VARIANT_ACTIVE_RESERVATION');
       }
-    }
-    const variant = await client.productVariant.update({ where: { id }, data, include: productVariantInclude });
+      if (data.sku) {
+        const skuConflict = await tx.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
+        if (skuConflict && skuConflict.id !== id) {
+          throw conflict('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
+        }
+      }
+      return tx.productVariant.update({ where: { id }, data, include: productVariantInclude });
+    }, { isolationLevel: 'Serializable' });
     return serializeProductVariant(variant);
   } catch (error) {
     throw translatePersistenceError(error);
@@ -314,10 +327,19 @@ export async function deactivateProductVariant(client, id) {
 export async function replaceProductVariantOptions(client, id, optionIds) {
   try {
     const variant = await client.$transaction(async tx => {
-      const current = await tx.productVariant.findUnique({ where: { id }, select: { id: true, productId: true, isDefault: true } });
+      const current = await tx.productVariant.findUnique({
+        where: { id },
+        select: { id: true, productId: true, isDefault: true, inventory: { select: { id: true } } },
+      });
       if (!current) throw notFound('تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
       if (current.isDefault) {
         throw conflict('گزینه‌های تنوع پیش‌فرض قابل تغییر نیستند.', 'DEFAULT_VARIANT_OPTIONS_IMMUTABLE');
+      }
+      if (current.inventory) {
+        throw conflict(
+          'هویت گزینه‌های تنوع پس از ایجاد موجودی قابل تغییر نیست.',
+          'VARIANT_INVENTORY_IDENTITY_LOCKED',
+        );
       }
       const resolved = await loadVariantContext(tx, current.productId, optionIds);
       if (resolved.isDefault) {

@@ -29,6 +29,16 @@ const variantPricingSelect = Object.freeze({
   weightOverride: true,
 });
 
+const variantInventorySafetySelect = Object.freeze({
+  ...variantPricingSelect,
+  inventory: {
+    select: {
+      reserved: true,
+      reservations: { where: { status: 'ACTIVE' }, select: { id: true }, take: 1 },
+    },
+  },
+});
+
 function moneyString(value, digits) {
   return value === null || value === undefined ? null : value.toFixed(digits);
 }
@@ -74,19 +84,43 @@ function assertProductPricingState(product, variants) {
 }
 
 export async function updateProductSupplyPricing(client, productId, data) {
-  return client.$transaction(async tx => {
-    const current = await tx.product.findUnique({
-      where: { id: productId },
-      select: {
-        ...productPricingSelect,
-        variants: { select: variantPricingSelect },
-      },
-    });
-    if (!current) throw new ProductSupplyPricingError('محصول پیدا نشد.', 404, 'PRODUCT_NOT_FOUND');
-    const next = { ...current, ...data };
-    assertProductPricingState(next, current.variants);
-    return tx.product.update({ where: { id: productId }, data, select: productPricingSelect });
-  }, { isolationLevel: 'Serializable' });
+  try {
+    return await client.$transaction(async tx => {
+      const current = await tx.product.findUnique({
+        where: { id: productId },
+        select: {
+          ...productPricingSelect,
+          variants: { select: variantInventorySafetySelect },
+        },
+      });
+      if (!current) throw new ProductSupplyPricingError('محصول پیدا نشد.', 404, 'PRODUCT_NOT_FOUND');
+      const next = { ...current, ...data };
+      if (current.supplyMode === 'IRAN_STOCK' && next.supplyMode === 'EXTERNAL_DUBAI') {
+        const inventoryInUse = current.variants.some(variant => (
+          (variant.inventory?.reserved || 0) > 0 || variant.inventory?.reservations.length
+        ));
+        if (inventoryInUse) {
+          throw new ProductSupplyPricingError(
+            'تا زمانی که رزرو فعال موجودی وجود دارد، روش تأمین قابل تغییر نیست.',
+            409,
+            'PRODUCT_INVENTORY_RESERVATION_ACTIVE',
+          );
+        }
+      }
+      assertProductPricingState(next, current.variants);
+      return tx.product.update({ where: { id: productId }, data, select: productPricingSelect });
+    }, { isolationLevel: 'Serializable' });
+  } catch (error) {
+    if (error instanceof ProductSupplyPricingError) throw error;
+    if (error?.code === 'P2034' || error?.cause?.originalCode === '40001') {
+      throw new ProductSupplyPricingError(
+        'روش تأمین هم‌زمان تغییر کرد؛ دوباره تلاش کنید.',
+        409,
+        'PRODUCT_SUPPLY_MODE_CONCURRENT_UPDATE',
+      );
+    }
+    throw error;
+  }
 }
 
 export async function resolveAuthoritativeProductVariantPrice(client, { productId, variantId = null }) {

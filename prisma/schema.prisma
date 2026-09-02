@@ -80,6 +80,22 @@ enum ProductSupplyMode {
   IRAN_STOCK
 }
 
+enum ProductInventoryReservationStatus {
+  ACTIVE
+  RELEASED
+  FULFILLED
+}
+
+enum ProductInventoryMovementType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+  ORDER_RESERVATION
+  ORDER_RELEASE
+  ORDER_FULFILLMENT
+  RETURN
+}
+
 enum LaptopStatus {
   AVAILABLE
   RESERVED
@@ -132,6 +148,7 @@ model AdminUser {
 
   activityLogs       AdminActivityLog[]
   inventoryMovements InventoryMovement[]
+  productInventoryMovements ProductInventoryMovement[]
   warehouseNotes     WarehouseNote[]
   confirmedPayments  Payment[]           @relation("PaymentConfirmedBy")
 
@@ -695,10 +712,73 @@ model ProductVariant {
 
   product Product                @relation(fields: [productId], references: [id], onDelete: Restrict)
   options ProductVariantOption[]
+  inventory ProductInventory?
 
   @@unique([productId, optionSignature])
   @@index([productId, isActive])
   @@index([productId, sortOrder])
+}
+
+model ProductInventory {
+  id        String   @id @default(cuid())
+  variantId String   @unique
+  stock     Int      @default(0)
+  reserved  Int      @default(0)
+  minStock  Int      @default(0)
+  location  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variant      ProductVariant                @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  reservations ProductInventoryReservation[]
+  movements    ProductInventoryMovement[]
+
+  @@index([stock])
+}
+
+model ProductInventoryReservation {
+  id             String                            @id @default(cuid())
+  inventoryId    String
+  reservationKey String                            @unique
+  quantity       Int
+  status         ProductInventoryReservationStatus @default(ACTIVE)
+  expiresAt      DateTime?
+  releasedAt     DateTime?
+  fulfilledAt    DateTime?
+  createdAt      DateTime                          @default(now())
+  updatedAt      DateTime                          @updatedAt
+
+  inventory ProductInventory           @relation(fields: [inventoryId], references: [id], onDelete: Restrict)
+  movements ProductInventoryMovement[]
+
+  @@index([inventoryId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model ProductInventoryMovement {
+  id             String                       @id @default(cuid())
+  inventoryId    String
+  reservationId  String?
+  type           ProductInventoryMovementType
+  quantity       Int
+  stockBefore    Int
+  stockAfter     Int
+  reservedBefore Int
+  reservedAfter  Int
+  reason         String?
+  idempotencyKey String                       @unique
+  adminId        String?
+  createdAt      DateTime                     @default(now())
+
+  inventory   ProductInventory             @relation(fields: [inventoryId], references: [id], onDelete: Restrict)
+  reservation ProductInventoryReservation? @relation(fields: [reservationId], references: [id], onDelete: Restrict)
+  admin       AdminUser?                   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([inventoryId, createdAt])
+  @@index([reservationId])
+  @@index([type, createdAt])
+  @@index([adminId, createdAt])
 }
 
 model ProductVariantOption {
