@@ -156,6 +156,8 @@ test('partial matrices persist only explicitly requested combinations', () => {
 test('duplicate signatures and globally unique SKUs return controlled conflicts', () => {
   assert.match(service, /VARIANT_SKU_EXISTS/);
   assert.match(service, /VARIANT_COMBINATION_EXISTS/);
+  assert.match(service, /findUnique\(\{ where: \{ sku: data\.sku \}/);
+  assert.match(service, /productId_optionSignature/);
   assert.match(service, /P2002/);
 });
 

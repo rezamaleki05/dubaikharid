@@ -172,6 +172,17 @@ export async function createProductVariant(client, { productId, data }) {
   try {
     const variant = await client.$transaction(async tx => {
       const resolved = await loadVariantContext(tx, productId, data.optionIds);
+      if (data.sku) {
+        const skuConflict = await tx.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
+        if (skuConflict) throw conflict('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
+      }
+      const combinationConflict = await tx.productVariant.findUnique({
+        where: { productId_optionSignature: { productId, optionSignature: resolved.optionSignature } },
+        select: { id: true },
+      });
+      if (combinationConflict) {
+        throw conflict('این ترکیب تنوع قبلاً برای محصول ثبت شده است.', 'VARIANT_COMBINATION_EXISTS');
+      }
       if (!resolved.isDefault) {
         const currentCount = await tx.productVariant.count({ where: { productId, isDefault: false } });
         if (!variantCapacityResult(currentCount).allowed) {
@@ -250,6 +261,12 @@ export async function updateProductVariant(client, id, data) {
   try {
     const current = await client.productVariant.findUnique({ where: { id }, select: { id: true } });
     if (!current) throw notFound('تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
+    if (data.sku) {
+      const skuConflict = await client.productVariant.findUnique({ where: { sku: data.sku }, select: { id: true } });
+      if (skuConflict && skuConflict.id !== id) {
+        throw conflict('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
+      }
+    }
     const variant = await client.productVariant.update({ where: { id }, data, include: productVariantInclude });
     return serializeProductVariant(variant);
   } catch (error) {
@@ -277,6 +294,18 @@ export async function replaceProductVariantOptions(client, id, optionIds) {
       const resolved = await loadVariantContext(tx, current.productId, optionIds);
       if (resolved.isDefault) {
         throw new ProductVariantDomainError('تنوع گزینه‌دار نمی‌تواند به تنوع پیش‌فرض تبدیل شود.');
+      }
+      const combinationConflict = await tx.productVariant.findUnique({
+        where: {
+          productId_optionSignature: {
+            productId: current.productId,
+            optionSignature: resolved.optionSignature,
+          },
+        },
+        select: { id: true },
+      });
+      if (combinationConflict && combinationConflict.id !== id) {
+        throw conflict('این ترکیب تنوع قبلاً برای محصول ثبت شده است.', 'VARIANT_COMBINATION_EXISTS');
       }
       await tx.productVariantOption.deleteMany({ where: { variantId: id } });
       await tx.productVariantOption.createMany({
