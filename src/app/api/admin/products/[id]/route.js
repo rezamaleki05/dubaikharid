@@ -8,6 +8,7 @@ import {
   validateProductRelations,
 } from '@/lib/adminProducts';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { checkProductCategoryAttributeCompatibility } from '@/lib/adminCatalogAttributeService';
 import { prisma } from '@/lib/prisma';
 import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
@@ -50,8 +51,31 @@ export async function PATCH(request, { params }) {
     const relationError = await validateProductRelations(prisma, validated.relationIds);
     if (relationError) return NextResponse.json({ error: relationError }, { status: 404 });
 
-    const previous = await prisma.product.findUnique({ where: { id }, select: { id: true, status: true } });
+    const previous = await prisma.product.findUnique({
+      where: { id },
+      select: { id: true, status: true, categoryId: true },
+    });
     if (!previous) return NextResponse.json({ error: 'محصول پیدا نشد.' }, { status: 404 });
+
+    if (Object.hasOwn(validated.data, 'categoryId') && validated.data.categoryId !== previous.categoryId) {
+      const compatibility = await checkProductCategoryAttributeCompatibility(prisma, {
+        productId: id,
+        newCategoryId: validated.data.categoryId,
+      });
+      if (compatibility.nonDefaultVariantCount > 0) {
+        return NextResponse.json({
+          error: 'پیش از تغییر دسته‌بندی، تنوع‌های گزینه‌دار محصول باید بازنگری شوند.',
+          code: 'PRODUCT_CATEGORY_VARIANTS_IN_USE',
+        }, { status: 409 });
+      }
+      if (!compatibility.compatible) {
+        return NextResponse.json({
+          error: 'مقادیر ویژگی محصول با دسته‌بندی جدید سازگار نیستند و باید ابتدا بازنگری شوند.',
+          code: 'PRODUCT_CATEGORY_ATTRIBUTES_INCOMPATIBLE',
+          invalidAttributeIds: compatibility.invalidAttributeIds,
+        }, { status: 409 });
+      }
+    }
 
     const product = await prisma.product.update({ where: { id }, data: validated.data, include: adminProductInclude });
     const changedFields = Object.keys(validated.data).filter(key => key !== 'sourceUrlKey');

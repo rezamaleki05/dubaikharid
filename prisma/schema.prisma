@@ -181,6 +181,7 @@ model Product {
   warehouseItem WarehouseItem?
   orderItems    OrderItem[]
   attributeValues ProductAttributeValue[]
+  variants      ProductVariant[]
 
   @@index([status, createdAt])
   @@index([brandId])
@@ -600,6 +601,7 @@ model CatalogAttribute {
 
   options             AttributeOption[]
   categoryAssignments CategoryAttribute[]
+  variantOptions      ProductVariantOption[]
 
   @@index([isActive, sortOrder])
 }
@@ -616,8 +618,9 @@ model AttributeOption {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  attribute     CatalogAttribute        @relation(fields: [attributeId], references: [id], onDelete: Restrict)
-  productValues ProductAttributeValue[]
+  attribute      CatalogAttribute        @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  productValues  ProductAttributeValue[]
+  variantOptions ProductVariantOption[]
 
   @@unique([attributeId, code])
   @@unique([id, attributeId])
@@ -666,6 +669,40 @@ model ProductAttributeValue {
   @@index([attributeId])
   @@index([attributeOptionId])
   @@index([categoryAttributeId])
+}
+
+model ProductVariant {
+  id              String   @id @default(cuid())
+  productId       String
+  sku             String?  @unique
+  optionSignature String
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product Product                @relation(fields: [productId], references: [id], onDelete: Restrict)
+  options ProductVariantOption[]
+
+  @@unique([productId, optionSignature])
+  @@index([productId, isActive])
+  @@index([productId, sortOrder])
+}
+
+model ProductVariantOption {
+  variantId         String
+  attributeId       String
+  attributeOptionId String
+  createdAt         DateTime @default(now())
+
+  variant         ProductVariant   @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  attribute       CatalogAttribute @relation(fields: [attributeId], references: [id], onDelete: Restrict)
+  attributeOption AttributeOption  @relation(fields: [attributeOptionId, attributeId], references: [id, attributeId], onDelete: Restrict)
+
+  @@id([variantId, attributeId])
+  @@index([attributeId])
+  @@index([attributeOptionId])
 }
 
 model BrandCategory {

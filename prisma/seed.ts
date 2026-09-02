@@ -216,7 +216,8 @@ async function main() {
         weight: 1.2,
         gender: 'men',
         isBestSeller: true,
-        originalLink: 'https://aldoshoes.me/ae/en/men/footwear/casual-shoes/casual-sneaker.html'
+        originalLink: 'https://aldoshoes.me/ae/en/men/footwear/casual-shoes/casual-sneaker.html',
+        variants: { create: { optionSignature: '__default__', isDefault: true } }
       }
     });
     createdProducts.push(p1);
@@ -240,7 +241,8 @@ async function main() {
         isBestSeller: true,
         hasDiscount: true,
         discountPercent: 15,
-        originalLink: 'https://www.nike.com/ae/t/air-zoom-pegasus-40-road-running-shoes'
+        originalLink: 'https://www.nike.com/ae/t/air-zoom-pegasus-40-road-running-shoes',
+        variants: { create: { optionSignature: '__default__', isDefault: true } }
       }
     });
     createdProducts.push(p2);

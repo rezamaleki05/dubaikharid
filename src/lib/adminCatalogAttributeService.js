@@ -115,13 +115,19 @@ export async function createAttributeOption(client, attributeId, data) {
 export async function updateAttributeOption(client, id, data) {
   const current = await client.attributeOption.findUnique({
     where: { id },
-    include: { attribute: { select: { inputType: true } } },
+    include: {
+      attribute: { select: { inputType: true } },
+      _count: { select: { variantOptions: true } },
+    },
   });
   if (!current) throw notFound('مقدار ویژگی پیدا نشد.', 'OPTION_NOT_FOUND');
   if (data.swatchHex && current.attribute.inputType !== 'COLOR') {
     throw new CatalogAttributeDomainError('کد رنگ فقط برای ویژگی COLOR مجاز است.');
   }
   if (data.code && data.code !== current.code) {
+    if (current._count.variantOptions > 0) {
+      throw conflict('کد فنی گزینه‌ای که در تنوع محصول استفاده شده قابل تغییر نیست.', 'OPTION_CODE_IN_USE');
+    }
     const duplicate = await client.attributeOption.findUnique({
       where: { attributeId_code: { attributeId: current.attributeId, code: data.code } },
       select: { id: true },
@@ -178,6 +184,17 @@ export async function updateCategoryAttribute(client, categoryId, attributeId, d
   };
   const configuration = validateCategoryAttributeConfiguration(current.attribute.inputType, merged);
   if (configuration.error) throw new CatalogAttributeDomainError(configuration.error);
+  if (current.isVariantDefining && data.isVariantDefining === false) {
+    const variantUseCount = await client.productVariantOption.count({
+      where: { attributeId, variant: { product: { categoryId } } },
+    });
+    if (variantUseCount > 0) {
+      throw conflict(
+        'این ویژگی در تنوع‌های موجود استفاده شده و نمی‌توان سازنده تنوع بودن آن را غیرفعال کرد.',
+        'CATEGORY_ATTRIBUTE_VARIANT_IN_USE',
+      );
+    }
+  }
   return client.categoryAttribute.update({
     where: { categoryId_attributeId: { categoryId, attributeId } },
     data,
@@ -191,8 +208,14 @@ export async function removeCategoryAttribute(client, categoryId, attributeId) {
     select: { id: true },
   });
   if (!current) throw notFound('ویژگی اختصاص‌یافته به دسته‌بندی پیدا نشد.', 'CATEGORY_ATTRIBUTE_NOT_FOUND');
-  const valueCount = await client.productAttributeValue.count({ where: { categoryAttributeId: current.id } });
+  const [valueCount, variantUseCount] = await Promise.all([
+    client.productAttributeValue.count({ where: { categoryAttributeId: current.id } }),
+    client.productVariantOption.count({ where: { attributeId, variant: { product: { categoryId } } } }),
+  ]);
   if (valueCount > 0) throw conflict('این تخصیص دارای مقدار محصول است و قابل حذف نیست.', 'CATEGORY_ATTRIBUTE_IN_USE');
+  if (variantUseCount > 0) {
+    throw conflict('این تخصیص در تنوع‌های محصول استفاده شده و قابل حذف نیست.', 'CATEGORY_ATTRIBUTE_VARIANT_IN_USE');
+  }
   await client.categoryAttribute.delete({ where: { id: current.id } });
   return { id: current.id, removed: true };
 }
@@ -248,12 +271,22 @@ export async function checkProductCategoryAttributeCompatibility(client, { produ
   const [product, targetAssignments] = await Promise.all([
     client.product.findUnique({
       where: { id: productId },
-      select: { id: true, attributeValues: { select: { attributeId: true } } },
+      select: {
+        id: true,
+        attributeValues: { select: { attributeId: true } },
+        variants: { where: { isDefault: false }, select: { id: true } },
+      },
     }),
-    client.categoryAttribute.findMany({ where: { categoryId: newCategoryId }, select: { attributeId: true } }),
+    newCategoryId
+      ? client.categoryAttribute.findMany({ where: { categoryId: newCategoryId }, select: { attributeId: true } })
+      : Promise.resolve([]),
   ]);
   if (!product) throw notFound('محصول پیدا نشد.', 'PRODUCT_NOT_FOUND');
   const allowed = new Set(targetAssignments.map(item => item.attributeId));
   const invalidAttributeIds = [...new Set(product.attributeValues.map(item => item.attributeId).filter(id => !allowed.has(id)))];
-  return { compatible: invalidAttributeIds.length === 0, invalidAttributeIds };
+  return {
+    compatible: invalidAttributeIds.length === 0 && product.variants.length === 0,
+    invalidAttributeIds,
+    nonDefaultVariantCount: product.variants.length,
+  };
 }

@@ -10,6 +10,7 @@ import {
   validateProductRelations,
 } from '@/lib/adminProducts';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { ensureDefaultProductVariant } from '@/lib/adminProductVariantService';
 import { prisma } from '@/lib/prisma';
 import { revalidatePublicCatalog } from '@/lib/publicCatalogRevalidation';
 
@@ -118,7 +119,11 @@ export async function POST(request) {
       validated.data.slug = await createUniqueSlug(slugifyProductName(validated.data.nameEn));
     }
 
-    const product = await prisma.product.create({ data: validated.data, include: adminProductInclude });
+    const product = await prisma.$transaction(async tx => {
+      const created = await tx.product.create({ data: validated.data, include: adminProductInclude });
+      await ensureDefaultProductVariant(tx, created.id);
+      return created;
+    }, { isolationLevel: 'Serializable' });
     await logAdminActivity({
       adminId: admin.id,
       action: 'PRODUCT_CREATED',

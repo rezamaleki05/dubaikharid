@@ -2,6 +2,7 @@ import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import { productNameApiFields } from '@/lib/productNames';
+import { serializeProductVariant } from '@/lib/adminProductVariantService';
 
 export const PUBLIC_PRODUCT_STATUS = 'active';
 export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_STATUS });
@@ -202,6 +203,7 @@ export function serializePublicProduct(product) {
     storeId: product.store?.id || null,
     store: product.store?.name || 'فروشگاه دبی',
     spec: product.category?.name || '',
+    ...(Array.isArray(product.variants) ? { variants: product.variants.map(serializeProductVariant) } : {}),
   };
 }
 
@@ -285,6 +287,27 @@ export async function getPublicProduct(identifier) {
     select: {
       ...PUBLIC_PRODUCT_SELECT,
       brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
+      variants: {
+        where: { isActive: true },
+        orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
+        select: {
+          id: true,
+          sku: true,
+          optionSignature: true,
+          isDefault: true,
+          isActive: true,
+          sortOrder: true,
+          options: {
+            orderBy: { attribute: { code: 'asc' } },
+            select: {
+              attributeId: true,
+              attributeOptionId: true,
+              attribute: { select: { id: true, code: true, nameFa: true, nameEn: true } },
+              attributeOption: { select: { id: true, code: true, labelFa: true, labelEn: true, swatchHex: true } },
+            },
+          },
+        },
+      },
     },
   });
   return product ? {
