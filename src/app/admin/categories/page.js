@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
+import CategoryAttributeManager from '@/components/admin/catalog/CategoryAttributeManager';
+import attributeUi from '@/components/admin/catalog/CatalogAttributeAdmin.module.css';
 
 const DEFAULT_CATEGORIES_SEED = [
   { id: 'cat-1', name: 'لپ‌تاپ', icon: '💻', count: '۵ مدل پرفروش', query: 'لپ تاپ' },
@@ -20,6 +23,7 @@ const DEFAULT_CATEGORIES_SEED = [
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  const [attributeCategory, setAttributeCategory] = useState(null);
 
   // Add/Edit category modal states
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
@@ -144,15 +148,20 @@ export default function AdminCategoriesPage() {
                 🏷️ دسته‌بندی‌های سایت
                 <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: '#f87820', fontWeight: '700' }}>{categories.length} دسته</span>
               </h2>
-              <button
-                onClick={() => {
-                  setAddCategoryForm({ name: '', icon: '', count: '', query: '' });
-                  setIsAddCategoryOpen(true);
-                }}
-                style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}
-              >
-                + افزودن دسته جدید
-              </button>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'flex-end' }}>
+                <Link href="/admin/attributes" className={attributeUi.secondaryButton} style={{ textDecoration: 'none' }}>
+                  مدیریت ویژگی‌ها
+                </Link>
+                <button
+                  onClick={() => {
+                    setAddCategoryForm({ name: '', icon: '', count: '', query: '' });
+                    setIsAddCategoryOpen(true);
+                  }}
+                  className={attributeUi.primaryButton}
+                >
+                  + افزودن دسته جدید
+                </button>
+              </div>
             </div>
 
             {/* Category Search */}
@@ -186,6 +195,12 @@ export default function AdminCategoriesPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => setAttributeCategory(category)}
+                      className={`${attributeUi.secondaryButton} ${attributeUi.categoryTrigger}`}
+                    >
+                      ویژگی‌ها
+                    </button>
                     <button
                       onClick={() => {
                         setEditCategoryForm(category);
@@ -271,6 +286,13 @@ export default function AdminCategoriesPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {attributeCategory && (
+        <CategoryAttributeManager
+          category={attributeCategory}
+          onClose={() => setAttributeCategory(null)}
+        />
       )}
 
     </AdminShell>

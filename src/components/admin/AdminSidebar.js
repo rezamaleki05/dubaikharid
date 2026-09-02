@@ -121,6 +121,13 @@ export default function AdminSidebar({
       icon: AdminIcons.folder(16)
     },
     {
+      key: 'attributes',
+      label: 'ویژگی‌های کاتالوگ',
+      href: ADMIN_ROUTES.attributes,
+      permission: ADMIN_PERMISSIONS.CATEGORIES_MANAGE,
+      icon: AdminIcons.tag(16)
+    },
+    {
       key: 'settings',
       label: 'تنظیمات',
       href: ADMIN_ROUTES.settings,

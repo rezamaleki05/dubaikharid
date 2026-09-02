@@ -70,6 +70,9 @@ export async function updateCatalogAttribute(client, id, data) {
   });
   if (!current) throw notFound('ویژگی پیدا نشد.', 'ATTRIBUTE_NOT_FOUND');
   if (data.code && data.code !== current.code) {
+    if (current._count.options > 0 || current._count.categoryAssignments > 0) {
+      throw conflict('کد فنی ویژگیِ استفاده‌شده قابل تغییر نیست.', 'ATTRIBUTE_CODE_IN_USE');
+    }
     const duplicate = await client.catalogAttribute.findUnique({ where: { code: data.code }, select: { id: true } });
     if (duplicate) throw conflict('ویژگی دیگری با این کد فنی وجود دارد.', 'ATTRIBUTE_CODE_EXISTS');
   }

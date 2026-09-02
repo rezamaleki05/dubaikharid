@@ -15,6 +15,7 @@ export const ADMIN_ROUTES = {
   brands: '/admin/brands',
   stores: '/admin/stores',
   categories: '/admin/categories',
+  attributes: '/admin/attributes',
   settings: '/admin/settings',
   admin_users: '/admin/admin-users',
   activity_logs: '/admin/activity-logs'
@@ -35,6 +36,7 @@ export const ADMIN_ROUTE_PERMISSIONS = Object.freeze({
   [ADMIN_ROUTES.brands]: ADMIN_PERMISSIONS.BRANDS_MANAGE,
   [ADMIN_ROUTES.stores]: ADMIN_PERMISSIONS.STORES_MANAGE,
   [ADMIN_ROUTES.categories]: ADMIN_PERMISSIONS.CATEGORIES_MANAGE,
+  [ADMIN_ROUTES.attributes]: ADMIN_PERMISSIONS.CATEGORIES_MANAGE,
   [ADMIN_ROUTES.settings]: ADMIN_PERMISSIONS.SETTINGS_VIEW,
   [ADMIN_ROUTES.admin_users]: ADMIN_PERMISSIONS.ADMIN_USERS_MANAGE,
   [ADMIN_ROUTES.activity_logs]: ADMIN_PERMISSIONS.ACTIVITY_LOGS_VIEW,
