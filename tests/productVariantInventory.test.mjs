@@ -221,11 +221,11 @@ test('all inventory APIs use Product RBAC and await dynamic params', () => {
   assert.doesNotMatch(routes, /WAREHOUSE_EDIT|LAPTOPS_EDIT/);
 });
 
-test('customer IRAN_STOCK checkout remains controlled-blocked', () => {
-  assert.match(publicOrders, /IRAN_STOCK_NOT_READY/);
-  assert.match(cartRoute, /IRAN_STOCK_NOT_READY/);
-  assert.doesNotMatch(publicOrders, /reserveProductInventory/);
-  assert.doesNotMatch(cartRoute, /productInventory/);
+test('customer IRAN_STOCK checkout reuses the atomic reservation foundation', () => {
+  assert.match(publicOrders, /createFutureIranStockVariantOrder/);
+  assert.match(publicOrders, /MIXED_FULFILLMENT/);
+  assert.match(cartRoute, /resolvePublicProductCartLines/);
+  assert.doesNotMatch(cartRoute, /productInventory\.(?:create|update|delete)/);
 });
 
 test('Warehouse and Laptop lifecycles remain independent from ProductInventory', () => {

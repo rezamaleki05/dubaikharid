@@ -129,10 +129,15 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
                 ? { laptopId: item.laptopId || item.id }
                 : item.warehouseItemId || item.product_type === 'warehouse_stock'
                   ? { warehouseItemId: item.warehouseItemId || item.id }
-                  : { productId: item.productId }),
+                  : {
+                      productId: item.productId,
+                      ...(item.productVariantId ? { productVariantId: item.productVariantId } : {}),
+                    }),
               quantity: item.quantity || 1,
-              selectedColor: item.color || item.selectedColor || '',
-              selectedSize: item.size || item.selectedSize || '',
+              ...(!item.productVariantId ? {
+                selectedColor: item.color || item.selectedColor || '',
+                selectedSize: item.size || item.selectedSize || '',
+              } : {}),
             })),
           }
         : {

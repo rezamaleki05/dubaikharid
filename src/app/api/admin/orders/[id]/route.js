@@ -76,7 +76,7 @@ export async function PATCH(request, { params }) {
     const previous = await prisma.order.findUnique({ where: { id }, select: { status: true, adminNotes: true } });
     if (!previous) return NextResponse.json({ error: 'سفارش پیدا نشد.' }, { status: 404 });
 
-    const updated = await prisma.$transaction(tx => updateOrderLifecycle(tx, id, data), { isolationLevel: 'Serializable' });
+    const updated = await prisma.$transaction(tx => updateOrderLifecycle(tx, id, data), { isolationLevel: 'Serializable', timeout: 20_000 });
     const statusChanged = data.status && data.status !== previous.status;
     const action = statusChanged
       ? (data.status === 'cancelled' ? 'ORDER_CANCELLED' : 'ORDER_STATUS_CHANGED')
@@ -116,7 +116,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'این سفارش قبلاً لغو شده است.' }, { status: 409 });
     }
 
-    const cancelled = await prisma.$transaction(tx => updateOrderLifecycle(tx, id, { status: 'cancelled' }), { isolationLevel: 'Serializable' });
+    const cancelled = await prisma.$transaction(tx => updateOrderLifecycle(tx, id, { status: 'cancelled' }), { isolationLevel: 'Serializable', timeout: 20_000 });
     await logAdminActivity({
       adminId: admin.id,
       action: 'ORDER_CANCELLED',

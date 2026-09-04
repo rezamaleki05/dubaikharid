@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
-import { fulfillOrderWarehouseReservations } from '@/lib/adminOrders';
+import { fulfillOrderInventoryReservations } from '@/lib/adminOrders';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import {
   adminShipmentInclude,
@@ -192,14 +192,14 @@ export async function POST(request) {
 
       const targetOrderStatus = orderStatusForShipment(created.status);
       if (targetOrderStatus === 'delivered') {
-        await fulfillOrderWarehouseReservations(tx, order.id, order.orderCode);
+        await fulfillOrderInventoryReservations(tx, order.id, order.orderCode);
         await tx.order.update({ where: { id: order.id }, data: { status: 'delivered' } });
       } else if (targetOrderStatus === 'shipped' && !['shipped', 'delivered'].includes(order.status)) {
-        await fulfillOrderWarehouseReservations(tx, order.id, order.orderCode);
+        await fulfillOrderInventoryReservations(tx, order.id, order.orderCode);
         await tx.order.update({ where: { id: order.id }, data: { status: 'shipped' } });
       }
       return tx.shipment.findUnique({ where: { id: created.id }, include: adminShipmentInclude });
-    }, { isolationLevel: 'Serializable' });
+    }, { isolationLevel: 'Serializable', timeout: 20_000 });
 
     await logAdminActivity({
       adminId: admin.id,

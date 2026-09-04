@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cartItemKey, CART_ITEM_TYPES, MAX_PRODUCT_QUANTITY } from '@/lib/clientCollectionState';
 import { prisma } from '@/lib/prisma';
+import { resolvePublicProductCartLines } from '@/lib/productCartService';
 import { publicRequestGuard } from '@/lib/publicRequestGuard';
 
 function cleanText(value, maximum, { required = false } = {}) {
@@ -21,15 +22,22 @@ function parseItems(body) {
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 100) throw new Error('INVALID_INPUT');
   return body.items.map(item => {
     if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('INVALID_INPUT');
-    const allowed = new Set(['type', 'id', 'quantity', 'selectedColor', 'selectedSize']);
+    const allowed = new Set(['type', 'id', 'productId', 'productVariantId', 'quantity', 'selectedColor', 'selectedSize']);
     if (Object.keys(item).some(key => !allowed.has(key)) || !CART_ITEM_TYPES.has(item.type)) throw new Error('INVALID_INPUT');
     const quantity = item.quantity === undefined ? 1 : Number(item.quantity);
     if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > MAX_PRODUCT_QUANTITY || (item.type === 'LAPTOP' && quantity !== 1)) {
       throw new Error('INVALID_INPUT');
     }
+    const legacyId = cleanText(item.id, 160);
+    const productId = cleanText(item.productId, 160);
+    if (item.type === 'PRODUCT' && legacyId && productId && legacyId !== productId) throw new Error('INVALID_INPUT');
+    if (item.type !== 'PRODUCT' && (productId || item.productVariantId !== undefined)) throw new Error('INVALID_INPUT');
+    const resolvedId = item.type === 'PRODUCT' ? productId || legacyId : legacyId;
+    if (!resolvedId) throw new Error('INVALID_INPUT');
     const parsed = {
       type: item.type,
-      id: cleanText(item.id, 160, { required: true }),
+      id: resolvedId,
+      productVariantId: item.type === 'PRODUCT' ? cleanText(item.productVariantId, 160) : null,
       quantity,
       selectedColor: cleanText(item.selectedColor, 120),
       selectedSize: cleanText(item.selectedSize, 120),
@@ -47,21 +55,18 @@ export async function POST(request) {
 
   try {
     const items = parseItems(body);
-    const productIds = [...new Set(items.filter(item => item.type === 'PRODUCT').map(item => item.id))];
+    const productLines = items.filter(item => item.type === 'PRODUCT').map(item => ({
+      productId: item.id,
+      productVariantId: item.productVariantId,
+      quantity: item.quantity,
+      selectedColor: item.selectedColor,
+      selectedSize: item.selectedSize,
+      requestKey: item.key,
+    }));
     const warehouseIds = [...new Set(items.filter(item => item.type === 'WAREHOUSE').map(item => item.id))];
     const laptopIds = [...new Set(items.filter(item => item.type === 'LAPTOP').map(item => item.id))];
-    const [products, warehouseItems, laptops] = await Promise.all([
-      productIds.length ? prisma.product.findMany({
-        where: { id: { in: productIds } },
-        select: {
-          id: true, nameFa: true, nameEn: true, priceAed: true, priceToman: true, supplyMode: true,
-          weight: true, originalLink: true, image: true,
-          discountPercent: true, hasDiscount: true, status: true,
-          brand: { select: { name: true, faName: true } },
-          store: { select: { name: true } },
-          warehouseItem: { select: { stock: true, reserved: true, isArchived: true } },
-        },
-      }) : [],
+    const [productResults, warehouseItems, laptops] = await Promise.all([
+      productLines.length ? resolvePublicProductCartLines(prisma, productLines) : [],
       warehouseIds.length ? prisma.warehouseItem.findMany({
         where: { id: { in: warehouseIds } },
         select: {
@@ -79,13 +84,9 @@ export async function POST(request) {
         },
       }) : [],
     ]);
-    const productsById = new Map(products.map(product => [product.id, product]));
+    const productsByKey = new Map(productResults.map(product => [product.requestKey, product]));
     const warehouseById = new Map(warehouseItems.map(item => [item.id, item]));
     const laptopsById = new Map(laptops.map(laptop => [laptop.id, laptop]));
-    const requestedByProduct = new Map();
-    for (const item of items.filter(candidate => candidate.type === 'PRODUCT')) {
-      requestedByProduct.set(item.id, (requestedByProduct.get(item.id) || 0) + item.quantity);
-    }
     const requestedByWarehouse = new Map();
     for (const item of items.filter(candidate => candidate.type === 'WAREHOUSE')) {
       requestedByWarehouse.set(item.id, (requestedByWarehouse.get(item.id) || 0) + item.quantity);
@@ -96,32 +97,8 @@ export async function POST(request) {
         return { ...item, available: true, authoritative: false };
       }
       if (item.type === 'PRODUCT') {
-        const product = productsById.get(item.id);
-        if (!product) return { ...item, available: false, authoritative: true, code: 'NOT_FOUND' };
-        const warehouseAvailable = !product.warehouseItem
-          || (!product.warehouseItem.isArchived && product.warehouseItem.stock - product.warehouseItem.reserved >= requestedByProduct.get(item.id));
-        const externalReady = product.supplyMode === 'EXTERNAL_DUBAI';
-        return {
-          ...item,
-          available: externalReady && product.status === 'active' && warehouseAvailable,
-          authoritative: true,
-          code: !externalReady
-            ? 'IRAN_STOCK_NOT_READY'
-            : product.status !== 'active' ? 'INACTIVE' : warehouseAvailable ? null : 'OUT_OF_STOCK',
-          name: product.nameFa,
-          nameFa: product.nameFa,
-          nameEn: product.nameEn,
-          brand: product.brand?.faName || product.brand?.name || '',
-          store: product.store?.name || '',
-          image: product.image || '',
-          originalLink: product.originalLink || '',
-          priceAed: product.priceAed == null ? null : Number(product.priceAed),
-          priceToman: product.priceToman == null ? null : product.priceToman.toFixed(0),
-          supplyMode: product.supplyMode,
-          weight: product.weight,
-          discountPercent: product.hasDiscount ? product.discountPercent : 0,
-          productId: product.id,
-        };
+        return productsByKey.get(item.key)
+          || { ...item, available: false, authoritative: true, code: 'PRODUCT_UNAVAILABLE' };
       }
       if (item.type === 'WAREHOUSE') {
         const warehouse = warehouseById.get(item.id);

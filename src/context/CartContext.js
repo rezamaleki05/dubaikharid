@@ -19,7 +19,8 @@ function enrichCartItem(item, resolved) {
   const priceChanged = Boolean(current.authoritative && (
     (item.type === 'LAPTOP' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
     || (item.type === 'WAREHOUSE' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
-    || (item.type === 'PRODUCT' && snapshot.priceAed !== null && current.priceAed !== snapshot.priceAed)
+    || (item.type === 'PRODUCT' && current.supplyMode === 'IRAN_STOCK' && snapshot.priceToman !== null && Number(current.priceToman) !== Number(snapshot.priceToman))
+    || (item.type === 'PRODUCT' && current.supplyMode !== 'IRAN_STOCK' && snapshot.priceAed !== null && Number(current.priceAed) !== Number(snapshot.priceAed))
   ));
   return {
     ...snapshot,
@@ -29,8 +30,9 @@ function enrichCartItem(item, resolved) {
     cartItemId: item.key,
     type: item.type,
     quantity: item.quantity,
-    selectedSize: item.selectedSize,
-    selectedColor: item.selectedColor,
+    productVariantId: current.productVariantId || item.productVariantId || null,
+    selectedSize: current.selectedSize ?? item.selectedSize,
+    selectedColor: current.selectedColor ?? item.selectedColor,
     productId: item.type === 'PRODUCT' ? item.id : undefined,
     laptopId: item.type === 'LAPTOP' ? item.id : undefined,
     warehouseItemId: item.type === 'WAREHOUSE' ? item.id : undefined,
@@ -107,14 +109,50 @@ export function CartProvider({ children }) {
     }).then(async response => {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'به‌روزرسانی سبد خرید انجام نشد.');
-      const byKey = new Map((payload.data?.items || []).map(item => [item.key, item]));
+      const resolved = payload.data?.items || [];
+      const byKey = new Map(resolved.map(item => [item.requestKey || item.key, item]));
       setResolvedItems(byKey);
       setResolveError('');
+      const migrations = new Map(resolved
+        .filter(item => item.type === 'PRODUCT' && item.productVariantId && item.key)
+        .map(item => [item.requestKey || item.key, item]));
+      if (migrations.size) {
+        replaceStoredItems(previous => {
+          let changed = false;
+          const merged = new Map();
+          for (const item of previous) {
+            const authoritative = migrations.get(item.key);
+            const migrated = authoritative && (
+              item.productVariantId !== authoritative.productVariantId || item.key !== authoritative.key
+            )
+              ? normalizeCartItem({
+                  ...item,
+                  productVariantId: authoritative.productVariantId,
+                  selectedColor: authoritative.selectedColor,
+                  selectedSize: authoritative.selectedSize,
+                  snapshot: { ...item.snapshot, ...authoritative },
+                })
+              : item;
+            if (migrated !== item) changed = true;
+            const existing = merged.get(migrated.key);
+            if (existing && migrated.type !== 'LAPTOP') {
+              changed = true;
+              merged.set(migrated.key, {
+                ...existing,
+                quantity: Math.min(MAX_PRODUCT_QUANTITY, existing.quantity + migrated.quantity),
+              });
+            } else {
+              merged.set(migrated.key, migrated);
+            }
+          }
+          return changed ? [...merged.values()] : previous;
+        });
+      }
     }).catch(error => {
       if (error.name !== 'AbortError') setResolveError(error.message || 'به‌روزرسانی سبد خرید انجام نشد.');
     });
     return () => controller.abort();
-  }, [hydrated, storedItems]);
+  }, [hydrated, replaceStoredItems, storedItems]);
 
   const cartItems = useMemo(
     () => storedItems.map(item => enrichCartItem(item, resolvedItems.get(item.key))),

@@ -53,8 +53,8 @@ test('warehouse reservation rejects insufficient stock and models cancellation a
   assert.equal(warehouseSales.fulfillWarehouseQuantity({ stock: 2, reserved: 1 }, 2), null);
   assert.match(adminOrders, /ORDER_RELEASE/);
   assert.match(adminOrders, /ORDER_FULFILLMENT/);
-  assert.match(shipmentCreateRoute, /fulfillOrderWarehouseReservations\(tx, order\.id/);
-  assert.match(shipmentUpdateRoute, /fulfillOrderWarehouseReservations\(tx, current\.order\.id/);
+  assert.match(shipmentCreateRoute, /fulfillOrderInventoryReservations\(tx, order\.id/);
+  assert.match(shipmentUpdateRoute, /fulfillOrderInventoryReservations\(tx, current\.order\.id/);
 });
 
 test('warehouse order reservation prevents concurrent overselling with compare-and-swap in a serializable transaction', () => {
@@ -74,7 +74,8 @@ test('Product and Laptop order branches remain explicit and separate from Wareho
   assert.match(publicOrders, /parsed\.type === 'LAPTOP_STOCK'/);
   assert.match(publicOrders, /parsed\.type === 'WAREHOUSE_STOCK'/);
   assert.match(publicOrders, /type: hasLaptop \? 'LAPTOP_STOCK' : hasWarehouse \? 'WAREHOUSE_STOCK' : 'CATALOG_PRODUCT'/);
-  assert.match(publicOrders, /const pricingSettings = parsed\.type === 'CATALOG_PRODUCT' \? await getPricingSettings\(\) : null/);
+  assert.match(publicOrders, /if \(resolvedProductLines\[0\]\.supplyMode === 'IRAN_STOCK'\)/);
+  assert.match(publicOrders, /pricingSettings = await getPricingSettings\(\)/);
 });
 
 test('every new OrderItem source must resolve to exactly one catalog type', () => {

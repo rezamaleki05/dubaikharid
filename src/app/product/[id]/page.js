@@ -108,6 +108,7 @@ export default function ProductPage({ params }) {
         id: product.id,
         ...(product.product_type === 'laptop_stock' ? { laptopId: product.id } : {}),
         ...(product.product_type === 'iran_inventory' ? { productId: product.id } : {}),
+        ...(product.productVariantId ? { productVariantId: product.productVariantId } : {}),
         product_type: product.product_type,
         link: product.originalLink || product.link || '',
         name: product.name,

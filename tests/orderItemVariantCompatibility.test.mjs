@@ -250,11 +250,12 @@ test('future transaction replay is accepted only for the same Order, lines and r
   assert.match(transactionService, /ORDER_IDEMPOTENCY_KEY_CONFLICT/);
 });
 
-test('public Cart and Checkout remain variant-unaware and keep the Iran guard', () => {
-  assert.match(publicOrders, /IRAN_STOCK_NOT_READY/);
-  assert.match(cartRoute, /IRAN_STOCK_NOT_READY/);
-  assert.doesNotMatch(publicOrders, /createFutureIranStockVariantOrder|productVariantId|selectedOptionsSnapshot/);
-  assert.doesNotMatch(cartRoute, /createFutureIranStockVariantOrder|productVariantId|selectedOptionsSnapshot/);
+test('Phase 2G reuses the Phase 2F snapshot transaction without duplicating snapshot fields in routes', () => {
+  assert.match(publicOrders, /createFutureIranStockVariantOrder/);
+  assert.match(publicOrders, /buildProductVariantOrderItemSnapshot/);
+  assert.match(publicOrders, /productVariantId/);
+  assert.match(cartRoute, /resolvePublicProductCartLines/);
+  assert.doesNotMatch(cartRoute, /selectedOptionsSnapshot/);
 });
 
 test('Warehouse, Laptop, Payment and Shipment architecture remains outside the Phase 2F migration', () => {

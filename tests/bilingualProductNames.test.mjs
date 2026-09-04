@@ -52,14 +52,16 @@ test('storefront detail renders Persian primary and English secondary names safe
 });
 
 test('cart, order snapshot, warehouse and GA4 receive the Persian compatibility name', async () => {
-  const [cart, orders, warehouse, analytics] = await Promise.all([
+  const [cart, cartDomain, orders, warehouse, analytics] = await Promise.all([
     read('src/app/api/cart/resolve/route.js'),
+    read('src/lib/productCartDomain.js'),
     read('src/lib/publicOrders.js'),
     read('src/lib/adminWarehouse.js'),
     read('src/lib/analytics.js'),
   ]);
-  assert.match(cart, /name: product\.nameFa/);
-  assert.match(orders, /return \{ name: product\.nameFa/);
+  assert.match(cart, /resolvePublicProductCartLines/);
+  assert.match(cartDomain, /name: product\.nameFa/);
+  assert.match(orders, /buildProductVariantOrderItemSnapshot/);
   assert.match(warehouse, /name: item\.product\.nameFa/);
   assert.match(analytics, /source\.name \|\| source\.productName/);
 });

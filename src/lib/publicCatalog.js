@@ -2,7 +2,12 @@ import 'server-only';
 
 import { prisma } from '@/lib/prisma';
 import { productNameApiFields } from '@/lib/productNames';
-import { serializeProductVariant } from '@/lib/adminProductVariantService';
+import {
+  publicVariantAxes,
+  publicVariantOptions,
+  resolveProductCartLineFromData,
+} from '@/lib/productCartDomain';
+import { getPricingSettings } from '@/lib/settings';
 
 export const PUBLIC_PRODUCT_STATUS = 'active';
 export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_STATUS });
@@ -207,7 +212,6 @@ export function serializePublicProduct(product) {
     storeId: product.store?.id || null,
     store: product.store?.name || 'فروشگاه دبی',
     spec: product.category?.name || '',
-    ...(Array.isArray(product.variants) ? { variants: product.variants.map(serializeProductVariant) } : {}),
   };
 }
 
@@ -291,6 +295,20 @@ export async function getPublicProduct(identifier) {
     select: {
       ...PUBLIC_PRODUCT_SELECT,
       brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          query: true,
+          _count: {
+            select: {
+              attributeAssignments: {
+                where: { isVariantDefining: true, attribute: { isActive: true } },
+              },
+            },
+          },
+        },
+      },
       variants: {
         where: { isActive: true },
         orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
@@ -310,18 +328,51 @@ export async function getPublicProduct(identifier) {
             select: {
               attributeId: true,
               attributeOptionId: true,
-              attribute: { select: { id: true, code: true, nameFa: true, nameEn: true } },
-              attributeOption: { select: { id: true, code: true, labelFa: true, labelEn: true, swatchHex: true } },
+              attribute: { select: { id: true, code: true, nameFa: true, nameEn: true, sortOrder: true } },
+              attributeOption: { select: { id: true, code: true, labelFa: true, labelEn: true, swatchHex: true, sortOrder: true } },
             },
           },
+          inventory: { select: { stock: true, reserved: true } },
         },
       },
     },
   });
-  return product ? {
+  if (!product) return null;
+  const variantAxes = publicVariantAxes(product.variants);
+  const variantAxisCount = product.category?._count?.attributeAssignments || 0;
+  const settings = product.supplyMode === 'EXTERNAL_DUBAI' ? await getPricingSettings() : null;
+  const resolutionProduct = { ...product, variantAxisCount };
+  const variants = product.variants.map(variant => {
+    const line = resolveProductCartLineFromData({
+      product: resolutionProduct,
+      line: { productVariantId: variant.id, quantity: 1, requestKey: null },
+      settings,
+    });
+    return {
+      id: variant.id,
+      sku: variant.sku || null,
+      optionSignature: variant.optionSignature,
+      isDefault: variant.isDefault,
+      options: publicVariantOptions(variant),
+      pricing: line.pricing,
+      inventory: line.inventory,
+      available: line.available,
+      unavailableCode: line.code,
+    };
+  });
+  const defaultVariant = variantAxisCount === 0 && variantAxes.length === 0 && variants.length === 1 && variants[0].isDefault
+    ? variants[0]
+    : null;
+  return {
     ...serializePublicProduct(product),
     brandVisible: product.brand?.showInBrandDirectory === true,
-  } : null;
+    variantAxes,
+    variants,
+    requiresVariantSelection: variantAxisCount > 0 || variantAxes.length > 0,
+    productVariantId: defaultVariant?.id || null,
+    variant: defaultVariant || null,
+    inStock: defaultVariant ? defaultVariant.available : variants.some(variant => variant.available),
+  };
 }
 
 export async function getPublicDiscovery({ search = '', category = '', limit = 60 } = {}) {

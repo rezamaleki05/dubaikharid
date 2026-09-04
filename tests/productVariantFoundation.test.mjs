@@ -194,12 +194,13 @@ test('all variant Admin APIs use existing Product RBAC and strict validators', (
   assert.match(variantRoutes, /validateReplaceProductVariantOptionsPayload/);
 });
 
-test('Product backend detail returns localized active variant option data without UI changes', () => {
+test('Product backend detail returns localized active variant option data without final selector UI', () => {
   for (const field of [
     'attributeId', 'attributeCode', 'attributeNameFa', 'attributeNameEn',
     'optionId', 'optionCode', 'labelFa', 'labelEn', 'swatchHex',
   ]) assert.match(service, new RegExp(field));
   assert.match(publicCatalog, /variants: \{/);
   assert.match(publicCatalog, /where: \{ isActive: true \}/);
-  assert.match(publicCatalog, /serializeProductVariant/);
+  assert.match(publicCatalog, /publicVariantOptions/);
+  assert.match(publicCatalog, /variantAxes/);
 });

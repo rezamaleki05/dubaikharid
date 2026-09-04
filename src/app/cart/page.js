@@ -49,8 +49,10 @@ export default function CartPage() {
   const totalToman = discountedSubtotalToman + shippingToman;
   const hasUnavailableItems = cartItems.some(item => item.unavailable);
   const isResolving = cartItems.some(item => item.resolving);
-  const checkoutTypes = new Set(cartItems.map(item => item.type));
-  const hasMixedDatabaseTypes = checkoutTypes.size > 1;
+  const checkoutGroups = new Set(cartItems.map(item => (
+    item.type === 'PRODUCT' ? `PRODUCT:${item.supplyMode || 'UNRESOLVED'}` : item.type
+  )));
+  const hasMixedFulfillmentGroups = checkoutGroups.size > 1;
 
   useEffect(() => {
     if (hydrated && !isResolving && !cartViewTrackedRef.current && trackViewCart(cartItems)) {
@@ -60,7 +62,7 @@ export default function CartPage() {
 
   // Trigger pre-invoice checkout modal for entire cart
   const handleProceedToCheckout = () => {
-    if (hasUnavailableItems || isResolving || hasMixedDatabaseTypes || resolveError) return;
+    if (hasUnavailableItems || isResolving || hasMixedFulfillmentGroups || resolveError) return;
     // Compile total order weight and general description
     const totalWeight = cartItems.reduce((acc, item) => acc + (item.weight * item.quantity), 0);
     
@@ -77,6 +79,7 @@ export default function CartPage() {
         type: item.type,
         ...(item.type === 'LAPTOP' ? { laptopId: item.id } : {}),
         ...(item.type === 'PRODUCT' ? { productId: item.id } : {}),
+        ...(item.type === 'PRODUCT' && item.productVariantId ? { productVariantId: item.productVariantId } : {}),
         ...(item.type === 'WAREHOUSE' ? { warehouseItemId: item.id } : {}),
         product_type: item.product_type,
         link: item.originalLink || item.link || '',
@@ -136,14 +139,16 @@ export default function CartPage() {
                         <div className={styles.itemName}>{item.name}</div>
                         
                         {/* Render size and color options if selected */}
-                        {(item.selectedSize || item.selectedColor) && (
+                        {(item.variant?.options?.length || item.selectedSize || item.selectedColor) && (
                           <div style={{ display: 'flex', gap: '12px', margin: '6px 0 10px', fontSize: '12px', color: '#ff781f', fontWeight: '600' }}>
-                            {item.selectedColor && (
-                              <span>رنگ: {item.selectedColor}</span>
-                            )}
-                            {item.selectedSize && (
-                              <span>سایز: {item.selectedSize}</span>
-                            )}
+                            {item.variant?.options?.length
+                              ? item.variant.options.map(option => (
+                                  <span key={`${option.attributeCode}:${option.optionCode}`}>{option.attributeNameFa}: {option.labelFa}</span>
+                                ))
+                              : <>
+                                  {item.selectedColor && <span>رنگ: {item.selectedColor}</span>}
+                                  {item.selectedSize && <span>سایز: {item.selectedSize}</span>}
+                                </>}
                           </div>
                         )}
 
@@ -231,13 +236,13 @@ export default function CartPage() {
 
                 {resolveError && <div style={{ color: '#d93025', fontSize: '12px', marginBottom: '10px' }}>{resolveError}</div>}
                 {hasUnavailableItems && <div style={{ color: '#d93025', fontSize: '12px', marginBottom: '10px' }}>برای ادامه، کالای ناموجود را از سبد حذف کنید.</div>}
-                {hasMixedDatabaseTypes && <div style={{ color: '#a35b00', fontSize: '12px', marginBottom: '10px' }}>انواع مختلف کالا باید جداگانه سفارش داده شوند.</div>}
+                {hasMixedFulfillmentGroups && <div style={{ color: '#a35b00', fontSize: '12px', marginBottom: '10px' }}>گروه‌های تأمین متفاوت باید جداگانه سفارش داده شوند.</div>}
                 
                 <button 
                   type="button"
                   className={styles.checkoutBtn}
                   onClick={handleProceedToCheckout}
-                  disabled={hasUnavailableItems || isResolving || hasMixedDatabaseTypes || Boolean(resolveError)}
+                  disabled={hasUnavailableItems || isResolving || hasMixedFulfillmentGroups || Boolean(resolveError)}
                 >
                   {isResolving ? 'در حال بررسی قیمت و موجودی...' : 'تکمیل سفارش و پرداخت'}
                 </button>

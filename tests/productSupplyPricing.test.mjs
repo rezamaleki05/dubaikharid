@@ -230,12 +230,11 @@ test('protected Admin foundation exposes mode update, Variant overrides and auth
   assert.match(service, /AED_PRICE_REQUIRED/);
 });
 
-test('IRAN_STOCK is controlled-blocked in cart resolution and order creation', () => {
-  assert.match(cartRoute, /IRAN_STOCK_NOT_READY/);
-  assert.match(cartRoute, /available: externalReady/);
-  assert.match(publicOrders, /IRAN_STOCK_NOT_READY/);
-  assert.match(publicOrders, /product\.supplyMode === 'IRAN_STOCK'/);
-  assert.ok(publicOrders.indexOf('IRAN_STOCK_NOT_READY') < publicOrders.indexOf('calculateProductPricing({ priceAed: subtotalAed'));
+test('IRAN_STOCK requires an authoritative Variant and inventory-aware transaction', () => {
+  assert.match(cartRoute, /resolvePublicProductCartLines/);
+  assert.match(publicOrders, /createFutureIranStockVariantOrder/);
+  assert.match(publicOrders, /resolvedProductLines\[0\]\.supplyMode === 'IRAN_STOCK'/);
+  assert.match(publicOrders, /INVENTORY_NOT_INITIALIZED/);
 });
 
 test('Warehouse and Laptop pricing remain independent of Product resolver', () => {

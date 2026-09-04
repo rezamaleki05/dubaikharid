@@ -52,5 +52,5 @@ test('product quantities merge and clamp while laptops remain unique quantity on
 
 test('resolver payload strips display snapshots, price and status', () => {
   const item = normalizeCartItem({ productId: 'p1', quantity: 2, name: 'کالا', priceAed: 99, status: 'active' });
-  assert.deepEqual(resolverPayload([item]), [{ type: 'PRODUCT', id: 'p1', quantity: 2 }]);
+  assert.deepEqual(resolverPayload([item]), [{ type: 'PRODUCT', productId: 'p1', quantity: 2 }]);
 });

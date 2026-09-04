@@ -328,58 +328,70 @@ export async function reserveProductInventory(client, input) {
   return reservation;
 }
 
-async function transitionReservation(client, { reservationKey, targetStatus, adminId = null }) {
+export async function transitionProductInventoryReservationInTransaction(
+  tx,
+  { reservationKey, targetStatus, adminId = null },
+) {
   const key = assertKey(reservationKey, 'کلید رزرو');
   const isRelease = targetStatus === 'RELEASED';
-  return runSerializableWithRetry(client, async tx => {
-    const reservation = await tx.productInventoryReservation.findUnique({
-      where: { reservationKey: key },
-      include: { inventory: { include: { variant: { select: inventoryVariantSelect } } } },
-    });
-    if (!reservation) throw notFound('رزرو موجودی پیدا نشد.', 'PRODUCT_INVENTORY_RESERVATION_NOT_FOUND');
-    if (reservation.status === targetStatus) return serializeReservation(reservation);
-    if (reservation.status !== 'ACTIVE') {
-      throw conflict(
-        isRelease ? 'رزرو انجام‌شده قابل آزادسازی نیست.' : 'رزرو آزادشده قابل نهایی‌سازی نیست.',
-        'INVALID_RESERVATION_TRANSITION',
-      );
-    }
-    const current = reservation.inventory;
-    if (current.reserved < reservation.quantity || (!isRelease && current.stock < reservation.quantity)) {
-      throw conflict('شمارنده‌های موجودی رزرو ناسازگار است.', 'PRODUCT_INVENTORY_STATE_CONFLICT');
-    }
-    const stockAfter = isRelease ? current.stock : current.stock - reservation.quantity;
-    const reservedAfter = current.reserved - reservation.quantity;
-    const transitioned = await tx.productInventoryReservation.updateMany({
-      where: { id: reservation.id, status: 'ACTIVE' },
-      data: isRelease
-        ? { status: 'RELEASED', releasedAt: new Date() }
-        : { status: 'FULFILLED', fulfilledAt: new Date() },
-    });
-    if (transitioned.count !== 1) throw concurrentUpdate();
-    const changed = await tx.productInventory.updateMany({
-      where: { id: current.id, stock: current.stock, reserved: current.reserved },
-      data: { stock: stockAfter, reserved: reservedAfter },
-    });
-    if (changed.count !== 1) throw concurrentUpdate();
-    await tx.productInventoryMovement.create({ data: {
-      inventoryId: current.id,
-      reservationId: reservation.id,
-      type: isRelease ? 'ORDER_RELEASE' : 'ORDER_FULFILLMENT',
-      quantity: reservation.quantity,
-      stockBefore: current.stock,
-      stockAfter,
-      reservedBefore: current.reserved,
-      reservedAfter,
-      reason: `${isRelease ? 'آزادسازی' : 'نهایی‌سازی'} رزرو ${key}`,
-      idempotencyKey: `${isRelease ? 'release' : 'fulfill'}:${key}`,
-      adminId,
-    } });
-    return serializeReservation(await tx.productInventoryReservation.findUnique({
-      where: { id: reservation.id },
-      include: { inventory: true },
-    }));
-  }, { retryUnique: true });
+  if (!['RELEASED', 'FULFILLED'].includes(targetStatus)) {
+    throw new ProductInventoryError('وضعیت نهایی رزرو معتبر نیست.');
+  }
+  const reservation = await tx.productInventoryReservation.findUnique({
+    where: { reservationKey: key },
+    include: { inventory: { include: { variant: { select: inventoryVariantSelect } } } },
+  });
+  if (!reservation) throw notFound('رزرو موجودی پیدا نشد.', 'PRODUCT_INVENTORY_RESERVATION_NOT_FOUND');
+  if (reservation.status === targetStatus) return serializeReservation(reservation);
+  if (reservation.status !== 'ACTIVE') {
+    throw conflict(
+      isRelease ? 'رزرو انجام‌شده قابل آزادسازی نیست.' : 'رزرو آزادشده قابل نهایی‌سازی نیست.',
+      'INVALID_RESERVATION_TRANSITION',
+    );
+  }
+  const current = reservation.inventory;
+  if (current.reserved < reservation.quantity || (!isRelease && current.stock < reservation.quantity)) {
+    throw conflict('شمارنده‌های موجودی رزرو ناسازگار است.', 'PRODUCT_INVENTORY_STATE_CONFLICT');
+  }
+  const stockAfter = isRelease ? current.stock : current.stock - reservation.quantity;
+  const reservedAfter = current.reserved - reservation.quantity;
+  const transitioned = await tx.productInventoryReservation.updateMany({
+    where: { id: reservation.id, status: 'ACTIVE' },
+    data: isRelease
+      ? { status: 'RELEASED', releasedAt: new Date() }
+      : { status: 'FULFILLED', fulfilledAt: new Date() },
+  });
+  if (transitioned.count !== 1) throw concurrentUpdate();
+  const changed = await tx.productInventory.updateMany({
+    where: { id: current.id, stock: current.stock, reserved: current.reserved },
+    data: { stock: stockAfter, reserved: reservedAfter },
+  });
+  if (changed.count !== 1) throw concurrentUpdate();
+  await tx.productInventoryMovement.create({ data: {
+    inventoryId: current.id,
+    reservationId: reservation.id,
+    type: isRelease ? 'ORDER_RELEASE' : 'ORDER_FULFILLMENT',
+    quantity: reservation.quantity,
+    stockBefore: current.stock,
+    stockAfter,
+    reservedBefore: current.reserved,
+    reservedAfter,
+    reason: `${isRelease ? 'آزادسازی' : 'نهایی‌سازی'} رزرو ${key}`,
+    idempotencyKey: `${isRelease ? 'release' : 'fulfill'}:${key}`,
+    adminId,
+  } });
+  return serializeReservation(await tx.productInventoryReservation.findUnique({
+    where: { id: reservation.id },
+    include: { inventory: true },
+  }));
+}
+
+async function transitionReservation(client, input) {
+  return runSerializableWithRetry(
+    client,
+    tx => transitionProductInventoryReservationInTransaction(tx, input),
+    { retryUnique: true },
+  );
 }
 
 export function releaseProductInventoryReservation(client, input) {

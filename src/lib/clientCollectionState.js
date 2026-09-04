@@ -54,6 +54,11 @@ function displaySnapshot(item) {
 }
 
 export function cartItemKey(item) {
+  if (item.type === 'PRODUCT' && item.productVariantId) {
+    return [item.type, item.id, item.productVariantId]
+      .map(value => encodeURIComponent(value))
+      .join(':');
+  }
   const options = item.type === 'LAPTOP' ? ['', ''] : [item.selectedSize || '', item.selectedColor || ''];
   return [item.type, item.id, ...options]
     .map(value => encodeURIComponent(value))
@@ -70,6 +75,7 @@ export function normalizeCartItem(item) {
   const normalized = {
     type,
     id,
+    productVariantId: type === 'PRODUCT' ? cleanText(item.productVariantId, 160) || null : null,
     quantity: type === 'LAPTOP' ? 1 : Math.min(rawQuantity, MAX_PRODUCT_QUANTITY),
     selectedSize: cleanText(item.selectedSize || item.size, 120) || null,
     selectedColor: cleanText(item.selectedColor || item.color, 120) || null,
@@ -113,11 +119,20 @@ export const parseCartStorage = raw => parseCollection(raw, normalizeCartItem);
 export const parseWishlistStorage = raw => parseCollection(raw, normalizeWishlistItem);
 
 export function resolverPayload(items) {
-  return items.map(item => ({
-    type: item.type,
-    id: item.id,
-    ...(Object.hasOwn(item, 'quantity') ? { quantity: item.quantity } : {}),
-    ...(item.selectedColor ? { selectedColor: item.selectedColor } : {}),
-    ...(item.selectedSize ? { selectedSize: item.selectedSize } : {}),
-  }));
+  return items.map(item => item.type === 'PRODUCT'
+    ? {
+        type: item.type,
+        productId: item.id,
+        ...(item.productVariantId ? { productVariantId: item.productVariantId } : {}),
+        ...(Object.hasOwn(item, 'quantity') ? { quantity: item.quantity } : {}),
+        ...(!item.productVariantId && item.selectedColor ? { selectedColor: item.selectedColor } : {}),
+        ...(!item.productVariantId && item.selectedSize ? { selectedSize: item.selectedSize } : {}),
+      }
+    : {
+        type: item.type,
+        id: item.id,
+        ...(Object.hasOwn(item, 'quantity') ? { quantity: item.quantity } : {}),
+        ...(item.selectedColor ? { selectedColor: item.selectedColor } : {}),
+        ...(item.selectedSize ? { selectedSize: item.selectedSize } : {}),
+      });
 }

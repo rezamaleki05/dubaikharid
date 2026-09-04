@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
-import { fulfillOrderWarehouseReservations } from '@/lib/adminOrders';
+import { fulfillOrderInventoryReservations } from '@/lib/adminOrders';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import {
   adminShipmentInclude,
@@ -75,13 +75,13 @@ export async function PATCH(request, { params }) {
         current.order &&
         !['shipped', 'delivered'].includes(current.order.status)
       ) {
-        await fulfillOrderWarehouseReservations(tx, current.order.id);
+        await fulfillOrderInventoryReservations(tx, current.order.id);
         await tx.order.update({ where: { id: current.order.id }, data: { status: 'shipped' } });
       }
 
       const updated = await tx.shipment.findUnique({ where: { id }, include: adminShipmentInclude });
       return { shipment: updated, changed: true, statusChanged, previousStatus: current.status };
-    }, { isolationLevel: 'Serializable' });
+    }, { isolationLevel: 'Serializable', timeout: 20_000 });
 
     if (result.changed) {
       const action = result.statusChanged

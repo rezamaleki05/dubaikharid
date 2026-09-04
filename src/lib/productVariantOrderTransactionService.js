@@ -41,20 +41,28 @@ function validateLines(lines) {
 function orderInclude() {
   return {
     items: { include: { inventoryReservation: true } },
+    payments: true,
     productInventoryReservations: {
       include: { orderItem: { select: { productVariantId: true } } },
     },
   };
 }
 
-function assertIdempotentReplay(order, { orderCode, reservationGroupKey, lines }) {
+function assertIdempotentReplay(order, {
+  orderCode,
+  reservationGroupKey,
+  lines,
+  paymentMethod,
+  customerPhoneSnapshot,
+}) {
   const itemsByVariant = new Map(order.items.map(item => [item.productVariantId, item]));
   const reservationsByVariant = new Map(order.productInventoryReservations.map(reservation => [
     reservation.orderItem?.productVariantId,
     reservation,
   ]));
   const compatible = order.type === 'IRAN_STOCK_PRODUCT'
-    && order.orderCode === orderCode
+    && (!orderCode || order.orderCode === orderCode)
+    && (!customerPhoneSnapshot || order.customerPhoneSnapshot === customerPhoneSnapshot)
     && order.items.length === lines.length
     && order.productInventoryReservations.length === lines.length
     && lines.every(line => {
@@ -64,7 +72,12 @@ function assertIdempotentReplay(order, { orderCode, reservationGroupKey, lines }
         && item?.quantity === line.quantity
         && reservation?.reservationKey === `${reservationGroupKey}:${line.variantId}`
         && reservation?.quantity === line.quantity;
-    });
+    })
+    && (!paymentMethod || (
+      order.payments.length === 1
+      && order.payments[0].method === paymentMethod
+      && order.payments[0].amount.toFixed(0) === String(Math.round(Number(order.totalToman)))
+    ));
   if (!compatible) {
     throw new ProductVariantOrderItemError(
       'کلید تکرارناپذیری سفارش قبلاً برای درخواست دیگری استفاده شده است.',
@@ -89,12 +102,21 @@ export async function createFutureIranStockVariantOrder(
     deliveryAddress = null,
     notes = null,
     adminId = null,
+    paymentMethod = null,
+    customerResolver = null,
+    orderCodeFactory = null,
   },
 ) {
-  const normalizedOrderCode = requiredKey(orderCode, 'شماره سفارش');
+  const normalizedOrderCode = orderCode == null ? null : requiredKey(orderCode, 'شماره سفارش');
   const normalizedIdempotencyKey = requiredKey(idempotencyKey, 'کلید تکرارناپذیری سفارش');
   const normalizedReservationGroupKey = requiredKey(reservationGroupKey, 'کلید گروه رزرو');
   const normalizedLines = validateLines(lines);
+  if (paymentMethod !== null && !['CARD', 'ONLINE'].includes(paymentMethod)) {
+    throw new ProductVariantOrderItemError('روش پرداخت سفارش معتبر نیست.', 400, 'INVALID_PAYMENT_METHOD');
+  }
+  if (customerResolver !== null && typeof customerResolver !== 'function') {
+    throw new ProductVariantOrderItemError('حل‌کننده مشتری معتبر نیست.', 500, 'INVALID_CUSTOMER_RESOLVER');
+  }
 
   return runSerializableWithRetry(client, async tx => {
     const prior = await tx.order.findUnique({
@@ -106,10 +128,14 @@ export async function createFutureIranStockVariantOrder(
         orderCode: normalizedOrderCode,
         reservationGroupKey: normalizedReservationGroupKey,
         lines: normalizedLines,
+        paymentMethod,
+        customerPhoneSnapshot,
       });
       return { order: prior, reservations: prior.productInventoryReservations, created: false };
     }
 
+    const resolvedCustomer = customerResolver ? await customerResolver(tx) : null;
+    const resolvedCustomerId = resolvedCustomer?.id || customerId;
     const itemSnapshots = [];
     for (const line of normalizedLines) {
       const snapshot = await buildProductVariantOrderItemSnapshot(tx, line);
@@ -141,13 +167,14 @@ export async function createFutureIranStockVariantOrder(
       throw new ProductVariantOrderItemError('جمع مبلغ سفارش خارج از محدوده امن است.', 409, 'ORDER_TOTAL_OUT_OF_RANGE');
     }
 
+    const finalOrderCode = normalizedOrderCode || requiredKey(orderCodeFactory?.(), 'شماره سفارش');
     const created = await tx.order.create({
       data: {
-        orderCode: normalizedOrderCode,
+        orderCode: finalOrderCode,
         idempotencyKey: normalizedIdempotencyKey,
         type: 'IRAN_STOCK_PRODUCT',
         pricingStatus: 'CONFIRMED',
-        customerId,
+        customerId: resolvedCustomerId,
         customerNameSnapshot,
         customerPhoneSnapshot,
         customerEmailSnapshot,
@@ -159,6 +186,18 @@ export async function createFutureIranStockVariantOrder(
         productSubtotalToman: new Prisma.Decimal(totalToman.toString()),
         shippingCostToman: new Prisma.Decimal(0),
         items: { create: itemSnapshots },
+        ...(paymentMethod ? {
+          payments: {
+            create: {
+              amount: new Prisma.Decimal(totalToman.toString()),
+              currency: 'TOMAN',
+              method: paymentMethod,
+              type: 'INCOME',
+              category: 'سفارشات',
+              status: 'pending',
+            },
+          },
+        } : {}),
       },
       include: { items: true },
     });

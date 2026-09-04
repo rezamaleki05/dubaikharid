@@ -1,5 +1,6 @@
 import 'server-only';
 import { canTransitionOrder } from '@/lib/orderStatuses';
+import { transitionProductInventoryReservationInTransaction } from '@/lib/productInventoryService';
 import { serializeOrderItemSnapshot } from '@/lib/productVariantOrderItemDomain';
 import { fulfillWarehouseQuantity, releaseWarehouseQuantity } from '@/lib/warehouseSales';
 
@@ -141,6 +142,7 @@ export async function updateOrderLifecycle(tx, id, data) {
     include: {
       payments: { select: { amount: true, status: true } },
       inventoryMovements: { where: { type: { in: ['ORDER_RESERVATION', 'ORDER_RELEASE', 'ORDER_FULFILLMENT'] } } },
+      productInventoryReservations: { select: { reservationKey: true, status: true } },
     },
   });
   if (!current) throw new OrderDomainError('سفارش پیدا نشد.', 404, 'NOT_FOUND');
@@ -153,6 +155,16 @@ export async function updateOrderLifecycle(tx, id, data) {
 
   if (nextStatus === 'cancelled' && current.status !== 'cancelled') {
     await tx.laptop.updateMany({ where: { reservedOrderId: id, status: 'RESERVED' }, data: { status: 'AVAILABLE', reservedOrderId: null } });
+    for (const reservation of current.productInventoryReservations.filter(item => item.status === 'ACTIVE')) {
+      try {
+        await transitionProductInventoryReservationInTransaction(tx, {
+          reservationKey: reservation.reservationKey,
+          targetStatus: 'RELEASED',
+        });
+      } catch (error) {
+        throw new OrderDomainError(error.message, error.status || 409, error.code || 'INVENTORY_CONFLICT');
+      }
+    }
     const completedItems = new Set(current.inventoryMovements.filter(movement => ['ORDER_RELEASE', 'ORDER_FULFILLMENT'].includes(movement.type)).map(movement => movement.warehouseItemId));
     const reservations = new Map();
     for (const movement of current.inventoryMovements.filter(item => item.type === 'ORDER_RESERVATION' && !completedItems.has(item.warehouseItemId))) {
@@ -170,7 +182,7 @@ export async function updateOrderLifecycle(tx, id, data) {
     }
   }
 
-  if (nextStatus === 'shipped' && current.status !== 'shipped') await fulfillOrderWarehouseReservations(tx, id, current.orderCode);
+  if (nextStatus === 'shipped' && current.status !== 'shipped') await fulfillOrderInventoryReservations(tx, id, current.orderCode);
 
   return tx.order.update({ where: { id }, data, include: adminOrderInclude });
 }
@@ -194,4 +206,27 @@ export async function fulfillOrderWarehouseReservations(tx, orderId, knownOrderC
     const updated = await tx.warehouseItem.update({ where: { id: warehouse.id }, data: { stock: { decrement: amount }, reserved: { decrement: amount } } });
     await tx.inventoryMovement.create({ data: { warehouseItemId: warehouse.id, type: 'ORDER_FULFILLMENT', quantityChange: -amount, quantityBefore: warehouse.stock, quantityAfter: updated.stock, reservedBefore: warehouse.reserved, reservedAfter: updated.reserved, reason: `خروج قطعی سفارش ${order?.orderCode || orderId}`, orderId } });
   }
+}
+
+export async function fulfillOrderProductInventoryReservations(tx, orderId) {
+  const reservations = await tx.productInventoryReservation.findMany({
+    where: { orderId, status: 'ACTIVE' },
+    select: { reservationKey: true },
+    orderBy: { reservationKey: 'asc' },
+  });
+  for (const reservation of reservations) {
+    try {
+      await transitionProductInventoryReservationInTransaction(tx, {
+        reservationKey: reservation.reservationKey,
+        targetStatus: 'FULFILLED',
+      });
+    } catch (error) {
+      throw new OrderDomainError(error.message, error.status || 409, error.code || 'INVENTORY_CONFLICT');
+    }
+  }
+}
+
+export async function fulfillOrderInventoryReservations(tx, orderId, knownOrderCode = null) {
+  await fulfillOrderWarehouseReservations(tx, orderId, knownOrderCode);
+  await fulfillOrderProductInventoryReservations(tx, orderId);
 }
