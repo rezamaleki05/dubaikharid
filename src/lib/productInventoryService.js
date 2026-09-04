@@ -35,11 +35,11 @@ function isRetryable(error, retryUnique) {
     || (retryUnique && error?.code === 'P2002');
 }
 
-async function runSerializableWithRetry(client, operation, { retryUnique = false } = {}) {
+export async function runSerializableWithRetry(client, operation, { retryUnique = false, timeout = 5_000 } = {}) {
   let lastError;
   for (let attempt = 0; attempt < MAX_SERIALIZABLE_RETRIES; attempt += 1) {
     try {
-      return await client.$transaction(operation, { isolationLevel: 'Serializable' });
+      return await client.$transaction(operation, { isolationLevel: 'Serializable', timeout });
     } catch (error) {
       lastError = error;
       if (!isRetryable(error, retryUnique) || attempt === MAX_SERIALIZABLE_RETRIES - 1) throw error;
@@ -85,6 +85,8 @@ function serializeReservation(reservation) {
     reservationKey: reservation.reservationKey,
     quantity: reservation.quantity,
     status: reservation.status,
+    orderId: reservation.orderId ?? null,
+    orderItemId: reservation.orderItemId ?? null,
     expiresAt: reservation.expiresAt?.toISOString?.() ?? null,
     releasedAt: reservation.releasedAt?.toISOString?.() ?? null,
     fulfilledAt: reservation.fulfilledAt?.toISOString?.() ?? null,
@@ -232,79 +234,93 @@ function assertReservationReplay(reservation, line) {
   }
 }
 
-export async function reserveProductInventoryLines(client, { lines, expiresAt = null, adminId = null }) {
+function normalizeReservationLines(lines) {
   if (!Array.isArray(lines) || lines.length < 1) throw new ProductInventoryError('حداقل یک ردیف رزرو لازم است.');
   const seenVariants = new Set();
-  for (const line of lines) {
+  return lines.map(line => {
     assertPositiveInteger(line.quantity);
-    line.reservationKey = assertKey(line.reservationKey, 'کلید رزرو');
+    const reservationKey = assertKey(line.reservationKey, 'کلید رزرو');
     if (seenVariants.has(line.variantId)) throw new ProductInventoryError('هر تنوع فقط یک بار می‌تواند رزرو شود.');
     seenVariants.add(line.variantId);
-  }
-  return runSerializableWithRetry(client, async tx => {
-    const variants = await tx.productVariant.findMany({
-      where: { id: { in: lines.map(line => line.variantId) } },
-      select: { ...inventoryVariantSelect, inventory: true },
-    });
-    if (variants.length !== lines.length) throw notFound('یک یا چند تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
-    const byId = new Map(variants.map(variant => [variant.id, variant]));
-    const resolved = lines.map(line => {
-      const variant = byId.get(line.variantId);
-      if (variant.product.supplyMode !== 'IRAN_STOCK') {
-        throw conflict('موجودی فیزیکی فقط برای محصول موجود در ایران مجاز است.', 'PRODUCT_INVENTORY_NOT_APPLICABLE');
-      }
-      if (!variant.isActive) throw conflict('تنوع محصول غیرفعال است.', 'VARIANT_INACTIVE');
-      if (!variant.inventory) throw notFound('موجودی تنوع مقداردهی نشده است.', 'PRODUCT_INVENTORY_NOT_FOUND');
-      return { ...line, inventory: variant.inventory };
-    }).sort((left, right) => left.inventory.id.localeCompare(right.inventory.id));
+    return { ...line, reservationKey };
+  });
+}
 
-    const existingRows = await tx.productInventoryReservation.findMany({
-      where: { reservationKey: { in: resolved.map(line => line.reservationKey) } },
-      include: { inventory: true },
-    });
-    const existingByKey = new Map(existingRows.map(row => [row.reservationKey, row]));
-    const reservations = [];
-    for (const line of resolved) {
-      const replay = existingByKey.get(line.reservationKey);
-      if (replay) {
-        assertReservationReplay(replay, line);
-        reservations.push(replay);
-        continue;
-      }
-      const current = await tx.productInventory.findUnique({ where: { id: line.inventory.id } });
-      if (!current || current.stock - current.reserved < line.quantity) {
-        throw conflict('موجودی قابل رزرو کافی نیست.', 'INSUFFICIENT_STOCK');
-      }
-      const reservedAfter = current.reserved + line.quantity;
-      const changed = await tx.productInventory.updateMany({
-        where: { id: current.id, stock: current.stock, reserved: current.reserved },
-        data: { reserved: reservedAfter },
-      });
-      if (changed.count !== 1) throw concurrentUpdate();
-      const reservation = await tx.productInventoryReservation.create({ data: {
-        inventoryId: current.id,
-        reservationKey: line.reservationKey,
-        quantity: line.quantity,
-        status: 'ACTIVE',
-        expiresAt,
-      } });
-      await tx.productInventoryMovement.create({ data: {
-        inventoryId: current.id,
-        reservationId: reservation.id,
-        type: 'ORDER_RESERVATION',
-        quantity: line.quantity,
-        stockBefore: current.stock,
-        stockAfter: current.stock,
-        reservedBefore: current.reserved,
-        reservedAfter,
-        reason: `رزرو موجودی ${line.reservationKey}`,
-        idempotencyKey: `reserve:${line.reservationKey}`,
-        adminId,
-      } });
-      reservations.push({ ...reservation, inventory: { ...current, reserved: reservedAfter } });
+export async function reserveProductInventoryLinesInTransaction(
+  tx,
+  { lines, expiresAt = null, adminId = null },
+) {
+  const normalizedLines = normalizeReservationLines(lines);
+  const variants = await tx.productVariant.findMany({
+    where: { id: { in: normalizedLines.map(line => line.variantId) } },
+    select: { ...inventoryVariantSelect, inventory: true },
+  });
+  if (variants.length !== normalizedLines.length) throw notFound('یک یا چند تنوع محصول پیدا نشد.', 'VARIANT_NOT_FOUND');
+  const byId = new Map(variants.map(variant => [variant.id, variant]));
+  const resolved = normalizedLines.map(line => {
+    const variant = byId.get(line.variantId);
+    if (variant.product.supplyMode !== 'IRAN_STOCK') {
+      throw conflict('موجودی فیزیکی فقط برای محصول موجود در ایران مجاز است.', 'PRODUCT_INVENTORY_NOT_APPLICABLE');
     }
-    return reservations.map(serializeReservation);
-  }, { retryUnique: true });
+    if (!variant.isActive) throw conflict('تنوع محصول غیرفعال است.', 'VARIANT_INACTIVE');
+    if (!variant.inventory) throw notFound('موجودی تنوع مقداردهی نشده است.', 'PRODUCT_INVENTORY_NOT_FOUND');
+    return { ...line, inventory: variant.inventory };
+  }).sort((left, right) => left.inventory.id.localeCompare(right.inventory.id));
+
+  const existingRows = await tx.productInventoryReservation.findMany({
+    where: { reservationKey: { in: resolved.map(line => line.reservationKey) } },
+    include: { inventory: true },
+  });
+  const existingByKey = new Map(existingRows.map(row => [row.reservationKey, row]));
+  const reservations = [];
+  for (const line of resolved) {
+    const replay = existingByKey.get(line.reservationKey);
+    if (replay) {
+      assertReservationReplay(replay, line);
+      reservations.push(replay);
+      continue;
+    }
+    const current = await tx.productInventory.findUnique({ where: { id: line.inventory.id } });
+    if (!current || current.stock - current.reserved < line.quantity) {
+      throw conflict('موجودی قابل رزرو کافی نیست.', 'INSUFFICIENT_STOCK');
+    }
+    const reservedAfter = current.reserved + line.quantity;
+    const changed = await tx.productInventory.updateMany({
+      where: { id: current.id, stock: current.stock, reserved: current.reserved },
+      data: { reserved: reservedAfter },
+    });
+    if (changed.count !== 1) throw concurrentUpdate();
+    const reservation = await tx.productInventoryReservation.create({ data: {
+      inventoryId: current.id,
+      reservationKey: line.reservationKey,
+      quantity: line.quantity,
+      status: 'ACTIVE',
+      expiresAt,
+    } });
+    await tx.productInventoryMovement.create({ data: {
+      inventoryId: current.id,
+      reservationId: reservation.id,
+      type: 'ORDER_RESERVATION',
+      quantity: line.quantity,
+      stockBefore: current.stock,
+      stockAfter: current.stock,
+      reservedBefore: current.reserved,
+      reservedAfter,
+      reason: `رزرو موجودی ${line.reservationKey}`,
+      idempotencyKey: `reserve:${line.reservationKey}`,
+      adminId,
+    } });
+    reservations.push({ ...reservation, inventory: { ...current, reserved: reservedAfter } });
+  }
+  return reservations.map(serializeReservation);
+}
+
+export async function reserveProductInventoryLines(client, input) {
+  return runSerializableWithRetry(
+    client,
+    tx => reserveProductInventoryLinesInTransaction(tx, input),
+    { retryUnique: true },
+  );
 }
 
 export async function reserveProductInventory(client, input) {

@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { serializeOrderItemSnapshot } from '@/lib/productVariantOrderItemDomain';
+
 export function serializeCustomerOrder(order, customer) {
   const successfulPayment = order.payments?.find(payment => payment.status === 'success');
   const latestPayment = order.payments?.[0];
@@ -28,17 +30,34 @@ export function serializeCustomerOrder(order, customer) {
     } : null,
     date: order.createdAt,
     productName: order.items.map(item => item.name).join(' + '),
-    items: order.items.map(item => ({
-      id: item.id,
-      productId: item.productId,
-      laptopId: item.laptopId,
-      name: item.name,
-      quantity: item.quantity,
-      priceAed: item.priceAed,
-      priceToman: item.priceToman,
-      selectedColor: item.selectedColor,
-      selectedSize: item.selectedSize,
-    })),
+    items: order.items.map(item => {
+      const snapshot = serializeOrderItemSnapshot(item);
+      return {
+        id: item.id,
+        productId: item.productId,
+        productVariantId: item.productVariantId,
+        laptopId: item.laptopId,
+        warehouseItemId: item.warehouseItemId,
+        name: item.name,
+        quantity: item.quantity,
+        priceAed: item.priceAed,
+        priceToman: item.priceToman,
+        selectedColor: item.selectedColor,
+        selectedSize: item.selectedSize,
+        sourceKind: item.sourceKind,
+        supplyModeSnapshot: item.supplyModeSnapshot,
+        selectedOptionsSnapshot: snapshot.selectedOptionsSnapshot,
+        productNameFaSnapshot: item.productNameFaSnapshot,
+        productNameEnSnapshot: item.productNameEnSnapshot,
+        skuSnapshot: item.skuSnapshot,
+        unitPriceAedSnapshot: snapshot.unitPriceAedSnapshot,
+        unitPriceTomanSnapshot: snapshot.unitPriceTomanSnapshot,
+        discountPercentSnapshot: item.discountPercentSnapshot,
+        finalUnitPriceTomanSnapshot: snapshot.finalUnitPriceTomanSnapshot,
+        variantNameFaSnapshot: snapshot.variantNameFaSnapshot,
+        variantNameEnSnapshot: snapshot.variantNameEnSnapshot,
+      };
+    }),
     trackingNum: order.shipment?.trackingCode || '',
     shipment: order.shipment ? {
       status: order.shipment.status,

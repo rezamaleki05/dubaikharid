@@ -25,6 +25,15 @@ enum OrderType {
   WAREHOUSE_STOCK
   LAPTOP_STOCK
   MANUAL_ADMIN
+  IRAN_STOCK_PRODUCT
+}
+
+enum OrderItemSourceKind {
+  PRODUCT_VARIANT
+  LAPTOP_UNIT
+  LEGACY_WAREHOUSE
+  MANUAL
+  LEGACY_PRODUCT
 }
 
 enum PricingStatus {
@@ -443,13 +452,14 @@ model Order {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  customer           Customer?           @relation(fields: [customerId], references: [id])
-  purchaseRequest    PurchaseRequest?    @relation(fields: [purchaseRequestId], references: [id], onDelete: SetNull)
-  items              OrderItem[]
-  payments           Payment[]
-  shipment           Shipment?
-  inventoryMovements InventoryMovement[]
-  reservedLaptops    Laptop[]            @relation("ReservedLaptopOrder")
+  customer                     Customer?                     @relation(fields: [customerId], references: [id])
+  purchaseRequest              PurchaseRequest?              @relation(fields: [purchaseRequestId], references: [id], onDelete: SetNull)
+  items                        OrderItem[]
+  payments                     Payment[]
+  shipment                     Shipment?
+  inventoryMovements           InventoryMovement[]
+  productInventoryReservations ProductInventoryReservation[]
+  reservedLaptops              Laptop[]                      @relation("ReservedLaptopOrder")
 
   @@index([status, createdAt])
   @@index([customerId])
@@ -458,25 +468,41 @@ model Order {
 }
 
 model OrderItem {
-  id            String  @id @default(cuid())
-  orderId       String
-  name          String
-  quantity      Int     @default(1)
-  priceAed      Float?
-  priceToman    Float?
-  productId     String?
-  laptopId      String?
-  warehouseItemId String?
-  selectedColor String?
-  selectedSize  String?
-  weight        Float?
+  id                          String               @id @default(cuid())
+  orderId                     String
+  name                        String
+  quantity                    Int                  @default(1)
+  priceAed                    Float?
+  priceToman                  Float?
+  productId                   String?
+  productVariantId            String?
+  laptopId                    String?
+  warehouseItemId             String?
+  selectedColor               String?
+  selectedSize                String?
+  weight                      Float?
+  sourceKind                  OrderItemSourceKind?
+  supplyModeSnapshot          ProductSupplyMode?
+  selectedOptionsSnapshot     Json?
+  productNameFaSnapshot       String?
+  productNameEnSnapshot       String?
+  skuSnapshot                 String?
+  unitPriceAedSnapshot        Decimal?             @db.Decimal(12, 2)
+  unitPriceTomanSnapshot      Decimal?             @db.Decimal(18, 0)
+  discountPercentSnapshot     Int?
+  finalUnitPriceTomanSnapshot Decimal?             @db.Decimal(18, 0)
 
-  order   Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
-  product Product? @relation(fields: [productId], references: [id], onDelete: Restrict)
-  laptop  Laptop?  @relation(fields: [laptopId], references: [id], onDelete: Restrict)
-  warehouseItem WarehouseItem? @relation(fields: [warehouseItemId], references: [id], onDelete: Restrict)
+  order                Order                        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product              Product?                     @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productVariant       ProductVariant?              @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+  laptop               Laptop?                      @relation(fields: [laptopId], references: [id], onDelete: Restrict)
+  warehouseItem        WarehouseItem?               @relation(fields: [warehouseItemId], references: [id], onDelete: Restrict)
+  inventoryReservation ProductInventoryReservation?
 
   @@index([productId])
+  @@index([productVariantId])
+  @@index([sourceKind])
+  @@index([supplyModeSnapshot])
   @@index([laptopId])
   @@index([warehouseItemId])
 }
@@ -710,9 +736,10 @@ model ProductVariant {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
-  product Product                @relation(fields: [productId], references: [id], onDelete: Restrict)
-  options ProductVariantOption[]
-  inventory ProductInventory?
+  product    Product                @relation(fields: [productId], references: [id], onDelete: Restrict)
+  options    ProductVariantOption[]
+  inventory  ProductInventory?
+  orderItems OrderItem[]
 
   @@unique([productId, optionSignature])
   @@index([productId, isActive])
@@ -745,13 +772,18 @@ model ProductInventoryReservation {
   expiresAt      DateTime?
   releasedAt     DateTime?
   fulfilledAt    DateTime?
+  orderId        String?
+  orderItemId    String?                           @unique
   createdAt      DateTime                          @default(now())
   updatedAt      DateTime                          @updatedAt
 
   inventory ProductInventory           @relation(fields: [inventoryId], references: [id], onDelete: Restrict)
   movements ProductInventoryMovement[]
+  order     Order?                     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  orderItem OrderItem?                 @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
 
   @@index([inventoryId])
+  @@index([orderId])
   @@index([status])
   @@index([expiresAt])
 }

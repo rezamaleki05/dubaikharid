@@ -123,7 +123,7 @@ export async function updateProductSupplyPricing(client, productId, data) {
   }
 }
 
-export async function resolveAuthoritativeProductVariantPrice(client, { productId, variantId = null }) {
+export async function resolveAuthoritativeProductVariantPrice(client, { productId, variantId = null, settings = null }) {
   const product = await client.product.findUnique({ where: { id: productId }, select: productPricingSelect });
   if (!product) throw new ProductSupplyPricingError('محصول پیدا نشد.', 404, 'PRODUCT_NOT_FOUND');
   const variant = variantId
@@ -136,8 +136,10 @@ export async function resolveAuthoritativeProductVariantPrice(client, { productI
   if (variant.productId !== productId) {
     throw new ProductSupplyPricingError('تنوع به این محصول تعلق ندارد.', 409, 'VARIANT_PRODUCT_MISMATCH');
   }
-  const settings = product.supplyMode === 'EXTERNAL_DUBAI' ? await getPricingSettings() : null;
-  return resolveProductVariantPriceFromData({ product, variant, settings });
+  const authoritativeSettings = product.supplyMode === 'EXTERNAL_DUBAI'
+    ? (settings || await getPricingSettings())
+    : null;
+  return resolveProductVariantPriceFromData({ product, variant, settings: authoritativeSettings });
 }
 
 export async function getProductSupplyPricing(client, productId) {

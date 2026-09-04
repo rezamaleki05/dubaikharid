@@ -1,5 +1,6 @@
 import 'server-only';
 import { canTransitionOrder } from '@/lib/orderStatuses';
+import { serializeOrderItemSnapshot } from '@/lib/productVariantOrderItemDomain';
 import { fulfillWarehouseQuantity, releaseWarehouseQuantity } from '@/lib/warehouseSales';
 
 export { ORDER_STATUSES, ORDER_STATUS_SET } from '@/lib/orderStatuses';
@@ -30,8 +31,25 @@ export const adminOrderInclude = Object.freeze({
       priceAed: true,
       priceToman: true,
       productId: true,
+      productVariantId: true,
       laptopId: true,
       warehouseItemId: true,
+      selectedColor: true,
+      selectedSize: true,
+      weight: true,
+      sourceKind: true,
+      supplyModeSnapshot: true,
+      selectedOptionsSnapshot: true,
+      productNameFaSnapshot: true,
+      productNameEnSnapshot: true,
+      skuSnapshot: true,
+      unitPriceAedSnapshot: true,
+      unitPriceTomanSnapshot: true,
+      discountPercentSnapshot: true,
+      finalUnitPriceTomanSnapshot: true,
+      inventoryReservation: {
+        select: { id: true, reservationKey: true, quantity: true, status: true },
+      },
     },
   },
   payments: {
@@ -97,7 +115,7 @@ export function serializeAdminOrder(order) {
     date: order.createdAt,
     updatedAt: order.updatedAt,
     productName: order.items?.map(item => item.name).filter(Boolean).join(' + ') || '',
-    items: order.items || [],
+    items: order.items?.map(serializeOrderItemSnapshot) || [],
     priceDetails: {
       product: productSubtotalToman,
       shipping: shippingCostToman,
