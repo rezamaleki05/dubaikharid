@@ -160,72 +160,86 @@ export async function getProductInventoryByVariant(client, variantId) {
   };
 }
 
-export async function initializeProductInventory(client, { variantId, stock, minStock = 0, location = null, adminId = null }) {
+export async function initializeProductInventoryInTransaction(
+  tx,
+  { variantId, stock, minStock = 0, location = null, adminId = null },
+) {
   assertNonnegativeInteger(stock, 'موجودی اولیه');
   assertNonnegativeInteger(minStock, 'حداقل موجودی');
+  await loadEligibleVariant(tx, variantId);
+  const existing = await tx.productInventory.findUnique({ where: { variantId }, select: { id: true } });
+  if (existing) throw conflict('موجودی این تنوع قبلاً مقداردهی شده است.', 'PRODUCT_INVENTORY_EXISTS');
+  const inventory = await tx.productInventory.create({
+    data: { variantId, stock, reserved: 0, minStock, location },
+  });
+  await tx.productInventoryMovement.create({ data: {
+    inventoryId: inventory.id,
+    type: 'STOCK_IN',
+    quantity: stock,
+    stockBefore: 0,
+    stockAfter: stock,
+    reservedBefore: 0,
+    reservedAfter: 0,
+    reason: 'مقداردهی اولیه موجودی تنوع',
+    idempotencyKey: `initialize:${variantId}`,
+    adminId,
+  } });
+  return serializeInventory(inventory);
+}
+
+export async function initializeProductInventory(client, data) {
   try {
-    return await runSerializableWithRetry(client, async tx => {
-      await loadEligibleVariant(tx, variantId);
-      const existing = await tx.productInventory.findUnique({ where: { variantId }, select: { id: true } });
-      if (existing) throw conflict('موجودی این تنوع قبلاً مقداردهی شده است.', 'PRODUCT_INVENTORY_EXISTS');
-      const inventory = await tx.productInventory.create({
-        data: { variantId, stock, reserved: 0, minStock, location },
-      });
-      await tx.productInventoryMovement.create({ data: {
-        inventoryId: inventory.id,
-        type: 'STOCK_IN',
-        quantity: stock,
-        stockBefore: 0,
-        stockAfter: stock,
-        reservedBefore: 0,
-        reservedAfter: 0,
-        reason: 'مقداردهی اولیه موجودی تنوع',
-        idempotencyKey: `initialize:${variantId}`,
-        adminId,
-      } });
-      return serializeInventory(inventory);
-    });
+    return await runSerializableWithRetry(client, tx => initializeProductInventoryInTransaction(tx, data));
   } catch (error) {
     if (error?.code === 'P2002') throw conflict('موجودی این تنوع قبلاً مقداردهی شده است.', 'PRODUCT_INVENTORY_EXISTS');
     throw error;
   }
 }
 
-export async function adjustProductInventoryStock(client, { inventoryId, delta, reason = null, idempotencyKey, adminId = null }) {
+export async function adjustProductInventoryStockInTransaction(
+  tx,
+  { inventoryId, delta, reason = null, idempotencyKey, adminId = null },
+) {
   if (!Number.isSafeInteger(delta) || delta === 0) throw new ProductInventoryError('تغییر موجودی باید عدد صحیح غیرصفر باشد.');
   const key = assertKey(idempotencyKey, 'کلید تکرارناپذیری');
-  return runSerializableWithRetry(client, async tx => {
-    const replay = await tx.productInventoryMovement.findUnique({ where: { idempotencyKey: key } });
-    if (replay) {
-      if (replay.inventoryId !== inventoryId || replay.type !== 'ADJUSTMENT' || replay.quantity !== delta) {
-        throw conflict('کلید تکرارناپذیری قبلاً برای عملیات دیگری استفاده شده است.', 'IDEMPOTENCY_KEY_CONFLICT');
-      }
-      return serializeInventory(await tx.productInventory.findUnique({ where: { id: inventoryId } }));
+  const replay = await tx.productInventoryMovement.findUnique({ where: { idempotencyKey: key } });
+  if (replay) {
+    if (replay.inventoryId !== inventoryId || replay.type !== 'ADJUSTMENT' || replay.quantity !== delta) {
+      throw conflict('کلید تکرارناپذیری قبلاً برای عملیات دیگری استفاده شده است.', 'IDEMPOTENCY_KEY_CONFLICT');
     }
-    const current = await loadEligibleInventory(tx, inventoryId);
-    const stockAfter = current.stock + delta;
-    if (stockAfter < 0 || stockAfter < current.reserved) {
-      throw conflict('این تغییر موجودی باعث کسری موجودی رزروشده می‌شود.', 'INSUFFICIENT_AVAILABLE_STOCK');
-    }
-    const changed = await tx.productInventory.updateMany({
-      where: { id: inventoryId, stock: current.stock, reserved: current.reserved },
-      data: { stock: stockAfter },
-    });
-    if (changed.count !== 1) throw concurrentUpdate();
-    await tx.productInventoryMovement.create({ data: {
-      inventoryId,
-      type: 'ADJUSTMENT',
-      quantity: delta,
-      stockBefore: current.stock,
-      stockAfter,
-      reservedBefore: current.reserved,
-      reservedAfter: current.reserved,
-      reason,
-      idempotencyKey: key,
-      adminId,
-    } });
     return serializeInventory(await tx.productInventory.findUnique({ where: { id: inventoryId } }));
-  }, { retryUnique: true });
+  }
+  const current = await loadEligibleInventory(tx, inventoryId);
+  const stockAfter = current.stock + delta;
+  if (stockAfter < 0 || stockAfter < current.reserved) {
+    throw conflict('این تغییر موجودی باعث کسری موجودی رزروشده می‌شود.', 'INSUFFICIENT_AVAILABLE_STOCK');
+  }
+  const changed = await tx.productInventory.updateMany({
+    where: { id: inventoryId, stock: current.stock, reserved: current.reserved },
+    data: { stock: stockAfter },
+  });
+  if (changed.count !== 1) throw concurrentUpdate();
+  await tx.productInventoryMovement.create({ data: {
+    inventoryId,
+    type: 'ADJUSTMENT',
+    quantity: delta,
+    stockBefore: current.stock,
+    stockAfter,
+    reservedBefore: current.reserved,
+    reservedAfter: current.reserved,
+    reason,
+    idempotencyKey: key,
+    adminId,
+  } });
+  return serializeInventory(await tx.productInventory.findUnique({ where: { id: inventoryId } }));
+}
+
+export async function adjustProductInventoryStock(client, data) {
+  return runSerializableWithRetry(
+    client,
+    tx => adjustProductInventoryStockInTransaction(tx, data),
+    { retryUnique: true },
+  );
 }
 
 function assertReservationReplay(reservation, line) {

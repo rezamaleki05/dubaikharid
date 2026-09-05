@@ -3,8 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AdminShell, { useAdminShellData } from '@/components/admin/AdminShell';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
-import AdminBrandSelector from '@/components/admin/AdminBrandSelector';
-import AdminProductImageField, { createProductImageState } from '@/components/admin/AdminProductImageField';
+import AdminProductConfigurator from '@/components/admin/products/AdminProductConfigurator';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { calculateProductPricing } from '@/lib/pricing';
@@ -27,24 +26,6 @@ async function readApiResponse(response) {
   return payload;
 }
 
-async function uploadProductImage(imageState) {
-  if (imageState.method === 'url') {
-    const value = imageState.url.trim() || null;
-    return { value, changed: value !== (imageState.existingUrl || null) };
-  }
-  if (imageState.file) {
-    const formData = new FormData();
-    formData.set('file', imageState.file);
-    const uploaded = await readApiResponse(await fetch('/api/admin/products/upload', {
-      method: 'POST',
-      body: formData,
-    }));
-    return { value: uploaded.url, changed: true };
-  }
-  if (imageState.removed) return { value: null, changed: Boolean(imageState.existingUrl) };
-  return { value: imageState.existingUrl || null, changed: false };
-}
-
 function ProductSalesCount() {
   const { leads } = useAdminShellData();
   const safeLeads = Array.isArray(leads) ? leads : [];
@@ -62,19 +43,7 @@ export default function AdminProductsPage() {
   const [selectedAdminProductId, setSelectedAdminProductId] = useState(null);
   const [productLinkInput, setProductLinkInput] = useState('');
   const [isFetchingProductLink, setIsFetchingProductLink] = useState(false);
-  const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
-  const [editProductForm, setEditProductForm] = useState({
-    id: '', nameFa: '', nameEn: '', description: '', brandId: '', priceAed: '', weight: '', storeId: '', originalLink: '', foreignStatus: 'active',
-    image: '', gender: '', category: '', discountPercent: 0, isBestSeller: false
-  });
-  const [isAddProductManualOpen, setIsAddProductManualOpen] = useState(false);
-  const [addProductManualForm, setAddProductManualForm] = useState({
-    nameFa: '', nameEn: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: '', originalLink: '', image: '',
-    category: '', gender: '', discountPercent: 0, hasDiscount: false, isBestSeller: false
-  });
-  const [editProductImage, setEditProductImage] = useState(() => createProductImageState());
-  const [addProductImage, setAddProductImage] = useState(() => createProductImageState());
-  const [productImageUploading, setProductImageUploading] = useState('');
+  const [productConfigurator, setProductConfigurator] = useState(null);
   const [adminProducts, setAdminProducts] = useState([]);
   const [productSearchQuery, setProductSearchQuery] = useState('');
   const [productStatusFilter, setProductStatusFilter] = useState('همه');
@@ -159,24 +128,22 @@ export default function AdminProductsPage() {
         catch { return item.name.toLowerCase().includes(String(product.store || '').split('.')[0].toLowerCase()); }
       });
       const matchedCategory = categories.find(item => item.query === product.category || item.name.includes(product.category || ''));
-      setAddProductManualForm({
+      setProductConfigurator({ mode: 'add', seed: {
         nameFa: '',
         nameEn: product.nameEn || product.title || '',
         description: product.description || '',
         brandId: matchedBrand?.id || '',
-        category: matchedCategory?.id || '',
+        categoryId: matchedCategory?.id || '',
         storeId: matchedStore?.id || '',
         priceAed: product.priceAed ?? '',
         weight: String(product.weight || 1),
         originalLink: product.sourceUrl || productLinkInput.trim(),
         image: product.imageUrl || '',
         gender: '',
-        discountPercent: 0,
+        discountPercent: '0',
         hasDiscount: false,
         isBestSeller: false,
-      });
-      setAddProductImage(createProductImageState(product.imageUrl || '', 'url'));
-      setIsAddProductManualOpen(true);
+      } });
       setProductLinkInput('');
       if (payload.error === 'PRICE_NOT_FOUND') {
         alert('قیمت واقعی پیدا نشد. لطفاً قیمت را پس از بررسی دستی وارد کنید.');
@@ -214,76 +181,7 @@ export default function AdminProductsPage() {
 
   const handleEditClick = prod => {
     if (!can(ADMIN_PERMISSIONS.PRODUCTS_EDIT)) return;
-    setEditProductForm({
-      id: prod.id, nameFa: prod.nameFa || prod.name, nameEn: prod.nameEn || '', description: prod.description || '', brandId: prod.brandId || '', category: prod.categoryId || '',
-      storeId: prod.storeId || '', priceAed: getProductAedPrice(prod), weight: getProductWeight(prod),
-      originalLink: getProductOriginalLink(prod), foreignStatus: getProductForeignStatus(prod), image: prod.image || '',
-      gender: prod.gender || '', discountPercent: prod.discountPercent || 0, isBestSeller: !!prod.isBestSeller,
-    });
-    setEditProductImage(createProductImageState(prod.image || ''));
-    setIsEditProductModalOpen(true);
-  };
-
-  const handleEditProductSubmitLocal = async event => {
-    event.preventDefault();
-    let imageResult;
-    setProductImageUploading('edit');
-    try {
-      imageResult = await uploadProductImage(editProductImage);
-    } catch (error) {
-      setEditProductImage(previous => ({ ...previous, error: error.message || 'آپلود تصویر با خطا مواجه شد.' }));
-      setProductImageUploading('');
-      return;
-    }
-    setProductImageUploading('');
-    try {
-      const imageUpdate = imageResult.changed ? { image: imageResult.value } : {};
-      await readApiResponse(await fetch(`/api/admin/products/${encodeURIComponent(editProductForm.id)}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          nameFa: editProductForm.nameFa, nameEn: editProductForm.nameEn, description: editProductForm.description || null,
-          brandId: editProductForm.brandId, categoryId: editProductForm.category,
-          storeId: editProductForm.storeId, priceAed: editProductForm.priceAed, weight: editProductForm.weight,
-          originalLink: editProductForm.originalLink || null, ...imageUpdate,
-          status: editProductForm.foreignStatus, gender: editProductForm.gender || null,
-          discountPercent: Number(editProductForm.discountPercent) || 0, isBestSeller: !!editProductForm.isBestSeller,
-          hasDiscount: Number(editProductForm.discountPercent) > 0,
-        }),
-      }));
-      setIsEditProductModalOpen(false);
-      await loadProducts(pagination.page);
-      alert('محصول با موفقیت ویرایش شد.');
-    } catch (error) { alert(error.message); }
-  };
-
-  const handleManualAddProductSubmit = async event => {
-    event.preventDefault();
-    let imageResult;
-    setProductImageUploading('add');
-    try {
-      imageResult = await uploadProductImage(addProductImage);
-    } catch (error) {
-      setAddProductImage(previous => ({ ...previous, error: error.message || 'آپلود تصویر با خطا مواجه شد.' }));
-      setProductImageUploading('');
-      return;
-    }
-    setProductImageUploading('');
-    try {
-      const created = await readApiResponse(await fetch('/api/admin/products', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          nameFa: addProductManualForm.nameFa, nameEn: addProductManualForm.nameEn, description: addProductManualForm.description || null,
-          brandId: addProductManualForm.brandId, categoryId: addProductManualForm.category,
-          storeId: addProductManualForm.storeId, priceAed: addProductManualForm.priceAed, weight: addProductManualForm.weight,
-          originalLink: addProductManualForm.originalLink || null, image: imageResult.value,
-          gender: addProductManualForm.gender || null, hasDiscount: !!addProductManualForm.hasDiscount,
-          discountPercent: addProductManualForm.hasDiscount ? (Number(addProductManualForm.discountPercent) || 0) : 0,
-          isBestSeller: !!addProductManualForm.isBestSeller,
-        }),
-      }));
-      setSelectedAdminProductId(created.id);
-      setIsAddProductManualOpen(false);
-      await loadProducts(1);
-      alert('محصول با موفقیت به صورت دستی اضافه شد.');
-    } catch (error) { alert(error.message); }
+    setProductConfigurator({ mode: 'edit', productId: prod.id });
   };
 
               const safeAdminProducts = Array.isArray(adminProducts) ? adminProducts : [];
@@ -324,23 +222,18 @@ export default function AdminProductsPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
               <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🌐 مدیریت محصولات خارجی
+                🌐 مدیریت محصولات
               </h1>
               <p style={{ margin: '6px 0 0 0', fontSize: '12px', color: '#8b92a5' }}>
-                کنترل و نظارت بر روی محصولات استخراج‌شده از فروشگاه‌های امارات (پشتیبانی، قیمت‌گذاری و سودآوری)
+                مدیریت محصولات سفارش از دبی و موجود در ایران، ویژگی‌ها و تنوع‌های قابل فروش
               </p>
             </div>
             
             {can(ADMIN_PERMISSIONS.PRODUCTS_CREATE) && <button 
-              onClick={() => {
-                setAddProductManualForm({
-                  nameFa: '', nameEn: '', description: '', brandId: '', priceAed: '', weight: '1.0', storeId: stores[0]?.id || '',
-                  originalLink: '', image: '', category: '', gender: '', discountPercent: 0,
-                  hasDiscount: false, isBestSeller: false,
-                });
-                setAddProductImage(createProductImageState());
-                setIsAddProductManualOpen(true);
-              }}
+              onClick={() => setProductConfigurator({
+                mode: 'add',
+                seed: { storeId: stores[0]?.id || '', weight: '1' },
+              })}
               style={{ padding: '8px 16px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               ➕ افزودن دستی محصول
@@ -649,7 +542,7 @@ export default function AdminProductsPage() {
                       >
                         ✏️ ویرایش محصول
                       </button>}
-                      {can(ADMIN_PERMISSIONS.PRODUCTS_EDIT) && <button 
+                      {can(ADMIN_PERMISSIONS.PRODUCTS_EDIT) && selectedProduct.supplyMode === 'EXTERNAL_DUBAI' && <button
                         onClick={() => handlePromptUpdatePrice(selectedProduct)}
                         style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
                       >
@@ -689,406 +582,25 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          {isEditProductModalOpen && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
-              <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
-                  <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0 }}>✏️ ویرایش اطلاعات محصول خارجی</h2>
-                  <button onClick={() => setIsEditProductModalOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
-                </div>
-                
-                <form onSubmit={handleEditProductSubmitLocal} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام فارسی محصول *</label>
-                    <input 
-                      type="text" 
-                      required
-                      maxLength={240}
-                      value={editProductForm.nameFa || ""}
-                      onChange={(e) => setEditProductForm({...editProductForm, nameFa: e.target.value})}
-                      placeholder="کفش مردانه نایک ایر مکس 270"
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام انگلیسی / نام اصلی محصول *</label>
-                    <input
-                      type="text"
-                      required
-                      dir="ltr"
-                      maxLength={240}
-                      value={editProductForm.nameEn || ''}
-                      onChange={(e) => setEditProductForm({ ...editProductForm, nameEn: e.target.value })}
-                      placeholder="Nike Air Max 270 Men's Shoes"
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'left' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>توضیحات محصول:</label>
-                    <textarea
-                      rows={7}
-                      maxLength={20000}
-                      value={editProductForm.description || ''}
-                      onChange={(e) => setEditProductForm({ ...editProductForm, description: e.target.value })}
-                      placeholder="توضیحات کامل محصول را وارد کنید..."
-                      style={{ minHeight: '160px', resize: 'vertical', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', lineHeight: '1.8', outline: 'none', fontFamily: 'inherit' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>دسته‌بندی (ضروری):</label>
-                    <select required value={editProductForm.category} onChange={e => setEditProductForm(previous => ({ ...previous, category: e.target.value }))} style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}>
-                      <option value="">انتخاب دسته‌بندی</option>
-                      {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
-                    </select>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <AdminBrandSelector
-                      brands={safeBrands}
-                      categoryId={editProductForm.category}
-                      value={editProductForm.brandId}
-                      onChange={brandId => setEditProductForm(previous => ({ ...previous, brandId }))}
-                      onBrandsChange={setBrands}
-                      disabled={productImageUploading === 'edit'}
-                    />
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>فروشگاه مبدا:</label>
-                      <select 
-                        required
-                        value={editProductForm.storeId || ""}
-                        onChange={(e) => setEditProductForm({...editProductForm, storeId: e.target.value})}
-                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
-                      >
-                        <option value="" style={{ background: '#1c1d24' }}>انتخاب فروشگاه</option>
-                        {stores.map(store => <option key={store.id} value={store.id} style={{ background: '#1c1d24' }}>{store.name}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>قیمت به درهم (AED):</label>
-                      <input 
-                        type="number" 
-                        required
-                        min="0.1"
-                        step="any"
-                        value={editProductForm.priceAed || ""}
-                        onChange={(e) => setEditProductForm({...editProductForm, priceAed: e.target.value})}
-                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>وزن (کیلوگرم):</label>
-                      <input 
-                        type="number" 
-                        required
-                        min="0.01"
-                        step="any"
-                        value={editProductForm.weight || ""}
-                        onChange={(e) => setEditProductForm({...editProductForm, weight: e.target.value})}
-                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>لینک اصلی محصول:</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={editProductForm.originalLink || ""}
-                      onChange={(e) => setEditProductForm({...editProductForm, originalLink: e.target.value})}
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                    />
-                  </div>
-
-                  <AdminProductImageField
-                    value={editProductImage}
-                    onChange={setEditProductImage}
-                    uploading={productImageUploading === 'edit'}
-                  />
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>ویژگی‌های نمایش محصول:</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', background: 'rgba(0,0,0,0.15)', padding: '10px', borderRadius: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={editProductForm.gender === 'men'} 
-                          onChange={(e) => setEditProductForm({...editProductForm, gender: e.target.checked ? 'men' : ''})} 
-                        />
-                        مردانه (Men)
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={editProductForm.gender === 'women'} 
-                          onChange={(e) => setEditProductForm({...editProductForm, gender: e.target.checked ? 'women' : ''})} 
-                        />
-                        زنانه (Women)
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={editProductForm.gender === 'kids'} 
-                          onChange={(e) => setEditProductForm({...editProductForm, gender: e.target.checked ? 'kids' : ''})} 
-                        />
-                        بچگانه (Kids)
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={editProductForm.discountPercent > 0} 
-                          onChange={(e) => setEditProductForm({...editProductForm, discountPercent: e.target.checked ? 20 : 0})} 
-                        />
-                        تخفیف خورده (Sale)
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#fff', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={editProductForm.isBestSeller === true} 
-                          onChange={(e) => setEditProductForm({...editProductForm, isBestSeller: e.target.checked})} 
-                        />
-                        پرفروش‌ترین‌ها
-                      </label>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>وضعیت محصول:</label>
-                    <select 
-                      value={editProductForm.foreignStatus || ""}
-                      onChange={(e) => setEditProductForm({...editProductForm, foreignStatus: e.target.value})}
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
-                    >
-                      <option value="active" style={{ background: '#1c1d24' }}>🟢 فعال</option>
-                      <option value="needs_update" style={{ background: '#1c1d24' }}>🟡 نیاز به بروزرسانی قیمت</option>
-                      <option value="broken_link" style={{ background: '#1c1d24' }}>🔴 لینک خراب</option>
-                      <option value="hidden" style={{ background: '#1c1d24' }}>⚫ مخفی</option>
-                    </select>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'flex-end' }}>
-                    <button type="button" onClick={() => setIsEditProductModalOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '11.5px' }}>انصراف</button>
-                    <button type="submit" disabled={productImageUploading === 'edit'} style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: productImageUploading === 'edit' ? 'wait' : 'pointer', fontSize: '11.5px' }}>{productImageUploading === 'edit' ? 'در حال آپلود…' : 'ذخیره تغییرات'}</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* Add Product Manual Modal */}
-          {isAddProductManualOpen && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px', backdropFilter: 'blur(8px)' }}>
-              <div style={{ background: '#0f111a', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '12px' }}>
-                  <h2 style={{ fontSize: '15px', fontWeight: 'bold', color: '#fff', margin: 0 }}>➕ افزودن دستی محصول خارجی</h2>
-                  <button onClick={() => setIsAddProductManualOpen(false)} style={{ background: 'none', border: 'none', color: '#8b92a5', fontSize: '20px', cursor: 'pointer' }}>×</button>
-                </div>
-                
-                <form onSubmit={handleManualAddProductSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام فارسی محصول *</label>
-                    <input 
-                      type="text" 
-                      required
-                      maxLength={240}
-                      value={addProductManualForm.nameFa || ""}
-                      onChange={(e) => setAddProductManualForm({...addProductManualForm, nameFa: e.target.value})}
-                      placeholder="کفش مردانه نایک ایر مکس 270"
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>نام انگلیسی / نام اصلی محصول *</label>
-                    <input
-                      type="text"
-                      required
-                      dir="ltr"
-                      maxLength={240}
-                      value={addProductManualForm.nameEn || ''}
-                      onChange={(e) => setAddProductManualForm({ ...addProductManualForm, nameEn: e.target.value })}
-                      placeholder="Nike Air Max 270 Men's Shoes"
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', textAlign: 'left' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>توضیحات محصول:</label>
-                    <textarea
-                      rows={7}
-                      maxLength={20000}
-                      value={addProductManualForm.description || ''}
-                      onChange={(e) => setAddProductManualForm({ ...addProductManualForm, description: e.target.value })}
-                      placeholder="توضیحات کامل محصول را وارد کنید..."
-                      style={{ minHeight: '160px', resize: 'vertical', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', lineHeight: '1.8', outline: 'none', fontFamily: 'inherit' }}
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>دسته‌بندی (ضروری):</label>
-                    <select
-                      required
-                      value={addProductManualForm.category}
-                      onChange={e => setAddProductManualForm(previous => ({ ...previous, category: e.target.value }))}
-                      style={{ width: '100%', padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
-                    >
-                      <option value="" style={{ background: '#1c1f2a' }}>انتخاب دسته‌بندی</option>
-                      {categories.map(category => <option key={category.id} value={category.id} style={{ background: '#1c1f2a' }}>{category.name}</option>)}
-                    </select>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <AdminBrandSelector
-                      brands={safeBrands}
-                      categoryId={addProductManualForm.category}
-                      value={addProductManualForm.brandId}
-                      onChange={brandId => setAddProductManualForm(previous => ({ ...previous, brandId }))}
-                      onBrandsChange={setBrands}
-                      disabled={productImageUploading === 'add'}
-                    />
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>فروشگاه مبدا:</label>
-                      <select 
-                        required
-                        value={addProductManualForm.storeId || ""}
-                        onChange={(e) => setAddProductManualForm({...addProductManualForm, storeId: e.target.value})}
-                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
-                      >
-                        <option value="" style={{ background: '#1c1d24' }}>انتخاب فروشگاه</option>
-                        {stores.map(store => <option key={store.id} value={store.id} style={{ background: '#1c1d24' }}>{store.name}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>قیمت به درهم (AED):</label>
-                      <input 
-                        type="number" 
-                        required
-                        min="0.1"
-                        step="any"
-                        value={addProductManualForm.priceAed || ""}
-                        onChange={(e) => setAddProductManualForm({...addProductManualForm, priceAed: e.target.value})}
-                        placeholder="مثال: 3199"
-                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      <label style={{ fontSize: '11px', color: '#8b92a5' }}>وزن (کیلوگرم):</label>
-                      <input 
-                        type="number" 
-                        required
-                        min="0.01"
-                        step="any"
-                        value={addProductManualForm.weight || ""}
-                        onChange={(e) => setAddProductManualForm({...addProductManualForm, weight: e.target.value})}
-                        style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ fontSize: '11px', color: '#8b92a5' }}>لینک اصلی محصول:</label>
-                    <input 
-                      type="text" 
-                      value={addProductManualForm.originalLink || ""}
-                      onChange={(e) => setAddProductManualForm({...addProductManualForm, originalLink: e.target.value})}
-                      placeholder="مثال: https://www.amazon.ae/dp/..."
-                      style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
-                    />
-                  </div>
-
-                  <AdminProductImageField
-                    value={addProductImage}
-                    onChange={setAddProductImage}
-                    uploading={productImageUploading === 'add'}
-                  />
-
-                  {/* Best-seller & Discount toggles - warehouse style */}
-                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>تنظیمات نمایش در وبسایت</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-
-                      {/* isBestSeller */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddProductManualForm(prev => ({ ...prev, isBestSeller: !prev.isBestSeller }))}>
-                        <div style={{
-                          width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
-                          background: addProductManualForm.isBestSeller ? 'linear-gradient(135deg, #f87820, #d4590c)' : 'rgba(255,255,255,0.1)',
-                          position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
-                        }}>
-                          <div style={{
-                            width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
-                            position: 'absolute', top: '3px',
-                            left: addProductManualForm.isBestSeller ? '19px' : '3px',
-                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                          }} />
-                        </div>
-                        <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🔥 پرفروش (Best Seller) — نمایش در بخش پرفروش‌های سایت</span>
-                      </div>
-
-                      {/* hasDiscount */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setAddProductManualForm(prev => ({ ...prev, hasDiscount: !prev.hasDiscount, discountPercent: !prev.hasDiscount ? prev.discountPercent : 0 }))}>
-                        <div style={{
-                          width: '36px', height: '20px', borderRadius: '10px', flexShrink: 0,
-                          background: addProductManualForm.hasDiscount ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.1)',
-                          position: 'relative', transition: 'background 0.2s', cursor: 'pointer'
-                        }}>
-                          <div style={{
-                            width: '14px', height: '14px', borderRadius: '50%', background: '#fff',
-                            position: 'absolute', top: '3px',
-                            left: addProductManualForm.hasDiscount ? '19px' : '3px',
-                            transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                          }} />
-                        </div>
-                        <span style={{ color: '#d4d8e8', fontSize: '12px', userSelect: 'none' }}>🏷️ دارای تخفیف — نمایش برچسب تخفیف روی کالا</span>
-                      </div>
-
-                      {/* discountPercent — shown only when hasDiscount is on */}
-                      {addProductManualForm.hasDiscount && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', paddingRight: '46px' }}>
-                          <label style={{ color: '#8b92a5', fontSize: '11px', whiteSpace: 'nowrap' }}>درصد تخفیف:</label>
-                          <div style={{ position: 'relative', flex: 1 }}>
-                            <input
-                              type="number"
-                              min="1"
-                              max="99"
-                              value={addProductManualForm.discountPercent || ""}
-                              onChange={e => setAddProductManualForm(prev => ({ ...prev, discountPercent: e.target.value }))}
-                              placeholder="مثال: 20"
-                              style={{
-                                width: '100%', padding: '7px 32px 7px 12px',
-                                background: 'rgba(16, 185, 129, 0.07)',
-                                border: '1px solid rgba(16, 185, 129, 0.3)',
-                                borderRadius: '8px', color: '#10b981', fontSize: '13px',
-                                fontWeight: 'bold', outline: 'none'
-                              }}
-                            />
-                            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#10b981', fontSize: '12px', fontWeight: 'bold', pointerEvents: 'none' }}>%</span>
-                          </div>
-                        </div>
-                      )}
-
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '14px', justifyContent: 'flex-end' }}>
-                    <button type="button" onClick={() => setIsAddProductManualOpen(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '11.5px' }}>انصراف</button>
-                    <button type="submit" disabled={productImageUploading === 'add'} style={{ padding: '8px 20px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: productImageUploading === 'add' ? 'wait' : 'pointer', fontSize: '11.5px' }}>{productImageUploading === 'add' ? 'در حال آپلود…' : 'ثبت محصول'}</button>
-                  </div>
-                </form>
-              </div>
-            </div>
+          {productConfigurator && (
+            <AdminProductConfigurator
+              mode={productConfigurator.mode}
+              productId={productConfigurator.productId}
+              seed={productConfigurator.seed}
+              brands={safeBrands}
+              categories={categories}
+              stores={stores}
+              onBrandsChange={setBrands}
+              onClose={() => setProductConfigurator(null)}
+              onSaved={async payload => {
+                setSelectedAdminProductId(payload.product.id);
+                setProductConfigurator(null);
+                await loadProducts(productConfigurator.mode === 'edit' ? pagination.page : 1);
+                alert(productConfigurator.mode === 'edit'
+                  ? 'محصول و تنوع‌ها با موفقیت ویرایش شدند.'
+                  : 'محصول و تنوع‌ها با موفقیت ثبت شدند.');
+              }}
+            />
           )}
       </div>
     </AdminShell>

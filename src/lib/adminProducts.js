@@ -3,6 +3,11 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { normalizeProductSourceUrl, parseExternalHttpUrl } from '@/lib/externalUrls';
 import { productNameApiFields, validateProductNames } from '@/lib/productNames';
+import {
+  normalizeNullableAedPrice,
+  normalizeNullableTomanPrice,
+  PRODUCT_SUPPLY_MODE_SET,
+} from '@/lib/productSupplyPricingDomain';
 
 export const PRODUCT_STATUSES = Object.freeze(['active', 'hidden', 'needs_update', 'broken_link']);
 export const PRODUCT_STATUS_SET = new Set(PRODUCT_STATUSES);
@@ -48,11 +53,14 @@ export function createProductCode() {
   return `DK-${randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase()}`;
 }
 
-export function validateProductPayload(body, { partial = false } = {}) {
+export function validateProductPayload(body, { partial = false, allowSupplyPricing = false } = {}) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return { error: 'بدنه درخواست معتبر نیست.' };
   }
-  if (Object.keys(body).some(key => !EDITABLE_FIELDS.has(key))) {
+  const allowedFields = allowSupplyPricing
+    ? new Set([...EDITABLE_FIELDS, 'supplyMode', 'priceToman'])
+    : EDITABLE_FIELDS;
+  if (Object.keys(body).some(key => !allowedFields.has(key))) {
     return { error: 'فیلد غیرمجاز در درخواست وجود دارد.' };
   }
 
@@ -94,7 +102,24 @@ export function validateProductPayload(body, { partial = false } = {}) {
     }
   }
 
-  if (!partial || Object.hasOwn(body, 'priceAed')) {
+  if (allowSupplyPricing) {
+    const supplyMode = body.supplyMode || 'EXTERNAL_DUBAI';
+    if (!PRODUCT_SUPPLY_MODE_SET.has(supplyMode)) return { error: 'روش تأمین محصول معتبر نیست.' };
+    data.supplyMode = supplyMode;
+
+    const priceAed = normalizeNullableAedPrice(body.priceAed);
+    if (priceAed.error) return priceAed;
+    const priceToman = normalizeNullableTomanPrice(body.priceToman);
+    if (priceToman.error) return priceToman;
+    if (supplyMode === 'EXTERNAL_DUBAI' && priceAed.value === null) {
+      return { error: 'محصول با تأمین دبی به قیمت معتبر درهم نیاز دارد.' };
+    }
+    if (supplyMode === 'IRAN_STOCK' && priceToman.value === null) {
+      return { error: 'محصول موجود در ایران به قیمت معتبر تومان نیاز دارد.' };
+    }
+    data.priceAed = priceAed.value;
+    data.priceToman = priceToman.value;
+  } else if (!partial || Object.hasOwn(body, 'priceAed')) {
     const priceAed = parseFiniteNumber(body.priceAed, { min: 0.01, max: 9999999999.99 });
     if (priceAed === undefined) return { error: 'قیمت درهم باید عددی مثبت و معتبر باشد.' };
     data.priceAed = priceAed.toFixed(2);

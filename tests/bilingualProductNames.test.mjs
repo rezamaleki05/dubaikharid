@@ -38,11 +38,11 @@ test('catalog search queries both bilingual product fields', async () => {
 });
 
 test('admin create/edit forms submit both required names', async () => {
-  const source = await read('src/app/admin/products/page.js');
+  const source = await read('src/components/admin/products/AdminProductConfigurator.js');
   assert.match(source, /نام فارسی محصول \*/);
   assert.match(source, /نام انگلیسی \/ نام اصلی محصول \*/);
-  assert.match(source, /nameFa: addProductManualForm\.nameFa, nameEn: addProductManualForm\.nameEn/);
-  assert.match(source, /nameFa: editProductForm\.nameFa, nameEn: editProductForm\.nameEn/);
+  assert.match(source, /nameFa: form\.nameFa/);
+  assert.match(source, /nameEn: form\.nameEn/);
 });
 
 test('storefront detail renders Persian primary and English secondary names safely', async () => {
