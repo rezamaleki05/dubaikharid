@@ -123,6 +123,7 @@ test('new and edited Product configuration use one serializable orchestrated ser
   assert.match(service, /runSerializableWithRetry\(client, async tx/);
   assert.match(createRoute, /saveAdminProductConfiguration\(prisma/);
   assert.match(editRoute, /saveAdminProductConfiguration\(prisma/);
+  assert.match(editRoute, /partial: true/);
   assert.match(service, /timeout: 20_000/);
 });
 

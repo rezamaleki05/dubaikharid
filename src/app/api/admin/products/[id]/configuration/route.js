@@ -42,7 +42,10 @@ export async function PATCH(request, { params }) {
   if (parsed.response) return parsed.response;
   const normalized = normalizeAdminProductConfigurationPayload(parsed.body);
   if (normalized.error) return NextResponse.json({ error: normalized.error }, { status: 400 });
-  const product = validateProductPayload(normalized.data.product, { allowSupplyPricing: true });
+  const product = validateProductPayload(normalized.data.product, {
+    partial: true,
+    allowSupplyPricing: true,
+  });
   if (product.error) return NextResponse.json({ error: product.error }, { status: 400 });
   try {
     const configured = await saveAdminProductConfiguration(prisma, {
