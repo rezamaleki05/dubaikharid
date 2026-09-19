@@ -127,6 +127,7 @@ function SaleContent() {
                   <div className={styles.imageWrap}>
                     <img src={product.image} alt={product.name} className={styles.productImg} />
                     <span className={styles.storeBadge}>{product.store}</span>
+                    {product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
                     
                     {/* Glowing Discount Percentage tag */}
                     <div className={styles.discountBadge}>

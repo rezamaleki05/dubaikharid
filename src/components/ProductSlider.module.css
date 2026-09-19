@@ -85,6 +85,33 @@
   transform: scale(1.05);
 }
 
+.catalogImageWrap {
+  padding: 12px;
+  background: #fff;
+}
+
+.catalogProductImg {
+  object-fit: contain;
+  object-position: center;
+}
+
+.productCard:hover .catalogProductImg {
+  transform: none;
+}
+
+.bestSellerBadge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(15, 16, 20, 0.86);
+  font-size: 10px;
+  font-weight: 800;
+}
+
 /* Store badge */
 .storeBadge {
   position: absolute;
@@ -230,6 +257,7 @@
 :global(html[data-theme='light']) .productCard { background: #fff; border-color: var(--border-subtle); border-radius: 12px; box-shadow: none; }
 :global(html[data-theme='light']) .productCard:hover { border-color: rgba(23,23,23,.14); box-shadow: var(--shadow-sm); transform: translateY(-3px); }
 :global(html[data-theme='light']) .imageWrap { background: #f4f4f2; }
+:global(html[data-theme='light']) .catalogImageWrap { background: #fff; }
 :global(html[data-theme='light']) .productImg[role='img'] { background: linear-gradient(135deg, #f7f7f5, #ececea); }
 :global(html[data-theme='light']) .productImg[role='img']::after { content: ''; }
 :global(html[data-theme='light']) .brandName,

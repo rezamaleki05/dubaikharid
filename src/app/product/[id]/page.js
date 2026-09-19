@@ -8,7 +8,13 @@ import { inferCollectionItemType } from '@/lib/clientCollectionState';
 import { useCart } from '@/context/CartContext';
 import CheckoutModal from '@/components/CheckoutModal';
 import MinimalIcon from '@/components/ui/MinimalIcon';
+import PublicProductVariantSelector from '@/components/product/PublicProductVariantSelector';
 import { trackViewItem } from '@/lib/analytics';
+import {
+  formatPublicAttributeValues,
+  resolveExactPublicVariant,
+  selectedPublicVariantSummary,
+} from '@/lib/publicProductVariantSelection';
 import styles from './Product.module.css';
 
 // Replaced hardcoded exchange rate
@@ -56,6 +62,7 @@ export default function ProductPage({ params }) {
   // Selector states
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [variantSelection, setVariantSelection] = useState({});
   
   // Validation state
   const [showWarning, setShowWarning] = useState(false);
@@ -70,6 +77,19 @@ export default function ProductPage({ params }) {
   const [inquiryColor, setInquiryColor] = useState('');
   const [inquirySize, setInquirySize] = useState('');
 
+  const isCatalogProduct = inferCollectionItemType(product || {}) === 'PRODUCT';
+  const variantResolution = isCatalogProduct && product?.requiresVariantSelection
+    ? resolveExactPublicVariant({
+        axes: product.variantAxes,
+        variants: product.variants,
+        selection: variantSelection,
+      })
+    : { status: 'resolved', variant: isCatalogProduct ? product?.variant || null : null };
+  const selectedProductVariant = variantResolution.status === 'resolved' ? variantResolution.variant : null;
+  const selectedVariantSummary = selectedPublicVariantSummary(product?.variantAxes, variantSelection);
+  const activeProductPricing = selectedProductVariant?.pricing || null;
+  const catalogProductPurchasable = Boolean(selectedProductVariant?.available);
+
   const openInquiry = () => {
     setInquiryColor(selectedColor || product?.colors?.[0] || '');
     setInquirySize(selectedSize || product?.sizes?.[0] || '');
@@ -77,13 +97,23 @@ export default function ProductPage({ params }) {
   };
 
   const handleDirectPayment = () => {
-    if (product?.inStock === false) return;
-    if (product.colors && !selectedColor) {
+    if (isCatalogProduct && !selectedProductVariant) {
+      setWarningMessage('لطفاً همه مشخصات تنوع محصول را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+    if (isCatalogProduct && !catalogProductPurchasable) {
+      setWarningMessage('این تنوع در حال حاضر موجود نیست.');
+      setShowWarning(true);
+      return;
+    }
+    if (!isCatalogProduct && product?.inStock === false) return;
+    if (!isCatalogProduct && product.colors && !selectedColor) {
       setWarningMessage('لطفاً رنگ مورد نظر خود را انتخاب کنید.');
       setShowWarning(true);
       return;
     }
-    if (product.sizes && !selectedSize) {
+    if (!isCatalogProduct && product.sizes && !selectedSize) {
       setWarningMessage('لطفاً سایز مورد نظر خود را انتخاب کنید.');
       setShowWarning(true);
       return;
@@ -91,9 +121,11 @@ export default function ProductPage({ params }) {
     
     setShowWarning(false);
     
-    const finalTomanPrice = product.discountPercent && product.discountPercent > 0
-      ? tomanPrice * (1 - product.discountPercent / 100)
-      : tomanPrice;
+    const finalTomanPrice = isCatalogProduct
+      ? Number(activeProductPricing.finalPriceToman)
+      : (product.discountPercent && product.discountPercent > 0
+          ? tomanPrice * (1 - product.discountPercent / 100)
+          : tomanPrice);
 
     const orderData = {
       link: product.originalLink || product.link || '',
@@ -107,8 +139,8 @@ export default function ProductPage({ params }) {
       items: [{
         id: product.id,
         ...(product.product_type === 'laptop_stock' ? { laptopId: product.id } : {}),
-        ...(product.product_type === 'iran_inventory' ? { productId: product.id } : {}),
-        ...(product.productVariantId ? { productVariantId: product.productVariantId } : {}),
+        ...(isCatalogProduct ? { productId: product.id } : {}),
+        ...(selectedProductVariant?.id ? { productVariantId: selectedProductVariant.id } : {}),
         product_type: product.product_type,
         link: product.originalLink || product.link || '',
         name: product.name,
@@ -255,6 +287,10 @@ export default function ProductPage({ params }) {
       }
       if (!controller.signal.aborted) {
         setProduct(found || null);
+        setVariantSelection({});
+        setSelectedColor(null);
+        setSelectedSize(null);
+        setShowWarning(false);
         setLoading(false);
       }
     };
@@ -289,6 +325,29 @@ export default function ProductPage({ params }) {
   }
 
   const handleAddToCart = () => {
+    if (isCatalogProduct) {
+      if (!selectedProductVariant) {
+        setWarningMessage('لطفاً همه مشخصات تنوع محصول را انتخاب کنید.');
+        setShowWarning(true);
+        return;
+      }
+      if (!catalogProductPurchasable) {
+        setWarningMessage('این تنوع در حال حاضر موجود نیست.');
+        setShowWarning(true);
+        return;
+      }
+      setShowWarning(false);
+      addToCart({
+        ...product,
+        productVariantId: selectedProductVariant.id,
+        discountPercent: activeProductPricing.discountPercent,
+        priceToman: product.supplyMode === 'IRAN_STOCK' ? activeProductPricing.basePrice : null,
+        priceAed: product.supplyMode === 'EXTERNAL_DUBAI' ? Number(activeProductPricing.basePrice) : null,
+      });
+      const summary = selectedVariantSummary.map(item => `${item.attributeNameFa}: ${item.labelFa}`).join(' | ');
+      alert(`«${product.name}» با موفقیت به سبد خرید افزوده شد.${summary ? `\n${summary}` : ''}`);
+      return;
+    }
     if (product?.inStock === false) return;
     // Validate selections if color/size options are present
     if (product.colors && !selectedColor) {
@@ -310,6 +369,10 @@ export default function ProductPage({ params }) {
   };
 
   const tomanPrice = getProductTomanPrice(product, settings);
+  const purchaseDisabled = isCatalogProduct ? !catalogProductPurchasable : product.inStock === false;
+  const purchaseButtonLabel = isCatalogProduct
+    ? (!selectedProductVariant ? 'ابتدا مشخصات را انتخاب کنید' : (purchaseDisabled ? 'ناموجود' : 'افزودن به سبد خرید'))
+    : (product.inStock === false ? 'ناموجود' : 'افزودن به سبد خرید');
   const brandName = typeof product.brand === 'string' ? product.brand.trim() : '';
   const showBrandBadge = Boolean(brandName)
     && (product.product_type !== 'iran_inventory' || product.brandVisible === true);
@@ -321,13 +384,12 @@ export default function ProductPage({ params }) {
       <main className={styles.mainContainer}>
         <div className={styles.productGrid}>
           {/* Image Section */}
-          <div className={styles.imageSection} style={{ position: 'relative' }}>
-            <img src={product.image} alt={product.name} className={styles.mainImage} />
-            {product.discountPercent && product.discountPercent > 0 && (
-              <div style={{ position: 'absolute', top: '20px', right: '20px', background: '#ff3333', color: '#fff', fontSize: '14px', fontWeight: '850', padding: '5px 12px', borderRadius: '6px', boxShadow: '0 0 15px #ff3333', zIndex: 5, direction: 'ltr' }}>
-                {product.discountPercent}%-
-              </div>
-            )}
+          <div className={`${styles.imageSection} ${isCatalogProduct ? styles.catalogImageSection : ''}`} style={{ position: 'relative' }}>
+            <img src={product.image} alt={product.name} className={`${styles.mainImage} ${isCatalogProduct ? styles.catalogMainImage : ''}`} />
+            {activeProductPricing?.discountPercent > 0 ? (
+              <span className={styles.detailDiscountBadge}>{activeProductPricing.discountPercent}% تخفیف</span>
+            ) : null}
+            {isCatalogProduct && product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
           </div>
 
           {/* Info Section */}
@@ -370,8 +432,31 @@ export default function ProductPage({ params }) {
               <div className={styles.productSpec}>{product.spec}</div>
             )}
 
+            {isCatalogProduct && product.informationalAttributes?.length > 0 ? (
+              <section className={styles.publicSpecs} aria-labelledby="product-specifications-title">
+                <h2 id="product-specifications-title" className={styles.publicSpecsTitle}>مشخصات محصول</h2>
+                <dl className={styles.publicSpecsList}>
+                  {product.informationalAttributes.map(attribute => (
+                    <div className={styles.publicSpecRow} key={attribute.code}>
+                      <dt>{attribute.nameFa}</dt>
+                      <dd>{formatPublicAttributeValues(attribute)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
+
+            {isCatalogProduct ? (
+              <PublicProductVariantSelector
+                product={product}
+                selection={variantSelection}
+                onChange={next => { setVariantSelection(next); setShowWarning(false); }}
+                resolutionStatus={variantResolution.status}
+              />
+            ) : null}
+
             {/* Interactive Color Selector */}
-            {product.colors && (
+            {!isCatalogProduct && product.colors && (
               <div className={styles.attributeBlock}>
                 <span className={styles.attributeLabel}>انتخاب رنگ:</span>
                 <div className={styles.colorSwatches}>
@@ -398,7 +483,7 @@ export default function ProductPage({ params }) {
             )}
 
             {/* Interactive Size Selector */}
-            {product.sizes && (
+            {!isCatalogProduct && product.sizes && (
               <div className={styles.attributeBlock}>
                 <span className={styles.attributeLabel}>انتخاب سایز:</span>
                 <div className={styles.sizeGrid}>
@@ -431,7 +516,41 @@ export default function ProductPage({ params }) {
             </div>
 
             <div className={styles.priceSection}>
-              {inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
+              {isCatalogProduct ? (
+                activeProductPricing ? (
+                  <div aria-live="polite">
+                    <div className={styles.priceLabel}>قیمت نهایی این تنوع:</div>
+                    {activeProductPricing.discountPercent > 0 ? (
+                      <div className={styles.discountPriceBlock}>
+                        <div className={styles.originalPriceRow}>
+                          <span className={styles.originalPrice}>{fmtToman(Number(activeProductPricing.originalFinalPriceToman))} تومان</span>
+                          <span className={styles.discountPercent}>{activeProductPricing.discountPercent}% تخفیف</span>
+                        </div>
+                        <div className={`${styles.priceValue} ${styles.discountedPrice}`}>
+                          {fmtToman(Number(activeProductPricing.finalPriceToman))}
+                          <span className={styles.priceUnit}>تومان</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.priceValue}>
+                        {fmtToman(Number(activeProductPricing.finalPriceToman))}
+                        <span className={styles.priceUnit}>تومان</span>
+                      </div>
+                    )}
+                  </div>
+                ) : product.priceRange ? (
+                  <div aria-live="polite">
+                    <div className={styles.priceLabel}>پس از انتخاب مشخصات، قیمت دقیق نمایش داده می‌شود.</div>
+                    <div className={styles.priceValue}>
+                      {product.priceRange.varies ? <span className={styles.startingPriceLabel}>از</span> : null}
+                      {fmtToman(Number(product.priceRange.minimumFinalPriceToman))}
+                      <span className={styles.priceUnit}>تومان</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.unavailablePrice}>قیمت این محصول در حال حاضر قابل نمایش نیست.</div>
+                )
+              ) : inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
                 <div>
                   <div className={styles.priceLabel}>قیمت نهایی محصول:</div>
                   <div className={styles.priceValue} style={{ fontSize: '20px', color: '#f87820', fontWeight: 'bold' }}>
@@ -472,7 +591,7 @@ export default function ProductPage({ params }) {
             <div className={styles.actionSection}>
               {inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
                 <div style={{ display: 'flex', gap: '12px', width: '100%', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                  <div className={styles.purchaseButtons}>
                     <button 
                       type="button"
                       className={styles.addToCartBtn}
@@ -493,23 +612,23 @@ export default function ProductPage({ params }) {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-                  <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                  <div className={styles.purchaseButtons}>
                     <button 
                       type="button"
                       className={styles.addToCartBtn}
                       onClick={handleAddToCart}
-                      disabled={product.inStock === false}
-                      style={{ flex: 1, opacity: product.inStock === false ? 0.55 : 1, cursor: product.inStock === false ? 'not-allowed' : 'pointer' }}
+                      disabled={purchaseDisabled}
+                      style={{ flex: 1, opacity: purchaseDisabled ? 0.55 : 1, cursor: purchaseDisabled ? 'not-allowed' : 'pointer' }}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                      {product.inStock === false ? 'ناموجود' : 'افزودن به سبد خرید'}
+                      {purchaseButtonLabel}
                     </button>
                     <button 
                       type="button"
                       className={styles.addToCartBtn}
                       onClick={handleDirectPayment}
-                      disabled={product.inStock === false}
-                      style={{ background: '#2ecc71', color: '#fff', flex: 1, opacity: product.inStock === false ? 0.55 : 1, cursor: product.inStock === false ? 'not-allowed' : 'pointer' }}
+                      disabled={purchaseDisabled}
+                      style={{ background: '#2ecc71', color: '#fff', flex: 1, opacity: purchaseDisabled ? 0.55 : 1, cursor: purchaseDisabled ? 'not-allowed' : 'pointer' }}
                     >
                       <MinimalIcon name="creditCard" size={20} /> پرداخت آنلاین
                     </button>
@@ -518,8 +637,10 @@ export default function ProductPage({ params }) {
               )}
 
               <div className={styles.storeInfo}>
-                <span className={styles.storeLabel}>فروشگاه مبدا (دبی):</span>
-                <span className={styles.storeName}>{product.store}</span>
+                <span className={styles.storeLabel}>{isCatalogProduct ? 'روش تأمین:' : 'فروشگاه مبدا (دبی):'}</span>
+                <span className={styles.storeName}>{isCatalogProduct
+                  ? (product.supplyMode === 'IRAN_STOCK' ? 'موجود در ایران' : 'سفارش از دبی')
+                  : product.store}</span>
               </div>
             </div>
           </div>

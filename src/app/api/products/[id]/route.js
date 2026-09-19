@@ -7,7 +7,7 @@ export async function GET(_request, { params }) {
   try {
     const product = await getPublicProduct(id);
     if (!product) return NextResponse.json({ error: 'محصول پیدا نشد.' }, { status: 404 });
-    return NextResponse.json({ ...product, colors: null, sizes: null });
+    return NextResponse.json(product);
   } catch (error) {
     console.error('Error fetching public product:', error);
     return NextResponse.json({ error: 'دریافت محصول با خطا مواجه شد.' }, { status: 500 });

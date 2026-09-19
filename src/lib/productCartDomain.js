@@ -149,15 +149,23 @@ export function resolveProductCartLineFromData({ product, line, settings = null 
   });
 }
 
-export function publicVariantAxes(variants) {
+export function publicVariantAxes(variants, assignments = []) {
+  const assignmentByCode = new Map((assignments || []).map(assignment => [
+    assignment.attribute?.code,
+    assignment,
+  ]));
   const axes = new Map();
   for (const variant of variants) {
     for (const option of publicVariantOptions(variant)) {
+      const assignment = assignmentByCode.get(option.attributeCode);
       const axis = axes.get(option.attributeCode) || {
         id: option.attributeId,
         code: option.attributeCode,
         nameFa: option.attributeNameFa,
         nameEn: option.attributeNameEn,
+        inputType: assignment?.attribute?.inputType || option.inputType || 'SELECT',
+        sortOrder: assignment?.sortOrder ?? option.sortOrder ?? 0,
+        isRequired: assignment?.isRequired === true,
         options: new Map(),
       };
       axis.options.set(option.optionCode, {
@@ -166,11 +174,20 @@ export function publicVariantAxes(variants) {
         labelFa: option.labelFa,
         labelEn: option.labelEn,
         swatchHex: option.swatchHex,
+        sortOrder: option.optionSortOrder ?? 0,
       });
       axes.set(option.attributeCode, axis);
     }
   }
-  return [...axes.values()].map(axis => ({ ...axis, options: [...axis.options.values()] }));
+  return [...axes.values()]
+    .map(axis => ({
+      ...axis,
+      options: [...axis.options.values()].sort((left, right) => (
+        (left.sortOrder ?? 0) - (right.sortOrder ?? 0)
+        || left.code.localeCompare(right.code)
+      )),
+    }))
+    .sort((left, right) => left.sortOrder - right.sortOrder || left.code.localeCompare(right.code));
 }
 
 export function publicVariantOptions(variant) {
@@ -185,11 +202,14 @@ export function publicVariantOptions(variant) {
       attributeCode: option.attributeCode,
       attributeNameFa: option.attributeNameFa,
       attributeNameEn: option.attributeNameEn,
+      inputType: source?.attribute?.inputType || null,
+      sortOrder: source?.attribute?.sortOrder ?? 0,
       optionId: source?.attributeOption?.id || source?.attributeOptionId || null,
       optionCode: option.optionCode,
       labelFa: option.labelFa,
       labelEn: option.labelEn,
       swatchHex: source?.attributeOption?.swatchHex || null,
+      optionSortOrder: source?.attributeOption?.sortOrder ?? 0,
     };
   });
 }

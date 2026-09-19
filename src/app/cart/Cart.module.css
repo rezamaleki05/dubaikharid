@@ -49,6 +49,13 @@
   background: #000;
 }
 
+.catalogItemImage {
+  padding: 8px;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+}
+
 .itemInfo {
   flex: 1;
 }

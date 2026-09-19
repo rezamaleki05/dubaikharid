@@ -50,8 +50,8 @@ export default function WishlistPage() {
                     className={styles.wishItemCard}
                     onClick={() => { if (!item.unavailable) router.push(`/product/${item.id}`); }}
                   >
-                    <div className={styles.imageWrap}>
-                      <img src={item.image || item.img} alt={item.name} className={styles.productImg} />
+                    <div className={`${styles.imageWrap} ${item.type === 'PRODUCT' ? styles.catalogImageWrap : ''}`}>
+                      <img src={item.image || item.img} alt={item.name} className={`${styles.productImg} ${item.type === 'PRODUCT' ? styles.catalogProductImg : ''}`} />
                       <span className={styles.storeBadge}>{item.store}</span>
                       {item.discountPercent && item.discountPercent > 0 && (
                         <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#ff3333', color: '#fff', fontSize: '11px', fontWeight: '850', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333', zIndex: 5, direction: 'ltr' }}>

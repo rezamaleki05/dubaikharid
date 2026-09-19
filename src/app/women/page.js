@@ -166,6 +166,7 @@ function WomenContent() {
                       <div className={styles.imageWrap}>
                         <img src={product.image} alt={product.name} className={styles.productImg} />
                         <span className={styles.storeBadge}>{product.store}</span>
+                        {product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
                         {product.discountPercent && product.discountPercent > 0 && (
                           <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#ff3333', color: '#fff', fontSize: '11px', fontWeight: '850', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333', zIndex: 5, direction: 'ltr' }}>
                             {product.discountPercent}%-

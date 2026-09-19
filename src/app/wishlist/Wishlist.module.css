@@ -126,6 +126,20 @@
   transform: scale(1.06);
 }
 
+.catalogImageWrap {
+  padding: 12px;
+  background: #fff;
+}
+
+.catalogProductImg {
+  object-fit: contain;
+  object-position: center;
+}
+
+.wishItemCard:hover .catalogProductImg {
+  transform: none;
+}
+
 .storeBadge {
   position: absolute;
   bottom: 10px;

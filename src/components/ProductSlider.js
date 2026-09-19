@@ -48,7 +48,7 @@ export default function ProductSlider({ onSelectProduct }) {
   const fmtAed = (n) => n.toLocaleString('en-US');
   const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
-  const ProductCard = ({ product, showStore }) => {
+  const ProductCard = ({ product, showStore, isCatalogProduct = false }) => {
     const tomanPrice = getProductTomanPrice(product, settings);
     return (
       <div 
@@ -56,11 +56,12 @@ export default function ProductSlider({ onSelectProduct }) {
         onClick={() => handleSelect(product)}
         style={{ cursor: 'pointer' }}
       >
-        <div className={styles.imageWrap}>
+        <div className={`${styles.imageWrap} ${isCatalogProduct ? styles.catalogImageWrap : ''}`}>
           {product.image
-            ? <img src={product.image} alt={product.name} className={styles.productImg} />
+            ? <img src={product.image} alt={product.name} className={`${styles.productImg} ${isCatalogProduct ? styles.catalogProductImg : ''}`} />
             : <div className={styles.productImg} role="img" aria-label={product.name} />}
           {showStore && <span className={styles.storeBadge}>{product.store}</span>}
+          {isCatalogProduct && product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
           
           <button 
             className={`${styles.wishlistBtn} ${isInWishlist(product.id) ? styles.wished : ''}`}
@@ -83,10 +84,14 @@ export default function ProductSlider({ onSelectProduct }) {
           </div>
           <button className={styles.cartBtn} onClick={(e) => {
             e.stopPropagation();
+            if (isCatalogProduct) {
+              handleSelect(product);
+              return;
+            }
             addToCart(product);
             alert(`«${product.name}» به سبد خرید افزوده شد.`);
           }}>
-            افزودن به سبد خرید
+            {isCatalogProduct ? 'مشاهده و انتخاب محصول' : 'افزودن به سبد خرید'}
           </button>
         </div>
       </div>
@@ -122,7 +127,7 @@ export default function ProductSlider({ onSelectProduct }) {
             <button className={styles.seeAllBtn} onClick={() => router.push('/best-sellers')}>مشاهده همه ←</button>
           </div>
           <div className={styles.productGrid}>
-            {allTrending.map(p => <ProductCard key={p.id} product={p} showStore={true} />)}
+            {allTrending.map(p => <ProductCard key={p.id} product={p} showStore={true} isCatalogProduct />)}
           </div>
         </div>
       </section>

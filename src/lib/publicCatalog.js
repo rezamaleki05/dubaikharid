@@ -7,6 +7,7 @@ import {
   publicVariantOptions,
   resolveProductCartLineFromData,
 } from '@/lib/productCartDomain';
+import { resolveProductVariantPriceFromData } from '@/lib/productSupplyPricingDomain';
 import { getPricingSettings } from '@/lib/settings';
 
 export const PUBLIC_PRODUCT_STATUS = 'active';
@@ -215,6 +216,59 @@ export function serializePublicProduct(product) {
   };
 }
 
+function serializeInformationalAttributes(values) {
+  const grouped = new Map();
+  for (const row of values || []) {
+    const assignment = row.categoryAttribute;
+    const attribute = assignment?.attribute;
+    if (!attribute) continue;
+    const current = grouped.get(attribute.code) || {
+      code: attribute.code,
+      nameFa: attribute.nameFa,
+      nameEn: attribute.nameEn,
+      inputType: attribute.inputType,
+      unitFa: attribute.unitFa,
+      unitEn: attribute.unitEn,
+      sortOrder: assignment.sortOrder,
+      values: [],
+    };
+    current.values.push(row.attributeOption ? {
+      code: row.attributeOption.code,
+      labelFa: row.attributeOption.labelFa,
+      labelEn: row.attributeOption.labelEn,
+      swatchHex: row.attributeOption.swatchHex,
+      sortOrder: row.attributeOption.sortOrder,
+      value: null,
+    } : {
+      code: null,
+      labelFa: null,
+      labelEn: null,
+      swatchHex: null,
+      value: row.textValue ?? (row.numberValue == null ? row.booleanValue : row.numberValue.toString()),
+    });
+    grouped.set(attribute.code, current);
+  }
+  return [...grouped.values()]
+    .map(attribute => ({
+      ...attribute,
+      values: attribute.values.sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0)),
+    }))
+    .sort((left, right) => left.sortOrder - right.sortOrder || left.code.localeCompare(right.code));
+}
+
+function serializePublicVariantPricing(product, variant, settings) {
+  const pricing = resolveProductVariantPriceFromData({ product, variant, settings });
+  if (pricing.discountPercent === 0) {
+    return { ...pricing, originalFinalPriceToman: pricing.finalPriceToman };
+  }
+  const original = resolveProductVariantPriceFromData({
+    product: { ...product, hasDiscount: false, discountPercent: 0 },
+    variant: { ...variant, discountPercentOverride: 0 },
+    settings,
+  });
+  return { ...pricing, originalFinalPriceToman: original.finalPriceToman };
+}
+
 export function normalizePublicCatalogOptions(options = {}) {
   const page = Number(options.page || 1);
   const limit = Number(options.limit || 24);
@@ -300,11 +354,61 @@ export async function getPublicProduct(identifier) {
           id: true,
           name: true,
           query: true,
-          _count: {
+          attributeAssignments: {
+            where: { isVariantDefining: true, attribute: { isActive: true } },
+            orderBy: { sortOrder: 'asc' },
             select: {
-              attributeAssignments: {
-                where: { isVariantDefining: true, attribute: { isActive: true } },
+              isRequired: true,
+              sortOrder: true,
+              attribute: {
+                select: {
+                  id: true,
+                  code: true,
+                  nameFa: true,
+                  nameEn: true,
+                  inputType: true,
+                  unitFa: true,
+                  unitEn: true,
+                  sortOrder: true,
+                },
               },
+            },
+          },
+        },
+      },
+      attributeValues: {
+        where: {
+          categoryAttribute: {
+            isVariantDefining: false,
+            attribute: { isActive: true },
+          },
+        },
+        select: {
+          textValue: true,
+          numberValue: true,
+          booleanValue: true,
+          categoryAttribute: {
+            select: {
+              sortOrder: true,
+              attribute: {
+                select: {
+                  code: true,
+                  nameFa: true,
+                  nameEn: true,
+                  inputType: true,
+                  unitFa: true,
+                  unitEn: true,
+                },
+              },
+            },
+          },
+          attributeOption: {
+            select: {
+              code: true,
+              labelFa: true,
+              labelEn: true,
+              swatchHex: true,
+              sortOrder: true,
             },
           },
         },
@@ -328,7 +432,7 @@ export async function getPublicProduct(identifier) {
             select: {
               attributeId: true,
               attributeOptionId: true,
-              attribute: { select: { id: true, code: true, nameFa: true, nameEn: true, sortOrder: true } },
+              attribute: { select: { id: true, code: true, nameFa: true, nameEn: true, inputType: true, sortOrder: true } },
               attributeOption: { select: { id: true, code: true, labelFa: true, labelEn: true, swatchHex: true, sortOrder: true } },
             },
           },
@@ -338,8 +442,9 @@ export async function getPublicProduct(identifier) {
     },
   });
   if (!product) return null;
-  const variantAxes = publicVariantAxes(product.variants);
-  const variantAxisCount = product.category?._count?.attributeAssignments || 0;
+  const variantAssignments = product.category?.attributeAssignments || [];
+  const variantAxes = publicVariantAxes(product.variants, variantAssignments);
+  const variantAxisCount = variantAssignments.length;
   const settings = product.supplyMode === 'EXTERNAL_DUBAI' ? await getPricingSettings() : null;
   const resolutionProduct = { ...product, variantAxisCount };
   const variants = product.variants.map(variant => {
@@ -348,6 +453,7 @@ export async function getPublicProduct(identifier) {
       line: { productVariantId: variant.id, quantity: 1, requestKey: null },
       settings,
     });
+    line.pricing = serializePublicVariantPricing(resolutionProduct, variant, settings);
     return {
       id: variant.id,
       sku: variant.sku || null,
@@ -363,14 +469,23 @@ export async function getPublicProduct(identifier) {
   const defaultVariant = variantAxisCount === 0 && variantAxes.length === 0 && variants.length === 1 && variants[0].isDefault
     ? variants[0]
     : null;
+  const resolvedPrices = variants.map(variant => BigInt(variant.pricing.finalPriceToman));
+  const minimumPrice = resolvedPrices.length ? resolvedPrices.reduce((minimum, price) => price < minimum ? price : minimum) : null;
+  const maximumPrice = resolvedPrices.length ? resolvedPrices.reduce((maximum, price) => price > maximum ? price : maximum) : null;
   return {
     ...serializePublicProduct(product),
     brandVisible: product.brand?.showInBrandDirectory === true,
+    informationalAttributes: serializeInformationalAttributes(product.attributeValues),
     variantAxes,
     variants,
     requiresVariantSelection: variantAxisCount > 0 || variantAxes.length > 0,
     productVariantId: defaultVariant?.id || null,
     variant: defaultVariant || null,
+    priceRange: minimumPrice === null ? null : {
+      minimumFinalPriceToman: minimumPrice.toString(),
+      maximumFinalPriceToman: maximumPrice.toString(),
+      varies: minimumPrice !== maximumPrice,
+    },
     inStock: defaultVariant ? defaultVariant.available : variants.some(variant => variant.available),
   };
 }

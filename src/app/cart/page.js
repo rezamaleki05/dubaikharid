@@ -14,6 +14,21 @@ import styles from './Cart.module.css';
 // EXCHANGE_RATE replaced dynamically
 const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
+function originalItemPriceToman(item, settings) {
+  return getProductTomanPrice(item, settings);
+}
+
+function finalItemPriceToman(item, settings) {
+  if (item.type === 'PRODUCT' && item.authoritative && item.pricing?.finalPriceToman != null) {
+    const authoritativeFinal = Number(item.pricing.finalPriceToman);
+    if (Number.isFinite(authoritativeFinal)) return authoritativeFinal;
+  }
+  const original = originalItemPriceToman(item, settings);
+  return item.discountPercent && item.discountPercent > 0
+    ? original * (1 - item.discountPercent / 100)
+    : original;
+}
+
 export default function CartPage() {
   const { settings } = useSiteSettings();
   const { cartItems, addToCart, decrementQuantity, removeFromCart, removePurchasedItems, cartCount, hydrated, resolveError } = useCart();
@@ -25,15 +40,12 @@ export default function CartPage() {
 
   // Calculate original and discounted subtotals
   const billableItems = cartItems.filter(item => !item.unavailable);
-  const originalSubtotalToman = billableItems.reduce((acc, item) => acc + (getProductTomanPrice(item, settings) * item.quantity), 0);
+  const originalSubtotalToman = billableItems.reduce((acc, item) => acc + (originalItemPriceToman(item, settings) * item.quantity), 0);
   
-  const discountedSubtotalToman = billableItems.reduce((acc, item) => {
-    const itemOriginalPrice = getProductTomanPrice(item, settings);
-    const finalPrice = item.discountPercent && item.discountPercent > 0 
-      ? itemOriginalPrice * (1 - item.discountPercent / 100) 
-      : itemOriginalPrice;
-    return acc + (finalPrice * item.quantity);
-  }, 0);
+  const discountedSubtotalToman = billableItems.reduce(
+    (acc, item) => acc + (finalItemPriceToman(item, settings) * item.quantity),
+    0,
+  );
 
   const savingsToman = originalSubtotalToman - discountedSubtotalToman;
   
@@ -129,10 +141,15 @@ export default function CartPage() {
               {/* Items List */}
               <div className={styles.cartItems}>
                 {cartItems.map((item) => {
-                  const tomanPrice = getProductTomanPrice(item, settings);
+                  const originalTomanPrice = originalItemPriceToman(item, settings);
+                  const finalTomanPrice = finalItemPriceToman(item, settings);
+                  const iranProductQuantityLimit = item.type === 'PRODUCT'
+                    && item.supplyMode === 'IRAN_STOCK'
+                    && Number.isFinite(Number(item.inventory?.available))
+                    && item.quantity >= Number(item.inventory.available);
                   return (
                     <div key={item.cartItemId} className={styles.cartItem}>
-                      <img src={item.image || item.img} alt={item.name} className={styles.itemImage} />
+                      <img src={item.image || item.img} alt={item.name} className={`${styles.itemImage} ${item.type === 'PRODUCT' ? styles.catalogItemImage : ''}`} />
                       
                       <div className={styles.itemInfo}>
                         <div className={styles.brandName}>{item.brand || ''}</div>
@@ -156,11 +173,11 @@ export default function CartPage() {
                           {item.discountPercent && item.discountPercent > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                               <span style={{ fontSize: '11px', textDecoration: 'line-through', color: '#8b92a5' }}>
-                                {fmtToman(tomanPrice * item.quantity)} تومان
+                                {fmtToman(originalTomanPrice * item.quantity)} تومان
                               </span>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <span style={{ color: '#ff3333', fontWeight: 'bold' }}>
-                                  {fmtToman(tomanPrice * (1 - item.discountPercent / 100) * item.quantity)} تومان
+                                  {fmtToman(finalTomanPrice * item.quantity)} تومان
                                 </span>
                                 <span style={{ background: '#ff3333', color: '#fff', fontSize: '10px', padding: '1px 4px', borderRadius: '3px' }}>
                                   {item.discountPercent}%-
@@ -168,7 +185,7 @@ export default function CartPage() {
                               </div>
                             </div>
                           ) : (
-                            <span>{fmtToman(tomanPrice * item.quantity)} تومان</span>
+                            <span>{fmtToman(finalTomanPrice * item.quantity)} تومان</span>
                           )}
                         </div>
 
@@ -180,7 +197,7 @@ export default function CartPage() {
                             <button 
                               className={styles.qtyBtn} 
                               onClick={() => addToCart(item, item.selectedSize, item.selectedColor)}
-                              disabled={item.type === 'LAPTOP' || item.unavailable}
+                              disabled={item.type === 'LAPTOP' || item.unavailable || iranProductQuantityLimit}
                             >
                               +
                             </button>
