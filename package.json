@@ -12,6 +12,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed-admin": "node scripts/seed-admin.js",
     "db:init-settings": "node scripts/init-settings.js",
+    "seed:catalog-presets": "node scripts/seed-standard-catalog.mjs",
     "predeploy:check": "node scripts/predeploy-check.js",
     "data:diagnostics": "node scripts/data-integrity-check.js",
     "postdeploy:check": "node scripts/postdeploy-check.js"
