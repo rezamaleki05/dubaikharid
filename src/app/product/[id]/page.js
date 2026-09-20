@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import CheckoutModal from '@/components/CheckoutModal';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import PublicProductVariantSelector from '@/components/product/PublicProductVariantSelector';
+import PublicProductGallery from '@/components/product/PublicProductGallery';
 import { trackViewItem } from '@/lib/analytics';
 import {
   formatPublicAttributeValues,
@@ -385,7 +386,17 @@ export default function ProductPage({ params }) {
         <div className={styles.productGrid}>
           {/* Image Section */}
           <div className={`${styles.imageSection} ${isCatalogProduct ? styles.catalogImageSection : ''}`} style={{ position: 'relative' }}>
-            <img src={product.image} alt={product.name} className={`${styles.mainImage} ${isCatalogProduct ? styles.catalogMainImage : ''}`} />
+            {isCatalogProduct ? (
+              <PublicProductGallery
+                images={product.images}
+                legacyImage={product.legacyImage}
+                coverImage={product.image}
+                productName={product.name}
+                productNameEn={product.nameEn}
+              />
+            ) : (
+              <img src={product.image} alt={product.name} className={styles.mainImage} />
+            )}
             {activeProductPricing?.discountPercent > 0 ? (
               <span className={styles.detailDiscountBadge}>{activeProductPricing.discountPercent}% تخفیف</span>
             ) : null}

@@ -3,6 +3,7 @@ import 'server-only';
 import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
 import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
+import { getProductCoverImage } from '@/lib/productGallery';
 
 export const getSeoProduct = cache(async id => {
   if (typeof id !== 'string' || !id || id.length > 180) return null;
@@ -11,12 +12,21 @@ export const getSeoProduct = cache(async id => {
     select: {
       id: true, slug: true, nameFa: true, nameEn: true, image: true, priceAed: true, weight: true,
       discountPercent: true, hasDiscount: true, updatedAt: true,
+      images: {
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+        select: { id: true, url: true, sortOrder: true, isPrimary: true },
+      },
       brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
       store: { select: { id: true, name: true } },
       category: { select: { id: true, name: true } },
     },
   });
-  if (product) return { kind: 'product', ...product, name: product.nameFa };
+  if (product) return {
+    kind: 'product',
+    ...product,
+    name: product.nameFa,
+    image: getProductCoverImage(product, null),
+  };
   const laptop = await prisma.laptop.findFirst({
     where: { id, status: 'AVAILABLE', archivedAt: null },
     select: {

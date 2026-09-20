@@ -51,6 +51,7 @@ export async function PATCH(request, { params }) {
     const configured = await saveAdminProductConfiguration(prisma, {
       productId: id.value,
       productData: product.data,
+      images: normalized.data.images,
       attributeValues: normalized.data.attributeValues,
       variants: normalized.data.variants,
       adminId: admin.id,

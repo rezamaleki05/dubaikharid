@@ -290,7 +290,8 @@ test('Warehouse, Laptop, and PurchaseRequest architectures remain independent', 
   assert.doesNotMatch(purchaseRequests, /ProductCart|productVariantId|IRAN_STOCK_PRODUCT/);
 });
 
-test('Phase 2G requires no migration and preserves Phase 2F as the latest migration', () => {
+test('Phase 2G requires no dedicated migration and preserves the Phase 2F migration', () => {
   const migrations = readdirSync(join(root, 'prisma/migrations')).filter(name => /^\d/.test(name)).sort();
-  assert.equal(migrations.at(-1), '20260904000100_orderitem_variant_compatibility');
+  assert.equal(migrations.includes('20260904000100_orderitem_variant_compatibility'), true);
+  assert.equal(migrations.some(name => /phase.?2g/i.test(name)), false);
 });

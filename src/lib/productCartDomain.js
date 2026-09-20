@@ -2,6 +2,7 @@ import { cartItemKey } from './clientCollectionState.js';
 import { buildSelectedOptionsSnapshot } from './productVariantOrderItemDomain.js';
 import { DEFAULT_PRODUCT_VARIANT_SIGNATURE } from './productVariantDomain.js';
 import { resolveProductVariantPriceFromData } from './productSupplyPricingDomain.js';
+import { getProductCoverImage } from './productGallery.js';
 
 const LEGACY_SIZE_CODES = new Set(['eu_size', 'clothing_size', 'shoe_size', 'size']);
 
@@ -103,7 +104,7 @@ export function serializeResolvedProductCartLine({ product, variant, pricing, qu
     brand: product.brand?.faName || product.brand?.name || '',
     store: product.store?.name || '',
     spec: product.category?.name || '',
-    image: product.image || '',
+    image: getProductCoverImage(product, ''),
     originalLink: product.originalLink || '',
     priceAed: product.supplyMode === 'EXTERNAL_DUBAI' ? Number(pricing.basePrice) : null,
     priceToman: product.supplyMode === 'IRAN_STOCK' ? pricing.basePrice : null,

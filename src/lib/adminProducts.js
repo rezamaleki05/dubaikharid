@@ -4,6 +4,11 @@ import { randomUUID } from 'node:crypto';
 import { normalizeProductSourceUrl, parseExternalHttpUrl } from '@/lib/externalUrls';
 import { productNameApiFields, validateProductNames } from '@/lib/productNames';
 import {
+  getProductCoverImage,
+  getProductPrimaryImage,
+  serializeProductImages,
+} from '@/lib/productGallery';
+import {
   normalizeNullableAedPrice,
   normalizeNullableTomanPrice,
   PRODUCT_SUPPLY_MODE_SET,
@@ -16,6 +21,7 @@ export const adminProductInclude = Object.freeze({
   brand: { select: { id: true, name: true, faName: true } },
   category: { select: { id: true, name: true, query: true } },
   store: { select: { id: true, name: true, url: true } },
+  images: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
 });
 
 const EDITABLE_FIELDS = new Set([
@@ -223,6 +229,12 @@ export async function validateProductRelations(prisma, relationIds) {
 }
 
 export function serializeAdminProduct(product) {
+  const blobPathnameById = new Map((product.images || []).map(image => [image.id, image.blobPathname || null]));
+  const images = serializeProductImages(product).map(image => ({
+    ...image,
+    blobPathname: blobPathnameById.get(image.id) || null,
+  }));
+  const primaryImage = getProductPrimaryImage(product);
   return {
     id: product.id,
     code: product.code,
@@ -234,7 +246,10 @@ export function serializeAdminProduct(product) {
     supplyMode: product.supplyMode,
     weight: product.weight,
     originalLink: product.originalLink,
-    image: product.image,
+    image: getProductCoverImage(product, null),
+    legacyImage: product.image,
+    images,
+    primaryImage,
     gender: product.gender,
     discountPercent: product.discountPercent,
     hasDiscount: product.hasDiscount,

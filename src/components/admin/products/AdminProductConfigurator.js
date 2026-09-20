@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminBrandSelector from '@/components/admin/AdminBrandSelector';
-import AdminProductImageField, { createProductImageState } from '@/components/admin/AdminProductImageField';
+import AdminProductGalleryField, { createProductGalleryState } from './AdminProductGalleryField';
 import { buildVariantOptionCombinations } from '@/lib/adminProductConfigurationDomain';
 import styles from './AdminProductConfigurator.module.css';
 
@@ -32,22 +32,51 @@ async function readApiResponse(response) {
   return payload;
 }
 
-async function uploadProductImage(imageState) {
-  if (imageState.method === 'url') {
-    const value = imageState.url.trim() || null;
-    return { value, changed: value !== (imageState.existingUrl || null) };
+async function cleanupProductUploads(pathnames) {
+  await Promise.allSettled(pathnames.map(blobPathname => fetch('/api/admin/products/upload', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ blobPathname }),
+  })));
+}
+
+async function uploadProductGallery(images) {
+  const uploadedPathnames = [];
+  try {
+    const prepared = [];
+    for (const image of images) {
+      if (!image.file) {
+        prepared.push({
+          id: image.id || null,
+          url: image.url,
+          blobPathname: image.blobPathname || null,
+          isPrimary: image.isPrimary,
+          altFa: image.altFa || null,
+          altEn: image.altEn || null,
+        });
+        continue;
+      }
+      const formData = new FormData();
+      formData.set('file', image.file);
+      const uploaded = await readApiResponse(await fetch('/api/admin/products/upload', {
+        method: 'POST',
+        body: formData,
+      }));
+      uploadedPathnames.push(uploaded.blobPathname);
+      prepared.push({
+        id: null,
+        url: uploaded.url,
+        blobPathname: uploaded.blobPathname,
+        isPrimary: image.isPrimary,
+        altFa: image.altFa || null,
+        altEn: image.altEn || null,
+      });
+    }
+    return { images: prepared, uploadedPathnames };
+  } catch (error) {
+    await cleanupProductUploads(uploadedPathnames);
+    throw error;
   }
-  if (imageState.file) {
-    const formData = new FormData();
-    formData.set('file', imageState.file);
-    const uploaded = await readApiResponse(await fetch('/api/admin/products/upload', {
-      method: 'POST',
-      body: formData,
-    }));
-    return { value: uploaded.url, changed: true };
-  }
-  if (imageState.removed) return { value: null, changed: Boolean(imageState.existingUrl) };
-  return { value: imageState.existingUrl || null, changed: false };
 }
 
 function combinationKey(optionIds) {
@@ -303,7 +332,8 @@ export default function AdminProductConfigurator({
   onSaved,
 }) {
   const [form, setForm] = useState(() => initialForm(null, seed));
-  const [image, setImage] = useState(() => createProductImageState(seed?.image || '', seed?.image ? 'url' : 'upload'));
+  const [images, setImages] = useState(() => createProductGalleryState(seed?.image ? [{ url: seed.image, isPrimary: true }] : []));
+  const [legacyImage, setLegacyImage] = useState('');
   const [detail, setDetail] = useState(null);
   const [categoryConfig, setCategoryConfig] = useState(null);
   const [attributeInputs, setAttributeInputs] = useState({});
@@ -323,7 +353,8 @@ export default function AdminProductConfigurator({
         if (cancelled) return;
         setDetail(payload);
         setForm(initialForm(payload.product));
-        setImage(createProductImageState(payload.product.image || ''));
+        setImages(createProductGalleryState(payload.product.images));
+        setLegacyImage(payload.product.legacyImage || '');
       })
       .catch(fetchError => !cancelled && setError(fetchError.message))
       .finally(() => !cancelled && setLoading(false));
@@ -446,8 +477,10 @@ export default function AdminProductConfigurator({
     }
     if (effectiveSelectedKeys.length < 1) return setError('حداقل یک ترکیب قابل فروش را انتخاب کنید.');
     setSaving(true);
+    let uploadedPathnames = [];
     try {
-      const imageResult = await uploadProductImage(image);
+      const galleryResult = await uploadProductGallery(images);
+      uploadedPathnames = galleryResult.uploadedPathnames;
       const rows = combinations.filter(row => effectiveSelectedKeys.includes(row.key));
       const variants = rows.map((row, index) => {
         const draft = ensureDraft(row.key);
@@ -488,7 +521,7 @@ export default function AdminProductConfigurator({
         priceToman: form.supplyMode === 'IRAN_STOCK' ? form.priceToman : null,
         weight: form.weight,
         originalLink: form.originalLink || null,
-        image: imageResult.value,
+        image: legacyImage || null,
         gender: form.gender || null,
         discountPercent: form.hasDiscount ? Number(form.discountPercent) : 0,
         hasDiscount: form.hasDiscount,
@@ -501,10 +534,17 @@ export default function AdminProductConfigurator({
       const payload = await readApiResponse(await fetch(endpoint, {
         method: mode === 'edit' ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product, attributeValues: buildAttributeValues(), variants }),
+        body: JSON.stringify({
+          product,
+          images: galleryResult.images,
+          attributeValues: buildAttributeValues(),
+          variants,
+        }),
       }));
+      uploadedPathnames = [];
       await onSaved(payload);
     } catch (submitError) {
+      if (uploadedPathnames.length) await cleanupProductUploads(uploadedPathnames);
       setError(submitError.message || 'ذخیره محصول انجام نشد.');
     } finally {
       setSaving(false);
@@ -640,7 +680,13 @@ export default function AdminProductConfigurator({
 
           <section className={styles.section}>
             <div className={styles.sectionHeading}><span>۰۵</span><div><h3>انتشار و منبع</h3><p>تصویر، لینک اصلی و وضعیت نمایش محصول حفظ می‌شوند.</p></div></div>
-            <AdminProductImageField value={image} onChange={setImage} uploading={saving} />
+            <AdminProductGalleryField
+              value={images}
+              onChange={setImages}
+              legacyImage={legacyImage}
+              onLegacyImageChange={setLegacyImage}
+              disabled={saving}
+            />
             <div className={styles.twoColumns}>
               <label><span>لینک اصلی محصول</span><input dir="ltr" className={styles.input} value={form.originalLink} onChange={event => setForm({ ...form, originalLink: event.target.value })} /></label>
               <label><span>وضعیت محصول</span><select className={styles.input} value={form.status} onChange={event => setForm({ ...form, status: event.target.value })}><option value="active">فعال</option><option value="needs_update">نیاز به بروزرسانی</option><option value="broken_link">لینک خراب</option><option value="hidden">مخفی</option></select></label>

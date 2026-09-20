@@ -9,6 +9,11 @@ import {
 } from '@/lib/productCartDomain';
 import { resolveProductVariantPriceFromData } from '@/lib/productSupplyPricingDomain';
 import { getPricingSettings } from '@/lib/settings';
+import {
+  getProductCoverImage,
+  getProductPrimaryImage,
+  serializeProductImages,
+} from '@/lib/productGallery';
 
 export const PUBLIC_PRODUCT_STATUS = 'active';
 export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_STATUS });
@@ -26,6 +31,17 @@ const PUBLIC_PRODUCT_SELECT = Object.freeze({
   weight: true,
   originalLink: true,
   image: true,
+  images: {
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      url: true,
+      sortOrder: true,
+      isPrimary: true,
+      altFa: true,
+      altEn: true,
+    },
+  },
   gender: true,
   discountPercent: true,
   hasDiscount: true,
@@ -186,6 +202,8 @@ function orderByFor(sort) {
 
 export function serializePublicProduct(product) {
   const category = product.category?.query || product.category?.name || '';
+  const images = serializeProductImages(product);
+  const primaryImage = getProductPrimaryImage(product);
   return {
     id: product.id,
     productId: product.id,
@@ -199,7 +217,10 @@ export function serializePublicProduct(product) {
     weight: product.weight,
     originalLink: product.originalLink || '',
     link: product.originalLink || '',
-    image: product.image || PUBLIC_PRODUCT_PLACEHOLDER,
+    image: getProductCoverImage(product, PUBLIC_PRODUCT_PLACEHOLDER),
+    legacyImage: product.image || null,
+    images,
+    primaryImage,
     gender: product.gender || '',
     discountPercent: product.hasDiscount ? product.discountPercent : 0,
     hasDiscount: product.hasDiscount && product.discountPercent > 0,

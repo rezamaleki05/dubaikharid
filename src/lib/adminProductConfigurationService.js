@@ -20,6 +20,7 @@ import {
   PRODUCT_VARIANT_WARNING_THRESHOLD,
 } from '@/lib/productVariantDomain';
 import { ProductSupplyPricingError } from '@/lib/productSupplyPricingDomain';
+import { deleteUnreferencedProductBlobs } from '@/lib/productImageStorage';
 
 export class AdminProductConfigurationError extends Error {
   constructor(message, status = 400, code = 'ADMIN_PRODUCT_CONFIGURATION_INVALID') {
@@ -343,12 +344,59 @@ async function assertSkuSafety(tx, rows, productId) {
   if (duplicate) throw configurationError('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
 }
 
+async function synchronizeProductImages(tx, productId, images) {
+  const existing = await tx.productImage.findMany({
+    where: { productId },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  });
+  const existingById = new Map(existing.map(image => [image.id, image]));
+  const retainedIds = new Set(images.map(image => image.id).filter(Boolean));
+  for (const image of images) {
+    if (!image.id) continue;
+    const persisted = existingById.get(image.id);
+    if (!persisted) {
+      throw configurationError('یکی از تصاویر به این محصول تعلق ندارد.', 'PRODUCT_IMAGE_IDENTITY_MISMATCH');
+    }
+    if (persisted.url !== image.url || persisted.blobPathname !== image.blobPathname) {
+      throw configurationError('هویت فایل تصویر موجود قابل تغییر نیست.', 'PRODUCT_IMAGE_STORAGE_MISMATCH');
+    }
+  }
+
+  await tx.productImage.updateMany({ where: { productId }, data: { isPrimary: false } });
+  for (const image of images) {
+    const data = {
+      sortOrder: image.sortOrder,
+      isPrimary: image.isPrimary,
+      altFa: image.altFa,
+      altEn: image.altEn,
+    };
+    if (image.id) {
+      await tx.productImage.update({ where: { id: image.id }, data });
+    } else {
+      await tx.productImage.create({
+        data: {
+          productId,
+          url: image.url,
+          blobPathname: image.blobPathname,
+          ...data,
+        },
+      });
+    }
+  }
+
+  const stale = existing.filter(image => !retainedIds.has(image.id));
+  if (stale.length) {
+    await tx.productImage.deleteMany({ where: { id: { in: stale.map(image => image.id) }, productId } });
+  }
+  return stale.map(image => image.blobPathname).filter(Boolean);
+}
+
 export async function saveAdminProductConfiguration(
   client,
-  { productId = null, productData, attributeValues, variants, adminId = null },
+  { productId = null, productData, images = [], attributeValues, variants, adminId = null },
 ) {
   try {
-    return await runSerializableWithRetry(client, async tx => {
+    const result = await runSerializableWithRetry(client, async tx => {
       await validateRelations(tx, productData);
       const current = productId ? await tx.product.findUnique({
         where: { id: productId },
@@ -386,6 +434,8 @@ export async function saveAdminProductConfiguration(
       const product = current
         ? await tx.product.update({ where: { id: productId }, data })
         : await tx.product.create({ data });
+
+      const removedBlobPathnames = await synchronizeProductImages(tx, product.id, images);
 
       await tx.productAttributeValue.deleteMany({ where: { productId: product.id } });
       if (validatedValues.data.length) {
@@ -490,8 +540,13 @@ export async function saveAdminProductConfiguration(
         where: { id: product.id },
         include: configurationInclude,
       });
-      return serializeAdminProductConfiguration(configured);
+      return {
+        configuration: serializeAdminProductConfiguration(configured),
+        removedBlobPathnames,
+      };
     }, { retryUnique: true, timeout: 20_000 });
+    await deleteUnreferencedProductBlobs(client, result.removedBlobPathnames);
+    return result.configuration;
   } catch (error) {
     if (error instanceof AdminProductConfigurationError
       || error instanceof CatalogAttributeDomainError

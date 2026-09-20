@@ -4,7 +4,10 @@ import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequestAny } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { isOwnedProductBlobPathname } from '@/lib/productGallery';
 import { validateProductImage } from '@/lib/productImageValidation';
+import { deleteUnreferencedProductBlobs } from '@/lib/productImageStorage';
+import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
 
@@ -55,9 +58,44 @@ export async function POST(request) {
       metadata: { pathname: blob.pathname, contentType: validation.type, size: file.size },
       request,
     });
-    return NextResponse.json({ url: blob.url, filename: blob.pathname }, { status: 201 });
+    return NextResponse.json({
+      url: blob.url,
+      filename: blob.pathname,
+      blobPathname: blob.pathname,
+    }, { status: 201 });
   } catch (error) {
     console.error('Product image upload failed:', error);
     return NextResponse.json({ error: 'آپلود تصویر در فضای ذخیره‌سازی با خطا مواجه شد.' }, { status: 500 });
   }
+}
+
+export async function DELETE(request) {
+  const { admin, response } = await authorizeAdminApiRequestAny(request, UPLOAD_PERMISSIONS);
+  if (response) return response;
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'درخواست پاک‌سازی تصویر معتبر نیست.' }, { status: 400 });
+  }
+  if (!body || Object.keys(body).some(key => key !== 'blobPathname')
+    || !isOwnedProductBlobPathname(body.blobPathname)) {
+    return NextResponse.json({ error: 'مسیر تصویر برای پاک‌سازی معتبر نیست.' }, { status: 400 });
+  }
+  const references = await prisma.productImage.count({ where: { blobPathname: body.blobPathname } });
+  if (references > 0) {
+    return NextResponse.json({ error: 'تصویر ثبت‌شده در محصول قابل پاک‌سازی نیست.' }, { status: 409 });
+  }
+  const cleanup = await deleteUnreferencedProductBlobs(prisma, [body.blobPathname]);
+  if (!cleanup.deleted.includes(body.blobPathname)) {
+    return NextResponse.json({ error: 'پاک‌سازی فایل آپلودشده کامل نشد.' }, { status: 503 });
+  }
+  await logAdminActivity({
+    adminId: admin.id,
+    action: 'PRODUCT_IMAGE_ORPHAN_CLEANED',
+    entityType: 'ProductImage',
+    metadata: { pathname: body.blobPathname },
+    request,
+  });
+  return new NextResponse(null, { status: 204 });
 }
