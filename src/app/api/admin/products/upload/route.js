@@ -6,7 +6,10 @@ import { logAdminActivity } from '@/lib/adminActivity';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { isOwnedProductBlobPathname } from '@/lib/productGallery';
 import { validateProductImage } from '@/lib/productImageValidation';
-import { deleteUnreferencedProductBlobs } from '@/lib/productImageStorage';
+import {
+  deleteUnreferencedProductBlobs,
+  getProductBlobAuthOptions,
+} from '@/lib/productImageStorage';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = 'nodejs';
@@ -38,7 +41,8 @@ export async function POST(request) {
 
   const validation = validateProductImage({ type: file.type, size: file.size, bytes });
   if (validation.error) return NextResponse.json({ error: validation.error }, { status: 400 });
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  const blobAuth = getProductBlobAuthOptions();
+  if (!blobAuth) {
     return NextResponse.json({ error: 'فضای ذخیره‌سازی تصویر هنوز تنظیم نشده است.' }, { status: 503 });
   }
 
@@ -49,7 +53,7 @@ export async function POST(request) {
       addRandomSuffix: false,
       allowOverwrite: false,
       contentType: validation.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+      ...blobAuth,
     });
     await logAdminActivity({
       adminId: admin.id,

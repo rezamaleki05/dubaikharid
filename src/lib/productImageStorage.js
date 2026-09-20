@@ -3,9 +3,23 @@ import 'server-only';
 import { del } from '@vercel/blob';
 import { isOwnedProductBlobPathname } from '@/lib/productGallery';
 
+export function getProductBlobAuthOptions() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return { token: process.env.BLOB_READ_WRITE_TOKEN };
+  }
+  if (process.env.VERCEL_OIDC_TOKEN && process.env.BLOB_STORE_ID) {
+    return {
+      oidcToken: process.env.VERCEL_OIDC_TOKEN,
+      storeId: process.env.BLOB_STORE_ID,
+    };
+  }
+  return null;
+}
+
 export async function deleteUnreferencedProductBlobs(client, pathnames) {
   const candidates = [...new Set((pathnames || []).filter(isOwnedProductBlobPathname))];
-  if (!candidates.length || !process.env.BLOB_READ_WRITE_TOKEN) {
+  const blobAuth = getProductBlobAuthOptions();
+  if (!candidates.length || !blobAuth) {
     return { deleted: [], skipped: candidates };
   }
 
@@ -18,7 +32,7 @@ export async function deleteUnreferencedProductBlobs(client, pathnames) {
         skipped.push(pathname);
         continue;
       }
-      await del(pathname, { token: process.env.BLOB_READ_WRITE_TOKEN });
+      await del(pathname, blobAuth);
       deleted.push(pathname);
     } catch (error) {
       skipped.push(pathname);

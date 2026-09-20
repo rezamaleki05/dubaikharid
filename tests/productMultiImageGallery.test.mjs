@@ -124,6 +124,9 @@ test('Blob cleanup is ownership-scoped, reference-checked, and runs after databa
   assert.match(uploadRoute, /export async function DELETE/);
   assert.match(storage, /productImage\.count/);
   assert.match(storage, /references > 0/);
+  assert.match(storage, /VERCEL_OIDC_TOKEN/);
+  assert.match(storage, /BLOB_STORE_ID/);
+  assert.match(uploadRoute, /getProductBlobAuthOptions/);
   const committedCleanup = configurationService.indexOf('await deleteUnreferencedProductBlobs');
   const transactionEnd = configurationService.indexOf("}, { retryUnique: true, timeout: 20_000 });");
   assert.ok(committedCleanup > transactionEnd);
