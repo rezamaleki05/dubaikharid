@@ -26,6 +26,7 @@ const [
   publicGallery,
   publicGalleryCss,
   detailPage,
+  detailPageCss,
   cartDomain,
 ] = await Promise.all([
   read('prisma/schema.prisma'),
@@ -41,6 +42,7 @@ const [
   read('src/components/product/PublicProductGallery.js'),
   read('src/components/product/PublicProductGallery.module.css'),
   read('src/app/product/[id]/page.js'),
+  read('src/app/product/[id]/Product.module.css'),
   read('src/lib/productCartDomain.js'),
 ]);
 
@@ -150,4 +152,5 @@ test('public detail is an accessible contained gallery with responsive horizonta
   assert.match(publicGalleryCss, /@media \(max-width: 430px\)/);
   assert.match(publicGalleryCss, /@media \(max-width: 390px\)/);
   assert.match(adminGalleryCss, /@media \(max-width: 430px\)/);
+  assert.match(detailPageCss, /\.productName\s*\{[^}]*overflow-wrap: anywhere/s);
 });
