@@ -430,7 +430,9 @@ export async function saveAdminProductConfiguration(
       await assertSkuSafety(tx, resolvedVariants, productId);
 
       const data = { ...productData };
-      data.slug = await uniqueSlug(tx, data.slug, productId);
+      if (data.slug !== undefined) {
+        data.slug = await uniqueSlug(tx, data.slug, productId);
+      }
       const product = current
         ? await tx.product.update({ where: { id: productId }, data })
         : await tx.product.create({ data });

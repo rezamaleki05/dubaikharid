@@ -111,6 +111,7 @@ test('Admin configurator supports multi-upload previews, primary selection, reor
 test('gallery rows save in the existing serializable Product transaction and preserve existing identities', () => {
   assert.match(configurationDomain, /normalizeProductImagesInput/);
   assert.match(configurationService, /runSerializableWithRetry\(client, async tx/);
+  assert.match(configurationService, /if \(data\.slug !== undefined\)/);
   assert.match(configurationService, /synchronizeProductImages\(tx, product\.id, images\)/);
   assert.match(configurationService, /tx\.productImage\.updateMany/);
   assert.match(configurationService, /tx\.productImage\.update\(\{ where: \{ id: image\.id \}/);
