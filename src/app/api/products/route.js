@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getPublicCatalog, getPublicDiscovery } from '@/lib/publicCatalog';
 import { publicRequestGuard } from '@/lib/publicRequestGuard';
+import { searchPublicLaptopModels } from '@/lib/publicLaptopSeo';
 
 const BOOLEAN_VALUES = new Set(['true', 'false']);
 const ALLOWED_PARAMS = new Set(['page', 'limit', 'scope', 'category', 'brand', 'store', 'search', 'sort', 'sale', 'bestSeller']);
@@ -41,11 +42,12 @@ export async function GET(request) {
       sale,
       bestSeller,
     };
-    const [catalog, discovery] = await Promise.all([
+    const [catalog, discovery, laptopModels] = await Promise.all([
       getPublicCatalog(options),
       options.search ? getPublicDiscovery({ search: options.search, limit: 24 }) : Promise.resolve(null),
+      options.search ? searchPublicLaptopModels(options.search, 24) : Promise.resolve([]),
     ]);
-    return NextResponse.json({ ...catalog, ...(discovery ? { discovery } : {}) });
+    return NextResponse.json({ ...catalog, laptopModels, ...(discovery ? { discovery } : {}) });
   } catch (error) {
     if (error?.message === 'INVALID_PAGINATION') {
       return NextResponse.json({ error: 'پارامترهای صفحه‌بندی معتبر نیستند.' }, { status: 400 });

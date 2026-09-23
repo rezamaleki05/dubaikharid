@@ -1,5 +1,5 @@
 'use client';
-import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
+import { useSiteSettings, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -175,7 +175,7 @@ export function MenContent({ preset = 'men' }) {
             ) : (
               <div className={styles.grid}>
                 {sortedProducts.map(product => {
-                  const tomanPrice = getProductTomanPrice(product, settings);
+                  const cardPricing = getProductCardPricing(product, settings);
                   return (
                     <div 
                       key={product.id} 
@@ -186,9 +186,9 @@ export function MenContent({ preset = 'men' }) {
                         <img src={product.image} alt={product.name} className={styles.productImg} />
                         <span className={styles.storeBadge}>{product.store}</span>
                         {product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
-                        {product.discountPercent && product.discountPercent > 0 && (
+                        {cardPricing.discountPercent > 0 && (
                           <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#ff3333', color: '#fff', fontSize: '11px', fontWeight: '850', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333', zIndex: 5, direction: 'ltr' }}>
-                            {product.discountPercent}%-
+                            {cardPricing.discountPercent}%-
                           </div>
                         )}
                         
@@ -213,18 +213,18 @@ export function MenContent({ preset = 'men' }) {
                         <p className={styles.productSpec}>{product.spec}</p>
                         
                         <div className={styles.priceRow}>
-                          {product.discountPercent && product.discountPercent > 0 ? (
+                          {cardPricing.discountPercent > 0 ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start', width: '100%' }}>
-                              <span style={{ fontSize: '12px', textDecoration: 'line-through', color: '#8b92a5' }}>{fmtToman(tomanPrice)} تومان</span>
+                              <span style={{ fontSize: '12px', textDecoration: 'line-through', color: '#8b92a5' }}>{fmtToman(cardPricing.originalPriceToman)} تومان</span>
                               <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                                <span className={styles.priceToman} style={{ color: '#ff3333' }}>{fmtToman(tomanPrice * (1 - product.discountPercent / 100))} تومان</span>
+                                <span className={styles.priceToman} style={{ color: '#ff3333' }}>{cardPricing.varies ? 'از ' : ''}{fmtToman(cardPricing.finalPriceToman)} تومان</span>
                                 <span style={{ fontSize: '11px', color: '#ff3333', fontWeight: '600' }}>تحویل درب منزل</span>
                               </div>
                             </div>
                           ) : (
                             <>
                               <span className={styles.priceLabel}>تحویل درب منزل:</span>
-                              <span className={styles.priceToman}>{fmtToman(tomanPrice)} تومان</span>
+                              <span className={styles.priceToman}>{cardPricing.varies ? 'از ' : ''}{fmtToman(cardPricing.finalPriceToman)} تومان</span>
                             </>
                           )}
                         </div>

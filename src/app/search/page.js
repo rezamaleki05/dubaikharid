@@ -1,5 +1,5 @@
 'use client';
-import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
+import { useSiteSettings, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ function SearchContent() {
   const cleanQuery = query.trim();
   const {
     products: productResults,
+    laptopModels,
     discovery,
     pagination,
     setPage,
@@ -53,7 +54,7 @@ function SearchContent() {
     ...discovery.stores.map(item => ({ ...item, resultType: 'store', href: `/stores/${item.id}`, subtitle: item.desc })),
     ...discovery.categories.map(item => ({ ...item, resultType: 'category', href: `/search?q=${encodeURIComponent(item.name)}`, subtitle: 'دسته‌بندی محصولات', fallback: item.name })),
   ];
-  const totalResultsCount = pagination.total + discoveryResults.length;
+  const totalResultsCount = pagination.total + discoveryResults.length + laptopModels.length;
 
   return (
     <div className={styles.pageWrapper}>
@@ -107,6 +108,37 @@ function SearchContent() {
               </div>
             )}
 
+            {laptopModels.length > 0 && (
+              <section>
+                <h2 className={styles.sectionTitle}>مدل‌های لپ تاپ استوک</h2>
+                <div className={styles.productsGrid}>
+                  {laptopModels.map(laptop => (
+                    <article
+                      key={laptop.slug}
+                      className={styles.productCard}
+                      onClick={() => router.push(laptop.href)}
+                    >
+                      <div className={styles.imageWrap}>
+                        <img src={laptop.image} alt={laptop.name} className={styles.productImg} />
+                        <span className={styles.storeBadge}>انبار ایران</span>
+                      </div>
+                      <div className={styles.cardBody}>
+                        <span className={styles.brandBadge}>{laptop.brand}</span>
+                        <h3 className={styles.productCardName}>{laptop.name}</h3>
+                        <p className={styles.productSpec}>{laptop.spec}</p>
+                        <p className={styles.productSpec}>{laptop.availableCount.toLocaleString('fa-IR')} دستگاه موجود</p>
+                        <div className={styles.priceRow}>
+                          <span className={styles.priceLabel}>{laptop.priceVaries ? 'شروع قیمت:' : 'قیمت:'}</span>
+                          <span className={styles.priceToman}>{fmtToman(laptop.lowPriceToman)} تومان</span>
+                        </div>
+                        <div className={styles.cartBtn}>مشاهده مدل و انتخاب دستگاه</div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Section 2: Found Products */}
             {loading ? (
               <div className={styles.noResults}><p className={styles.noResultsText}>در حال جستجو در محصولات...</p></div>
@@ -117,7 +149,7 @@ function SearchContent() {
                 <h2 className={styles.sectionTitle}>محصولات یافت شده</h2>
                 <div className={styles.productsGrid}>
                   {productResults.map(product => {
-                    const tomanPrice = getProductTomanPrice(product, settings);
+                    const cardPricing = getProductCardPricing(product, settings);
                     return (
                       <div 
                         key={product.id} 
@@ -128,9 +160,9 @@ function SearchContent() {
                           <img src={product.image} alt={product.name} className={styles.productImg} />
                           <span className={styles.storeBadge}>{product.store}</span>
                           {product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
-                          {product.discountPercent && product.discountPercent > 0 && (
+                          {cardPricing.discountPercent > 0 && (
                             <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#ff3333', color: '#fff', fontSize: '11px', fontWeight: '850', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333', zIndex: 5, direction: 'ltr' }}>
-                              {product.discountPercent}%-
+                              {cardPricing.discountPercent}%-
                             </div>
                           )}
                           
@@ -155,18 +187,18 @@ function SearchContent() {
                           <p className={styles.productSpec}>{product.spec}</p>
                           
                           <div className={styles.priceRow}>
-                            {product.discountPercent && product.discountPercent > 0 ? (
+                            {cardPricing.discountPercent > 0 ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-start', width: '100%' }}>
-                                <span style={{ fontSize: '12px', textDecoration: 'line-through', color: '#8b92a5' }}>{fmtToman(tomanPrice)} تومان</span>
+                                <span style={{ fontSize: '12px', textDecoration: 'line-through', color: '#8b92a5' }}>{fmtToman(cardPricing.originalPriceToman)} تومان</span>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
-                                  <span className={styles.priceToman} style={{ color: '#ff3333' }}>{fmtToman(tomanPrice * (1 - product.discountPercent / 100))} تومان</span>
+                                  <span className={styles.priceToman} style={{ color: '#ff3333' }}>{cardPricing.varies ? 'از ' : ''}{fmtToman(cardPricing.finalPriceToman)} تومان</span>
                                   <span style={{ fontSize: '11px', color: '#ff3333', fontWeight: '600' }}>تحویل درب منزل</span>
                                 </div>
                               </div>
                             ) : (
                               <>
                                 <span className={styles.priceLabel}>قیمت تحویلی:</span>
-                                <span className={styles.priceToman}>{fmtToman(tomanPrice)} تومان</span>
+                                <span className={styles.priceToman}>{cardPricing.varies ? 'از ' : ''}{fmtToman(cardPricing.finalPriceToman)} تومان</span>
                               </>
                             )}
                           </div>

@@ -92,17 +92,6 @@ export function SiteSettingsProvider({ children, initialSettings = null }) {
     return liveRate ? { aedRate: String(liveRate), aedLastUpdate: jalaliDate } : null;
   };
 
-  // Apply site name dynamically to document title
-  useEffect(() => {
-    if (!loaded || !settings.siteName) return;
-    try {
-      if (document.title) {
-        const defaultSuffix = 'خرید مستقیم از فروشگاه‌های بین‌المللی دبی';
-        document.title = `${settings.siteName} | ${defaultSuffix}`;
-      }
-    } catch (e) {}
-  }, [settings.siteName, loaded]);
-
   // Apply favicon dynamically when faviconUrl changes
   useEffect(() => {
     if (!loaded || !settings.faviconUrl) return;
@@ -154,4 +143,28 @@ export function getProductTomanPrice(product, settings) {
   } catch {
     return 0;
   }
+}
+
+export function getProductCardPricing(product, settings) {
+  const summary = product?.priceSummary;
+  if (summary?.minimumFinalPriceToman != null) {
+    return {
+      finalPriceToman: Number(summary.minimumFinalPriceToman),
+      originalPriceToman: Number(summary.minimumOriginalPriceToman ?? summary.minimumFinalPriceToman),
+      discountPercent: Number(summary.discountPercent || 0),
+      varies: summary.varies === true,
+      available: Number(summary.availableVariantCount || 0) > 0,
+    };
+  }
+  const originalPriceToman = getProductTomanPrice(product, settings);
+  const discountPercent = Number(product?.discountPercent || 0);
+  return {
+    finalPriceToman: discountPercent > 0
+      ? originalPriceToman * (1 - discountPercent / 100)
+      : originalPriceToman,
+    originalPriceToman,
+    discountPercent,
+    varies: false,
+    available: product?.available !== false,
+  };
 }

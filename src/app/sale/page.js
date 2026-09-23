@@ -1,5 +1,5 @@
 'use client';
-import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
+import { useSiteSettings, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
@@ -115,8 +115,9 @@ function SaleContent() {
         ) : (
           <div className={styles.grid}>
             {sortedProducts.map(product => {
-              const originalPriceToman = getProductTomanPrice(product, settings);
-              const salePriceToman = originalPriceToman * (1 - product.discountPercent / 100);
+              const cardPricing = getProductCardPricing(product, settings);
+              const originalPriceToman = cardPricing.originalPriceToman;
+              const salePriceToman = cardPricing.finalPriceToman;
               
               return (
                 <div 
@@ -131,7 +132,7 @@ function SaleContent() {
                     
                     {/* Glowing Discount Percentage tag */}
                     <div className={styles.discountBadge}>
-                      {product.discountPercent}%-
+                      {cardPricing.discountPercent}%-
                     </div>
                     
                     {/* Wishlist Button */}

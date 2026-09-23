@@ -7,6 +7,7 @@ function descriptionFor(item) {
   if (item.kind === 'laptop') {
     return [item.brand, item.model, item.cpu, item.ram, item.storage].filter(Boolean).join('، ');
   }
+  if (item.description?.trim()) return item.description.trim().replace(/\s+/g, ' ').slice(0, 220);
   const brand = item.brand?.faName || item.brand?.name;
   const originalName = item.nameEn ? ` (${item.nameEn})` : '';
   return `مشاهده ${item.name}${originalName}${brand ? ` از برند ${brand}` : ''}، بررسی مشخصات و ثبت سفارش با قیمت معتبر سرور در دبی خرید.`;
@@ -22,9 +23,10 @@ export async function generateMetadata({ params }) {
   return publicPageMetadata({
     title,
     description: descriptionFor(item),
-    path: `/product/${item.id}`,
+    path: item.kind === 'laptop' ? item.canonicalPath : `/product/${item.id}`,
     image: item.image || undefined,
     type: 'website',
+    ...(item.kind === 'laptop' ? { robots: { index: false, follow: true } } : {}),
   });
 }
 
@@ -41,29 +43,35 @@ export default async function ProductSeoLayout({ children, params }) {
       : item.brand?.showInBrandDirectory
         ? [{ name: brandName, path: `/brands/${item.brand.id}` }]
         : []),
-    { name: item.name, path: `/product/${item.id}` },
+    { name: item.name, path: item.kind === 'laptop' ? item.canonicalPath : `/product/${item.id}` },
   ];
-  const productSchema = {
+  const productSchema = item.kind === 'product' ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
     '@id': `${absoluteUrl(`/product/${item.id}`)}#product`,
     name: item.name,
-    ...(item.kind === 'product' && item.nameEn ? { alternateName: item.nameEn } : {}),
+    ...(item.nameEn ? { alternateName: item.nameEn } : {}),
     url: absoluteUrl(`/product/${item.id}`),
     description: descriptionFor(item),
     ...(item.image ? { image: [absoluteUrl(item.image)] } : {}),
     ...(brandName ? { brand: { '@type': 'Brand', name: brandName } } : {}),
-    ...(item.kind === 'laptop' && item.priceToman ? {
-      itemCondition: 'https://schema.org/UsedCondition',
-      offers: {
+    ...(item.seoPriceRange ? {
+      offers: item.seoPriceRange.varies ? {
+        '@type': 'AggregateOffer',
+        url: absoluteUrl(`/product/${item.id}`),
+        priceCurrency: 'IRR',
+        lowPrice: (BigInt(item.seoPriceRange.lowPriceToman) * 10n).toString(),
+        highPrice: (BigInt(item.seoPriceRange.highPriceToman) * 10n).toString(),
+        offerCount: item.variants.length,
+        availability: item.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      } : {
         '@type': 'Offer',
         url: absoluteUrl(`/product/${item.id}`),
         priceCurrency: 'IRR',
-        price: Number(item.priceToman) * 10,
-        availability: 'https://schema.org/InStock',
-        itemCondition: 'https://schema.org/UsedCondition',
+        price: (BigInt(item.seoPriceRange.lowPriceToman) * 10n).toString(),
+        availability: item.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       },
     } : {}),
-  };
-  return <><JsonLd data={[breadcrumbSchema(crumbs), productSchema]} />{children}</>;
+  } : null;
+  return <><JsonLd data={[breadcrumbSchema(crumbs), ...(productSchema ? [productSchema] : [])]} />{children}</>;
 }

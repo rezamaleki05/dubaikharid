@@ -14,6 +14,7 @@ import {
   getProductPrimaryImage,
   serializeProductImages,
 } from '@/lib/productGallery';
+import { meaningfulSearchTerms, searchTextCandidates } from '@/lib/searchNormalization';
 
 export const PUBLIC_PRODUCT_STATUS = 'active';
 export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_STATUS });
@@ -51,6 +52,18 @@ const PUBLIC_PRODUCT_SELECT = Object.freeze({
   brand: { select: { id: true, name: true, faName: true } },
   category: { select: { id: true, name: true, query: true } },
   store: { select: { id: true, name: true } },
+  variants: {
+    where: { isActive: true },
+    orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
+    select: {
+      id: true,
+      priceAedOverride: true,
+      priceTomanOverride: true,
+      discountPercentOverride: true,
+      weightOverride: true,
+      inventory: { select: { stock: true, reserved: true } },
+    },
+  },
 });
 
 const CATEGORY_ALIASES = Object.freeze({
@@ -176,19 +189,40 @@ function storeWhere(value) {
 
 function searchWhere(search) {
   if (!search) return null;
+  const terms = meaningfulSearchTerms(search);
   return {
     OR: [
       { nameFa: { contains: search, mode: 'insensitive' } },
       { nameEn: { contains: search, mode: 'insensitive' } },
-      { brand: { is: { OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { faName: { contains: search, mode: 'insensitive' } },
-      ] } } },
-      { category: { is: { OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { query: { contains: search, mode: 'insensitive' } },
-      ] } } },
-      { store: { is: { name: { contains: search, mode: 'insensitive' } } } },
+      {
+        AND: terms.map(term => ({ OR: searchTextCandidates(term).flatMap(value => [
+          { code: { contains: value, mode: 'insensitive' } },
+          { nameFa: { contains: value, mode: 'insensitive' } },
+          { nameEn: { contains: value, mode: 'insensitive' } },
+          { brand: { is: { OR: [
+            { name: { contains: value, mode: 'insensitive' } },
+            { faName: { contains: value, mode: 'insensitive' } },
+          ] } } },
+          { category: { is: { OR: [
+            { name: { contains: value, mode: 'insensitive' } },
+            { query: { contains: value, mode: 'insensitive' } },
+          ] } } },
+          { store: { is: { name: { contains: value, mode: 'insensitive' } } } },
+          { variants: { some: {
+            OR: [
+              { sku: { contains: value, mode: 'insensitive' } },
+              { options: { some: { attributeOption: { OR: [
+                { labelFa: { contains: value, mode: 'insensitive' } },
+                { labelEn: { contains: value, mode: 'insensitive' } },
+              ] } } } },
+            ],
+          } } },
+          { attributeValues: { some: { attributeOption: { is: { OR: [
+            { labelFa: { contains: value, mode: 'insensitive' } },
+            { labelEn: { contains: value, mode: 'insensitive' } },
+          ] } } } } },
+        ]) })),
+      },
     ],
   };
 }
@@ -234,6 +268,35 @@ export function serializePublicProduct(product) {
     storeId: product.store?.id || null,
     store: product.store?.name || 'فروشگاه دبی',
     spec: product.category?.name || '',
+  };
+}
+
+function publicProductCardPriceSummary(product, settings) {
+  const priced = (product.variants || []).flatMap(variant => {
+    const available = product.supplyMode === 'EXTERNAL_DUBAI'
+      || (variant.inventory && variant.inventory.stock - variant.inventory.reserved > 0);
+    if (!available) return [];
+    try {
+      return [serializePublicVariantPricing(product, variant, settings)];
+    } catch {
+      return [];
+    }
+  });
+  if (!priced.length) return null;
+  const byFinalPrice = [...priced].sort((left, right) => {
+    const leftPrice = BigInt(left.finalPriceToman);
+    const rightPrice = BigInt(right.finalPriceToman);
+    return leftPrice < rightPrice ? -1 : leftPrice > rightPrice ? 1 : 0;
+  });
+  const minimum = byFinalPrice[0];
+  const maximum = byFinalPrice[byFinalPrice.length - 1];
+  return {
+    minimumFinalPriceToman: minimum.finalPriceToman,
+    maximumFinalPriceToman: maximum.finalPriceToman,
+    minimumOriginalPriceToman: minimum.originalFinalPriceToman,
+    discountPercent: minimum.discountPercent,
+    varies: minimum.finalPriceToman !== maximum.finalPriceToman,
+    availableVariantCount: priced.length,
   };
 }
 
@@ -333,7 +396,7 @@ export async function getPublicCatalog(rawOptions = {}) {
   const facetWhere = publicProductWhere(options, { includeBrand: false });
   const skip = (options.page - 1) * options.limit;
 
-  const [products, total, brands] = await Promise.all([
+  const [products, total, brands, settings] = await Promise.all([
     prisma.product.findMany({
       where,
       select: PUBLIC_PRODUCT_SELECT,
@@ -347,10 +410,16 @@ export async function getPublicCatalog(rawOptions = {}) {
       select: { id: true, name: true, faName: true },
       orderBy: { name: 'asc' },
     }),
+    getPricingSettings(),
   ]);
 
   return {
-    data: products.map(serializePublicProduct),
+    data: products.map(product => ({
+      ...serializePublicProduct(product),
+      priceSummary: publicProductCardPriceSummary(product, product.supplyMode === 'EXTERNAL_DUBAI' ? settings : null),
+      available: (product.variants || []).some(variant => product.supplyMode === 'EXTERNAL_DUBAI'
+        || (variant.inventory && variant.inventory.stock - variant.inventory.reserved > 0)),
+    })),
     pagination: {
       page: options.page,
       limit: options.limit,

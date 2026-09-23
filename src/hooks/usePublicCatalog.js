@@ -11,7 +11,7 @@ export function usePublicCatalog({
 } = {}) {
   const [pageState, setPageState] = useState({ filterKey: '', page: 1 });
   const [result, setResult] = useState({
-    key: '', products: [], availableBrands: [], discovery: EMPTY_DISCOVERY,
+    key: '', products: [], laptopModels: [], availableBrands: [], discovery: EMPTY_DISCOVERY,
     pagination: EMPTY_PAGINATION, error: '',
   });
   const brandKey = useMemo(() => [...brands].sort().join(','), [brands]);
@@ -38,6 +38,7 @@ export function usePublicCatalog({
         setResult({
           key: requestKey,
           products: Array.isArray(payload.data) ? payload.data : [],
+          laptopModels: Array.isArray(payload.laptopModels) ? payload.laptopModels : [],
           availableBrands: Array.isArray(payload.filters?.brands) ? payload.filters.brands : [],
           discovery: payload.discovery || EMPTY_DISCOVERY,
           pagination: payload.pagination || EMPTY_PAGINATION,
@@ -47,7 +48,7 @@ export function usePublicCatalog({
       .catch(fetchError => {
         if (fetchError.name === 'AbortError') return;
         setResult({
-          key: requestKey, products: [], availableBrands: [], discovery: EMPTY_DISCOVERY,
+          key: requestKey, products: [], laptopModels: [], availableBrands: [], discovery: EMPTY_DISCOVERY,
           pagination: EMPTY_PAGINATION, error: fetchError.message || 'دریافت محصولات با خطا مواجه شد.',
         });
       });
@@ -56,13 +57,14 @@ export function usePublicCatalog({
 
   if (!enabled) {
     return {
-      products: [], availableBrands: [], discovery: EMPTY_DISCOVERY,
+      products: [], laptopModels: [], availableBrands: [], discovery: EMPTY_DISCOVERY,
       pagination: EMPTY_PAGINATION, page: 1, setPage, loading: false, error: '',
     };
   }
   const current = result.key === requestKey;
   return {
     products: current ? result.products : [],
+    laptopModels: current ? result.laptopModels : [],
     availableBrands: current ? result.availableBrands : [],
     discovery: current ? result.discovery : EMPTY_DISCOVERY,
     pagination: current ? result.pagination : EMPTY_PAGINATION,

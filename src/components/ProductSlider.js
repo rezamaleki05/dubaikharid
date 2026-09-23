@@ -1,5 +1,5 @@
 'use client';
-import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
+import { useSiteSettings, getProductTomanPrice, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -49,7 +49,8 @@ export default function ProductSlider({ onSelectProduct }) {
   const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
 
   const ProductCard = ({ product, showStore, isCatalogProduct = false }) => {
-    const tomanPrice = getProductTomanPrice(product, settings);
+    const cardPricing = isCatalogProduct ? getProductCardPricing(product, settings) : null;
+    const tomanPrice = cardPricing ? cardPricing.finalPriceToman : getProductTomanPrice(product, settings);
     return (
       <div 
         className={styles.productCard} 
@@ -80,7 +81,7 @@ export default function ProductSlider({ onSelectProduct }) {
           <div className={styles.brandName}>{product.brand}</div>
           <div className={styles.productName}>{product.name}</div>
           <div className={styles.priceRow} style={{justifyContent: 'flex-start'}}>
-            <span className={styles.priceToman} style={{color: '#fff', fontSize: '1.1rem'}}>{fmtToman(tomanPrice)} تومان</span>
+            <span className={styles.priceToman} style={{color: '#fff', fontSize: '1.1rem'}}>{cardPricing?.varies ? 'از ' : ''}{fmtToman(tomanPrice)} تومان</span>
           </div>
           <button className={styles.cartBtn} onClick={(e) => {
             e.stopPropagation();

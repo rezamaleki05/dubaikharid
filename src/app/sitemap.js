@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { absoluteUrl } from '@/lib/seo';
 import { isPreviewDeployment } from '@/lib/env';
 import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
+import { getPublicLaptopModelGroups } from '@/lib/publicLaptopSeo';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,13 +22,18 @@ export default async function sitemap() {
     { url: absoluteUrl('/bags-accessories'), changeFrequency: 'weekly', priority: 0.75 },
     { url: absoluteUrl('/beauty-health'), changeFrequency: 'weekly', priority: 0.75 },
     { url: absoluteUrl('/clothing'), changeFrequency: 'weekly', priority: 0.75 },
+    { url: absoluteUrl('/women'), changeFrequency: 'weekly', priority: 0.75 },
+    { url: absoluteUrl('/men'), changeFrequency: 'weekly', priority: 0.75 },
     { url: absoluteUrl('/kids'), changeFrequency: 'weekly', priority: 0.75 },
   ];
   try {
-    const [products, laptops, stores, brands] = await Promise.all([
+    const [products, laptopModels, stores, brands] = await Promise.all([
       prisma.product.findMany({ where: PUBLIC_PRODUCT_VISIBILITY, select: { id: true, updatedAt: true } }),
-      prisma.laptop.findMany({ where: { status: 'AVAILABLE', archivedAt: null }, select: { id: true, updatedAt: true } }),
-      prisma.store.findMany({ select: { id: true } }),
+      getPublicLaptopModelGroups(),
+      prisma.store.findMany({
+        where: { products: { some: PUBLIC_PRODUCT_VISIBILITY } },
+        select: { id: true },
+      }),
       prisma.brand.findMany({
         where: { showInBrandDirectory: true, products: { some: PUBLIC_PRODUCT_VISIBILITY } },
         select: { id: true },
@@ -38,7 +44,7 @@ export default async function sitemap() {
       ...stores.map(store => ({ url: absoluteUrl(`/stores/${store.id}`), changeFrequency: 'monthly', priority: 0.7 })),
       ...brands.map(brand => ({ url: absoluteUrl(`/brands/${brand.id}`), changeFrequency: 'weekly', priority: 0.7 })),
       ...products.map(product => ({ url: absoluteUrl(`/product/${product.id}`), lastModified: product.updatedAt, changeFrequency: 'weekly', priority: 0.7 })),
-      ...laptops.map(laptop => ({ url: absoluteUrl(`/product/${laptop.id}`), lastModified: laptop.updatedAt, changeFrequency: 'daily', priority: 0.75 })),
+      ...laptopModels.map(model => ({ url: absoluteUrl(`/laptops/${model.slug}`), lastModified: model.updatedAt, changeFrequency: 'daily', priority: 0.8 })),
     ];
   } catch (error) {
     console.error('Unable to load dynamic sitemap records:', error);
