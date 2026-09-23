@@ -96,10 +96,17 @@ test('Laptop search matches brand plus model and specifications without duplicat
     laptop(),
     laptop({ id: 'lap-2', ram: '64GB' }),
     laptop({ id: 'lap-3', brand: 'HP', model: 'ZBook 15 G6', name: 'HP ZBook 15 G6', ram: '16GB', gpu: 'Quadro T1000' }),
+    laptop({ id: 'lap-4', brand: 'Lenovo', model: 'ThinkPad P53', name: 'Lenovo ThinkPad P53', ram: '32GB', gpu: 'Quadro T2000' }),
   ]);
   assert.deepEqual(searchLaptopModelGroups(groups, 'Dell Precision').map(group => group.slug), ['dell-precision-5530']);
   assert.deepEqual(searchLaptopModelGroups(groups, 'HP ZBook').map(group => group.slug), ['hp-zbook-15-g6']);
-  assert.equal(searchLaptopModelGroups(groups, '32GB').length, 1);
+  assert.deepEqual(searchLaptopModelGroups(groups, 'Lenovo ThinkPad').map(group => group.slug), ['lenovo-thinkpad-p53']);
+  assert.deepEqual(searchLaptopModelGroups(groups, 'لپ تاپ استوک').map(group => group.slug), [
+    'dell-precision-5530',
+    'hp-zbook-15-g6',
+    'lenovo-thinkpad-p53',
+  ]);
+  assert.equal(searchLaptopModelGroups(groups, '32GB').length, 2);
 });
 
 test('Laptop Stock landing has the exact single strategic H1 and natural support copy', () => {

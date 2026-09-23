@@ -1,4 +1,6 @@
-import { normalizeSearchText, searchTokens } from './searchNormalization.js';
+import { meaningfulSearchTerms, normalizeSearchText, searchTokens } from './searchNormalization.js';
+
+const LAPTOP_CATALOG_TERMS = new Set(['لپ', 'تاپ', 'لپتاپ', 'استوک']);
 
 function normalizedIdentityPart(value) {
   return normalizeSearchText(value).toLocaleLowerCase('en-US');
@@ -128,8 +130,12 @@ export function buildLaptopModelGroups(laptops) {
 }
 
 export function searchLaptopModelGroups(groups, query, limit = 24) {
-  const tokens = searchTokens(query);
-  if (!tokens.length) return [];
+  const rawTokens = searchTokens(query);
+  if (!rawTokens.length) return [];
+  const hasLaptopIntent = rawTokens.includes('لپتاپ')
+    || (rawTokens.includes('لپ') && rawTokens.includes('تاپ'));
+  const tokens = meaningfulSearchTerms(query).filter(token => !LAPTOP_CATALOG_TERMS.has(token));
+  if (!tokens.length) return hasLaptopIntent ? (groups || []).slice(0, limit) : [];
   return (groups || []).filter(group => {
     const haystack = normalizeSearchText([
       group.brand,
