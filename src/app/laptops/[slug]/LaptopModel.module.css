@@ -37,12 +37,12 @@
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; gap: 30px; }
   .imageStage { max-height: 520px; }
+  .unitsGrid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 680px) {
   .main { width: min(100% - 24px, 1180px); padding-top: 30px; }
   .summaryFacts { grid-template-columns: 1fr; }
-  .unitsGrid { grid-template-columns: 1fr; }
   .unitCard { grid-template-columns: 92px minmax(0, 1fr); gap: 14px; padding: 14px; }
   .unitImage { width: 92px; }
   .unitFooter { align-items: flex-start; flex-direction: column; }
