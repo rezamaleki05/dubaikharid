@@ -10,6 +10,7 @@ import { buildProductVariantOrderItemSnapshot } from '@/lib/productVariantOrderI
 import { createFutureIranStockVariantOrder } from '@/lib/productVariantOrderTransactionService';
 import { getPricingSettings, getSettings } from '@/lib/settings';
 import { getOrderItemSource, getWarehouseAvailableQuantity, getWarehouseUnitPriceToman } from '@/lib/warehouseSales';
+import { findWarehouseCutoverMappings } from '@/lib/warehouseProductCutover';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAYMENT_METHODS = new Set(['CARD', 'ONLINE']);
@@ -183,7 +184,35 @@ function assertPublicOrderReplay(order, parsed, productLines) {
 }
 
 export async function createPublicOrder(input, idempotencyKey, { authenticatedCustomerId = null } = {}) {
-  const parsed = validatePublicOrderInput(input);
+  let parsed = validatePublicOrderInput(input);
+  if (parsed.type === 'WAREHOUSE_STOCK') {
+    const mappings = await findWarehouseCutoverMappings(prisma, parsed.items.map(item => item.warehouseItemId));
+    if (mappings.size > 0 && mappings.size !== new Set(parsed.items.map(item => item.warehouseItemId)).size) {
+      throw new PublicOrderError(
+        'برخی اقلام انبار به کاتالوگ منتقل شده‌اند؛ سبد خرید را به‌روزرسانی کنید.',
+        409,
+        'WAREHOUSE_CART_MIGRATION_REQUIRED',
+      );
+    }
+    if (mappings.size > 0) {
+      parsed = {
+        ...parsed,
+        type: 'CATALOG_PRODUCT',
+        items: parsed.items.map(item => {
+          const mapping = mappings.get(item.warehouseItemId);
+          return {
+            productId: mapping.productId,
+            productVariantId: mapping.productVariantId,
+            laptopId: null,
+            warehouseItemId: null,
+            quantity: item.quantity,
+            selectedColor: null,
+            selectedSize: null,
+          };
+        }),
+      };
+    }
+  }
   const { values: paymentSettings } = await getSettings(['cardPaymentEnabled', 'onlinePaymentEnabled']);
   if (parsed.paymentMethod === 'ONLINE' && paymentSettings.onlinePaymentEnabled !== true) {
     throw new PublicOrderError('درگاه پرداخت آنلاین هنوز فعال نیست.', 409, 'PAYMENT_METHOD_DISABLED');

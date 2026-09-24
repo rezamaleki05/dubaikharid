@@ -3,6 +3,7 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { slugifyProductName } from '@/lib/adminProducts';
 import { serializeWarehouseImages, validateWarehouseImages } from '@/lib/warehouseGallery';
+import { isWarehouseCutoverLocked } from '@/lib/warehouseProductCutover';
 
 const MAX_IMAGE_LENGTH = 2_800_000;
 const MAX_RETRIES = 4;
@@ -23,7 +24,17 @@ export class WarehouseDomainError extends Error {
 export const adminWarehouseInclude = Object.freeze({
   brand: { select: { id: true, name: true, faName: true } },
   category: { select: { id: true, name: true, query: true } },
-  product: { select: { id: true, code: true, nameFa: true, nameEn: true, slug: true } },
+  product: {
+    select: {
+      id: true,
+      code: true,
+      nameFa: true,
+      nameEn: true,
+      slug: true,
+      sourceUrlKey: true,
+      status: true,
+    },
+  },
   movements: {
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -287,6 +298,7 @@ export function serializeMovement(movement) {
 
 export function serializeWarehouseItem(item) {
   const images = serializeWarehouseImages(item);
+  const cutoverLocked = isWarehouseCutoverLocked(item);
   return {
     id: item.id,
     name: item.name,
@@ -316,6 +328,11 @@ export function serializeWarehouseItem(item) {
     brand: item.brand || null,
     category: item.category || null,
     product: item.product ? { ...item.product, name: item.product.nameFa } : null,
+    cutover: {
+      locked: cutoverLocked,
+      status: cutoverLocked ? 'CUT_OVER' : 'WAREHOUSE_MANAGED',
+      productId: cutoverLocked ? item.product.id : null,
+    },
     movements: Array.isArray(item.movements) ? item.movements.map(serializeMovement) : [],
     notes: Array.isArray(item.notes) ? item.notes.map(note => ({
       id: note.id,
@@ -349,10 +366,24 @@ function concurrentUpdateError() {
   return new WarehouseDomainError('موجودی هم‌زمان تغییر کرد؛ درخواست دوباره اجرا شد اما نهایی نشد.', 409, 'WAREHOUSE_CONCURRENT_UPDATE');
 }
 
+function assertWarehouseCutoverMutable(item) {
+  if (isWarehouseCutoverLocked(item)) {
+    throw new WarehouseDomainError(
+      'این کالا به موجودی محصول منتقل شده است؛ تغییرات را از مدیریت محصولات انجام دهید.',
+      409,
+      'WAREHOUSE_ITEM_CUT_OVER',
+    );
+  }
+}
+
 export async function adjustWarehouseStock(prisma, { id, quantityChange, reason, adminId, type }) {
   return runSerializableWithRetry(prisma, async tx => {
-    const current = await tx.warehouseItem.findUnique({ where: { id } });
+    const current = await tx.warehouseItem.findUnique({
+      where: { id },
+      include: { product: { select: { id: true, sourceUrlKey: true, status: true } } },
+    });
     if (!current || current.isArchived) throw new WarehouseDomainError('کالای فعال انبار پیدا نشد.', 404, 'ITEM_NOT_FOUND');
+    assertWarehouseCutoverMutable(current);
     const quantityAfter = current.stock + quantityChange;
     if (quantityAfter < 0 || quantityAfter < current.reserved) {
       throw new WarehouseDomainError('این کاهش باعث منفی شدن موجودی قابل‌فروش می‌شود.', 409, 'INSUFFICIENT_AVAILABLE_STOCK');
@@ -379,8 +410,12 @@ export async function adjustWarehouseStock(prisma, { id, quantityChange, reason,
 
 export async function updateWarehouseItem(prisma, { id, data, relations, images, adminId }) {
   return runSerializableWithRetry(prisma, async tx => {
-    const current = await tx.warehouseItem.findUnique({ where: { id } });
+    const current = await tx.warehouseItem.findUnique({
+      where: { id },
+      include: { product: { select: { id: true, sourceUrlKey: true, status: true } } },
+    });
     if (!current) throw new WarehouseDomainError('کالای انبار پیدا نشد.', 404, 'ITEM_NOT_FOUND');
+    assertWarehouseCutoverMutable(current);
     const relationData = await resolveWarehouseRelations(tx, relations);
     const next = { ...current, ...data, ...relationData };
     if (data.isPublished === true && !current.isPublished) next.publishedAt = new Date();

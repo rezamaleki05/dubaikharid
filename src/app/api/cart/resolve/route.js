@@ -3,6 +3,7 @@ import { cartItemKey, CART_ITEM_TYPES, MAX_PRODUCT_QUANTITY } from '@/lib/client
 import { prisma } from '@/lib/prisma';
 import { resolvePublicProductCartLines } from '@/lib/productCartService';
 import { publicRequestGuard } from '@/lib/publicRequestGuard';
+import { getWarehouseCutoverMappingFromData, warehouseCutoverMappingSelect } from '@/lib/warehouseProductCutover';
 
 function cleanText(value, maximum, { required = false } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -55,7 +56,7 @@ export async function POST(request) {
 
   try {
     const items = parseItems(body);
-    const productLines = items.filter(item => item.type === 'PRODUCT').map(item => ({
+    const directProductLines = items.filter(item => item.type === 'PRODUCT').map(item => ({
       productId: item.id,
       productVariantId: item.productVariantId,
       quantity: item.quantity,
@@ -65,8 +66,7 @@ export async function POST(request) {
     }));
     const warehouseIds = [...new Set(items.filter(item => item.type === 'WAREHOUSE').map(item => item.id))];
     const laptopIds = [...new Set(items.filter(item => item.type === 'LAPTOP').map(item => item.id))];
-    const [productResults, warehouseItems, laptops] = await Promise.all([
-      productLines.length ? resolvePublicProductCartLines(prisma, productLines) : [],
+    const [warehouseItems, laptops] = await Promise.all([
       warehouseIds.length ? prisma.warehouseItem.findMany({
         where: { id: { in: warehouseIds } },
         select: {
@@ -74,6 +74,8 @@ export async function POST(request) {
           discountPercent: true, hasDiscount: true, isPublished: true, isArchived: true,
           brand: { select: { name: true, faName: true } },
           category: { select: { name: true, query: true } },
+          productId: true,
+          product: warehouseCutoverMappingSelect.product,
         },
       }) : [],
       laptopIds.length ? prisma.laptop.findMany({
@@ -84,8 +86,29 @@ export async function POST(request) {
         },
       }) : [],
     ]);
-    const productsByKey = new Map(productResults.map(product => [product.requestKey, product]));
     const warehouseById = new Map(warehouseItems.map(item => [item.id, item]));
+    const migratedWarehouseLines = items.flatMap(item => {
+      if (item.type !== 'WAREHOUSE') return [];
+      const mapping = getWarehouseCutoverMappingFromData(warehouseById.get(item.id));
+      return mapping ? [{
+        productId: mapping.productId,
+        productVariantId: mapping.productVariantId,
+        quantity: item.quantity,
+        selectedColor: null,
+        selectedSize: null,
+        requestKey: item.key,
+      }] : [];
+    });
+    const productLines = [...directProductLines, ...migratedWarehouseLines];
+    const productResults = productLines.length
+      ? (await resolvePublicProductCartLines(prisma, productLines)).map(result => ({
+          ...result,
+          key: result.type === 'PRODUCT' && result.productVariantId
+            ? cartItemKey({ type: 'PRODUCT', id: result.productId, productVariantId: result.productVariantId })
+            : result.key,
+        }))
+      : [];
+    const productsByKey = new Map(productResults.map(product => [product.requestKey, product]));
     const laptopsById = new Map(laptops.map(laptop => [laptop.id, laptop]));
     const requestedByWarehouse = new Map();
     for (const item of items.filter(candidate => candidate.type === 'WAREHOUSE')) {
@@ -103,6 +126,11 @@ export async function POST(request) {
       if (item.type === 'WAREHOUSE') {
         const warehouse = warehouseById.get(item.id);
         if (!warehouse) return { ...item, available: false, authoritative: true, code: 'NOT_FOUND' };
+        const mapping = getWarehouseCutoverMappingFromData(warehouse);
+        if (mapping) {
+          return productsByKey.get(item.key)
+            || { ...item, type: 'PRODUCT', id: mapping.productId, productId: mapping.productId, productVariantId: mapping.productVariantId, available: false, authoritative: true, code: 'PRODUCT_UNAVAILABLE' };
+        }
         const availableQuantity = Math.max(0, warehouse.stock - warehouse.reserved);
         const available = warehouse.isPublished && !warehouse.isArchived && availableQuantity >= requestedByWarehouse.get(item.id);
         const discountPercent = warehouse.hasDiscount ? warehouse.discountPercent : 0;

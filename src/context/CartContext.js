@@ -16,6 +16,8 @@ const CartContext = createContext(null);
 function enrichCartItem(item, resolved) {
   const current = resolved || {};
   const snapshot = item.snapshot || {};
+  const effectiveType = current.type || item.type;
+  const effectiveId = current.id || current.productId || item.id;
   const priceChanged = Boolean(current.authoritative && (
     (item.type === 'LAPTOP' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
     || (item.type === 'WAREHOUSE' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
@@ -25,18 +27,18 @@ function enrichCartItem(item, resolved) {
   return {
     ...snapshot,
     ...current,
-    id: item.id,
-    key: item.key,
+    id: effectiveId,
+    key: current.key || item.key,
     cartItemId: item.key,
-    type: item.type,
+    type: effectiveType,
     quantity: item.quantity,
     productVariantId: current.productVariantId || item.productVariantId || null,
     selectedSize: current.selectedSize ?? item.selectedSize,
     selectedColor: current.selectedColor ?? item.selectedColor,
-    productId: item.type === 'PRODUCT' ? item.id : undefined,
-    laptopId: item.type === 'LAPTOP' ? item.id : undefined,
-    warehouseItemId: item.type === 'WAREHOUSE' ? item.id : undefined,
-    product_type: item.type === 'LAPTOP' ? 'laptop_stock' : item.type === 'WAREHOUSE' ? 'warehouse_stock' : item.type === 'PRODUCT' ? 'iran_inventory' : 'external_product',
+    productId: effectiveType === 'PRODUCT' ? effectiveId : undefined,
+    laptopId: effectiveType === 'LAPTOP' ? effectiveId : undefined,
+    warehouseItemId: effectiveType === 'WAREHOUSE' ? effectiveId : undefined,
+    product_type: effectiveType === 'LAPTOP' ? 'laptop_stock' : effectiveType === 'WAREHOUSE' ? 'warehouse_stock' : effectiveType === 'PRODUCT' ? 'iran_inventory' : 'external_product',
     unavailable: current.available === false,
     resolving: !resolved && item.type !== 'EXTERNAL_PRODUCT',
     authoritative: Boolean(current.authoritative),
@@ -123,10 +125,16 @@ export function CartProvider({ children }) {
           for (const item of previous) {
             const authoritative = migrations.get(item.key);
             const migrated = authoritative && (
-              item.productVariantId !== authoritative.productVariantId || item.key !== authoritative.key
+              item.type !== authoritative.type
+              || item.id !== (authoritative.id || authoritative.productId)
+              || item.productVariantId !== authoritative.productVariantId
+              || item.key !== authoritative.key
             )
               ? normalizeCartItem({
                   ...item,
+                  type: authoritative.type,
+                  id: authoritative.id || authoritative.productId,
+                  productId: authoritative.productId,
                   productVariantId: authoritative.productVariantId,
                   selectedColor: authoritative.selectedColor,
                   selectedSize: authoritative.selectedSize,

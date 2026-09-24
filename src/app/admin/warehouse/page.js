@@ -345,6 +345,9 @@ export default function AdminWarehousePage() {
               <p style={{ fontSize: '12.5px', color: '#8b92a5' }}>
                 مدیریت و مانیتورینگ فیزیکی موجودی کالاها، مقادیر رزرو شده و تاریخچه تغییرات انبار ایران
               </p>
+              <p style={{ fontSize: '11px', color: '#f59e0b', marginTop: '5px' }}>
+                کالاهای منتقل‌شده فقط از بخش محصولات قابل ویرایش و مدیریت موجودی هستند.
+              </p>
             </div>
             <button
               onClick={() => setIsAddWarehouseOpen(true)}
@@ -774,6 +777,9 @@ export default function AdminWarehousePage() {
                                   <div>
                                     <div style={{ fontWeight: '800', color: isSelected ? '#f87820' : '#fff' }}>{prod.name}</div>
                                     <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>{prod.sku} • {prod.id}</div>
+                                    {prod.cutover?.locked && (
+                                      <div style={{ fontSize: '10px', color: '#f59e0b', marginTop: '3px', fontWeight: '800' }}>منتقل‌شده به محصول</div>
+                                    )}
                                   </div>
                                 </div>
                               </td>
@@ -844,6 +850,7 @@ export default function AdminWarehousePage() {
                                     </div>
                                     <div
                                       onClick={() => {
+                                        if (prod.cutover?.locked) return;
                                         setEditWarehouseForm({
                                           ...prod,
                                           category: prod.category || '',
@@ -854,29 +861,31 @@ export default function AdminWarehousePage() {
                                         setIsEditWarehouseOpen(true);
                                         setActiveWarehouseMenuId(null);
                                       }}
-                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#fff', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: prod.cutover?.locked ? 'not-allowed' : 'pointer', opacity: prod.cutover?.locked ? 0.4 : 1, color: '#fff', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                     >
                                       ✏️ ویرایش
                                     </div>
                                     <div
                                       onClick={() => {
+                                        if (prod.cutover?.locked) return;
                                         setSelectedWarehouseProductId(prod.id);
                                         setWarehouseAdjustStockType('increase');
                                         setWarehouseAdjustStockOpen(true);
                                         setActiveWarehouseMenuId(null);
                                       }}
-                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#10b981', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: prod.cutover?.locked ? 'not-allowed' : 'pointer', opacity: prod.cutover?.locked ? 0.4 : 1, color: '#10b981', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                     >
                                       ➕ افزایش موجودی
                                     </div>
                                     <div
                                       onClick={() => {
+                                        if (prod.cutover?.locked) return;
                                         setSelectedWarehouseProductId(prod.id);
                                         setWarehouseAdjustStockType('decrease');
                                         setWarehouseAdjustStockOpen(true);
                                         setActiveWarehouseMenuId(null);
                                       }}
-                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#ef4444', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: prod.cutover?.locked ? 'not-allowed' : 'pointer', opacity: prod.cutover?.locked ? 0.4 : 1, color: '#ef4444', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                     >
                                       ➖ کاهش موجودی
                                     </div>
@@ -892,10 +901,11 @@ export default function AdminWarehousePage() {
                                     </div>
                                     <div
                                       onClick={() => {
+                                        if (prod.cutover?.locked) return;
                                         handleArchiveProductLocal(prod.id);
                                         setActiveWarehouseMenuId(null);
                                       }}
-                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: 'pointer', hover: 'background: rgba(255,255,255,0.04)', color: '#f59e0b', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '4px' }}
+                                      style={{ padding: '6px 8px', borderRadius: '4px', cursor: prod.cutover?.locked ? 'not-allowed' : 'pointer', opacity: prod.cutover?.locked ? 0.4 : 1, color: '#f59e0b', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '4px' }}
                                     >
                                       📦 آرشیو کالا
                                     </div>
@@ -1022,6 +1032,16 @@ export default function AdminWarehousePage() {
 
                   <h2 style={{ fontSize: '16px', fontWeight: '900', color: '#fff', marginBottom: '12px' }}>{selectedProduct.name}</h2>
 
+                  {selectedProduct.cutover?.locked && (
+                    <div style={{ padding: '10px 12px', marginBottom: '14px', border: '1px solid rgba(245,158,11,0.28)', background: 'rgba(245,158,11,0.07)', borderRadius: '8px', color: '#fbbf24', fontSize: '11px', lineHeight: 1.8 }}>
+                      این ردیف به محصول منتقل شده و در انبار فقط خواندنی است.
+                      {' '}
+                      <a href="/admin/products" style={{ color: '#fff', fontWeight: '800', textDecoration: 'underline' }}>
+                        مدیریت محصول {selectedProduct.product?.code || selectedProduct.cutover.productId}
+                      </a>
+                    </div>
+                  )}
+
                   {/* Specs list */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '12px', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.02)', paddingBottom: '6px' }}>
@@ -1067,7 +1087,9 @@ export default function AdminWarehousePage() {
                   {/* Sidebar Buttons */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                     <button
+                      disabled={selectedProduct.cutover?.locked}
                       onClick={() => {
+                        if (selectedProduct.cutover?.locked) return;
                         setEditWarehouseForm({
                           ...selectedProduct,
                           category: selectedProduct.category || '',
@@ -1078,8 +1100,8 @@ export default function AdminWarehousePage() {
                         setIsEditWarehouseOpen(true);
                       }}
                       style={{
-                        width: '100%', padding: '10px', background: 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
-                        color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px',
+                        width: '100%', padding: '10px', background: selectedProduct.cutover?.locked ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #f87820 0%, #d4590c 100%)',
+                        color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: selectedProduct.cutover?.locked ? 'not-allowed' : 'pointer', opacity: selectedProduct.cutover?.locked ? 0.5 : 1, fontSize: '12px',
                         display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px'
                       }}
                     >
@@ -1088,25 +1110,29 @@ export default function AdminWarehousePage() {
                     
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       <button
+                        disabled={selectedProduct.cutover?.locked}
                         onClick={() => {
+                          if (selectedProduct.cutover?.locked) return;
                           setWarehouseAdjustStockType('increase');
                           setWarehouseAdjustStockOpen(true);
                         }}
                         style={{
                           padding: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-                          color: '#10b981', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                          color: '#10b981', borderRadius: '8px', cursor: selectedProduct.cutover?.locked ? 'not-allowed' : 'pointer', opacity: selectedProduct.cutover?.locked ? 0.4 : 1, fontSize: '12px', fontWeight: 'bold'
                         }}
                       >
                         ➕ افزایش
                       </button>
                       <button
+                        disabled={selectedProduct.cutover?.locked}
                         onClick={() => {
+                          if (selectedProduct.cutover?.locked) return;
                           setWarehouseAdjustStockType('decrease');
                           setWarehouseAdjustStockOpen(true);
                         }}
                         style={{
                           padding: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-                          color: '#ef4444', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold'
+                          color: '#ef4444', borderRadius: '8px', cursor: selectedProduct.cutover?.locked ? 'not-allowed' : 'pointer', opacity: selectedProduct.cutover?.locked ? 0.4 : 1, fontSize: '12px', fontWeight: 'bold'
                         }}
                       >
                         ➖ کاهش
