@@ -3,7 +3,6 @@ import { cartItemKey, CART_ITEM_TYPES, MAX_PRODUCT_QUANTITY } from '@/lib/client
 import { prisma } from '@/lib/prisma';
 import { resolvePublicProductCartLines } from '@/lib/productCartService';
 import { publicRequestGuard } from '@/lib/publicRequestGuard';
-import { getWarehouseCutoverMappingFromData, warehouseCutoverMappingSelect } from '@/lib/warehouseProductCutover';
 
 function cleanText(value, maximum, { required = false } = {}) {
   if (value === null || value === undefined || value === '') {
@@ -64,20 +63,8 @@ export async function POST(request) {
       selectedSize: item.selectedSize,
       requestKey: item.key,
     }));
-    const warehouseIds = [...new Set(items.filter(item => item.type === 'WAREHOUSE').map(item => item.id))];
     const laptopIds = [...new Set(items.filter(item => item.type === 'LAPTOP').map(item => item.id))];
-    const [warehouseItems, laptops] = await Promise.all([
-      warehouseIds.length ? prisma.warehouseItem.findMany({
-        where: { id: { in: warehouseIds } },
-        select: {
-          id: true, name: true, publicNameEn: true, price: true, stock: true, reserved: true, image: true,
-          discountPercent: true, hasDiscount: true, isPublished: true, isArchived: true,
-          brand: { select: { name: true, faName: true } },
-          category: { select: { name: true, query: true } },
-          productId: true,
-          product: warehouseCutoverMappingSelect.product,
-        },
-      }) : [],
+    const [laptops, productResults] = await Promise.all([
       laptopIds.length ? prisma.laptop.findMany({
         where: { id: { in: laptopIds } },
         select: {
@@ -85,36 +72,16 @@ export async function POST(request) {
           priceToman: true, weightKg: true, image: true, status: true, archivedAt: true, reservedOrderId: true,
         },
       }) : [],
+      directProductLines.length ? resolvePublicProductCartLines(prisma, directProductLines) : [],
     ]);
-    const warehouseById = new Map(warehouseItems.map(item => [item.id, item]));
-    const migratedWarehouseLines = items.flatMap(item => {
-      if (item.type !== 'WAREHOUSE') return [];
-      const mapping = getWarehouseCutoverMappingFromData(warehouseById.get(item.id));
-      return mapping ? [{
-        productId: mapping.productId,
-        productVariantId: mapping.productVariantId,
-        quantity: item.quantity,
-        selectedColor: null,
-        selectedSize: null,
-        requestKey: item.key,
-      }] : [];
-    });
-    const productLines = [...directProductLines, ...migratedWarehouseLines];
-    const productResults = productLines.length
-      ? (await resolvePublicProductCartLines(prisma, productLines)).map(result => ({
+    const normalizedProductResults = productResults.map(result => ({
           ...result,
           key: result.type === 'PRODUCT' && result.productVariantId
             ? cartItemKey({ type: 'PRODUCT', id: result.productId, productVariantId: result.productVariantId })
             : result.key,
-        }))
-      : [];
-    const productsByKey = new Map(productResults.map(product => [product.requestKey, product]));
+        }));
+    const productsByKey = new Map(normalizedProductResults.map(product => [product.requestKey, product]));
     const laptopsById = new Map(laptops.map(laptop => [laptop.id, laptop]));
-    const requestedByWarehouse = new Map();
-    for (const item of items.filter(candidate => candidate.type === 'WAREHOUSE')) {
-      requestedByWarehouse.set(item.id, (requestedByWarehouse.get(item.id) || 0) + item.quantity);
-    }
-
     const resolved = items.map(item => {
       if (item.type === 'EXTERNAL_PRODUCT') {
         return { ...item, available: true, authoritative: false };
@@ -122,37 +89,6 @@ export async function POST(request) {
       if (item.type === 'PRODUCT') {
         return productsByKey.get(item.key)
           || { ...item, available: false, authoritative: true, code: 'PRODUCT_UNAVAILABLE' };
-      }
-      if (item.type === 'WAREHOUSE') {
-        const warehouse = warehouseById.get(item.id);
-        if (!warehouse) return { ...item, available: false, authoritative: true, code: 'NOT_FOUND' };
-        const mapping = getWarehouseCutoverMappingFromData(warehouse);
-        if (mapping) {
-          return productsByKey.get(item.key)
-            || { ...item, type: 'PRODUCT', id: mapping.productId, productId: mapping.productId, productVariantId: mapping.productVariantId, available: false, authoritative: true, code: 'PRODUCT_UNAVAILABLE' };
-        }
-        const availableQuantity = Math.max(0, warehouse.stock - warehouse.reserved);
-        const available = warehouse.isPublished && !warehouse.isArchived && availableQuantity >= requestedByWarehouse.get(item.id);
-        const discountPercent = warehouse.hasDiscount ? warehouse.discountPercent : 0;
-        const finalPriceToman = discountPercent > 0 ? Math.round(warehouse.price * (1 - discountPercent / 100)) : warehouse.price;
-        return {
-          ...item,
-          available,
-          availableQuantity,
-          authoritative: true,
-          code: !warehouse.isPublished || warehouse.isArchived ? 'INACTIVE' : available ? null : 'OUT_OF_STOCK',
-          name: warehouse.name,
-          nameFa: warehouse.name,
-          nameEn: warehouse.publicNameEn || '',
-          brand: warehouse.brand?.faName || warehouse.brand?.name || '',
-          store: 'موجودی دبی خرید',
-          spec: warehouse.category?.name || 'موجود در انبار',
-          image: warehouse.image || '',
-          priceToman: warehouse.price,
-          finalPriceToman,
-          discountPercent,
-          warehouseItemId: warehouse.id,
-        };
       }
       const laptop = laptopsById.get(item.id);
       if (!laptop) return { ...item, available: false, authoritative: true, code: 'NOT_FOUND' };

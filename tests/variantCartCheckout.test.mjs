@@ -86,7 +86,6 @@ const iranProduct = {
   store: null,
   image: '/shoe.jpg',
   originalLink: null,
-  warehouseItem: null,
 };
 
 const settings = {
@@ -284,7 +283,7 @@ test('Cart UI carries Variant identity and renders authoritative option labels w
   assert.doesNotMatch(cartPage, /variant selector|variantSelector/i);
 });
 
-test('Warehouse, Laptop, and PurchaseRequest architectures remain independent', () => {
+test('historical Warehouse helpers, Laptop, and PurchaseRequest remain isolated from Product cart code', () => {
   assert.doesNotMatch(warehouseSales, /ProductCart|productVariantId/);
   assert.doesNotMatch(adminLaptops, /ProductCart|productVariantId/);
   assert.doesNotMatch(purchaseRequests, /ProductCart|productVariantId|IRAN_STOCK_PRODUCT/);

@@ -122,7 +122,7 @@ export function getProductTomanPrice(product, settings) {
   if (product?.priceToman !== null && product?.priceToman !== undefined) {
     return Number(product.priceToman) || 0;
   }
-  // Iran inventory warehouse products are already priced in Toman
+  // Iran-stock Products are already priced in Toman.
   if (product.store === 'انبار ایران' || (product.id && product.id.startsWith('DK-INV')) || product.product_type === 'iran_inventory') {
     const inventoryPrice = Number(product.price);
     if (Number.isFinite(inventoryPrice) && inventoryPrice > 0) return inventoryPrice;

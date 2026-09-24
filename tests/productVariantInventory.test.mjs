@@ -228,7 +228,7 @@ test('customer IRAN_STOCK checkout reuses the atomic reservation foundation', ()
   assert.doesNotMatch(cartRoute, /productInventory\.(?:create|update|delete)/);
 });
 
-test('Warehouse and Laptop lifecycles remain independent from ProductInventory', () => {
+test('historical Warehouse lifecycle and Laptop remain independent from ProductInventory', () => {
   assert.doesNotMatch(warehouseSales, /ProductInventory|productInventory|ProductVariant/);
   assert.doesNotMatch(adminLaptops, /ProductInventory|productInventory|ProductVariant/);
   assert.doesNotMatch(migration, /"WarehouseItem"|"Laptop"|ALTER TABLE "InventoryMovement"/);

@@ -7,7 +7,6 @@ const PUBLIC_CATALOG_PATHS = Object.freeze([
   '/bags-accessories', '/watches', '/other-products', '/mobile',
   '/electronics', '/beauty-health', '/sale', '/best-sellers',
   '/search', '/brands', '/sitemap.xml', '/api/products',
-  '/warehouse', '/api/warehouse',
 ]);
 
 export function revalidatePublicCatalog(productId = null) {

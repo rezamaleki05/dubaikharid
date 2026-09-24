@@ -282,7 +282,6 @@ export async function getDashboardReport() {
     customerGroups,
     shipmentGroups,
     productGroups,
-    warehouseRows,
     laptopGroups,
     recentOrders,
     recentPayments,
@@ -296,7 +295,6 @@ export async function getDashboardReport() {
     prisma.customer.groupBy({ by: ['status'], _count: { _all: true } }),
     prisma.shipment.groupBy({ by: ['status'], _count: { _all: true } }),
     prisma.product.groupBy({ by: ['status'], _count: { _all: true } }),
-    prisma.$queryRaw`SELECT COUNT(*)::int AS "items", COALESCE(SUM("stock"), 0)::text AS "quantity", COUNT(*) FILTER (WHERE "stock" <= "minStock")::int AS "lowStock", COUNT(*) FILTER (WHERE "stock" <= 0)::int AS "outOfStock" FROM "WarehouseItem" WHERE "isArchived" = false`,
     prisma.laptop.groupBy({ by: ['status'], where: { archivedAt: null }, _count: { _all: true } }),
     prisma.order.findMany({
       select: { id: true, orderCode: true, status: true, totalToman: true, createdAt: true, customer: { select: { name: true } } },
@@ -319,7 +317,6 @@ export async function getDashboardReport() {
   const shipmentCounts = Object.fromEntries(shipmentGroups.map(row => [row.status, row._count._all]));
   const productCounts = Object.fromEntries(productGroups.map(row => [row.status, row._count._all]));
   const laptopCounts = Object.fromEntries(laptopGroups.map(row => [row.status, row._count._all]));
-  const warehouse = warehouseRows[0] || { items: 0, quantity: '0', lowStock: 0, outOfStock: 0 };
   const today = summarizePaymentEvents(todayPayments);
   const month = summarizePaymentEvents(monthPayments);
   const settings = new Map(financialSettings.map(row => [row.key, row.value]));
@@ -354,12 +351,6 @@ export async function getDashboardReport() {
       pending: shipmentCounts.PENDING || 0,
       inTransit: (shipmentCounts.SHIPPED || 0) + (shipmentCounts.IN_TRANSIT || 0) + (shipmentCounts.OUT_FOR_DELIVERY || 0),
       delivered: shipmentCounts.DELIVERED || 0,
-    },
-    warehouse: {
-      items: Number(warehouse.items || 0),
-      quantity: String(warehouse.quantity || '0'),
-      lowStock: Number(warehouse.lowStock || 0),
-      outOfStock: Number(warehouse.outOfStock || 0),
     },
     products: {
       total: totalProducts,

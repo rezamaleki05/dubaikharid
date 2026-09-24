@@ -10,7 +10,6 @@ export async function GET(request) {
     ADMIN_PERMISSIONS.CATEGORIES_MANAGE,
     ADMIN_PERMISSIONS.BRANDS_MANAGE,
     ADMIN_PERMISSIONS.PRODUCTS_VIEW,
-    ADMIN_PERMISSIONS.WAREHOUSE_VIEW,
   ]);
   if (response) return response;
 

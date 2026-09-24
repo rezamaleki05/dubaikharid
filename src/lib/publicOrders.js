@@ -9,8 +9,6 @@ import { resolveAuthoritativeProductCartLines } from '@/lib/productCartService';
 import { buildProductVariantOrderItemSnapshot } from '@/lib/productVariantOrderItemService';
 import { createFutureIranStockVariantOrder } from '@/lib/productVariantOrderTransactionService';
 import { getPricingSettings, getSettings } from '@/lib/settings';
-import { getOrderItemSource, getWarehouseAvailableQuantity, getWarehouseUnitPriceToman } from '@/lib/warehouseSales';
-import { findWarehouseCutoverMappings } from '@/lib/warehouseProductCutover';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAYMENT_METHODS = new Set(['CARD', 'ONLINE']);
@@ -66,20 +64,18 @@ export function validatePublicOrderInput(body) {
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 30) throw new PublicOrderError('اقلام سفارش معتبر نیستند.');
   const items = body.items.map(item => {
     if (!item || typeof item !== 'object' || Array.isArray(item)) throw new PublicOrderError('قلم سفارش معتبر نیست.');
-    const itemAllowed = new Set(['productId', 'productVariantId', 'laptopId', 'warehouseItemId', 'quantity', 'selectedColor', 'selectedSize']);
+    const itemAllowed = new Set(['productId', 'productVariantId', 'laptopId', 'quantity', 'selectedColor', 'selectedSize']);
     if (Object.keys(item).some(key => !itemAllowed.has(key))) throw new PublicOrderError('فیلد غیرمجاز در قلم سفارش وجود دارد.');
     const productId = text(item.productId, 160);
     const productVariantId = text(item.productVariantId, 160);
     const laptopId = text(item.laptopId, 160);
-    const warehouseItemId = text(item.warehouseItemId, 160);
-    if (!getOrderItemSource({ productId, laptopId, warehouseItemId })) throw new PublicOrderError('هر قلم سفارش باید دقیقاً یک منبع کالا داشته باشد.');
+    if (Boolean(productId) === Boolean(laptopId)) throw new PublicOrderError('هر قلم سفارش باید دقیقاً یک منبع کالا داشته باشد.');
     const itemQuantity = quantity(item.quantity);
     if (laptopId && itemQuantity !== 1) throw new PublicOrderError('هر لپ‌تاپ استوک یک واحد مستقل است.');
     return {
       productId,
       productVariantId,
       laptopId,
-      warehouseItemId,
       quantity: itemQuantity,
       selectedColor: text(item.selectedColor, 120),
       selectedSize: text(item.selectedSize, 120),
@@ -87,9 +83,8 @@ export function validatePublicOrderInput(body) {
   });
   const hasLaptop = items.some(item => item.laptopId);
   const hasProduct = items.some(item => item.productId);
-  const hasWarehouse = items.some(item => item.warehouseItemId);
-  if ([hasLaptop, hasProduct, hasWarehouse].filter(Boolean).length !== 1) {
-    throw new PublicOrderError('کالاهای خارجی، موجودی انبار و لپ‌تاپ باید در سفارش‌های جدا ثبت شوند.');
+  if ([hasLaptop, hasProduct].filter(Boolean).length !== 1) {
+    throw new PublicOrderError('محصول و لپ‌تاپ باید در سفارش‌های جدا ثبت شوند.');
   }
   if (hasLaptop && new Set(items.map(item => item.laptopId)).size !== items.length) {
     throw new PublicOrderError('هر لپ‌تاپ استوک فقط یک‌بار قابل ثبت است.');
@@ -102,17 +97,12 @@ export function validatePublicOrderInput(body) {
     }
     if ([...totals.values()].some(total => total > 20)) throw new PublicOrderError('حداکثر تعداد مجاز هر کالا ۲۰ عدد است.');
   }
-  if (hasWarehouse) {
-    const totals = new Map();
-    for (const item of items) totals.set(item.warehouseItemId, (totals.get(item.warehouseItemId) || 0) + item.quantity);
-    if ([...totals.values()].some(total => total > 20)) throw new PublicOrderError('حداکثر تعداد مجاز هر کالای انبار ۲۰ عدد است.');
-  }
   return {
     customer,
     items,
     paymentMethod: body.paymentMethod,
     notes,
-    type: hasLaptop ? 'LAPTOP_STOCK' : hasWarehouse ? 'WAREHOUSE_STOCK' : 'CATALOG_PRODUCT',
+    type: hasLaptop ? 'LAPTOP_STOCK' : 'CATALOG_PRODUCT',
   };
 }
 
@@ -154,7 +144,6 @@ function orderCode() {
 
 function replayLineKey(item) {
   if (item.laptopId) return `L:${item.laptopId}:${item.quantity}`;
-  if (item.warehouseItemId) return `W:${item.warehouseItemId}:${item.quantity}`;
   return `P:${item.productId}:${item.productVariantId || ''}:${item.quantity}`;
 }
 
@@ -184,35 +173,7 @@ function assertPublicOrderReplay(order, parsed, productLines) {
 }
 
 export async function createPublicOrder(input, idempotencyKey, { authenticatedCustomerId = null } = {}) {
-  let parsed = validatePublicOrderInput(input);
-  if (parsed.type === 'WAREHOUSE_STOCK') {
-    const mappings = await findWarehouseCutoverMappings(prisma, parsed.items.map(item => item.warehouseItemId));
-    if (mappings.size > 0 && mappings.size !== new Set(parsed.items.map(item => item.warehouseItemId)).size) {
-      throw new PublicOrderError(
-        'برخی اقلام انبار به کاتالوگ منتقل شده‌اند؛ سبد خرید را به‌روزرسانی کنید.',
-        409,
-        'WAREHOUSE_CART_MIGRATION_REQUIRED',
-      );
-    }
-    if (mappings.size > 0) {
-      parsed = {
-        ...parsed,
-        type: 'CATALOG_PRODUCT',
-        items: parsed.items.map(item => {
-          const mapping = mappings.get(item.warehouseItemId);
-          return {
-            productId: mapping.productId,
-            productVariantId: mapping.productVariantId,
-            laptopId: null,
-            warehouseItemId: null,
-            quantity: item.quantity,
-            selectedColor: null,
-            selectedSize: null,
-          };
-        }),
-      };
-    }
-  }
+  const parsed = validatePublicOrderInput(input);
   const { values: paymentSettings } = await getSettings(['cardPaymentEnabled', 'onlinePaymentEnabled']);
   if (parsed.paymentMethod === 'ONLINE' && paymentSettings.onlinePaymentEnabled !== true) {
     throw new PublicOrderError('درگاه پرداخت آنلاین هنوز فعال نیست.', 409, 'PAYMENT_METHOD_DISABLED');
@@ -301,9 +262,7 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
       let productSubtotalToman = 0;
       let shippingCostToman = 0;
       let orderItems;
-      let productRows = [];
       let laptopRows = [];
-      let warehouseRows = [];
 
       if (parsed.type === 'LAPTOP_STOCK') {
         laptopRows = await tx.laptop.findMany({ where: { id: { in: parsed.items.map(item => item.laptopId) }, archivedAt: null } });
@@ -320,26 +279,6 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
           productSubtotalToman += Number(laptop.priceToman);
           return { name: laptop.name, quantity: 1, priceToman: Number(laptop.priceToman), laptopId: laptop.id, selectedColor: item.selectedColor, selectedSize: item.selectedSize, weight: laptop.weightKg ? Number(laptop.weightKg) : null };
         });
-      } else if (parsed.type === 'WAREHOUSE_STOCK') {
-        warehouseRows = await tx.warehouseItem.findMany({
-          where: { id: { in: parsed.items.map(item => item.warehouseItemId) }, isPublished: true, isArchived: false },
-        });
-        if (warehouseRows.length !== new Set(parsed.items.map(item => item.warehouseItemId)).size) {
-          const found = new Set(warehouseRows.map(item => item.id));
-          throw new PublicOrderError('یکی از کالاهای انبار پیدا نشد یا منتشر نشده است.', 404, 'ITEM_NOT_FOUND', {
-            items: parsed.items.filter(item => !found.has(item.warehouseItemId)).map(item => ({ id: item.warehouseItemId, code: 'ITEM_NOT_FOUND', message: 'کالای انبار پیدا نشد.' })),
-          });
-        }
-        const byId = new Map(warehouseRows.map(item => [item.id, item]));
-        orderItems = parsed.items.map(item => {
-          const warehouse = byId.get(item.warehouseItemId);
-          const available = getWarehouseAvailableQuantity(warehouse);
-          if (available < item.quantity) throw new PublicOrderError('موجودی یکی از کالاهای انبار کافی نیست.', 409, 'OUT_OF_STOCK', { items: [{ id: warehouse.id, code: 'OUT_OF_STOCK', message: 'موجودی کالا کافی نیست.' }] });
-          const unitPrice = getWarehouseUnitPriceToman(warehouse);
-          totalToman += unitPrice * item.quantity;
-          productSubtotalToman += unitPrice * item.quantity;
-          return { name: warehouse.name, quantity: item.quantity, priceToman: unitPrice, warehouseItemId: warehouse.id, selectedColor: item.selectedColor, selectedSize: item.selectedSize };
-        });
       } else {
         const currentProductLines = await resolveAuthoritativeProductCartLines(tx, productInputLines, { settings: pricingSettings });
         if (currentProductLines.some(item => item.supplyMode !== 'EXTERNAL_DUBAI')) {
@@ -349,10 +288,6 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
             'SUPPLY_MODE_CHANGED',
           );
         }
-        productRows = await tx.product.findMany({
-          where: { id: { in: currentProductLines.map(item => item.productId) } },
-          include: { warehouseItem: true },
-        });
         const subtotalAed = currentProductLines.reduce(
           (sum, item) => sum + Number(item.pricing.discountedBasePrice) * item.quantity,
           0,
@@ -408,44 +343,6 @@ export async function createPublicOrder(input, idempotencyKey, { authenticatedCu
         if (reserved.count !== 1) throw new PublicOrderError('این لپ‌تاپ هم‌زمان توسط مشتری دیگری رزرو شد.', 409, 'OUT_OF_STOCK');
       }
 
-      for (const item of parsed.items.filter(item => item.warehouseItemId)) {
-        const warehouse = warehouseRows.find(row => row.id === item.warehouseItemId);
-        const result = await tx.warehouseItem.updateMany({
-          where: {
-            id: warehouse.id,
-            stock: warehouse.stock,
-            reserved: warehouse.reserved,
-            isPublished: true,
-            isArchived: false,
-          },
-          data: { reserved: { increment: item.quantity } },
-        });
-        if (result.count !== 1) throw new PublicOrderError('موجودی هم‌زمان تغییر کرد؛ دوباره تلاش کنید.', 409, 'CONCURRENT_UPDATE');
-        await tx.inventoryMovement.create({ data: {
-          warehouseItemId: warehouse.id,
-          type: 'ORDER_RESERVATION',
-          quantityChange: 0,
-          quantityBefore: warehouse.stock,
-          quantityAfter: warehouse.stock,
-          reservedBefore: warehouse.reserved,
-          reservedAfter: warehouse.reserved + item.quantity,
-          reason: `رزرو فروش مستقیم برای سفارش ${order.orderCode}`,
-          orderId: order.id,
-        } });
-        warehouse.reserved += item.quantity;
-      }
-
-      const requestedByProduct = new Map();
-      for (const item of parsed.items.filter(item => item.productId)) {
-        requestedByProduct.set(item.productId, (requestedByProduct.get(item.productId) || 0) + item.quantity);
-      }
-      for (const [productId, requestedQuantity] of requestedByProduct) {
-        const warehouse = productRows.find(product => product.id === productId)?.warehouseItem;
-        if (!warehouse) continue;
-        if (warehouse.isArchived || warehouse.stock - warehouse.reserved < requestedQuantity) throw new PublicOrderError('موجودی یکی از کالاها کافی نیست.', 409, 'OUT_OF_STOCK', { items: [{ id: productId, code: 'OUT_OF_STOCK', message: 'موجودی کالا کافی نیست.' }] });
-        const updated = await tx.warehouseItem.update({ where: { id: warehouse.id }, data: { reserved: { increment: requestedQuantity } } });
-        await tx.inventoryMovement.create({ data: { warehouseItemId: warehouse.id, type: 'ORDER_RESERVATION', quantityChange: 0, quantityBefore: warehouse.stock, quantityAfter: warehouse.stock, reservedBefore: warehouse.reserved, reservedAfter: updated.reserved, reason: `رزرو برای سفارش ${order.orderCode}`, orderId: order.id } });
-      }
       return { order, created: true };
     }, { isolationLevel: 'Serializable' });
   } catch (error) {

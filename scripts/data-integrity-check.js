@@ -24,8 +24,8 @@ async function main() {
       invalidOrderTotals,
       orphanIncomePayments,
       shipmentsWithoutOrders,
-      invalidWarehouseStock,
-      warehouseOverReserved,
+      invalidProductInventory,
+      productInventoryOverReserved,
       soldLaptopsWithoutSale,
       settings,
     ] = await Promise.all([
@@ -34,8 +34,8 @@ async function main() {
       prisma.order.count({ where: { OR: [{ totalAed: { lt: 0 } }, { totalToman: { lt: 0 } }] } }),
       prisma.payment.count({ where: { type: 'INCOME', orderId: null } }),
       prisma.shipment.count({ where: { orderId: null } }),
-      prisma.warehouseItem.count({ where: { OR: [{ stock: { lt: 0 } }, { reserved: { lt: 0 } }] } }),
-      prisma.$queryRaw`SELECT COUNT(*)::int AS count FROM "WarehouseItem" WHERE "reserved" > "stock"`,
+      prisma.productInventory.count({ where: { OR: [{ stock: { lt: 0 } }, { reserved: { lt: 0 } }] } }),
+      prisma.$queryRaw`SELECT COUNT(*)::int AS count FROM "ProductInventory" WHERE "reserved" > "stock"`,
       prisma.laptop.count({ where: { status: 'SOLD', orderItems: { none: {} } } }),
       prisma.setting.findMany({ where: { key: { in: criticalSettingKeys } }, select: { key: true } }),
     ]);
@@ -47,8 +47,8 @@ async function main() {
       invalidOrderTotals,
       orphanIncomePayments,
       shipmentsWithoutOrders,
-      invalidWarehouseStock,
-      warehouseOverReserved: warehouseOverReserved[0]?.count || 0,
+      invalidProductInventory,
+      productInventoryOverReserved: productInventoryOverReserved[0]?.count || 0,
       soldLaptopsWithoutSale,
       missingCriticalSettings: criticalSettingKeys.filter(key => !existingSettings.has(key)),
     };

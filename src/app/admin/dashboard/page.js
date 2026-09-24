@@ -11,7 +11,6 @@ const EMPTY_DASHBOARD = Object.freeze({
   summary: { todayRevenue: '0', monthNetCashFlow: '0', activeOrders: 0, pendingPayments: 0, activeCustomers: 0 },
   purchaseRequests: { pending: 0, priceTagged: 0, approved: 0, converted: 0 },
   shipments: { unshipped: 0, readyToShip: 0 },
-  warehouse: { lowStock: 0 },
   laptops: { totalUnits: '0', availableUnits: '0', reservedUnits: null, soldUnits: null },
   alerts: { exchangeRateMissing: false },
   recentOrders: [],
@@ -63,13 +62,13 @@ function DashboardContent() {
   return (
     <>
       {(() => {
-            const alertCounts = alertSummary?.counts || { orders: 0, purchaseRequests: 0, payments: 0, warehouse: 0, shipments: 0, total: 0 };
+            const alertCounts = alertSummary?.counts || { orders: 0, purchaseRequests: 0, payments: 0, inventory: 0, shipments: 0, total: 0 };
             const pendingLeadsCount = alertCounts.purchaseRequests;
             const activeOrders = dashboard.summary.activeOrders;
             const actionableOrdersCount = alertCounts.orders;
             const readyToShipCount = alertCounts.shipments;
             const unverifiedPaymentsCount = alertCounts.payments;
-            const lowStockCount = alertCounts.warehouse;
+            const lowStockCount = alertCounts.inventory;
             const actionItemsCount = alertCounts.total;
             const todayRevenue = dashboard.summary.todayRevenue;
             const monthProfit = dashboard.summary.monthNetCashFlow;
@@ -92,7 +91,7 @@ function DashboardContent() {
                     ...(readyToShipCount > 0 ? [{ text: `${readyToShipCount} ارسال نیازمند اقدام`, urgent: true, onClick: () => window.location.assign('/admin/shipments') }] : []),
                     ...(pendingLeadsCount > 0 ? [{ text: `${pendingLeadsCount} درخواست منتظر قیمت`, urgent: false, onClick: () => window.location.assign('/admin/leads?status=pending') }] : []),
                     ...(unverifiedPaymentsCount > 0 ? [{ text: `${unverifiedPaymentsCount} پرداخت منتظر بررسی`, urgent: false, onClick: () => window.location.assign('/admin/payments?status=pending') }] : []),
-                    ...(lowStockCount > 0 ? [{ text: `${lowStockCount} محصول کم‌موجود`, urgent: false, onClick: () => window.location.assign('/admin/warehouse?status=low-stock') }] : []),
+                    ...(lowStockCount > 0 ? [{ text: `${lowStockCount} تنوع محصول کم‌موجود`, urgent: false, onClick: () => window.location.assign('/admin/inventory') }] : []),
                   ].map((item, i) => (
                     <div
                       key={i}
@@ -179,7 +178,7 @@ function DashboardContent() {
                       { label: 'درخواست‌های منتظر قیمت', count: pendingLeadsCount, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', icon: AdminIcons.clock(13), onClick: () => window.location.assign('/admin/leads?status=pending') },
                       { label: 'سفارش‌های آماده ارسال', count: readyToShipCount, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', icon: AdminIcons.truck(13), onClick: () => window.location.assign('/admin/shipments') },
                       { label: 'پرداخت‌های تایید نشده', count: unverifiedPaymentsCount, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', icon: AdminIcons.card(13), onClick: () => window.location.assign('/admin/payments') },
-                      { label: 'محصولات کم‌موجود', count: lowStockCount, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', icon: AdminIcons.alert(13), onClick: () => window.location.assign('/admin/warehouse') },
+                      { label: 'تنوع‌های کم‌موجود', count: lowStockCount, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', icon: AdminIcons.alert(13), onClick: () => window.location.assign('/admin/inventory') },
                     ].filter(item => item.count > 0).map((item, i) => (
                       <div key={i} onClick={item.onClick}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', cursor: 'pointer', background: item.bg, border: `1px solid ${item.color}20`, transition: 'opacity 0.2s' }}

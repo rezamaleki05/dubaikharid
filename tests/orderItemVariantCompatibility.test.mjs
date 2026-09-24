@@ -258,7 +258,7 @@ test('Phase 2G reuses the Phase 2F snapshot transaction without duplicating snap
   assert.doesNotMatch(cartRoute, /selectedOptionsSnapshot/);
 });
 
-test('Warehouse, Laptop, Payment and Shipment architecture remains outside the Phase 2F migration', () => {
+test('historical Warehouse, Laptop, Payment and Shipment compatibility remains outside the Phase 2F migration', () => {
   assert.doesNotMatch(warehouseSales, /ProductInventoryReservation|OrderItemSourceKind/);
   assert.doesNotMatch(adminLaptops, /ProductInventoryReservation|OrderItemSourceKind/);
   assert.doesNotMatch(migration, /ALTER TABLE "(?:WarehouseItem|Laptop|Payment|Shipment|PurchaseRequest)"/);

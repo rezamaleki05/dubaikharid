@@ -92,7 +92,6 @@ export default function CartPage() {
         ...(item.type === 'LAPTOP' ? { laptopId: item.id } : {}),
         ...(item.type === 'PRODUCT' ? { productId: item.id } : {}),
         ...(item.type === 'PRODUCT' && item.productVariantId ? { productVariantId: item.productVariantId } : {}),
-        ...(item.type === 'WAREHOUSE' ? { warehouseItemId: item.id } : {}),
         product_type: item.product_type,
         link: item.originalLink || item.link || '',
         weight: item.weight,

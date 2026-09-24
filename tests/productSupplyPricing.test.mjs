@@ -237,7 +237,7 @@ test('IRAN_STOCK requires an authoritative Variant and inventory-aware transacti
   assert.match(publicOrders, /INVENTORY_NOT_INITIALIZED/);
 });
 
-test('Warehouse and Laptop pricing remain independent of Product resolver', () => {
+test('historical Warehouse helpers and Laptop pricing remain independent of Product resolver', () => {
   assert.doesNotMatch(warehouseSales, /productSupplyPricing|ProductSupplyMode|IRAN_STOCK/);
   assert.doesNotMatch(adminLaptops, /productSupplyPricing|ProductSupplyMode|IRAN_STOCK/);
   assert.doesNotMatch(migration, /Warehouse|Laptop/);

@@ -13,8 +13,6 @@
     "db:seed-admin": "node scripts/seed-admin.js",
     "db:init-settings": "node scripts/init-settings.js",
     "seed:catalog-presets": "node scripts/seed-standard-catalog.mjs",
-    "migrate:warehouse-to-products": "node scripts/migrate-warehouse-to-products.mjs",
-    "cutover:warehouse-to-products": "node scripts/cutover-warehouse-to-products.mjs",
     "predeploy:check": "node scripts/predeploy-check.js",
     "data:diagnostics": "node scripts/data-integrity-check.js",
     "postdeploy:check": "node scripts/postdeploy-check.js"

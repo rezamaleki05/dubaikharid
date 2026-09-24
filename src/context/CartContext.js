@@ -20,7 +20,6 @@ function enrichCartItem(item, resolved) {
   const effectiveId = current.id || current.productId || item.id;
   const priceChanged = Boolean(current.authoritative && (
     (item.type === 'LAPTOP' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
-    || (item.type === 'WAREHOUSE' && snapshot.priceToman !== null && current.priceToman !== snapshot.priceToman)
     || (item.type === 'PRODUCT' && current.supplyMode === 'IRAN_STOCK' && snapshot.priceToman !== null && Number(current.priceToman) !== Number(snapshot.priceToman))
     || (item.type === 'PRODUCT' && current.supplyMode !== 'IRAN_STOCK' && snapshot.priceAed !== null && Number(current.priceAed) !== Number(snapshot.priceAed))
   ));
@@ -37,8 +36,7 @@ function enrichCartItem(item, resolved) {
     selectedColor: current.selectedColor ?? item.selectedColor,
     productId: effectiveType === 'PRODUCT' ? effectiveId : undefined,
     laptopId: effectiveType === 'LAPTOP' ? effectiveId : undefined,
-    warehouseItemId: effectiveType === 'WAREHOUSE' ? effectiveId : undefined,
-    product_type: effectiveType === 'LAPTOP' ? 'laptop_stock' : effectiveType === 'WAREHOUSE' ? 'warehouse_stock' : effectiveType === 'PRODUCT' ? 'iran_inventory' : 'external_product',
+    product_type: effectiveType === 'LAPTOP' ? 'laptop_stock' : effectiveType === 'PRODUCT' ? 'iran_inventory' : 'external_product',
     unavailable: current.available === false,
     resolving: !resolved && item.type !== 'EXTERNAL_PRODUCT',
     authoritative: Boolean(current.authoritative),

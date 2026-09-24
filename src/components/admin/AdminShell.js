@@ -8,7 +8,7 @@ import AdminHeader from './AdminHeader';
 
 const AdminShellContext = createContext({ leads: [] });
 const EMPTY_ALERTS = Object.freeze({
-  counts: { orders: 0, purchaseRequests: 0, payments: 0, warehouse: 0, shipments: 0, total: 0 },
+  counts: { orders: 0, purchaseRequests: 0, payments: 0, inventory: 0, shipments: 0, total: 0 },
   items: [],
 });
 

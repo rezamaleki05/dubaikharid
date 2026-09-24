@@ -79,10 +79,6 @@ export function serializeResolvedProductCartLine({ product, variant, pricing, qu
   let code = null;
   if (product.supplyMode === 'IRAN_STOCK' && !variant.inventory) code = 'INVENTORY_NOT_INITIALIZED';
   else if (product.supplyMode === 'IRAN_STOCK' && inventoryAvailable < quantity) code = 'INSUFFICIENT_STOCK';
-  else if (product.supplyMode === 'EXTERNAL_DUBAI' && product.warehouseItem && (
-    product.warehouseItem.isArchived
-    || product.warehouseItem.stock - product.warehouseItem.reserved < quantity
-  )) code = 'OUT_OF_STOCK';
   const selectedColor = options.find(option => option.attributeCode === 'color')?.labelFa || null;
   const selectedSize = options.find(option => LEGACY_SIZE_CODES.has(option.attributeCode))?.labelFa || null;
   const effectiveWeight = Number(variant.weightOverride ?? product.weight);

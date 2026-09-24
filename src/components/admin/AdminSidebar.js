@@ -52,15 +52,8 @@ export default function AdminSidebar({
       label: 'موجودی محصولات',
       href: ADMIN_ROUTES.inventory,
       permission: ADMIN_PERMISSIONS.PRODUCTS_VIEW,
-      icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><path d="M3 9l9 6 9-6"/><path d="M12 15v6"/></svg>
-    },
-    {
-      key: 'warehouse',
-      label: 'انبار',
-      href: ADMIN_ROUTES.warehouse,
-      permission: ADMIN_PERMISSIONS.WAREHOUSE_VIEW,
-      icon: AdminIcons.building(16),
-      badge: counts.warehouse
+      icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/><path d="M3 9l9 6 9-6"/><path d="M12 15v6"/></svg>,
+      badge: counts.inventory
     },
     {
       key: 'stock_laptops',

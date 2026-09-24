@@ -31,7 +31,6 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   const checkoutItems = useMemo(() => orderData?.items || [], [orderData]);
   const canCreateDatabaseOrder = checkoutItems.length > 0 && (
     checkoutItems.every(item => item.laptopId || item.product_type === 'laptop_stock')
-    || checkoutItems.every(item => item.warehouseItemId || item.product_type === 'warehouse_stock')
     || checkoutItems.every(item => item.productId && !item.laptopId)
   );
 
@@ -113,12 +112,10 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
     const sourceItems = orderData.items || [];
     const laptopItems = sourceItems.filter(item => item.laptopId || item.product_type === 'laptop_stock');
     const isLaptopOrder = laptopItems.length > 0 && laptopItems.length === sourceItems.length;
-    const warehouseItems = sourceItems.filter(item => item.warehouseItemId || item.product_type === 'warehouse_stock');
-    const isWarehouseOrder = warehouseItems.length > 0 && warehouseItems.length === sourceItems.length;
     const isCatalogOrder = sourceItems.length > 0 && sourceItems.every(item => item.productId && !item.laptopId);
 
     try {
-      const endpoint = isLaptopOrder || isWarehouseOrder || isCatalogOrder ? '/api/orders' : '/api/purchase-requests';
+      const endpoint = isLaptopOrder || isCatalogOrder ? '/api/orders' : '/api/purchase-requests';
       const payload = endpoint === '/api/orders'
         ? {
             customer,
@@ -127,12 +124,10 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
             items: sourceItems.map(item => ({
               ...(item.laptopId || item.product_type === 'laptop_stock'
                 ? { laptopId: item.laptopId || item.id }
-                : item.warehouseItemId || item.product_type === 'warehouse_stock'
-                  ? { warehouseItemId: item.warehouseItemId || item.id }
-                  : {
-                      productId: item.productId,
-                      ...(item.productVariantId ? { productVariantId: item.productVariantId } : {}),
-                    }),
+                : {
+                    productId: item.productId,
+                    ...(item.productVariantId ? { productVariantId: item.productVariantId } : {}),
+                  }),
               quantity: item.quantity || 1,
               ...(!item.productVariantId ? {
                 selectedColor: item.color || item.selectedColor || '',

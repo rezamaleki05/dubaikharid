@@ -37,7 +37,6 @@ const productCartSelect = Object.freeze({
       },
     },
   },
-  warehouseItem: { select: { stock: true, reserved: true, isArchived: true } },
   variants: {
     select: {
       id: true,
