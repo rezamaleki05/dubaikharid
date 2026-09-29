@@ -10,6 +10,8 @@ import {
   validateLaptopPayload,
 } from '@/lib/adminLaptops';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { ownedLaptopBlobPathnames } from '@/lib/laptopImageOwnership';
+import { deleteUnreferencedLaptopBlobs } from '@/lib/laptopImageStorage';
 import { prisma } from '@/lib/prisma';
 
 function domainError(error, fallback) {
@@ -84,6 +86,10 @@ export async function PATCH(request, { params }) {
       },
       request,
     });
+    const currentPathnames = new Set(ownedLaptopBlobPathnames(result.laptop));
+    const removedPathnames = ownedLaptopBlobPathnames(result.previous)
+      .filter(pathname => !currentPathnames.has(pathname));
+    await deleteUnreferencedLaptopBlobs(prisma, removedPathnames);
     return NextResponse.json(serializeLaptop(result.laptop));
   } catch (error) {
     return domainError(error, 'Error updating admin laptop:');

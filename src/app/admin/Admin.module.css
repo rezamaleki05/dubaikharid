@@ -624,9 +624,29 @@
 /* Product drag-and-drop uploads container */
 .uploaderBoxGrid {
   display: grid;
-  grid-template-columns: 1.5fr repeat(4, 80px) 80px;
+  grid-template-columns: minmax(220px, 1.5fr) repeat(4, 88px);
   gap: 12px;
   align-items: center;
+}
+
+.laptopUploader {
+  display: grid;
+  gap: 12px;
+}
+
+.laptopUploaderHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--admin-grey-text);
+  font-size: 11px;
+}
+
+.laptopUploaderHeader output {
+  direction: ltr;
+  color: var(--admin-orange);
+  font-weight: 800;
 }
 
 .dragDropArea {
@@ -651,6 +671,30 @@
   background: rgba(248, 120, 32, 0.01);
 }
 
+.dragDropAreaActive {
+  border-color: var(--admin-orange);
+  background: rgba(248, 120, 32, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(248, 120, 32, 0.2);
+  transform: translateY(-1px);
+}
+
+.dragDropAreaDisabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.visuallyHiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .uploadIcon {
   font-size: 20px;
   color: var(--admin-grey-text);
@@ -662,9 +706,14 @@
   line-height: 1.4;
 }
 
+.dragDropArea p span {
+  font-size: 9px;
+  color: #777f91;
+}
+
 .imageThumbCard {
-  width: 80px;
-  height: 100px;
+  width: 88px;
+  height: 112px;
   background: #000;
   border-radius: 12px;
   border: 1px solid var(--admin-border);
@@ -676,11 +725,79 @@
   padding: 2px;
 }
 
+.imageThumbCardPrimary {
+  border-color: var(--admin-orange);
+  box-shadow: 0 0 0 1px rgba(248, 120, 32, 0.26);
+}
+
 .imageThumbCard img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 10px;
+}
+
+.laptopImagePosition {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(7, 8, 11, 0.78);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.primaryThumbBtn {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  min-height: 20px;
+  padding: 0 6px;
+  border: 1px solid rgba(248, 120, 32, 0.48);
+  border-radius: 6px;
+  background: rgba(7, 8, 11, 0.82);
+  color: #ffd3b4;
+  font-size: 8px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.primaryThumbBtn:disabled {
+  cursor: default;
+  color: #fff;
+  background: rgba(248, 120, 32, 0.88);
+}
+
+.thumbOrderActions {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  display: flex;
+  gap: 2px;
+}
+
+.thumbOrderActions button {
+  width: 19px;
+  height: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 5px;
+  background: rgba(7, 8, 11, 0.82);
+  color: #fff;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.thumbOrderActions button:disabled,
+.removeThumbBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
 }
 
 .removeThumbBtn {
@@ -707,8 +824,8 @@
 }
 
 .addImageCard {
-  width: 80px;
-  height: 100px;
+  width: 88px;
+  height: 112px;
   background: rgba(255, 255, 255, 0.01);
   border: 1.5px dashed #262936;
   border-radius: 12px;
@@ -722,6 +839,11 @@
   color: var(--admin-grey-text);
 }
 
+.addImageCard:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .addImageCard:hover {
   border-color: var(--admin-orange);
   color: var(--admin-orange);
@@ -731,6 +853,33 @@
 .addImageCard span {
   font-size: 10px;
   font-weight: 700;
+}
+
+.laptopUploadFeedback {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.laptopUploadFeedback_progress {
+  color: #ffd3b4;
+  border-color: rgba(248, 120, 32, 0.28);
+  background: rgba(248, 120, 32, 0.06);
+}
+
+.laptopUploadFeedback_success {
+  color: #90e7bb;
+  border-color: rgba(41, 182, 112, 0.28);
+  background: rgba(41, 182, 112, 0.06);
+}
+
+.laptopUploadFeedback_error {
+  color: #ffaca8;
+  border-color: rgba(255, 83, 76, 0.3);
+  background: rgba(255, 83, 76, 0.06);
 }
 
 .textareaField {
@@ -1052,7 +1201,15 @@
     grid-template-columns: 1fr;
   }
   .uploaderBoxGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  }
+  .dragDropArea {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .imageThumbCard,
+  .addImageCard {
+    justify-self: center;
   }
 }
 

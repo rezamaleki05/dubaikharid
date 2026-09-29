@@ -4,6 +4,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
+import LaptopImageUploader, {
+  cleanupUnsavedLaptopImages,
+  createLaptopImageState,
+} from '@/components/admin/laptops/LaptopImageUploader';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { duplicateLaptopForm } from '@/lib/laptopCatalog';
 
@@ -60,6 +64,8 @@ function StockLaptopsContent() {
   // Laptop Dashboard Management States
   const [laptopViewMode, setLaptopViewMode] = useState('list'); // 'list' | 'add' | 'edit'
   const [editingLaptopId, setEditingLaptopId] = useState(null);
+  const [isLaptopImageUploading, setIsLaptopImageUploading] = useState(false);
+  const [isLaptopSaving, setIsLaptopSaving] = useState(false);
   const [laptopSearchQuery, setLaptopSearchQuery] = useState('');
   const [laptopBrandFilter, setLaptopBrandFilter] = useState('همه');
   const [selectedLaptopId, setSelectedLaptopId] = useState(null);
@@ -89,6 +95,7 @@ function StockLaptopsContent() {
     setCustomCpu('');
     setCustomGpu('');
     setCustomColor('');
+    setIsLaptopImageUploading(false);
   };
 
   // API responses include rawSpecs; this fallback only preserves real fields if a partial response is supplied.
@@ -242,11 +249,17 @@ function StockLaptopsContent() {
   };
 
   const handleSaveLaptop = async () => {
+    if (isLaptopImageUploading) {
+      alert('لطفاً تا پایان آپلود تصاویر صبر کنید.');
+      return;
+    }
+    if (isLaptopSaving) return;
+    setIsLaptopSaving(true);
     try {
       const response = await fetch(editingLaptopId ? `/api/admin/laptops/${editingLaptopId}` : '/api/admin/laptops', {
         method: editingLaptopId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...laptopForm, images: laptopImages }),
+        body: JSON.stringify({ ...laptopForm, images: laptopImages.map(image => image.url) }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'ذخیره لپ‌تاپ با خطا مواجه شد.');
@@ -259,7 +272,25 @@ function StockLaptopsContent() {
     } catch (err) {
       console.error(err);
       alert(err.message || 'ذخیره لپ‌تاپ با خطا مواجه شد.');
+    } finally {
+      setIsLaptopSaving(false);
     }
+  };
+
+  const handleCancelLaptopForm = async () => {
+    if (isLaptopImageUploading || isLaptopSaving) return;
+    const cleanup = await cleanupUnsavedLaptopImages(laptopImages);
+    if (cleanup.cleaned.length) {
+      const cleaned = new Set(cleanup.cleaned);
+      setLaptopImages(current => current.filter(image => !cleaned.has(image.blobPathname)));
+    }
+    if (cleanup.failed.length) {
+      alert(cleanup.failed.map(item => item.error).join('\n'));
+      return;
+    }
+    setLaptopViewMode('list');
+    setEditingLaptopId(null);
+    resetLaptopForm();
   };
 
   const handleDeleteLaptop = async (laptopId) => {
@@ -281,9 +312,9 @@ function StockLaptopsContent() {
     const parsedForm = parseProductToForm(laptop);
     setLaptopForm(parsedForm);
     if (laptop.rawSpecs && laptop.rawSpecs.images) {
-      setLaptopImages(laptop.rawSpecs.images);
+      setLaptopImages(createLaptopImageState(laptop.rawSpecs.images));
     } else {
-      setLaptopImages(laptop.image ? [laptop.image] : []);
+      setLaptopImages(createLaptopImageState(laptop.image ? [laptop.image] : []));
     }
     setEditingLaptopId(laptop.id);
     setLaptopViewMode('edit');
@@ -299,7 +330,7 @@ function StockLaptopsContent() {
   const triggerDuplicateLaptop = (laptop) => {
     const duplicate = duplicateLaptopForm(laptop);
     setLaptopForm({ ...emptyLaptopForm(), ...duplicate });
-    setLaptopImages(Array.isArray(duplicate.images) ? duplicate.images : (laptop.image ? [laptop.image] : []));
+    setLaptopImages(createLaptopImageState(Array.isArray(duplicate.images) ? duplicate.images : (laptop.image ? [laptop.image] : [])));
     setEditingLaptopId(null);
     setLaptopViewMode('add');
   };
@@ -329,13 +360,6 @@ function StockLaptopsContent() {
   }));
   const monthlyProfitLine = monthlyProfitPoints.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
   const monthlyProfitArea = monthlyProfitPoints.length ? `${monthlyProfitLine} L ${monthlyProfitPoints.at(-1).x} 130 L 40 130 Z` : '';
-
-  // Remove thumbnail image
-  const handleRemoveImage = (idx) => {
-    setLaptopImages(prev => prev.filter((_, i) => i !== idx));
-  };
-
-
 
   const buyingVal = parseFloat(laptopForm.buyingPrice) || 0;
   const extraVal = parseFloat(laptopForm.extraCosts) || 0;
@@ -1068,20 +1092,27 @@ function StockLaptopsContent() {
                 <div className={styles.breadcrumbs}>
                   <span>{editingLaptopId ? 'ویرایش لپ‌تاپ' : 'افزودن لپ‌تاپ جدید'}</span>
                   <span>‹</span>
-                  <a href="#" onClick={(e) => { e.preventDefault(); setLaptopViewMode('list'); setEditingLaptopId(null); resetLaptopForm(); }}>مدیریت لپ‌تاپ‌ها</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); void handleCancelLaptopForm(); }}>مدیریت لپ‌تاپ‌ها</a>
                 </div>
               </div>
 
               <div className={styles.titleActionBtns}>
                 <button 
                   type="button" 
-                  onClick={() => { setLaptopViewMode('list'); setEditingLaptopId(null); resetLaptopForm(); }} 
+                  onClick={() => { void handleCancelLaptopForm(); }}
                   className={styles.cancelFormBtn}
+                  disabled={isLaptopImageUploading || isLaptopSaving}
                 >
                   <span>{AdminIcons.close(12)}</span> انصراف
                 </button>
-                <button type="button" onClick={handleSaveLaptop} className={styles.saveFormBtn}>
-                  <span>{AdminIcons.check(12)}</span> {editingLaptopId ? 'بروزرسانی لپ‌تاپ' : 'ذخیره لپ‌تاپ'}
+                <button
+                  type="button"
+                  onClick={handleSaveLaptop}
+                  className={styles.saveFormBtn}
+                  disabled={isLaptopImageUploading || isLaptopSaving}
+                >
+                  <span>{AdminIcons.check(12)}</span>{' '}
+                  {isLaptopSaving ? 'در حال ذخیره…' : editingLaptopId ? 'بروزرسانی لپ‌تاپ' : 'ذخیره لپ‌تاپ'}
                 </button>
               </div>
             </div>
@@ -1619,38 +1650,12 @@ function StockLaptopsContent() {
                 <h2>تصاویر محصول</h2>
               </div>
 
-              <div className={styles.uploaderBoxGrid}>
-                <div className={styles.dragDropArea}>
-                  <span className={styles.uploadIcon}>{AdminIcons.cloud(16)}</span>
-                  <p>
-                    برای آپلود تصویر کلیک کنید<br/>
-                    <span style={{ fontSize: '8.5px', color: '#555' }}>یا فایل‌ها را اینجا بکشید و رها کنید<br/>فرمت‌های مجاز: JPG, PNG, WebP | حداکثر 10MB</span>
-                  </p>
-                </div>
-
-                {/* Render Laptop mock image thumbnails with delete controls */}
-                {laptopImages.map((imgUrl, idx) => (
-                  <div key={idx} className={styles.imageThumbCard}>
-                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} />
-                    <button type="button" onClick={() => handleRemoveImage(idx)} className={styles.removeThumbBtn} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {AdminIcons.close(10)}
-                    </button>
-                  </div>
-                ))}
-
-                {/* Add Image card grid box */}
-                <button 
-                  type="button" 
-                  onClick={() => {
-                    const url = prompt('آدرس اینترنتی تصویر جدید را وارد کنید:');
-                    if (url) setLaptopImages(prev => [...prev, url]);
-                  }} 
-                  className={styles.addImageCard}
-                >
-                  <span style={{ fontSize: '20px' }}>+</span>
-                  <span>افزودن تصویر</span>
-                </button>
-              </div>
+              <LaptopImageUploader
+                value={laptopImages}
+                onChange={setLaptopImages}
+                disabled={isLaptopSaving}
+                onUploadingChange={setIsLaptopImageUploading}
+              />
             </div>
 
             {/* 4. Notes Panel */}
