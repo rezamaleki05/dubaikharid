@@ -734,7 +734,7 @@ model ProductAttributeValue {
   categoryAttribute CategoryAttribute @relation(fields: [categoryAttributeId, attributeId], references: [id, attributeId], onDelete: Restrict)
   attributeOption   AttributeOption?  @relation(fields: [attributeOptionId, attributeId], references: [id, attributeId], onDelete: Restrict)
 
-  @@unique([productId, categoryAttributeId, attributeOptionId])
+  @@unique([productId, categoryAttributeId, attributeOptionId], map: "ProductAttributeValue_productId_categoryAttributeId_attributeOp")
   @@index([productId])
   @@index([attributeId])
   @@index([attributeOptionId])
