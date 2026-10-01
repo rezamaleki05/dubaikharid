@@ -13,7 +13,13 @@ const steps = [
   { id: 4, title: '۴. ارسال لینک محصول', desc: 'لینک محصول یا عکس از محصول انتخابی خود را برای ما ارسال کنید', icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> }
 ];
 
-const isAldoBrand = brand => String(brand.name || '').trim().toLowerCase() === 'aldo';
+function BrandLogo({ brand }) {
+  const [failed, setFailed] = useState(false);
+  if (!brand.hasImage || !brand.img || failed) {
+    return <div className={styles.logoFallback}>{brand.fallback || brand.faName || brand.name}</div>;
+  }
+  return <img src={brand.img} alt={`${brand.name} logo`} className={styles.logoImg} onError={() => setFailed(true)} />;
+}
 
 export default function BrandsPage() {
   const [brands, setBrands] = useState([]);
@@ -194,37 +200,16 @@ export default function BrandsPage() {
           {sortedBrands.map(brand => (
             <div key={brand.id} className={`${styles.card} ${styles.brandCard}`}>
               <div className={styles.logoWrap}>
-                {brand.hasImage ? (
-                  <>
-                    <img
-                      src={brand.img}
-                      alt={brand.name}
-                      className={`${styles.logoImg} ${isAldoBrand(brand) ? styles.originalAldoLogo : ''}`}
-                    />
-                    {isAldoBrand(brand) ? (
-                      <span
-                        className={styles.lightAldoLogo}
-                        role="img"
-                        aria-label={brand.name}
-                      />
-                    ) : null}
-                  </>
-                ) : (
-                  <div className={styles.logoFallback}>{brand.fallback}</div>
-                )}
+                <BrandLogo brand={brand} />
               </div>
               <h3 className={styles.brandName}>{brand.name}</h3>
               {/* Display Farsi brand subtitle */}
               <p className={styles.brandFaName}>{brand.faName}</p>
               <p className={styles.brandCategory}>{brand.cat}</p>
-              <a 
-                href={brand.url || `/brands/${brand.id}`}
-                className={`${styles.linkBtn} ${brand.url ? '' : styles.internalBrandLink}`}
-                {...(brand.url ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-              >
+              {brand.url ? <a href={brand.url} className={styles.linkBtn} target="_blank" rel="noopener noreferrer">
                 ورود به سایت رسمی
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </a>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1 2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a> : null}
             </div>
           ))}
         </div>

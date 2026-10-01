@@ -138,6 +138,11 @@
 .fieldLabel { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin-bottom: 11px; color: #e7e9ef; font-size: 12px; font-weight: 850; }
 .fieldLabel strong { color: #f87820; }
 .fieldLabel small { direction: ltr; color: #767e90; font-size: 9px; font-weight: 600; }
+.sourceField { display: grid; gap: 10px; margin: 22px 0; padding: 18px; border: 1px solid rgba(255,255,255,.07); background: #12141b; }
+.sourceModes { display: flex; flex-wrap: wrap; gap: 7px; }
+.sourceModes button { border: 1px solid rgba(255,255,255,.09); background: #1a1d26; color: #aeb4c1; padding: 8px 12px; font: inherit; font-size: 11px; cursor: pointer; }
+.sourceModes button[aria-pressed='true'] { border-color: rgba(248,120,32,.55); background: rgba(248,120,32,.1); color: #fff; }
+.sourceNote { margin: 0; overflow-wrap: anywhere; color: #9ca3b4; font-size: 10.5px; line-height: 1.8; }
 .fieldLabel em { color: #a1a8b7; font-size: 9px; font-style: normal; }
 .optionList { display: flex; flex-wrap: wrap; gap: 7px; }
 .option,

@@ -1,0 +1,18 @@
+.root { position: relative; }
+.inputRow { display: grid; grid-template-columns: 1fr 38px; gap: 7px; }
+.input { width: 100%; min-width: 0; padding: 9px 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 7px; background: #171922; color: #fff; font: inherit; direction: ltr; text-align: left; }
+.input:focus { outline: none; border-color: rgba(248,120,32,.7); box-shadow: 0 0 0 3px rgba(248,120,32,.1); }
+.toggle { border: 1px solid rgba(248,120,32,.35); border-radius: 7px; background: rgba(248,120,32,.08); color: #f87820; font-size: 20px; cursor: pointer; }
+.help, .error { display: block; margin-top: 6px; font-size: 10px; }
+.help { color: #727a8e; }
+.error { color: #fb7185; }
+.popover { position: absolute; z-index: 1200; top: calc(100% + 25px); right: 0; width: min(310px, 82vw); padding: 12px; border: 1px solid rgba(255,255,255,.11); background: #11141d; box-shadow: 0 22px 60px rgba(0,0,0,.55); }
+.header { display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; gap: 8px; margin-bottom: 10px; }
+.header strong { text-align: center; color: #f3f4f6; font-size: 12px; }
+.header button, .days button { border: 0; background: transparent; color: #cbd0dc; cursor: pointer; }
+.header button { height: 32px; font-size: 20px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.days button { aspect-ratio: 1; font-size: 11px; border: 1px solid transparent; }
+.days button:hover { border-color: rgba(248,120,32,.45); color: #fff; }
+.days .selected { background: #f87820; color: #fff; }
+@media (max-width: 520px) { .popover { position: fixed; inset: auto 16px 16px; width: auto; } }

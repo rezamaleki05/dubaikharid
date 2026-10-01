@@ -42,6 +42,10 @@ const DEFAULTS = {
   aedUpdateMode: 'manual',
   aedAutoUpdate: false,
   aedUpdateInterval: '1hr',
+  aedUpdateIntervalHours: '1',
+  aedLastSuccessfulUpdate: '',
+  aedFetchStatus: 'never',
+  aedLastFetchError: '',
   googleClientId: '48558991372-4r4qd9m2kerqnnu9d9jbiru1q4cj96ee.apps.googleusercontent.com',
   googleAuthMode: 'simulated'
 };
@@ -70,26 +74,23 @@ export function SiteSettingsProvider({ children, initialSettings = null }) {
     setSettings(previous => ({ ...previous, ...newSettings }));
   }, []);
 
-  // Helper to fetch live rate from local API proxy
-  const fetchLiveAedRate = async () => {
-    try {
-      const res = await fetch('/api/fetch-aed-rate');
-      const data = await res.json();
-      if (data && data.rate) {
-        return data.rate;
-      }
-    } catch (e) {
-      console.error('Failed to fetch rate from API proxy:', e);
+  // Protected manual refresh uses the same persisted server path as scheduled updates.
+  const updateAedRateAuto = async () => {
+    const response = await fetch('/api/admin/settings/aed-rate/refresh', { method: 'POST' });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.data?.error || payload.error || 'دریافت آنلاین نرخ ناموفق بود.');
+    if (payload.data?.updated) {
+      const updates = {
+        aedRate: payload.data.rate,
+        aedLastUpdate: payload.data.lastSuccessfulUpdate,
+        aedLastSuccessfulUpdate: payload.data.lastSuccessfulUpdate,
+        aedFetchStatus: 'success',
+        aedLastFetchError: '',
+      };
+      setSettings(previous => ({ ...previous, ...updates }));
+      return updates;
     }
     return null;
-  };
-
-  // Manual lookup only. The admin Settings API decides whether a returned rate is persisted.
-  const updateAedRateAuto = async () => {
-    const liveRate = await fetchLiveAedRate();
-    const now = new Date();
-    const jalaliDate = now.toLocaleDateString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-    return liveRate ? { aedRate: String(liveRate), aedLastUpdate: jalaliDate } : null;
   };
 
   // Apply favicon dynamically when faviconUrl changes

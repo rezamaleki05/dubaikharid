@@ -232,7 +232,7 @@ export default function AdminProductsPage() {
             {can(ADMIN_PERMISSIONS.PRODUCTS_CREATE) && <button 
               onClick={() => setProductConfigurator({
                 mode: 'add',
-                seed: { storeId: stores[0]?.id || '', weight: '1' },
+                seed: { storeId: '', sourceType: 'none', weight: '1' },
               })}
               style={{ padding: '8px 16px', background: 'linear-gradient(135deg, var(--admin-orange), #ff9d00)', border: 'none', borderRadius: '8px', color: '#fff', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >

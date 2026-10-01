@@ -8,14 +8,18 @@ import LaptopImageUploader, {
   cleanupUnsavedLaptopImages,
   createLaptopImageState,
 } from '@/components/admin/laptops/LaptopImageUploader';
+import JalaliDateField from '@/components/admin/laptops/JalaliDateField';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { duplicateLaptopForm } from '@/lib/laptopCatalog';
+import { normalizeJalaliDate, validateJalaliDate } from '@/lib/jalaliDate';
 
 function StockLaptopsContent() {
   const { settings } = useSiteSettings();
   const aedRate = Number(settings.aedRate) || 0;
   const [brands, setBrands] = useState([]);
   const [brandDropdownOpen, setBrandDropdownOpen] = useState(null);
+  const [brandError, setBrandError] = useState('');
+  const [dateEnteredError, setDateEnteredError] = useState('');
   const [uploadedProducts, setUploadedProducts] = useState([]);
   const [laptopsLoading, setLaptopsLoading] = useState(true);
   const [laptopsError, setLaptopsError] = useState('');
@@ -76,9 +80,9 @@ function StockLaptopsContent() {
   const [isMonthlyProfitExpanded, setIsMonthlyProfitExpanded] = useState(false);
 
   const emptyLaptopForm = () => ({
-    brand: 'Apple', model: '', serial: '', cpu: '', ram: '8', storageSize: '', storageType: 'GB SSD',
+    brand: '', model: '', serial: '', cpu: '', ram: '8', storageSize: '', storageType: 'GB SSD',
     storage2Size: '0', storage2Type: 'none', gpu: '', screenSize: '', manufactureYear: '', color: '',
-    batteryHealth: '', weight: '1.24', buyingPrice: '', extraCosts: '0', sellingPrice: '', internalNotes: '',
+    batteryHealth: '', weight: '', buyingPrice: '', extraCosts: '0', sellingPrice: '', internalNotes: '',
     customerNotes: '', hardwareTests: { keyboard: false, speaker: false, display: false, usb: false, battery: false, wifi: false, camera: false, charge: false },
     accessories: { charger: false, box: false }, physicalStatus: 'good', stockStatus: 'available', dateEntered: '',
     internalSku: '', warrantyDays: '', warrantyExpiry: '', lastService: '', nextService: ''
@@ -96,6 +100,8 @@ function StockLaptopsContent() {
     setCustomGpu('');
     setCustomColor('');
     setIsLaptopImageUploading(false);
+    setBrandError('');
+    setDateEnteredError('');
   };
 
   // API responses include rawSpecs; this fallback only preserves real fields if a partial response is supplied.
@@ -153,14 +159,13 @@ function StockLaptopsContent() {
         if (!Array.isArray(payload.data)) throw new Error(payload.error || 'دریافت برندهای لپ‌تاپ ناموفق بود.');
         setBrands(payload.data);
         setModelsByBrand(Object.fromEntries(payload.data.map(brand => [brand.name, brand.laptopModels.map(model => model.name)])));
-        if (payload.data.length > 0) {
-          setLaptopForm(current => {
-            const currentBrand = payload.data.find(brand => brand.name === current.brand);
-            const brand = currentBrand || payload.data[0];
-            const models = brand.laptopModels.map(model => model.name);
-            return { ...current, brand: brand.name, model: models.includes(current.model) ? current.model : (models[0] || '') };
-          });
-        }
+        setLaptopForm(current => {
+          if (!current.brand) return current;
+          const currentBrand = payload.data.find(brand => brand.name === current.brand);
+          if (!currentBrand) return current;
+          const models = currentBrand.laptopModels.map(model => model.name);
+          return { ...current, model: models.includes(current.model) ? current.model : '' };
+        });
       })
       .catch(error => {
         console.error('Error fetching brands:', error);
@@ -254,12 +259,22 @@ function StockLaptopsContent() {
       return;
     }
     if (isLaptopSaving) return;
+    const selectedBrand = brands.find(brand => brand.name.toLocaleLowerCase('en-US') === laptopForm.brand.trim().toLocaleLowerCase('en-US'));
+    if (!selectedBrand) {
+      setBrandError('یک برند معتبر از فهرست انتخاب کنید.');
+      return;
+    }
+    const dateError = validateJalaliDate(laptopForm.dateEntered);
+    if (dateError) {
+      setDateEnteredError(dateError);
+      return;
+    }
     setIsLaptopSaving(true);
     try {
       const response = await fetch(editingLaptopId ? `/api/admin/laptops/${editingLaptopId}` : '/api/admin/laptops', {
         method: editingLaptopId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...laptopForm, images: laptopImages.map(image => image.url) }),
+        body: JSON.stringify({ ...laptopForm, brand: selectedBrand.name, dateEntered: normalizeJalaliDate(laptopForm.dateEntered) || '', images: laptopImages.map(image => image.url) }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'ذخیره لپ‌تاپ با خطا مواجه شد.');
@@ -1139,13 +1154,17 @@ function StockLaptopsContent() {
                     value={laptopForm.brand}
                     onChange={(e) => {
                       const val = e.target.value;
-                      setLaptopForm(prev => ({ ...prev, brand: val }));
+                      setLaptopForm(prev => ({ ...prev, brand: val, model: '' }));
+                      setBrandError('');
                       setBrandDropdownOpen('laptopForm');
                     }}
                     onFocus={() => setBrandDropdownOpen('laptopForm')}
                     onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
                     className={styles.inputField}
+                    aria-invalid={Boolean(brandError)}
+                    placeholder="جستجوی برند…"
                   />
+                  {brandError ? <small style={{ color: '#fb7185', marginTop: 6, display: 'block' }}>{brandError}</small> : null}
                   {brandDropdownOpen === 'laptopForm' && (() => {
                     const searchVal = laptopForm.brand || '';
                     const filtered = brands.filter(b => 
@@ -1174,6 +1193,7 @@ function StockLaptopsContent() {
                             key={`${b.id || idx}-${idx}`}
                             onMouseDown={() => {
                               handleBrandChange(b.name);
+                              setBrandError('');
                               setBrandDropdownOpen(null);
                             }}
                             style={{
@@ -1581,16 +1601,16 @@ function StockLaptopsContent() {
 
                 <div className={styles.formGroup}>
                   <label>وزن (Kg)</label>
-                  <select 
+                  <input
+                    type="number"
+                    min="0"
+                    max="99.99"
+                    step="0.01"
                     value={laptopForm.weight} 
                     onChange={(e) => setLaptopForm(prev => ({ ...prev, weight: e.target.value }))}
-                    className={styles.selectField}
-                  >
-                    <option value="1.24">1.24</option>
-                    <option value="1.17">1.17</option>
-                    <option value="1.35">1.35</option>
-                    <option value="1.36">1.36</option>
-                  </select>
+                    placeholder="مثال: 1.75"
+                    className={styles.inputField}
+                  />
                 </div>
               </div>
             </div>
@@ -1796,18 +1816,15 @@ function StockLaptopsContent() {
                 </select>
               </div>
 
-              <div className={styles.formGroup} style={{ marginBottom: '14px' }}>
-                <label>تاریخ ورود به انبار <span className={styles.requiredStar}>*</span></label>
-                <div className={styles.dateInputWrapper}>
-                  <input 
-                    type="text" 
-                    value={laptopForm.dateEntered} 
-                    onChange={(e) => setLaptopForm(prev => ({ ...prev, dateEntered: e.target.value }))}
-                    placeholder="مثال: 1403/03/20"
-                    className={styles.inputField} 
+                <div className={styles.formGroup} style={{ marginBottom: '14px', overflow: 'visible' }}>
+                  <label>تاریخ ورود به انبار <span className={styles.requiredStar}>*</span></label>
+                  <JalaliDateField
+                    value={laptopForm.dateEntered}
+                    onChange={dateEntered => setLaptopForm(prev => ({ ...prev, dateEntered }))}
+                    error={dateEnteredError}
+                    onError={setDateEnteredError}
                   />
                 </div>
-              </div>
 
               <div className={styles.formGroup}>
                 <label>کد داخلی (SKU) (اختیاری)</label>

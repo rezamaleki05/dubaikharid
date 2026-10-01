@@ -7,8 +7,10 @@ async function source(path) {
 }
 
 async function importLaptopValidation() {
+  const jalaliHelpers = (await source('../src/lib/jalaliDate.js')).replaceAll('export ', '');
   const contents = (await source('../src/lib/adminLaptops.js'))
     .replace("import 'server-only';", '')
+    .replace("import { normalizeJalaliDate, validateJalaliDate } from '@/lib/jalaliDate';", jalaliHelpers)
     .replace(
       "import { Prisma } from '@/generated/prisma/client';",
       `const Prisma = {
@@ -103,7 +105,7 @@ test('Admin form marks both fields optional and aligns battery constraints with 
 
 test('Public Laptop detail hides absent year and battery health without misleading fallback text', () => {
   assert.match(productDetailPage, /\{laptopSpecs\.manufactureYear && \(/);
-  assert.match(productDetailPage, /\{laptopSpecs\.batteryHealth && \(/);
+  assert.match(productDetailPage, /laptopSpecs\.batteryHealth !== null/);
   assert.doesNotMatch(productDetailPage, /laptopSpecs\.batteryHealth \|\| 'نامشخص'/);
   assert.match(productDetailPage, /prod\.manufactureYear \?\? null/);
   assert.match(productDetailPage, /prod\.batteryHealth == null \? null/);

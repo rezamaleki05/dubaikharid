@@ -49,9 +49,9 @@ const PUBLIC_PRODUCT_SELECT = Object.freeze({
   isBestSeller: true,
   createdAt: true,
   updatedAt: true,
-  brand: { select: { id: true, name: true, faName: true } },
+  brand: { select: { id: true, name: true, faName: true, url: true } },
   category: { select: { id: true, name: true, query: true } },
-  store: { select: { id: true, name: true } },
+  store: { select: { id: true, name: true, url: true } },
   variants: {
     where: { isActive: true },
     orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'asc' }],
@@ -251,6 +251,9 @@ export function serializePublicProduct(product) {
     weight: product.weight,
     originalLink: product.originalLink || '',
     link: product.originalLink || '',
+    sourceType: product.store ? 'STORE' : (product.originalLink && product.brand?.url ? 'OFFICIAL_BRAND_WEBSITE' : null),
+    sourceName: product.store?.name || (product.originalLink ? (product.brand?.faName || product.brand?.name || '') : ''),
+    sourceUrl: product.originalLink || product.store?.url || '',
     image: getProductCoverImage(product, PUBLIC_PRODUCT_PLACEHOLDER),
     legacyImage: product.image || null,
     images,
@@ -266,7 +269,7 @@ export function serializePublicProduct(product) {
     category,
     categoryName: product.category?.name || '',
     storeId: product.store?.id || null,
-    store: product.store?.name || 'فروشگاه دبی',
+    store: product.store?.name || '',
     spec: product.category?.name || '',
   };
 }
@@ -438,7 +441,7 @@ export async function getPublicProduct(identifier) {
     where: { OR: [{ id: identifier }, { slug: identifier }], ...PUBLIC_PRODUCT_VISIBILITY },
     select: {
       ...PUBLIC_PRODUCT_SELECT,
-      brand: { select: { id: true, name: true, faName: true, showInBrandDirectory: true } },
+      brand: { select: { id: true, name: true, faName: true, url: true, showInBrandDirectory: true } },
       category: {
         select: {
           id: true,

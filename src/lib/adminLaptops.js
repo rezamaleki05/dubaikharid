@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { Prisma } from '@/generated/prisma/client';
+import { normalizeJalaliDate, validateJalaliDate } from '@/lib/jalaliDate';
 
 export const LAPTOP_STATUSES = Object.freeze(['AVAILABLE', 'RESERVED', 'SOLD', 'INACTIVE']);
 export const LAPTOP_STATUS_SET = new Set(LAPTOP_STATUSES);
@@ -152,7 +153,12 @@ export function validateLaptopPayload(body, { partial = false } = {}) {
     assignText('physicalStatus', 'condition', 'وضعیت ظاهری', 32);
     assignText('customerNotes', 'description', 'توضیحات مشتری', 4000);
     assignText('internalNotes', 'internalNotes', 'یادداشت داخلی', 4000);
-    assignText('dateEntered', 'dateEntered', 'تاریخ ورود', 32);
+    if (hasOwn(body, 'dateEntered')) {
+      const dateEntered = textValue(body.dateEntered, 'تاریخ ورود', 32);
+      const dateError = validateJalaliDate(dateEntered);
+      if (dateError) throw new LaptopDomainError(dateError);
+      data.dateEntered = dateEntered ? normalizeJalaliDate(dateEntered) : null;
+    }
     assignText('warrantyExpiry', 'warrantyExpiry', 'تاریخ پایان گارانتی', 32);
     assignText('lastService', 'lastService', 'تاریخ آخرین سرویس', 32);
     assignText('nextService', 'nextService', 'تاریخ سرویس بعدی', 32);

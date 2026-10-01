@@ -34,9 +34,13 @@ export const SETTING_DEFINITIONS = Object.freeze({
   onlinePaymentEnabled: { dbKey: 'onlinePaymentEnabled', type: 'boolean', defaultValue: false },
   aedRate: { dbKey: 'aed_toman_rate', type: 'number', min: 1, max: 100_000_000, defaultValue: '19500', financial: true },
   aedLastUpdate: { dbKey: 'aedLastUpdate', type: 'text', max: 120, defaultValue: 'ثبت نشده' },
-  aedUpdateMode: { dbKey: 'aedUpdateMode', type: 'enum', values: ['manual'], defaultValue: 'manual' },
+  aedUpdateMode: { dbKey: 'aedUpdateMode', type: 'enum', values: ['manual', 'auto'], defaultValue: 'manual' },
   aedAutoUpdate: { dbKey: 'aedAutoUpdate', type: 'boolean', defaultValue: false },
   aedUpdateInterval: { dbKey: 'aedUpdateInterval', type: 'enum', values: ['30min', '1hr', '3hr', 'daily'], defaultValue: '1hr' },
+  aedUpdateIntervalHours: { dbKey: 'aedUpdateIntervalHours', type: 'number', min: 1, max: 720, defaultValue: '1' },
+  aedLastSuccessfulUpdate: { dbKey: 'aedLastSuccessfulUpdate', type: 'optionalText', max: 120, defaultValue: '' },
+  aedFetchStatus: { dbKey: 'aedFetchStatus', type: 'enum', values: ['never', 'success', 'error'], defaultValue: 'never' },
+  aedLastFetchError: { dbKey: 'aedLastFetchError', type: 'optionalText', max: 500, defaultValue: '' },
 });
 
 export const SETTING_KEYS = Object.freeze(Object.keys(SETTING_DEFINITIONS));
@@ -80,6 +84,12 @@ export function validateSettingValue(key, value) {
       return { error: `مقدار ${key} مجاز نیست.` };
     }
     return { value };
+  }
+
+  if (definition.type === 'optionalText') {
+    if (value === null || value === undefined || value === '') return { value: '' };
+    if (typeof value !== 'string' || value.trim().length > definition.max) return { error: `مقدار ${key} معتبر نیست.` };
+    return { value: value.trim() };
   }
 
   const clean = asTrimmedString(value, definition.max);

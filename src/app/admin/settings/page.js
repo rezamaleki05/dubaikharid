@@ -9,6 +9,7 @@ import AdminShell from '@/components/admin/AdminShell';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { AED_INTERVAL_PRESETS, nextAedUpdateAt } from '@/lib/aedRateDomain';
 
 function SettingsContent() {
   const { can } = useAdminAccess();
@@ -78,6 +79,7 @@ function SettingsContent() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsError, setSettingsError] = useState('');
   const [settingsMessage, setSettingsMessage] = useState('');
+  const [aedIntervalChoice, setAedIntervalChoice] = useState('1');
 
   useEffect(() => {
     let active = true;
@@ -87,6 +89,8 @@ function SettingsContent() {
         if (!response.ok) throw new Error(payload.error || 'دریافت تنظیمات با خطا مواجه شد.');
         if (!active) return;
         setSiteSettings(previous => ({ ...previous, ...payload.data }));
+        const interval = String(payload.data.aedUpdateIntervalHours || '1');
+        setAedIntervalChoice(AED_INTERVAL_PRESETS.includes(Number(interval)) ? interval : 'custom');
         updateSiteCtxSettings(payload.data);
       })
       .catch(error => { if (active) setSettingsError(error.message); })
@@ -118,6 +122,8 @@ function SettingsContent() {
       setIsSavingSettings(false);
     }
   };
+
+  const nextAedUpdate = nextAedUpdateAt(siteSettings.aedLastSuccessfulUpdate, siteSettings.aedUpdateIntervalHours);
 
   useEffect(() => {
       if (siteCtxSettings) {
@@ -426,6 +432,11 @@ function SettingsContent() {
                             <div style={{ fontSize: '10.5px', color: '#8b92a5', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <div>آخرین بروزرسانی: <strong style={{ color: '#fff' }}>{siteSettings.aedLastUpdate || 'ثبت نشده'}</strong></div>
                               <div>حالت بروزرسانی: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateMode === 'auto' ? 'خودکار' : 'دستی'}</strong></div>
+                              <div>بازه: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateIntervalHours || 1} ساعت</strong></div>
+                              <div>آخرین موفق: <strong style={{ color: '#fff' }}>{siteSettings.aedLastSuccessfulUpdate ? new Date(siteSettings.aedLastSuccessfulUpdate).toLocaleString('fa-IR') : 'ثبت نشده'}</strong></div>
+                              <div>بروزرسانی بعدی: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateMode === 'auto' ? (nextAedUpdate ? nextAedUpdate.toLocaleString('fa-IR') : 'در اولین اجرا') : 'غیرفعال'}</strong></div>
+                              <div>وضعیت: <strong style={{ color: siteSettings.aedFetchStatus === 'error' ? '#fb7185' : '#80e5b1' }}>{siteSettings.aedFetchStatus === 'error' ? 'خطای دریافت' : siteSettings.aedFetchStatus === 'success' ? 'موفق' : 'بدون اجرا'}</strong></div>
+                              {siteSettings.aedLastFetchError ? <div style={{ color: '#fb7185' }}>{siteSettings.aedLastFetchError}</div> : null}
                             </div>
                           </div>
 
@@ -459,7 +470,7 @@ function SettingsContent() {
                               style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
                             >
                               <option value="manual" style={{ background: '#1a1d26' }}>بروزرسانی دستی (Manual)</option>
-                              <option value="auto" disabled style={{ background: '#1a1d26' }}>بروزرسانی خودکار (Automatic)</option>
+                              <option value="auto" style={{ background: '#1a1d26' }}>بروزرسانی خودکار (Automatic)</option>
                             </select>
                           </div>
 
@@ -467,15 +478,17 @@ function SettingsContent() {
                             <div style={{ marginBottom: '20px' }}>
                               <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>بازه بروزرسانی خودکار</label>
                               <select
-                                value={siteSettings.aedUpdateInterval || '1hr'}
-                                onChange={e => setSiteSettings(p => ({ ...p, aedUpdateInterval: e.target.value }))}
+                                value={aedIntervalChoice}
+                                onChange={e => {
+                                  setAedIntervalChoice(e.target.value);
+                                  if (e.target.value !== 'custom') setSiteSettings(p => ({ ...p, aedUpdateIntervalHours: e.target.value }));
+                                }}
                                 style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
                               >
-                                <option value="30min" style={{ background: '#1a1d26' }}>هر ۳۰ دقیقه</option>
-                                <option value="1hr" style={{ background: '#1a1d26' }}>هر ۱ ساعت</option>
-                                <option value="3hr" style={{ background: '#1a1d26' }}>هر ۳ ساعت</option>
-                                <option value="daily" style={{ background: '#1a1d26' }}>روزانه (۲۴ ساعت)</option>
+                                {AED_INTERVAL_PRESETS.map(hours => <option key={hours} value={String(hours)} style={{ background: '#1a1d26' }}>هر {hours.toLocaleString('fa-IR')} ساعت</option>)}
+                                <option value="custom" style={{ background: '#1a1d26' }}>سفارشی</option>
                               </select>
+                              {aedIntervalChoice === 'custom' ? <input type="number" min="1" max="720" step="1" value={siteSettings.aedUpdateIntervalHours || ''} onChange={e => setSiteSettings(p => ({ ...p, aedUpdateIntervalHours: e.target.value }))} placeholder="تعداد ساعت" style={{ width: '100%', marginTop: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }} /> : null}
                             </div>
                           )}
                         </div>
@@ -485,8 +498,9 @@ function SettingsContent() {
                           <button
                             onClick={() => saveSettings({
                               aedRate: siteSettings.aedRate,
-                              aedUpdateMode: 'manual',
-                              aedAutoUpdate: false,
+                              aedUpdateMode: siteSettings.aedUpdateMode || 'manual',
+                              aedAutoUpdate: siteSettings.aedUpdateMode === 'auto',
+                              aedUpdateIntervalHours: siteSettings.aedUpdateIntervalHours || '1',
                             }, 'نرخ درهم و تنظیمات بروزرسانی ذخیره شد.')}
                             disabled={isSavingSettings}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
@@ -499,13 +513,11 @@ function SettingsContent() {
                           <button
                             onClick={async () => {
                               setIsUpdatingAedRate(true);
-                              const res = await updateAedRateAuto();
-                              setIsUpdatingAedRate(false);
-                              if (res) {
-                                await saveSettings({ aedRate: res.aedRate, aedLastUpdate: res.aedLastUpdate }, `نرخ درهم به صورت آنلاین بروزرسانی شد: ${Number(res.aedRate).toLocaleString()} تومان`);
-                              } else {
-                                alert('خطا در دریافت آنلاین نرخ درهم. از آخرین نرخ ذخیره شده استفاده گردید.');
-                              }
+                              try {
+                                const res = await updateAedRateAuto();
+                                if (res) { setSiteSettings(previous => ({ ...previous, ...res })); setSettingsMessage(`نرخ درهم آنلاین ذخیره شد: ${Number(res.aedRate).toLocaleString()} تومان`); }
+                              } catch (error) { setSettingsError(`${error.message} آخرین نرخ معتبر حفظ شد.`); }
+                              finally { setIsUpdatingAedRate(false); }
                             }}
                             disabled={isUpdatingAedRate}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 24px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'opacity 0.2s', opacity: isUpdatingAedRate ? 0.5 : 1 }}

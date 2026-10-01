@@ -36,9 +36,7 @@ export function validateSettingsInput(body) {
     if (parsed.error) return { error: parsed.error, field: key };
     values[key] = parsed.value;
   }
-  if (values.aedAutoUpdate === true || values.aedUpdateMode === 'auto') {
-    return { error: 'بروزرسانی خودکار نرخ در این مرحله فعال نیست.', field: 'aedUpdateMode' };
-  }
+  if (Object.hasOwn(values, 'aedUpdateMode')) values.aedAutoUpdate = values.aedUpdateMode === 'auto';
   return { values };
 }
 

@@ -5,27 +5,14 @@ import Link from 'next/link';
 import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
+import BrandCategoryMultiSelect from '@/components/admin/brands/BrandCategoryMultiSelect';
+import BrandLogoField from '@/components/admin/brands/BrandLogoField';
+import { ownedBrandLogoPathnameFromUrl } from '@/lib/brandLogoOwnership';
 
 function BrandCategoryFields({ form, setForm, categories }) {
   return (
     <>
-      <div style={{ marginBottom: '14px' }}>
-        <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>
-          دسته‌بندی‌های مرتبط
-        </label>
-        <select
-          multiple
-          value={form.categoryIds}
-          onChange={event => setForm(previous => ({
-            ...previous,
-            categoryIds: [...event.target.selectedOptions].map(option => option.value),
-          }))}
-          style={{ width: '100%', minHeight: '110px', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-        >
-          {categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
-        </select>
-        <p style={{ margin: '5px 0 0', color: '#697084', fontSize: '10px' }}>برای انتخاب چند مورد از Ctrl یا Command استفاده کنید.</p>
-      </div>
+      <BrandCategoryMultiSelect categories={categories} value={form.categoryIds} onChange={categoryIds => setForm(previous => ({ ...previous, categoryIds }))} />
       <label style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '16px', color: '#d4d8e8', fontSize: '12px', cursor: 'pointer' }}>
         <input
           type="checkbox"
@@ -52,11 +39,23 @@ export default function AdminBrandsPage() {
   const [isEditBrandOpen, setIsEditBrandOpen] = useState(false);
   const [editBrandForm, setEditBrandForm] = useState({
     id: '', name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
-    categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
+    categoryIds: [], showInBrandDirectory: true, supportsLaptop: false, pendingLogoPathname: null
   });
   const [addBrandForm, setAddBrandForm] = useState({
     name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
-    categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
+    categoryIds: [], showInBrandDirectory: true, supportsLaptop: false, pendingLogoPathname: null
+  });
+
+  const cleanupLogo = async blobPathname => {
+    if (!blobPathname) return;
+    await fetch('/api/admin/brands/upload', {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ blobPathname }),
+    }).catch(() => null);
+  };
+
+  const setUploadedLogo = (setForm, blobPathname) => setForm(previous => {
+    if (previous.pendingLogoPathname && previous.pendingLogoPathname !== blobPathname) void cleanupLogo(previous.pendingLogoPathname);
+    return { ...previous, pendingLogoPathname: blobPathname };
   });
 
   useEffect(() => {
@@ -109,9 +108,10 @@ export default function AdminBrandsPage() {
       const updated = [...brands.filter(brand => brand.id !== createdBrand.id), createdBrand];
       setBrands(updated);
       setIsAddBrandOpen(false);
+      if (addBrandForm.pendingLogoPathname && !createdBrand.img) void cleanupLogo(addBrandForm.pendingLogoPathname);
       setAddBrandForm({
         name: '', faName: '', cat: '', url: '', img: '', fallback: '', hasImage: false,
-        categoryIds: [], showInBrandDirectory: true, supportsLaptop: false
+        categoryIds: [], showInBrandDirectory: true, supportsLaptop: false, pendingLogoPathname: null
       });
       alert('برند جدید با موفقیت ذخیره شد.');
     } catch (error) {
@@ -131,7 +131,7 @@ export default function AdminBrandsPage() {
       faName: (editBrandForm.faName || '').trim() || (editBrandForm.name || '').trim(),
       cat: primaryCategory?.name || existingBrand.cat || null,
       url: (editBrandForm.url || '').trim(),
-      img: (editBrandForm.img || '').trim() || existingBrand.img,
+      img: (editBrandForm.img || '').trim() || null,
       fallback: (editBrandForm.fallback || '').trim() || existingBrand.fallback,
       hasImage: !!(editBrandForm.img || '').trim(),
       categoryIds: editBrandForm.categoryIds,
@@ -145,16 +145,19 @@ export default function AdminBrandsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
       });
-      if (!res.ok) throw new Error('Failed to update brand');
-      const savedBrand = await res.json();
+      const savedBrand = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(savedBrand.error || 'ویرایش برند با خطا مواجه شد.');
       
       const updated = brands.map(b => b.id === editBrandForm.id ? savedBrand : b);
       setBrands(updated);
       setIsEditBrandOpen(false);
+      const oldPathname = ownedBrandLogoPathnameFromUrl(existingBrand.img);
+      if (oldPathname && oldPathname !== editBrandForm.pendingLogoPathname && existingBrand.img !== savedBrand.img) void cleanupLogo(oldPathname);
+      if (editBrandForm.pendingLogoPathname && !savedBrand.img) void cleanupLogo(editBrandForm.pendingLogoPathname);
       alert('برند با موفقیت ویرایش شد.');
     } catch (error) {
       console.error(error);
-      alert('خطا در ویرایش برند.');
+      alert(error.message || 'خطا در ویرایش برند.');
     }
   };
 
@@ -165,8 +168,10 @@ export default function AdminBrandsPage() {
       const res = await fetch(`/api/admin/brands/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete brand');
       
+      const removedBrand = brands.find(brand => brand.id === id);
       const updated = brands.filter(b => b.id !== id);
       setBrands(updated);
+      void cleanupLogo(ownedBrandLogoPathnameFromUrl(removedBrand?.img));
       alert('برند با موفقیت حذف شد.');
     } catch (error) {
       console.error(error);
@@ -199,7 +204,7 @@ export default function AdminBrandsPage() {
             </h2>
             <button
               onClick={() => {
-                setAddBrandForm({ name: '', faName: '', cat: '', url: '', img: '', fallback: '🏷️', hasImage: false, categoryIds: [], showInBrandDirectory: true, supportsLaptop: false });
+                setAddBrandForm({ name: '', faName: '', cat: '', url: '', img: '', fallback: '🏷️', hasImage: false, categoryIds: [], showInBrandDirectory: true, supportsLaptop: false, pendingLogoPathname: null });
                 setIsAddBrandOpen(true);
               }}
               style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}
@@ -294,56 +299,9 @@ export default function AdminBrandsPage() {
                 <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
                 <input type="url" value={addBrandForm.url || ''} onChange={e => setAddBrandForm({...addBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="https://www.nike.com/ae/" />
               </div>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>تصویر لوگو برند (آدرس اینترنتی یا آپلود فایل)</label>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input
-                    type="url"
-                    value={addBrandForm.img || ''}
-                    onChange={e => setAddBrandForm({...addBrandForm, img: e.target.value})}
-                    style={{ flex: 1, padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px' }}
-                    placeholder="https://example.com/logo.png"
-                  />
-                  <label
-                    style={{
-                      padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.15)',
-                      borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
-                    }}
-                  >
-                    📁 آپلود فایل
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = ev => {
-                            setAddBrandForm(prev => ({ ...prev, img: ev.target.result }));
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-                {addBrandForm.img && (
-                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: '#8b92a5' }}>پیش‌نمایش لوگو:</span>
-                    <img src={addBrandForm.img} alt="Preview" style={{ height: '32px', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', padding: '2px' }} />
-                    <button
-                      type="button"
-                      onClick={() => setAddBrandForm(prev => ({ ...prev, img: '' }))}
-                      style={{ fontSize: '11px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
-                    >
-                      حذف تصویر
-                    </button>
-                  </div>
-                )}
-              </div>
+              <BrandLogoField value={addBrandForm.img} fallback={addBrandForm.faName || addBrandForm.name} onChange={img => setAddBrandForm(previous => ({ ...previous, img, hasImage: Boolean(img) }))} onUploaded={pathname => setUploadedLogo(setAddBrandForm, pathname)} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setIsAddBrandOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                <button type="button" onClick={() => { void cleanupLogo(addBrandForm.pendingLogoPathname); setIsAddBrandOpen(false); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
                 <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره برند</button>
               </div>
             </form>
@@ -370,56 +328,9 @@ export default function AdminBrandsPage() {
                 <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
                 <input type="url" value={editBrandForm.url || ''} onChange={e => setEditBrandForm({...editBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
               </div>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>تصویر لوگو برند (آدرس اینترنتی یا آپلود فایل)</label>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input
-                    type="url"
-                    value={editBrandForm.img || ''}
-                    onChange={e => setEditBrandForm({...editBrandForm, img: e.target.value})}
-                    style={{ flex: 1, padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12.5px' }}
-                    placeholder="https://example.com/logo.png"
-                  />
-                  <label
-                    style={{
-                      padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.15)',
-                      borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap'
-                    }}
-                  >
-                    📁 آپلود فایل
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = ev => {
-                            setEditBrandForm(prev => ({ ...prev, img: ev.target.result }));
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                  </label>
-                </div>
-                {editBrandForm.img && (
-                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: '#8b92a5' }}>پیش‌نمایش لوگو:</span>
-                    <img src={editBrandForm.img} alt="Preview" style={{ height: '32px', maxWidth: '100px', objectFit: 'contain', borderRadius: '4px', background: 'rgba(0,0,0,0.2)', padding: '2px' }} />
-                    <button
-                      type="button"
-                      onClick={() => setEditBrandForm(prev => ({ ...prev, img: '' }))}
-                      style={{ fontSize: '11px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 0 }}
-                    >
-                      حذف تصویر
-                    </button>
-                  </div>
-                )}
-              </div>
+              <BrandLogoField value={editBrandForm.img} fallback={editBrandForm.faName || editBrandForm.name} onChange={img => setEditBrandForm(previous => ({ ...previous, img, hasImage: Boolean(img) }))} onUploaded={pathname => setUploadedLogo(setEditBrandForm, pathname)} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setIsEditBrandOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
+                <button type="button" onClick={() => { void cleanupLogo(editBrandForm.pendingLogoPathname); setIsEditBrandOpen(false); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
                 <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
               </div>
             </form>

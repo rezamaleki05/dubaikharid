@@ -522,9 +522,7 @@ export default function ProductPage({ params }) {
               </div>
             )}
             
-            <div className={styles.productDescription} style={{ whiteSpace: 'pre-wrap' }}>
-              {product.description || 'اطلاعات کامل و جزئیات دقیق این محصول را می‌توانید از طریق لینک فروشگاه اصلی مشاهده کنید. ما این کالا را به صورت مستقیم از دبی خریداری کرده و درب منزل به شما تحویل می‌دهیم.'}
-            </div>
+            {product.description?.trim() ? <div className={styles.productDescription} style={{ whiteSpace: 'pre-wrap' }}>{product.description}</div> : null}
 
             <div className={styles.priceSection}>
               {isCatalogProduct ? (
@@ -653,6 +651,9 @@ export default function ProductPage({ params }) {
                   ? (product.supplyMode === 'IRAN_STOCK' ? 'موجود در ایران' : 'سفارش از دبی')
                   : product.store}</span>
               </div>
+              {product.sourceUrl ? <a className={styles.sourceLink} href={product.sourceUrl} target="_blank" rel="noopener noreferrer">
+                {product.sourceType === 'OFFICIAL_BRAND_WEBSITE' ? 'مشاهده سایت رسمی برند' : `مشاهده منبع${product.sourceName ? `: ${product.sourceName}` : ''}`}
+              </a> : null}
             </div>
           </div>
         </div>
@@ -674,7 +675,7 @@ export default function ProductPage({ params }) {
                       <strong>{laptopSpecs.manufactureYear}</strong>
                     </li>
                   )}
-                  {laptopSpecs.batteryHealth && (
+                  {laptopSpecs.batteryHealth !== null && laptopSpecs.batteryHealth !== undefined && laptopSpecs.batteryHealth !== '' && (
                     <li>
                       <span>سلامت باتری:</span>
                       <strong style={{ color: '#2ecc71' }}>{laptopSpecs.batteryHealth}</strong>
@@ -799,7 +800,7 @@ export default function ProductPage({ params }) {
               <img src={product.image} alt={product.name} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
               <div>
                 <h4 style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 4px 0' }}>{product.name}</h4>
-                <p style={{ fontSize: '11px', color: '#8b92a5', margin: 0 }}>فروشگاه مبدا: {product.store}{product.product_type === 'laptop_stock' ? '' : ` | قیمت تقریبی: ${product.priceAed} درهم`}</p>
+                <p style={{ fontSize: '11px', color: '#8b92a5', margin: 0 }}>{product.store ? `فروشگاه مبدا: ${product.store}` : 'منبع خرید ثبت نشده'}{product.product_type === 'laptop_stock' ? '' : ` | قیمت تقریبی: ${product.priceAed} درهم`}</p>
               </div>
             </div>
 

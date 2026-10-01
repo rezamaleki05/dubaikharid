@@ -5,6 +5,7 @@ import { laptopConditionLabel } from '@/lib/laptopSeoDomain';
 import styles from '@/app/laptops/[slug]/LaptopModel.module.css';
 
 const fmtToman = value => Number(value).toLocaleString('fa-IR');
+const TEST_LABELS = { keyboard: 'کیبورد', speaker: 'اسپیکر', display: 'نمایشگر', usb: 'USB', battery: 'باتری', wifi: 'Wi-Fi', camera: 'دوربین', charge: 'شارژ' };
 
 export default function LaptopModelUnits({ units }) {
   const { addToCart } = useCart();
@@ -12,26 +13,23 @@ export default function LaptopModelUnits({ units }) {
     <div className={styles.unitsGrid}>
       {units.map((unit, index) => {
         const specs = [
-          unit.cpu,
-          unit.ram ? `رم ${unit.ram}` : null,
-          unit.storage ? `حافظه ${unit.storage}` : null,
-          unit.secondaryStorage ? `حافظه دوم ${unit.secondaryStorage}` : null,
-          unit.gpu,
-          unit.screen ? `نمایشگر ${unit.screen}` : null,
-          laptopConditionLabel(unit.condition) ? `وضعیت ${laptopConditionLabel(unit.condition)}` : null,
-          unit.manufactureYear ? `سال ساخت ${unit.manufactureYear}` : null,
-          unit.batteryHealth != null ? `سلامت باتری ${unit.batteryHealth}٪` : null,
-        ].filter(Boolean);
+          ['پردازنده', unit.cpu], ['رم', unit.ram], ['حافظه اصلی', unit.storage],
+          ['حافظه دوم', unit.secondaryStorage], ['گرافیک', unit.gpu], ['نمایشگر', unit.screen],
+          ['سال ساخت', unit.manufactureYear], ['رنگ', unit.color],
+          ['وضعیت ظاهری', laptopConditionLabel(unit.condition)],
+          ['سلامت باتری', unit.batteryHealth != null ? `${unit.batteryHealth}٪` : null],
+          ['وزن', unit.weightKg ? `${unit.weightKg} کیلوگرم` : null],
+        ].filter(([, value]) => value !== null && value !== undefined && value !== '');
+        const passedTests = Object.entries(unit.hardwareTests || {}).filter(([, passed]) => passed).map(([key]) => TEST_LABELS[key]).filter(Boolean);
         return (
           <article key={unit.id} className={styles.unitCard}>
-            <img className={styles.unitImage} src={unit.image} alt={`${unit.brand} ${unit.model} - گزینه ${index + 1}`} />
+            <div className={styles.unitMedia}><span>موجود و آماده ارسال</span><img className={styles.unitImage} src={unit.image} alt={`${unit.brand} ${unit.model} - گزینه ${index + 1}`} /></div>
             <div className={styles.unitBody}>
-              <h3>{unit.brand} {unit.model} — گزینه {Number(index + 1).toLocaleString('fa-IR')}</h3>
-              <ul className={styles.specList}>
-                {specs.map(spec => <li key={spec}>{spec}</li>)}
-              </ul>
+              <div className={styles.unitTitle}><div><small>دستگاه {Number(index + 1).toLocaleString('fa-IR')}</small><h3>{unit.brand} {unit.model}</h3></div><span>{laptopConditionLabel(unit.condition)}</span></div>
+              <dl className={styles.specList}>{specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+              {passedTests.length ? <div className={styles.tests}><strong>تست‌شده:</strong> {passedTests.join('، ')}</div> : null}
               <div className={styles.unitFooter}>
-                <span className={styles.unitPrice}>{fmtToman(unit.priceToman)} تومان</span>
+                <div><small>قیمت قطعی</small><span className={styles.unitPrice}>{fmtToman(unit.priceToman)} تومان</span></div>
                 <button type="button" className={styles.buyButton} onClick={() => addToCart(unit)}>
                   افزودن این دستگاه به سبد خرید
                 </button>

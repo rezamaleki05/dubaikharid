@@ -99,13 +99,17 @@ export function validateProductPayload(body, { partial = false, allowSupplyPrici
     if (brandId) relationIds.brandId = brandId;
   }
 
-  for (const field of ['categoryId', 'storeId']) {
-    if (!partial || Object.hasOwn(body, field)) {
-      const value = cleanOptionalString(body[field], 128);
-      if (!value) return { error: 'دسته‌بندی و فروشگاه معتبر الزامی هستند.' };
-      data[field] = value;
-      relationIds[field] = value;
-    }
+  if (!partial || Object.hasOwn(body, 'categoryId')) {
+    const categoryId = cleanOptionalString(body.categoryId, 128);
+    if (!categoryId) return { error: 'دسته‌بندی معتبر الزامی است.' };
+    data.categoryId = categoryId;
+    relationIds.categoryId = categoryId;
+  }
+  if (!partial || Object.hasOwn(body, 'storeId')) {
+    const storeId = cleanOptionalString(body.storeId, 128);
+    if (storeId === undefined) return { error: 'فروشگاه مبدا معتبر نیست.' };
+    data.storeId = storeId;
+    if (storeId) relationIds.storeId = storeId;
   }
 
   if (allowSupplyPricing) {

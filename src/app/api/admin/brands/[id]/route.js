@@ -33,7 +33,7 @@ export async function PUT(request, { params }) {
 
   try {
     const updatedBrand = await prisma.$transaction(async tx => {
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(742193)`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(742193)::text AS "lockResult"`;
       const existing = await tx.brand.findUnique({ where: { id: id.value }, select: { id: true } });
       if (!existing) throw Object.assign(new Error('BRAND_NOT_FOUND'), { code: 'BRAND_NOT_FOUND' });
       if (validated.categoryIds !== undefined) {

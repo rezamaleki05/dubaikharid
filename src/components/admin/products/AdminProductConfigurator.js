@@ -14,6 +14,7 @@ const EMPTY_FORM = {
   brandId: '',
   categoryId: '',
   storeId: '',
+  sourceType: 'none',
   supplyMode: 'EXTERNAL_DUBAI',
   priceAed: '',
   priceToman: '',
@@ -133,6 +134,7 @@ function initialForm(product, seed) {
       brandId: product.brandId || '',
       categoryId: product.categoryId || '',
       storeId: product.storeId || '',
+      sourceType: product.storeId ? 'store' : (product.originalLink ? 'brand' : 'none'),
       supplyMode: product.supplyMode || 'EXTERNAL_DUBAI',
       priceAed: product.priceAed ?? '',
       priceToman: product.priceToman ?? '',
@@ -177,6 +179,38 @@ function OptionButton({ option, selected, onClick, color = false }) {
       <span>{option.labelFa}</span>
       <small>{option.labelEn}</small>
     </button>
+  );
+}
+
+function ProductSourceField({ form, setForm, brands, stores }) {
+  const selectedStore = stores.find(store => store.id === form.storeId);
+  const selectedBrand = brands.find(brand => brand.id === form.brandId);
+  return (
+    <div className={styles.sourceField}>
+      <span className={styles.fieldLabel}>منبع خرید (اختیاری)</span>
+      <div className={styles.sourceModes}>
+        {[
+          ['none', 'بدون منبع'],
+          ['store', 'فروشگاه'],
+          ['brand', 'سایت رسمی برند'],
+        ].map(([type, label]) => <button type="button" key={type} aria-pressed={form.sourceType === type} onClick={() => setForm(previous => ({ ...previous, sourceType: type, storeId: type === 'store' ? previous.storeId : '', originalLink: type === 'none' ? '' : previous.originalLink }))}>{label}</button>)}
+      </div>
+      {form.sourceType === 'store' ? <>
+        <input
+          className={styles.input}
+          list="product-source-stores"
+          value={selectedStore?.name || ''}
+          placeholder="نام فروشگاه را جستجو کنید…"
+          onChange={event => {
+            const match = stores.find(store => store.name.toLocaleLowerCase('fa-IR') === event.target.value.trim().toLocaleLowerCase('fa-IR'));
+            setForm(previous => ({ ...previous, storeId: match?.id || '' }));
+          }}
+        />
+        <datalist id="product-source-stores">{stores.map(store => <option key={store.id} value={store.name} />)}</datalist>
+        <input dir="ltr" className={styles.input} value={form.originalLink} onChange={event => setForm(previous => ({ ...previous, originalLink: event.target.value }))} placeholder={selectedStore?.url || 'لینک اختصاصی محصول (اختیاری)'} />
+      </> : null}
+      {form.sourceType === 'brand' ? <p className={styles.sourceNote}>{selectedBrand?.url ? `لینک رسمی ${selectedBrand.faName || selectedBrand.name}: ${selectedBrand.url}` : 'برند انتخاب‌شده وب‌سایت رسمی معتبر ندارد.'}</p> : null}
+    </div>
   );
 }
 
@@ -472,6 +506,8 @@ export default function AdminProductConfigurator({
     event.preventDefault();
     setError('');
     if (!categoryConfig) return setError('ابتدا دسته‌بندی محصول را انتخاب کنید.');
+    if (form.sourceType === 'store' && !form.storeId) return setError('یک فروشگاه معتبر از فهرست انتخاب کنید یا منبع را بدون منبع بگذارید.');
+    if (form.sourceType === 'brand' && !brands.find(brand => brand.id === form.brandId)?.url) return setError('برای این برند وب‌سایت رسمی معتبر ثبت نشده است.');
     if (combinations.length > (categoryConfig.hardLimit || 200)) {
       return setError('تعداد ترکیب‌ها از سقف مجاز عبور کرده است.');
     }
@@ -515,12 +551,14 @@ export default function AdminProductConfigurator({
         ...(form.slug ? { slug: form.slug } : {}),
         brandId: form.brandId || null,
         categoryId: form.categoryId,
-        storeId: form.storeId,
+        storeId: form.sourceType === 'store' ? (form.storeId || null) : null,
         supplyMode: form.supplyMode,
         priceAed: form.supplyMode === 'EXTERNAL_DUBAI' ? form.priceAed : null,
         priceToman: form.supplyMode === 'IRAN_STOCK' ? form.priceToman : null,
         weight: form.weight,
-        originalLink: form.originalLink || null,
+        originalLink: form.sourceType === 'brand'
+          ? (brands.find(brand => brand.id === form.brandId)?.url || null)
+          : (form.sourceType === 'store' ? (form.originalLink || null) : null),
         image: legacyImage || null,
         gender: form.gender || null,
         discountPercent: form.hasDiscount ? Number(form.discountPercent) : 0,
@@ -598,13 +636,7 @@ export default function AdminProductConfigurator({
                 onBrandsChange={onBrandsChange}
                 disabled={saving}
               />
-              <label>
-                <span>فروشگاه مبدا *</span>
-                <select className={styles.input} required value={form.storeId} onChange={event => setForm({ ...form, storeId: event.target.value })}>
-                  <option value="">انتخاب فروشگاه</option>
-                  {stores.map(store => <option key={store.id} value={store.id}>{store.name}</option>)}
-                </select>
-              </label>
+              <div aria-hidden="true" />
             </div>
           </section>
 
@@ -687,8 +719,8 @@ export default function AdminProductConfigurator({
               onLegacyImageChange={setLegacyImage}
               disabled={saving}
             />
+            <ProductSourceField form={form} setForm={setForm} brands={brands} stores={stores} />
             <div className={styles.twoColumns}>
-              <label><span>لینک اصلی محصول</span><input dir="ltr" className={styles.input} value={form.originalLink} onChange={event => setForm({ ...form, originalLink: event.target.value })} /></label>
               <label><span>وضعیت محصول</span><select className={styles.input} value={form.status} onChange={event => setForm({ ...form, status: event.target.value })}><option value="active">فعال</option><option value="needs_update">نیاز به بروزرسانی</option><option value="broken_link">لینک خراب</option><option value="hidden">مخفی</option></select></label>
             </div>
             <div className={styles.checkRow}>

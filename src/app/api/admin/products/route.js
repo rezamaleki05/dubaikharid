@@ -80,7 +80,7 @@ export async function GET(request) {
       }),
       prisma.product.count({ where }),
       prisma.product.groupBy({ by: ['status'], where: countWhere, _count: { _all: true } }),
-      prisma.brand.findMany({ select: { id: true, name: true, faName: true }, orderBy: { name: 'asc' } }),
+      prisma.brand.findMany({ select: { id: true, name: true, faName: true, url: true }, orderBy: { name: 'asc' } }),
       prisma.category.findMany({ select: { id: true, name: true, query: true }, orderBy: { name: 'asc' } }),
       prisma.store.findMany({ select: { id: true, name: true, url: true }, orderBy: { name: 'asc' } }),
     ]);
