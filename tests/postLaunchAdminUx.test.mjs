@@ -13,8 +13,8 @@ import { isJalaliLeapYear, normalizeJalaliDate, validateJalaliDate } from '../sr
 import { validateSettingValue } from '../src/lib/settingsSchema.js';
 
 const read = path => readFile(new URL(path, import.meta.url), 'utf8');
-const [laptopPage, laptopValidation, brandPage, brandRoute, publicBrands, productAdmin, productPage, publicCatalog, scheduler, schema, vercelConfig] = await Promise.all([
-  read('../src/app/admin/laptops/page.js'), read('../src/lib/adminLaptops.js'), read('../src/app/admin/brands/page.js'), read('../src/app/api/admin/brands/[id]/route.js'), read('../src/app/brands/page.js'), read('../src/lib/adminProducts.js'), read('../src/app/product/[id]/page.js'), read('../src/lib/publicCatalog.js'), read('../src/lib/aedRateService.js'), read('../prisma/schema.prisma'), read('../vercel.json'),
+const [laptopPage, laptopValidation, brandPage, brandRoute, publicBrands, productAdmin, productConfigurationService, productPage, publicCatalog, scheduler, schema, vercelConfig] = await Promise.all([
+  read('../src/app/admin/laptops/page.js'), read('../src/lib/adminLaptops.js'), read('../src/app/admin/brands/page.js'), read('../src/app/api/admin/brands/[id]/route.js'), read('../src/app/brands/page.js'), read('../src/lib/adminProducts.js'), read('../src/lib/adminProductConfigurationService.js'), read('../src/app/product/[id]/page.js'), read('../src/lib/publicCatalog.js'), read('../src/lib/aedRateService.js'), read('../prisma/schema.prisma'), read('../vercel.json'),
 ]);
 
 test('Jalali manual input normalizes Persian digits and rejects invalid dates', () => {
@@ -77,6 +77,8 @@ test('Product store relation is nullable and source/description public fallbacks
   assert.match(schema, /storeId\s+String\?/);
   assert.match(productAdmin, /data\.storeId = storeId/);
   assert.doesNotMatch(productAdmin, /دسته‌بندی و فروشگاه معتبر الزامی/);
+  assert.match(productConfigurationService, /productData\.storeId\s*\?\s*tx\.store\.findUnique/);
+  assert.match(productConfigurationService, /if \(productData\.storeId && !store\)/);
   assert.match(publicCatalog, /sourceType:/);
   assert.match(productPage, /product\.description\?\.trim\(\)/);
   assert.doesNotMatch(productPage, /اطلاعات کامل و جزئیات دقیق این محصول/);

@@ -262,13 +262,15 @@ function validateInventoryAndPricing(productData, variants) {
 async function validateRelations(tx, productData) {
   const [category, store, brand] = await Promise.all([
     tx.category.findUnique({ where: { id: productData.categoryId }, select: { id: true } }),
-    tx.store.findUnique({ where: { id: productData.storeId }, select: { id: true } }),
+    productData.storeId
+      ? tx.store.findUnique({ where: { id: productData.storeId }, select: { id: true } })
+      : Promise.resolve({ id: null }),
     productData.brandId
       ? tx.brand.findUnique({ where: { id: productData.brandId }, select: { id: true } })
       : Promise.resolve({ id: null }),
   ]);
   if (!category) throw configurationError('دسته‌بندی انتخاب‌شده پیدا نشد.', 'CATEGORY_NOT_FOUND', 404);
-  if (!store) throw configurationError('فروشگاه انتخاب‌شده پیدا نشد.', 'STORE_NOT_FOUND', 404);
+  if (productData.storeId && !store) throw configurationError('فروشگاه انتخاب‌شده پیدا نشد.', 'STORE_NOT_FOUND', 404);
   if (!brand) throw configurationError('برند انتخاب‌شده پیدا نشد.', 'BRAND_NOT_FOUND', 404);
 }
 
