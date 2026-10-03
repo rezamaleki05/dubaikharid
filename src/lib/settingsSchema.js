@@ -1,3 +1,5 @@
+import { DEFAULT_SUPPORT_WHATSAPP, normalizeSupportWhatsappNumber } from './supportWhatsapp.js';
+
 export const SETTING_DEFINITIONS = Object.freeze({
   siteName: { dbKey: 'siteName', type: 'text', max: 120, defaultValue: 'دبی خرید' },
   siteUrl: { dbKey: 'siteUrl', type: 'text', max: 240, defaultValue: 'dubaikharid.shop' },
@@ -11,6 +13,7 @@ export const SETTING_DEFINITIONS = Object.freeze({
   supportEmail: { dbKey: 'supportEmail', type: 'email', max: 320, defaultValue: 'support@dubaykharid.ir' },
   telegramId: { dbKey: 'telegramId', type: 'handle', max: 120, defaultValue: '@dubaykharid' },
   whatsapp: { dbKey: 'whatsapp', type: 'phone', max: 40, defaultValue: '+971501234567' },
+  supportWhatsapp: { dbKey: 'supportWhatsapp', type: 'internationalPhone', max: 40, defaultValue: DEFAULT_SUPPORT_WHATSAPP },
   instagramId: { dbKey: 'instagramId', type: 'handle', max: 120, defaultValue: '@dubaykharid' },
   dubaiAddress: { dbKey: 'dubaiAddress', type: 'text', max: 500, defaultValue: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور' },
   iranAddress: { dbKey: 'iranAddress', type: 'text', max: 500, defaultValue: 'شیراز، شهرک گلستان، خیابان گل آرا' },
@@ -47,7 +50,7 @@ export const SETTING_KEYS = Object.freeze(Object.keys(SETTING_DEFINITIONS));
 
 export const PUBLIC_SETTING_KEYS = Object.freeze([
   'siteName', 'siteUrl', 'siteLogoUrl', 'faviconUrl', 'supportPhone', 'supportEmail',
-  'telegramId', 'whatsapp', 'instagramId', 'dubaiAddress', 'iranAddress', 'address',
+  'telegramId', 'whatsapp', 'supportWhatsapp', 'instagramId', 'dubaiAddress', 'iranAddress', 'address',
   'workingHours', 'minOrderAed', 'commissionPercent', 'shippingPerKgAed',
   'minWeightClass', 'roundingMethod', 'maintenanceMode', 'allowRegistration',
   'cardPaymentEnabled', 'onlinePaymentEnabled', 'aedRate', 'aedLastUpdate',
@@ -94,6 +97,10 @@ export function validateSettingValue(key, value) {
 
   const clean = asTrimmedString(value, definition.max);
   if (!clean) return { error: `مقدار ${key} معتبر نیست.` };
+  if (definition.type === 'internationalPhone') {
+    const normalized = normalizeSupportWhatsappNumber(clean);
+    return normalized ? { value: normalized } : { error: `شماره ${key} معتبر نیست.` };
+  }
   if (definition.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
     return { error: `ایمیل ${key} معتبر نیست.` };
   }
@@ -120,6 +127,9 @@ export function deserializeSettingValue(key, rawValue) {
   const definition = SETTING_DEFINITIONS[key];
   if (!definition) return undefined;
   if (definition.type === 'boolean') return rawValue === 'true';
+  if (definition.type === 'internationalPhone') {
+    return normalizeSupportWhatsappNumber(rawValue) || definition.defaultValue;
+  }
   return rawValue;
 }
 
