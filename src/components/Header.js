@@ -119,15 +119,17 @@ export default function Header() {
             <div className={styles.topBarLeft}>
               {isLoggedIn && currentUser ? (
                 <div className={styles.userMenuContainer}>
-                  <button className={styles.userMenuTrigger}>
+                  <button type="button" className={styles.userMenuTrigger}>
                     <span className={styles.userAvatar} aria-hidden="true">{currentUser.name?.trim()?.charAt(0) || 'ک'}</span>
                     <span>{currentUser.name}</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m7 10 5 5 5-5" /></svg>
                   </button>
-                  <div className={styles.userDropdown}>
-                    <Link href="/profile">پنل کاربری</Link>
-                    <Link href="/profile?sub=orders">سفارش‌های من</Link>
-                    <button onClick={logout} className={styles.logoutBtn}>خروج از حساب</button>
+                  <div className={styles.userDropdownBridge}>
+                    <div className={styles.userDropdown}>
+                      <Link href="/profile">پنل کاربری</Link>
+                      <Link href="/profile?sub=orders">سفارش‌های من</Link>
+                      <button onClick={logout} className={styles.logoutBtn}>خروج از حساب</button>
+                    </div>
                   </div>
                 </div>
               ) : (
