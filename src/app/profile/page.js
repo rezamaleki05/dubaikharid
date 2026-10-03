@@ -11,6 +11,7 @@ import MinimalIcon from '@/components/ui/MinimalIcon';
 import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
 import OrderPaymentPanel from '@/components/payment/OrderPaymentPanel';
 import { trackPurchaseOnce, trackWhatsAppClick } from '@/lib/analytics';
+import { buildSupportWhatsappUrl } from '@/lib/supportWhatsapp';
 import styles from './Profile.module.css';
 
 // ── SVG OUTLINE MONOCHROME ICONS ──
@@ -186,6 +187,7 @@ function ProfileContent() {
   const { wishlistItems, toggleWishlist } = useWishlist();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const supportWhatsappUrl = buildSupportWhatsappUrl(settings.supportWhatsapp);
 
   // Tab State
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -934,7 +936,7 @@ function ProfileContent() {
                           ثبت تیکت
                         </button>
                         <a 
-                          href="https://wa.me/971501234567" 
+                          href={supportWhatsappUrl}
                           target="_blank" 
                           rel="noreferrer" 
                           onClick={() => trackWhatsAppClick('profile_support')}

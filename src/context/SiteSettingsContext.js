@@ -18,6 +18,7 @@ const DEFAULTS = {
   supportEmail: 'support@dubaykharid.ir',
   telegramId: '@dubaykharid',
   whatsapp: '+971501234567',
+  supportWhatsapp: '+971527556964',
   instagramId: '@dubaykharid',
   dubaiAddress: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور',
   iranAddress: 'شیراز، شهرک گلستان، خیابان گل آرا',

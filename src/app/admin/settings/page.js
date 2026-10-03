@@ -53,7 +53,7 @@ function SettingsContent() {
 
   const [lastLoginIp, setLastLoginIp] = useState('5.119.82.106 (تهران، ایران)');
 
-  const [siteSettings, setSiteSettings] = useState({ siteName: 'دبی خرید', siteUrl: 'dubaikharid.shop', supportPhone: '021-88001234', supportEmail: 'support@dubaykharid.ir', telegramId: '@dubaykharid', whatsapp: '+971501234567', instagramId: '@dubaykharid', dubaiAddress: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور', iranAddress: 'شیراز، شهرک گلستان، خیابان گل آرا', address: 'دبی، امارات متحده عربی', workingHours: 'شنبه تا پنجشنبه ۹ تا ۱۸', minOrderAed: '500', commissionPercent: '8', shippingBaseRate: '1200000', shippingPerKg: '350000', freeShippingThreshold: '80000000', maintenanceMode: false, allowRegistration: true, autoNotify: true, notifyNewOrder: true, notifyPayment: true, notifyShipment: true });
+  const [siteSettings, setSiteSettings] = useState({ siteName: 'دبی خرید', siteUrl: 'dubaikharid.shop', supportPhone: '021-88001234', supportEmail: 'support@dubaykharid.ir', telegramId: '@dubaykharid', whatsapp: '+971501234567', supportWhatsapp: '+971527556964', instagramId: '@dubaykharid', dubaiAddress: 'امارات، دبی، بیزینس بی، ساختمان ۱۲ بی اسکور', iranAddress: 'شیراز، شهرک گلستان، خیابان گل آرا', address: 'دبی، امارات متحده عربی', workingHours: 'شنبه تا پنجشنبه ۹ تا ۱۸', minOrderAed: '500', commissionPercent: '8', shippingBaseRate: '1200000', shippingPerKg: '350000', freeShippingThreshold: '80000000', maintenanceMode: false, allowRegistration: true, autoNotify: true, notifyNewOrder: true, notifyPayment: true, notifyShipment: true });
 
   const [localGeneral, setLocalGeneral] = useState({
       siteName: 'دبی خرید',
@@ -396,6 +396,7 @@ function SettingsContent() {
                         <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>اطلاعات تماس</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
                           <Field label="شماره واتساپ" value={siteSettings.whatsapp || ''} onChange={e => setSiteSettings(p => ({ ...p, whatsapp: e.target.value }))} hint="مثال: +971501234567" />
+                          <Field label="شماره واتساپ پشتیبانی" value={siteSettings.supportWhatsapp || ''} onChange={e => setSiteSettings(p => ({ ...p, supportWhatsapp: e.target.value }))} hint="مثال: +971527556964" />
                           <Field label="شماره تماس" value={siteSettings.supportPhone || ''} onChange={e => setSiteSettings(p => ({ ...p, supportPhone: e.target.value }))} />
                           <Field label="ایمیل" value={siteSettings.supportEmail || ''} onChange={e => setSiteSettings(p => ({ ...p, supportEmail: e.target.value }))} type="email" />
                           <Field label="تلگرام" value={siteSettings.telegramId || ''} onChange={e => setSiteSettings(p => ({ ...p, telegramId: e.target.value }))} hint="مثال: @dubaykharid" />
@@ -405,6 +406,7 @@ function SettingsContent() {
                         </div>
                         <SaveBtn disabled={isSavingSettings} onClick={() => saveSettings({
                           whatsapp: siteSettings.whatsapp,
+                          supportWhatsapp: siteSettings.supportWhatsapp,
                           supportPhone: siteSettings.supportPhone,
                           supportEmail: siteSettings.supportEmail,
                           telegramId: siteSettings.telegramId,
