@@ -1,3 +1,4 @@
+import { scheduleTelegramPublication } from '@/lib/telegram/service';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -69,8 +70,11 @@ export async function PATCH(request, { params }) {
       request,
     });
     revalidatePublicCatalog(configured.product.id);
+    if (configured.product.status === 'active') scheduleTelegramPublication(configured.product.id);
     return NextResponse.json(configured);
   } catch (error) {
     return adminProductConfigurationApiError(error, 'Admin Product configuration update failed:');
   }
 }
+
+export const maxDuration = 60;

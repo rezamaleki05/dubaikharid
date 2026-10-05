@@ -20,7 +20,7 @@ export const PUBLIC_PRODUCT_STATUS = 'active';
 export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_STATUS });
 export const PUBLIC_PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg';
 
-const PUBLIC_PRODUCT_SELECT = Object.freeze({
+export const PUBLIC_PRODUCT_SELECT = Object.freeze({
   id: true,
   nameFa: true,
   nameEn: true,
@@ -274,7 +274,7 @@ export function serializePublicProduct(product) {
   };
 }
 
-function publicProductCardPriceSummary(product, settings) {
+export function publicProductCardPriceSummary(product, settings) {
   const priced = (product.variants || []).flatMap(variant => {
     const available = product.supplyMode === 'EXTERNAL_DUBAI'
       || (variant.inventory && variant.inventory.stock - variant.inventory.reserved > 0);

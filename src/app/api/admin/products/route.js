@@ -1,3 +1,4 @@
+import { scheduleTelegramPublication } from '@/lib/telegram/service';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -136,6 +137,7 @@ export async function POST(request) {
       request,
     });
     revalidatePublicCatalog(product.id);
+    if (product.status === 'active') scheduleTelegramPublication(product.id);
     return NextResponse.json(serializeAdminProduct(product), { status: 201 });
   } catch (error) {
     if (error?.code === 'P2002') {
@@ -145,3 +147,5 @@ export async function POST(request) {
     return NextResponse.json({ error: 'ایجاد محصول با خطا مواجه شد.' }, { status: 500 });
   }
 }
+
+export const maxDuration = 60;

@@ -151,7 +151,7 @@ test('physical-unit pages are noindex and canonicalized to their model', () => {
 test('Product metadata uses canonical Product identity and Phase 2I-A primary image', () => {
   const layout = read('src/app/product/[id]/layout.js');
   const data = read('src/lib/publicSeoData.js');
-  assert.match(layout, /path: item\.kind === 'laptop' \? item\.canonicalPath : `\/product\/\$\{item\.id\}`/);
+  assert.match(layout, /path: item\.kind === 'laptop' \? item\.canonicalPath : productPath\(item\.id\)/);
   assert.match(layout, /image: item\.image/);
   assert.match(data, /getProductCoverImage\(product, null\)/);
 });

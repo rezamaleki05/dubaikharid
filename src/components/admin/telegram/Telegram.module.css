@@ -1,0 +1,19 @@
+.panel { color: var(--text-primary); background: var(--surface-primary); direction: rtl; min-width: 0; padding: 16px; }
+.panel h3 { font-size: 18px; margin: 0 0 12px; }
+.panel p { color: var(--text-secondary); font-size: 13px; line-height: 1.9; margin: 8px 0 18px; }
+.fields { display: grid; gap: 20px; max-width: 600px; }
+.field { display: grid; gap: 9px; font-size: 13px; }
+.field input { background: var(--control-bg); color: var(--text-primary); border: 1px solid var(--border-primary); padding: 12px; border-radius: 6px; width: 100%; box-sizing: border-box; font: inherit; }
+.toggle { display: flex; align-items: center; gap: 10px; font-size: 13px; line-height: 1.8; }
+.toggle input { accent-color: #f87820; width: 18px; height: 18px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.actions button { padding: 11px 16px; border: 1px solid var(--border-primary); background: transparent; color: var(--text-primary); border-radius: 6px; font: inherit; font-size: 12px; cursor: pointer; }
+.actions button:first-child { border-color: #f87820; color: var(--accent-hover); }
+.actions button:disabled { opacity: .5; cursor: not-allowed; }
+.panel button:focus-visible, .panel input:focus-visible { outline: 2px solid #ffab70; outline-offset: 4px; }
+.status { display: flex; flex-wrap: wrap; gap: 12px 24px; padding-block: 16px; border-block: 1px solid var(--border-primary); font-size: 13px; line-height: 1.9; margin-top: 20px; }
+.notice { color: var(--warning) !important; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .actions button { flex: 1 1 150px; } .status { flex-direction: column; gap: 6px; } }
+
+/* The existing Product configurator is a dark dialog in both site themes. */
+.product { --text-primary: #e8eaf0; --text-secondary: #abb2c4; --surface-primary: transparent; --border-primary: #353b4a; --accent-hover: #ffab70; --warning: #ffcf91; }

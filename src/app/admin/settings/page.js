@@ -9,6 +9,7 @@ import AdminShell from '@/components/admin/AdminShell';
 import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import TelegramSettings from '@/components/admin/telegram/TelegramSettings';
 import { AED_INTERVAL_PRESETS, nextAedUpdateAt } from '@/lib/aedRateDomain';
 
 function SettingsContent() {
@@ -186,6 +187,7 @@ function SettingsContent() {
       {(() => {
             const SETTINGS_TABS = [
               { id: 'general', label: 'تنظیمات عمومی', icon: AdminIcons.settings(13) },
+              { id: 'telegram', label: 'تلگرام', icon: AdminIcons.bell(13) },
               { id: 'contact', label: 'اطلاعات تماس', icon: AdminIcons.phone(13) },
               { id: 'aed', label: 'نرخ درهم', icon: AdminIcons.dollar(13) },
               { id: 'shipping', label: 'تنظیمات ارسال', icon: AdminIcons.truck(13) },
@@ -241,6 +243,7 @@ function SettingsContent() {
                   {/* Content Panel */}
                   <div className={styles.cardPanel} style={{ padding: '28px', borderRadius: '14px' }}>
 
+                    {settingsTab === 'telegram' && <TelegramSettings values={siteSettings} onChange={setSiteSettings} onSave={saveSettings} canEdit={can(ADMIN_PERMISSIONS.SETTINGS_EDIT)} saving={isSavingSettings} loading={isLoadingSettings} />}
                     {/* ── تنظیمات عمومی ── */}
                     {settingsTab === 'general' && (
                       <div>
