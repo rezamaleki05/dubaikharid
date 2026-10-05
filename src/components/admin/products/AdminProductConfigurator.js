@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import ProductTelegramStatus from '@/components/admin/telegram/ProductTelegramStatus';
 import AdminBrandSelector from '@/components/admin/AdminBrandSelector';
 import AdminProductGalleryField, { createProductGalleryState } from './AdminProductGalleryField';
 import { buildVariantOptionCombinations } from '@/lib/adminProductConfigurationDomain';
@@ -607,6 +608,7 @@ export default function AdminProductConfigurator({
           <button type="button" className={styles.closeButton} onClick={onClose} aria-label="بستن">×</button>
         </header>
         <form className={styles.form} onSubmit={submit}>
+          {mode === 'edit' && productId && <ProductTelegramStatus productId={productId} />}
           {error && <div className={styles.error} role="alert">{error}</div>}
 
           <section className={styles.section}>

@@ -205,6 +205,7 @@ model Product {
   hasDiscount     Boolean           @default(false)
   isBestSeller    Boolean           @default(false)
   status          ProductStatus     @default(active)
+  telegramFirstPublishedAt DateTime?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -213,6 +214,7 @@ model Product {
   category        Category?               @relation(fields: [categoryId], references: [id])
   warehouseItem   WarehouseItem?
   orderItems      OrderItem[]
+  telegramPublication TelegramPublication?
   images          ProductImage[]
   attributeValues ProductAttributeValue[]
   variants        ProductVariant[]
@@ -864,4 +866,32 @@ model Setting {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// One durable publication per Product. A deliberate repost reuses it.
+enum TelegramPublicationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model TelegramPublication {
+  id                String @id @default(cuid())
+  productId         String @unique
+  destination       String
+  status            TelegramPublicationStatus @default(PENDING)
+  telegramMessageId String?
+  telegramChatId    String?
+  attemptCount      Int @default(0)
+  lastError         String?
+  lockedAt          DateTime?
+  claimToken        String?
+  retryAfter        DateTime?
+  uncertain         Boolean @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  sentAt            DateTime?
+  product           Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([status, lockedAt])
 }

@@ -1,6 +1,10 @@
+import { normalizeTelegramChannel } from './telegram/domain.js';
 import { DEFAULT_SUPPORT_WHATSAPP, normalizeSupportWhatsappNumber } from './supportWhatsapp.js';
 
 export const SETTING_DEFINITIONS = Object.freeze({
+  telegramEnabled: { dbKey: 'telegramEnabled', type: 'boolean', defaultValue: false },
+  telegramAutoPublishProducts: { dbKey: 'telegramAutoPublishProducts', type: 'boolean', defaultValue: false },
+  telegramChannel: { dbKey: 'telegramChannel', type: 'telegramChannel', max: 40, defaultValue: '' },
   siteName: { dbKey: 'siteName', type: 'text', max: 120, defaultValue: 'دبی خرید' },
   siteUrl: { dbKey: 'siteUrl', type: 'text', max: 240, defaultValue: 'dubaikharid.shop' },
   siteLogoUrl: { dbKey: 'siteLogoUrl', type: 'asset', max: 1_500_000, defaultValue: '/images/logo dubai kharid.png' },
@@ -87,6 +91,12 @@ export function validateSettingValue(key, value) {
       return { error: `مقدار ${key} مجاز نیست.` };
     }
     return { value };
+  }
+
+  if (definition.type === 'telegramChannel') {
+    if (value === '') return { value: '' };
+    const normalized = normalizeTelegramChannel(value);
+    return normalized ? { value: normalized } : { error: 'شناسه کانال تلگرام معتبر نیست.' };
   }
 
   if (definition.type === 'optionalText') {

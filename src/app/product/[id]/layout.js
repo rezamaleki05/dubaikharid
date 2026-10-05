@@ -1,3 +1,4 @@
+import { productPath } from '@/lib/productUrl';
 import { notFound } from 'next/navigation';
 import JsonLd from '@/components/seo/JsonLd';
 import { getSeoProduct } from '@/lib/publicSeoData';
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }) {
   return publicPageMetadata({
     title,
     description: descriptionFor(item),
-    path: item.kind === 'laptop' ? item.canonicalPath : `/product/${item.id}`,
+    path: item.kind === 'laptop' ? item.canonicalPath : productPath(item.id),
     image: item.image || undefined,
     type: 'website',
     ...(item.kind === 'laptop' ? { robots: { index: false, follow: true } } : {}),
@@ -43,22 +44,22 @@ export default async function ProductSeoLayout({ children, params }) {
       : item.brand?.showInBrandDirectory
         ? [{ name: brandName, path: `/brands/${item.brand.id}` }]
         : []),
-    { name: item.name, path: item.kind === 'laptop' ? item.canonicalPath : `/product/${item.id}` },
+    { name: item.name, path: item.kind === 'laptop' ? item.canonicalPath : productPath(item.id) },
   ];
   const productSchema = item.kind === 'product' ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    '@id': `${absoluteUrl(`/product/${item.id}`)}#product`,
+    '@id': `${absoluteUrl(productPath(item.id))}#product`,
     name: item.name,
     ...(item.nameEn ? { alternateName: item.nameEn } : {}),
-    url: absoluteUrl(`/product/${item.id}`),
+    url: absoluteUrl(productPath(item.id)),
     description: descriptionFor(item),
     ...(item.image ? { image: [absoluteUrl(item.image)] } : {}),
     ...(brandName ? { brand: { '@type': 'Brand', name: brandName } } : {}),
     ...(item.seoPriceRange ? {
       offers: item.seoPriceRange.varies ? {
         '@type': 'AggregateOffer',
-        url: absoluteUrl(`/product/${item.id}`),
+        url: absoluteUrl(productPath(item.id)),
         priceCurrency: 'IRR',
         lowPrice: (BigInt(item.seoPriceRange.lowPriceToman) * 10n).toString(),
         highPrice: (BigInt(item.seoPriceRange.highPriceToman) * 10n).toString(),
@@ -66,7 +67,7 @@ export default async function ProductSeoLayout({ children, params }) {
         availability: item.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       } : {
         '@type': 'Offer',
-        url: absoluteUrl(`/product/${item.id}`),
+        url: absoluteUrl(productPath(item.id)),
         priceCurrency: 'IRR',
         price: (BigInt(item.seoPriceRange.lowPriceToman) * 10n).toString(),
         availability: item.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
