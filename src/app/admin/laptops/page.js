@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import LaptopCombobox from '@/components/admin/laptops/LaptopCombobox';
+import { emptyLaptopForm } from '@/lib/laptopForm';
+import { changeLaptopIdentity, laptopCatalogOptions, laptopDisplayName } from '@/lib/laptopIdentity';
 import styles from '@/app/admin/Admin.module.css';
 import { AdminIcons } from '@/components/admin/AdminIcons';
 import AdminShell from '@/components/admin/AdminShell';
@@ -17,7 +20,6 @@ function StockLaptopsContent() {
   const { settings } = useSiteSettings();
   const aedRate = Number(settings.aedRate) || 0;
   const [brands, setBrands] = useState([]);
-  const [brandDropdownOpen, setBrandDropdownOpen] = useState(null);
   const [brandError, setBrandError] = useState('');
   const [dateEnteredError, setDateEnteredError] = useState('');
   const [uploadedProducts, setUploadedProducts] = useState([]);
@@ -28,42 +30,11 @@ function StockLaptopsContent() {
   const [laptopsStats, setLaptopsStats] = useState({ total: 0, available: 0, reserved: 0, sold: 0, inactive: 0, soldRevenueToman: '0', soldCostAed: '0', monthly: [] });
   const [laptopFilterBrands, setLaptopFilterBrands] = useState([]);
 
-  // Dynamic Options states for brand-filtered models, CPUs, and GPUs
-  const [modelsByBrand, setModelsByBrand] = useState({});
-
-  const [cpuOptions, setCpuOptions] = useState([
-    'Apple M2', 'Apple M3', 'Intel Core i5', 'Intel Core i7', 'Intel Core i9', 'AMD Ryzen 7', 'AMD Ryzen 9'
-  ]);
-
-  const [gpuOptions, setGpuOptions] = useState([
-    'Apple GPU 8-Core', 'Apple GPU 10-Core', 'Intel Iris Xe', 'AMD Radeon RX', 'NVIDIA GeForce RTX 4060', 'NVIDIA GeForce RTX 4070'
-  ]);
-
-  const [customModel, setCustomModel] = useState('');
-  const [showCustomModelInput, setShowCustomModelInput] = useState(false);
-
-  const [customCpu, setCustomCpu] = useState('');
-  const [showCustomCpuInput, setShowCustomCpuInput] = useState(false);
-
-  const [customGpu, setCustomGpu] = useState('');
-  const [showCustomGpuInput, setShowCustomGpuInput] = useState(false);
-
-  const [colorOptions, setColorOptions] = useState([
-    'Space Gray', 'Silver', 'Midnight', 'Starlight', 'مشکی', 'سفید', 'طوسی', 'کرم'
-  ]);
-  const [customColor, setCustomColor] = useState('');
-  const [showCustomColorInput, setShowCustomColorInput] = useState(false);
-
-  const handleBrandChange = (newBrand) => {
-    setShowCustomModelInput(false);
-    setCustomModel('');
-    const defaultModel = modelsByBrand[newBrand]?.[0] || '';
-    setLaptopForm(prev => ({
-      ...prev,
-      brand: newBrand,
-      model: defaultModel
-    }));
-  };
+  const [manualNames, setManualNames] = useState({});
+  const [formMessage, setFormMessage] = useState('');
+  const [cpuOptions, setCpuOptions] = useState(['Intel Core i7-12700H', 'Intel Core i5', 'Intel Core i7', 'AMD Ryzen 7']);
+  const [gpuOptions, setGpuOptions] = useState(['NVIDIA RTX A1000', 'Intel Iris Xe', 'NVIDIA GeForce RTX 4060']);
+  const updateIdentity = patch => setLaptopForm(previous => changeLaptopIdentity(previous, patch, manualNames, brands.find(brand => brand.name === (patch.brand ?? previous.brand))?.faName));
 
   // Laptop Dashboard Management States
   const [laptopViewMode, setLaptopViewMode] = useState('list'); // 'list' | 'add' | 'edit'
@@ -79,26 +50,11 @@ function StockLaptopsContent() {
   const [laptopCpuFilter, setLaptopCpuFilter] = useState('همه');
   const [isMonthlyProfitExpanded, setIsMonthlyProfitExpanded] = useState(false);
 
-  const emptyLaptopForm = () => ({
-    brand: '', model: '', serial: '', cpu: '', ram: '8', storageSize: '', storageType: 'GB SSD',
-    storage2Size: '0', storage2Type: 'none', gpu: '', screenSize: '', manufactureYear: '', color: '',
-    batteryHealth: '', weight: '', buyingPrice: '', extraCosts: '0', sellingPrice: '', internalNotes: '',
-    customerNotes: '', hardwareTests: { keyboard: false, speaker: false, display: false, usb: false, battery: false, wifi: false, camera: false, charge: false },
-    accessories: { charger: false, box: false }, physicalStatus: 'good', stockStatus: 'available', dateEntered: '',
-    internalSku: '', warrantyDays: '', warrantyExpiry: '', lastService: '', nextService: ''
-  });
-
   const resetLaptopForm = () => {
     setLaptopForm(emptyLaptopForm());
     setLaptopImages([]);
-    setShowCustomModelInput(false);
-    setShowCustomCpuInput(false);
-    setShowCustomGpuInput(false);
-    setShowCustomColorInput(false);
-    setCustomModel('');
-    setCustomCpu('');
-    setCustomGpu('');
-    setCustomColor('');
+    setManualNames({});
+    setFormMessage('');
     setIsLaptopImageUploading(false);
     setBrandError('');
     setDateEnteredError('');
@@ -109,7 +65,8 @@ function StockLaptopsContent() {
     if (product.rawSpecs) return { ...emptyLaptopForm(), ...product.rawSpecs };
     return {
       ...emptyLaptopForm(),
-      brand: product.brand || '', model: product.model || '', serial: product.serial || '', cpu: product.cpu || '',
+      brand: product.brand || '', model: product.model || '', series: product.series || '',
+      displayNameFa: product.displayNameFa || '', displayNameEn: product.displayNameEn || '', serial: product.serial || '', cpu: product.cpu || '',
       ram: String(product.ram || '').replace(/\s*GB$/i, ''), gpu: product.gpu || '',
       screenSize: String(product.screen || '').replace(/[^\d.]/g, ''), weight: product.weight ? String(product.weight) : '',
       sellingPrice: product.priceToman ? String(product.priceToman) : '', customerNotes: product.description || '',
@@ -158,19 +115,13 @@ function StockLaptopsContent() {
       .then(payload => {
         if (!Array.isArray(payload.data)) throw new Error(payload.error || 'دریافت برندهای لپ‌تاپ ناموفق بود.');
         setBrands(payload.data);
-        setModelsByBrand(Object.fromEntries(payload.data.map(brand => [brand.name, brand.laptopModels.map(model => model.name)])));
-        setLaptopForm(current => {
-          if (!current.brand) return current;
-          const currentBrand = payload.data.find(brand => brand.name === current.brand);
-          if (!currentBrand) return current;
-          const models = currentBrand.laptopModels.map(model => model.name);
-          return { ...current, model: models.includes(current.model) ? current.model : '' };
-        });
+        setCpuOptions(current => [...new Set([...current, ...(payload.cpuOptions || [])])]);
+        setGpuOptions(current => [...new Set([...current, ...(payload.gpuOptions || [])])]);
       })
       .catch(error => {
         console.error('Error fetching brands:', error);
         setBrands([]);
-        setModelsByBrand({});
+
       });
   }, []);
 
@@ -227,7 +178,7 @@ function StockLaptopsContent() {
 
       const row = [
         p.id,
-        `${parsed.brand} ${parsed.model}`,
+        laptopDisplayName(parsed),
         parsed.brand,
         parsed.cpu,
         `${parsed.ram}GB`,
@@ -278,7 +229,7 @@ function StockLaptopsContent() {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'ذخیره لپ‌تاپ با خطا مواجه شد.');
-      alert(editingLaptopId ? 'تغییرات لپ‌تاپ با موفقیت ذخیره شد!' : 'لپ‌تاپ جدید با موفقیت ذخیره شد و به کاتالوگ فروشگاه دبی خرید افزوده گردید!');
+
       setLaptopViewMode('list');
       setEditingLaptopId(null);
       resetLaptopForm();
@@ -286,7 +237,7 @@ function StockLaptopsContent() {
       await fetchLaptops({ page: 1 });
     } catch (err) {
       console.error(err);
-      alert(err.message || 'ذخیره لپ‌تاپ با خطا مواجه شد.');
+      setFormMessage(err.message || 'ذخیره لپ‌تاپ با خطا مواجه شد.');
     } finally {
       setIsLaptopSaving(false);
     }
@@ -325,6 +276,8 @@ function StockLaptopsContent() {
   // Triggers editing view with pre-filled state parsed from the laptop object
   const triggerEditLaptop = (laptop) => {
     const parsedForm = parseProductToForm(laptop);
+    setManualNames({ displayNameFa: Boolean(parsedForm.displayNameFa), displayNameEn: Boolean(parsedForm.displayNameEn) });
+    setFormMessage('');
     setLaptopForm(parsedForm);
     if (laptop.rawSpecs && laptop.rawSpecs.images) {
       setLaptopImages(createLaptopImageState(laptop.rawSpecs.images));
@@ -344,6 +297,8 @@ function StockLaptopsContent() {
 
   const triggerDuplicateLaptop = (laptop) => {
     const duplicate = duplicateLaptopForm(laptop);
+    setManualNames({ displayNameFa: Boolean(duplicate.displayNameFa), displayNameEn: Boolean(duplicate.displayNameEn) });
+    setFormMessage('');
     setLaptopForm({ ...emptyLaptopForm(), ...duplicate });
     setLaptopImages(createLaptopImageState(Array.isArray(duplicate.images) ? duplicate.images : (laptop.image ? [laptop.image] : [])));
     setEditingLaptopId(null);
@@ -646,7 +601,7 @@ function StockLaptopsContent() {
                               /> : <span style={{ width: '40px', height: '40px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', color: '#8b92a5' }}>{AdminIcons.laptop(18)}</span>}
                             </td>
                             <td style={{ padding: '18px 10px', fontSize: '12px' }}>
-                              <div style={{ fontWeight: '700', color: '#fff' }}>{parsedSpecs.brand} {parsedSpecs.model}</div>
+                              <div style={{ fontWeight: '700', color: '#fff' }}>{laptopDisplayName(parsedSpecs)}</div>
                               <div style={{ fontSize: '10.5px', fontWeight: '300', color: '#8b92a5', marginTop: '4px' }}>
                                 رم: {parsedSpecs.ram}GB | حافظه: {parsedSpecs.storageSize}{parsedSpecs.storageType}
                               </div>
@@ -804,7 +759,7 @@ function StockLaptopsContent() {
 
                     {/* Product Title and status row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: '750', color: '#fff' }}>{parsed.brand} {parsed.model}</span>
+                      <span style={{ fontSize: '14px', fontWeight: '750', color: '#fff' }}>{laptopDisplayName(parsed)}</span>
                       <span style={{ ...badgeStyle, padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold' }}>{badgeText}</span>
                     </div>
 
@@ -1103,7 +1058,7 @@ function StockLaptopsContent() {
           <div className={styles.laptopsFormView}>
             <div className={`${styles.pageTitleSection} ${styles.laptopsPageHeader}`}>
               <div className={styles.titleArea}>
-                <h1>{editingLaptopId ? `ویرایش لپ‌تاپ ${laptopForm.brand} مدل ${laptopForm.model}` : 'افزودن لپ‌تاپ جدید'}</h1>
+                <h1>{editingLaptopId ? `ویرایش ${laptopDisplayName(laptopForm)}` : 'افزودن لپ‌تاپ جدید'}</h1>
                 <div className={styles.breadcrumbs}>
                   <span>{editingLaptopId ? 'ویرایش لپ‌تاپ' : 'افزودن لپ‌تاپ جدید'}</span>
                   <span>‹</span>
@@ -1132,6 +1087,7 @@ function StockLaptopsContent() {
               </div>
             </div>
 
+            {formMessage && <p role="alert" style={{ color: '#fb7185' }}>{formMessage}</p>}
             {/* Form split layout grid */}
             <div className={styles.formGridSplit}>
           
@@ -1146,229 +1102,56 @@ function StockLaptopsContent() {
               </div>
 
               <div className={styles.formFieldsGrid4}>
-                <div className={styles.formGroup} style={{ position: 'relative' }}>
-                  <label>برند <span className={styles.requiredStar}>*</span></label>
-                  <input
-                    type="text"
-                    required
-                    value={laptopForm.brand}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setLaptopForm(prev => ({ ...prev, brand: val, model: '' }));
-                      setBrandError('');
-                      setBrandDropdownOpen('laptopForm');
-                    }}
-                    onFocus={() => setBrandDropdownOpen('laptopForm')}
-                    onBlur={() => setTimeout(() => setBrandDropdownOpen(null), 200)}
-                    className={styles.inputField}
-                    aria-invalid={Boolean(brandError)}
-                    placeholder="جستجوی برند…"
-                  />
-                  {brandError ? <small style={{ color: '#fb7185', marginTop: 6, display: 'block' }}>{brandError}</small> : null}
-                  {brandDropdownOpen === 'laptopForm' && (() => {
-                    const searchVal = laptopForm.brand || '';
-                    const filtered = brands.filter(b => 
-                      !searchVal || 
-                      b?.name?.toLowerCase().includes(searchVal.toLowerCase()) || 
-                      b?.faName?.toLowerCase().includes(searchVal.toLowerCase())
-                    );
-                    if (filtered.length === 0) return null;
-                    return (
-                      <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-                        background: '#141622',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '8px',
-                        maxHeight: '180px',
-                        overflowY: 'auto',
-                        zIndex: 1000,
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                        marginTop: '4px'
-                      }}>
-                        {filtered.map((b, idx) => (
-                          <div
-                            key={`${b.id || idx}-${idx}`}
-                            onMouseDown={() => {
-                              handleBrandChange(b.name);
-                              setBrandError('');
-                              setBrandDropdownOpen(null);
-                            }}
-                            style={{
-                              padding: '8px 12px',
-                              cursor: 'pointer',
-                              borderBottom: '1px solid rgba(255,255,255,0.03)',
-                              fontSize: '12px',
-                              color: '#fff',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              background: 'rgba(255,255,255,0.01)'
-                            }}
-                          >
-                            <span style={{ fontWeight: 'bold' }}>{b.name}</span>
-                            <span style={{ color: '#8b92a5', fontSize: '11px' }}>{b.faName || ''}</span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                {['displayNameFa', 'displayNameEn'].map(key => (
+                  <div className={styles.formGroup} key={key} style={{ gridColumn: 'span 2' }}>
+                    <label htmlFor={key}>{key === 'displayNameFa' ? 'نام فارسی لپ‌تاپ' : 'نام انگلیسی لپ‌تاپ'}</label>
+                    <input id={key} className={styles.inputField} dir={key === 'displayNameEn' ? 'ltr' : 'rtl'} value={laptopForm[key]} maxLength={320}
+                      placeholder="پس از انتخاب برند و مدل پیشنهاد می‌شود"
+                      onChange={event => { setManualNames(current => ({ ...current, [key]: true })); setLaptopForm(previous => ({ ...previous, [key]: event.target.value })); }} />
+                  </div>
+                ))}
+                <div>
+                  <LaptopCombobox label="برند" required value={laptopForm.brand} options={brands.map(brand => brand.name)} placeholder="جستجوی برند…"
+                    onChange={brand => { updateIdentity({ brand }); setBrandError(''); }} />
+                  {brandError && <small role="alert" style={{ color: '#fb7185' }}>{brandError}</small>}
                 </div>
+                <LaptopCombobox key={`series-${laptopForm.brand}`} label="سری / خانواده (اختیاری)" value={laptopForm.series}
+                  disabled={!laptopForm.brand} options={laptopCatalogOptions(brands.find(brand => brand.name === laptopForm.brand)).series}
+                  onChange={series => updateIdentity({ series })} onCreate={async series => series} createLabel="+ استفاده از سری جدید" placeholder="اختیاری؛ جستجو یا افزودن سری" />
+                <LaptopCombobox key={`model-${laptopForm.brand}-${laptopForm.series}`} label="مدل دقیق" required value={laptopForm.model}
+                  disabled={!laptopForm.brand} options={laptopCatalogOptions(brands.find(brand => brand.name === laptopForm.brand), laptopForm.series).models}
+                  onChange={model => updateIdentity({ model })} placeholder="جستجو یا انتخاب مدل..." createLabel="+ افزودن مدل جدید"
+                  onCreate={async name => {
+                    const brand = brands.find(item => item.name === laptopForm.brand);
+                    if (!brand) throw new Error('ابتدا یک برند معتبر انتخاب کنید.');
+                    const response = await fetch('/api/admin/laptop-catalog', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brandId: brand.id, series: laptopForm.series, name }) });
+                    const payload = await response.json();
+                    if (!response.ok) throw new Error(payload.error || 'ثبت مدل ناموفق بود.');
+                    setBrands(current => current.map(item => item.id === brand.id ? { ...item, laptopModels: [...item.laptopModels.filter(model => model.id !== payload.data.id), payload.data] } : item));
+                    return payload.data.exactModel;
+                  }} />
 
                 <div className={styles.formGroup}>
-                  <label>مدل <span className={styles.requiredStar}>*</span></label>
-                  <select 
-                    value={showCustomModelInput ? "+custom" : laptopForm.model} 
-                    onChange={(e) => {
-                      if (e.target.value === "+custom") {
-                        setShowCustomModelInput(true);
-                        setLaptopForm(prev => ({ ...prev, model: '' }));
-                      } else {
-                        setShowCustomModelInput(false);
-                        setLaptopForm(prev => ({ ...prev, model: e.target.value }));
-                      }
-                    }}
-                    className={styles.selectField}
-                  >
-                    {(modelsByBrand[laptopForm.brand] || []).map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                    <option value="+custom">+ افزودن مدل جدید...</option>
-                  </select>
-                  {showCustomModelInput && (
-                    <input 
-                      type="text" 
-                      value={customModel}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCustomModel(val);
-                        setLaptopForm(prev => ({ ...prev, model: val }));
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          e.target.blur();
-                        }
-                      }}
-                      onBlur={async () => {
-                        if (customModel.trim()) {
-                          const trimmed = customModel.trim();
-                          const brand = brands.find(item => item.name === laptopForm.brand);
-                          if (!brand) {
-                            alert('ابتدا یک برند معتبر لپ‌تاپ انتخاب کنید.');
-                            return;
-                          }
-                          try {
-                            const response = await fetch('/api/admin/laptop-catalog', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ brandId: brand.id, name: trimmed }),
-                            });
-                            const payload = await response.json();
-                            if (!response.ok) throw new Error(payload.error || 'ثبت مدل لپ‌تاپ ناموفق بود.');
-                            setModelsByBrand(prev => {
-                              const currentList = prev[laptopForm.brand] || [];
-                              return currentList.includes(payload.data.name)
-                                ? prev
-                                : { ...prev, [laptopForm.brand]: [...currentList, payload.data.name] };
-                            });
-                            setLaptopForm(prev => ({ ...prev, model: payload.data.name }));
-                            setShowCustomModelInput(false);
-                          } catch (error) {
-                            alert(error.message || 'ثبت مدل لپ‌تاپ ناموفق بود.');
-                          }
-                        } else {
-                          setShowCustomModelInput(false);
-                          setLaptopForm(prev => ({ ...prev, model: modelsByBrand[laptopForm.brand]?.[0] || '' }));
-                        }
-                      }}
-                      placeholder="تایپ مدل جدید..."
-                      className={styles.inputField}
-                      style={{ marginTop: '8px' }}
-                      autoFocus
-                      required
-                    />
-                  )}
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label>(Serial Number) شماره سریال</label>
+                  <label htmlFor="laptop-serial">(Serial Number) شماره سریال</label>
                   <input 
                     type="text" 
-                    value={laptopForm.serial} 
+                    id="laptop-serial" value={laptopForm.serial}
                     onChange={(e) => setLaptopForm(prev => ({ ...prev, serial: e.target.value }))}
                     placeholder="شماره سریال (اختیاری)"
                     className={styles.inputField} 
                   />
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label>پردازنده (CPU) <span className={styles.requiredStar}>*</span></label>
-                  <select 
-                    value={showCustomCpuInput ? "+custom" : laptopForm.cpu} 
-                    onChange={(e) => {
-                      if (e.target.value === "+custom") {
-                        setShowCustomCpuInput(true);
-                        setLaptopForm(prev => ({ ...prev, cpu: '' }));
-                      } else {
-                        setShowCustomCpuInput(false);
-                        setLaptopForm(prev => ({ ...prev, cpu: e.target.value }));
-                      }
-                    }}
-                    className={styles.selectField}
-                  >
-                    {cpuOptions.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                    <option value="+custom">+ افزودن پردازنده جدید...</option>
-                  </select>
-                  {showCustomCpuInput && (
-                    <input 
-                      type="text" 
-                      value={customCpu}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCustomCpu(val);
-                        setLaptopForm(prev => ({ ...prev, cpu: val }));
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          e.target.blur();
-                        }
-                      }}
-                      onBlur={() => {
-                        if (customCpu.trim()) {
-                          const trimmed = customCpu.trim();
-                          setCpuOptions(prev => {
-                            if (!prev.includes(trimmed)) {
-                              return [...prev, trimmed];
-                            }
-                            return prev;
-                          });
-                          setLaptopForm(prev => ({ ...prev, cpu: trimmed }));
-                          setShowCustomCpuInput(false);
-                        } else {
-                          setShowCustomCpuInput(false);
-                          setLaptopForm(prev => ({ ...prev, cpu: cpuOptions[0] || '' }));
-                        }
-                      }}
-                      placeholder="تایپ پردازنده جدید..."
-                      className={styles.inputField}
-                      style={{ marginTop: '8px' }}
-                      autoFocus
-                      required
-                    />
-                  )}
-                </div>
+                <LaptopCombobox label="پردازنده (CPU)" required value={laptopForm.cpu} options={cpuOptions}
+                  onChange={cpu => setLaptopForm(previous => ({ ...previous, cpu }))} createLabel="+ افزودن پردازنده جدید"
+                  onCreate={async cpu => { setCpuOptions(current => [...new Set([...current, cpu])]); return cpu; }} />
 
                 <div className={styles.formGroup}>
-                  <label>رم (RAM) - GB <span className={styles.requiredStar}>*</span></label>
+                  <label htmlFor="laptop-ram">رم (RAM) - GB <span className={styles.requiredStar}>*</span></label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input 
                       type="number" 
-                      value={laptopForm.ram} 
+                      id="laptop-ram" value={laptopForm.ram}
                       onChange={(e) => setLaptopForm(prev => ({ ...prev, ram: e.target.value }))}
                       min="2"
                       max="256"
@@ -1381,11 +1164,11 @@ function StockLaptopsContent() {
                 </div>
 
                 <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-                  <label>حافظه داخلی اصلی <span className={styles.requiredStar}>*</span></label>
+                  <label htmlFor="laptop-storageSize">حافظه داخلی اصلی <span className={styles.requiredStar}>*</span></label>
                   <div className={styles.unifiedStorageGroup}>
                     <input 
                       type="number" 
-                      value={laptopForm.storageSize} 
+                      id="laptop-storageSize" value={laptopForm.storageSize}
                       onChange={(e) => setLaptopForm(prev => ({ ...prev, storageSize: e.target.value }))}
                       min="1"
                       max="8192"
@@ -1395,10 +1178,11 @@ function StockLaptopsContent() {
                     />
                     <div className={styles.unifiedStorageSeparator}></div>
                     <select 
-                      value={laptopForm.storageType} 
+                      aria-label="نوع حافظه اصلی" value={laptopForm.storageType}
                       onChange={(e) => setLaptopForm(prev => ({ ...prev, storageType: e.target.value }))}
                       className={styles.unifiedStorageSelect}
                     >
+                      <option value="">انتخاب نوع حافظه</option>
                       <option value="GB SSD">GB SSD</option>
                       <option value="TB SSD">TB SSD</option>
                       <option value="GB HDD">GB HDD</option>
@@ -1412,7 +1196,8 @@ function StockLaptopsContent() {
                   <div className={styles.unifiedStorageGroup}>
                     <input 
                       type="number" 
-                      value={laptopForm.storage2Size} 
+                      disabled={laptopForm.storage2Type === 'none'}
+                      value={laptopForm.storage2Type === 'none' ? '' : laptopForm.storage2Size}
                       onChange={(e) => setLaptopForm(prev => ({ ...prev, storage2Size: e.target.value }))}
                       min="0"
                       max="8192"
@@ -1434,73 +1219,17 @@ function StockLaptopsContent() {
                   </div>
                 </div>
 
-                <div className={styles.formGroup}>
-                  <label>(GPU) کارت گرافیک</label>
-                  <select 
-                    value={showCustomGpuInput ? "+custom" : laptopForm.gpu} 
-                    onChange={(e) => {
-                      if (e.target.value === "+custom") {
-                        setShowCustomGpuInput(true);
-                        setLaptopForm(prev => ({ ...prev, gpu: '' }));
-                      } else {
-                        setShowCustomGpuInput(false);
-                        setLaptopForm(prev => ({ ...prev, gpu: e.target.value }));
-                      }
-                    }}
-                    className={styles.selectField}
-                  >
-                    {gpuOptions.map(g => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                    <option value="+custom">+ افزودن کارت گرافیک جدید...</option>
-                  </select>
-                  {showCustomGpuInput && (
-                    <input 
-                      type="text" 
-                      value={customGpu}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCustomGpu(val);
-                        setLaptopForm(prev => ({ ...prev, gpu: val }));
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          e.target.blur();
-                        }
-                      }}
-                      onBlur={() => {
-                        if (customGpu.trim()) {
-                          const trimmed = customGpu.trim();
-                          setGpuOptions(prev => {
-                            if (!prev.includes(trimmed)) {
-                              return [...prev, trimmed];
-                            }
-                            return prev;
-                          });
-                          setLaptopForm(prev => ({ ...prev, gpu: trimmed }));
-                          setShowCustomGpuInput(false);
-                        } else {
-                          setShowCustomGpuInput(false);
-                          setLaptopForm(prev => ({ ...prev, gpu: gpuOptions[0] || '' }));
-                        }
-                      }}
-                      placeholder="تایپ کارت گرافیک جدید..."
-                      className={styles.inputField}
-                      style={{ marginTop: '8px' }}
-                      autoFocus
-                      required
-                    />
-                  )}
-                </div>
+                <LaptopCombobox label="کارت گرافیک (GPU)" value={laptopForm.gpu} options={gpuOptions}
+                  onChange={gpu => setLaptopForm(previous => ({ ...previous, gpu }))} createLabel="+ افزودن کارت گرافیک جدید"
+                  onCreate={async gpu => { setGpuOptions(current => [...new Set([...current, gpu])]); return gpu; }} />
 
                 <div className={styles.formGroup}>
-                  <label>اندازه صفحه نمایش - اینچ <span className={styles.requiredStar}>*</span></label>
+                  <label htmlFor="laptop-screenSize">اندازه صفحه نمایش - اینچ <span className={styles.requiredStar}>*</span></label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <input 
                       type="number" 
                       step="0.1"
-                      value={laptopForm.screenSize} 
+                      id="laptop-screenSize" value={laptopForm.screenSize}
                       onChange={(e) => setLaptopForm(prev => ({ ...prev, screenSize: e.target.value }))}
                       placeholder="مثال: 13.6"
                       className={styles.inputField}
@@ -1524,63 +1253,8 @@ function StockLaptopsContent() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>رنگ</label>
-                  <select 
-                    value={showCustomColorInput ? "+custom" : laptopForm.color} 
-                    onChange={(e) => {
-                      if (e.target.value === "+custom") {
-                        setShowCustomColorInput(true);
-                        setLaptopForm(prev => ({ ...prev, color: '' }));
-                      } else {
-                        setShowCustomColorInput(false);
-                        setLaptopForm(prev => ({ ...prev, color: e.target.value }));
-                      }
-                    }}
-                    className={styles.selectField}
-                  >
-                    {colorOptions.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                    <option value="+custom">+ افزودن رنگ جدید...</option>
-                  </select>
-                  {showCustomColorInput && (
-                    <input 
-                      type="text" 
-                      value={customColor}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setCustomColor(val);
-                        setLaptopForm(prev => ({ ...prev, color: val }));
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          e.target.blur();
-                        }
-                      }}
-                      onBlur={() => {
-                        if (customColor.trim()) {
-                          const trimmed = customColor.trim();
-                          setColorOptions(prev => {
-                            if (!prev.includes(trimmed)) {
-                              return [...prev, trimmed];
-                            }
-                            return prev;
-                          });
-                          setLaptopForm(prev => ({ ...prev, color: trimmed }));
-                          setShowCustomColorInput(false);
-                        } else {
-                          setShowCustomColorInput(false);
-                          setLaptopForm(prev => ({ ...prev, color: colorOptions[0] || '' }));
-                        }
-                      }}
-                      placeholder="تایپ رنگ جدید..."
-                      className={styles.inputField}
-                      style={{ marginTop: '8px' }}
-                      autoFocus
-                      required
-                    />
-                  )}
+                  <label htmlFor="laptop-color">رنگ</label>
+                  <input id="laptop-color" value={laptopForm.color} onChange={event => setLaptopForm(previous => ({ ...previous, color: event.target.value }))} className={styles.inputField} />
                 </div>
 
                 <div className={styles.formGroup}>
@@ -1600,13 +1274,13 @@ function StockLaptopsContent() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>وزن (Kg)</label>
+                  <label htmlFor="laptop-weight">وزن (Kg)</label>
                   <input
                     type="number"
-                    min="0"
+                    min="0.01"
                     max="99.99"
                     step="0.01"
-                    value={laptopForm.weight} 
+                    id="laptop-weight" value={laptopForm.weight}
                     onChange={(e) => setLaptopForm(prev => ({ ...prev, weight: e.target.value }))}
                     placeholder="مثال: 1.75"
                     className={styles.inputField}
@@ -1624,10 +1298,10 @@ function StockLaptopsContent() {
 
               <div className={styles.formFieldsGrid4}>
                 <div className={styles.formGroup}>
-                  <label>قیمت خرید (درهم) <span className={styles.requiredStar}>*</span></label>
+                  <label htmlFor="laptop-buyingPrice">قیمت خرید (درهم) <span className={styles.requiredStar}>*</span></label>
                   <input 
                     type="number"
-                    value={laptopForm.buyingPrice}
+                    id="laptop-buyingPrice" value={laptopForm.buyingPrice}
                     onChange={(e) => setLaptopForm(prev => ({ ...prev, buyingPrice: e.target.value }))}
                     className={styles.inputField}
                   />
@@ -1644,10 +1318,10 @@ function StockLaptopsContent() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>قیمت فروش (تومان) <span className={styles.requiredStar}>*</span></label>
+                  <label htmlFor="laptop-sellingPrice">قیمت فروش (تومان) <span className={styles.requiredStar}>*</span></label>
                   <input 
                     type="number"
-                    value={laptopForm.sellingPrice}
+                    id="laptop-sellingPrice" value={laptopForm.sellingPrice}
                     onChange={(e) => setLaptopForm(prev => ({ ...prev, sellingPrice: e.target.value }))}
                     className={styles.inputField}
                   />

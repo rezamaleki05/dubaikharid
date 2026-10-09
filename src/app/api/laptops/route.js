@@ -22,7 +22,7 @@ export async function GET(request) {
       prisma.laptop.count({ where }),
       prisma.laptop.findMany({
         where: { ...where, reservedOrderId: null },
-        select: { brand: true, model: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
+        select: { brand: true, model: true, series: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
       }),
     ]);
     const groupCounts = countAvailableLaptopGroups(availableUnits);

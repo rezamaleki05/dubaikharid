@@ -23,9 +23,9 @@ export default function LaptopModelUnits({ units }) {
         const passedTests = Object.entries(unit.hardwareTests || {}).filter(([, passed]) => passed).map(([key]) => TEST_LABELS[key]).filter(Boolean);
         return (
           <article key={unit.id} className={styles.unitCard}>
-            <div className={styles.unitMedia}><span>موجود و آماده ارسال</span><img className={styles.unitImage} src={unit.image} alt={`${unit.brand} ${unit.model} - گزینه ${index + 1}`} /></div>
+            <div className={styles.unitMedia}><span>موجود و آماده ارسال</span><img className={styles.unitImage} src={unit.image} alt={`${unit.name} - گزینه ${index + 1}`} /></div>
             <div className={styles.unitBody}>
-              <div className={styles.unitTitle}><div><small>دستگاه {Number(index + 1).toLocaleString('fa-IR')}</small><h3>{unit.brand} {unit.model}</h3></div><span>{laptopConditionLabel(unit.condition)}</span></div>
+              <div className={styles.unitTitle}><div><small>دستگاه {Number(index + 1).toLocaleString('fa-IR')}</small><h3>{unit.name}</h3></div><span>{laptopConditionLabel(unit.condition)}</span></div>
               <dl className={styles.specList}>{specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
               {passedTests.length ? <div className={styles.tests}><strong>تست‌شده:</strong> {passedTests.join('، ')}</div> : null}
               <div className={styles.unitFooter}>

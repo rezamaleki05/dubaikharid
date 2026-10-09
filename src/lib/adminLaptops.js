@@ -1,4 +1,5 @@
 import 'server-only';
+import { laptopDisplayName, suggestedLaptopNames } from './laptopIdentity.js';
 
 import { Prisma } from '@/generated/prisma/client';
 import { normalizeJalaliDate, validateJalaliDate } from '@/lib/jalaliDate';
@@ -29,10 +30,10 @@ export async function assertLaptopCompatibleBrand(client, brandName) {
   return brand;
 }
 
-export async function assertLaptopCatalogSelection(client, { brandName, modelName }) {
+export async function assertLaptopCatalogSelection(client, { brandName, modelName, series = null }) {
   const brand = await assertLaptopCompatibleBrand(client, brandName);
   const model = await client.laptopModel.findFirst({
-    where: { brandId: brand.id, name: { equals: String(modelName || '').trim(), mode: 'insensitive' }, active: true },
+    where: { brandId: brand.id, exactModel: { equals: String(modelName || '').trim(), mode: 'insensitive' }, series: series ? { equals: series, mode: 'insensitive' } : null, active: true },
     select: { id: true, name: true },
   });
   if (!model) throw new LaptopDomainError('مدل انتخاب‌شده برای این برند ثبت نشده است.', 409, 'LAPTOP_MODEL_REQUIRED');
@@ -143,12 +144,15 @@ export function validateLaptopPayload(body, { partial = false } = {}) {
 
     assignText('brand', 'brand', 'برند', 120, true);
     assignText('model', 'model', 'مدل', 180, true);
+    assignText('series', 'series', 'سری / خانواده', 120);
+    assignText('displayNameFa', 'displayNameFa', 'نام فارسی لپ‌تاپ', 320);
+    assignText('displayNameEn', 'displayNameEn', 'نام انگلیسی لپ‌تاپ', 320);
     assignText('serial', 'serialNumber', 'شماره سریال', 160);
     assignText('internalSku', 'internalSku', 'کد داخلی', 160);
     assignText('cpu', 'cpu', 'پردازنده', 180, true);
     assignText('ram', 'ram', 'رم', 64, true);
     assignText('gpu', 'gpu', 'کارت گرافیک', 180);
-    assignText('screenSize', 'screen', 'اندازه نمایشگر', 64);
+    assignText('screenSize', 'screen', 'اندازه نمایشگر', 64, !partial);
     assignText('color', 'color', 'رنگ', 80);
     assignText('physicalStatus', 'condition', 'وضعیت ظاهری', 32);
     assignText('customerNotes', 'description', 'توضیحات مشتری', 4000);
@@ -166,7 +170,7 @@ export function validateLaptopPayload(body, { partial = false } = {}) {
     if (data.condition && !PHYSICAL_STATUSES.has(data.condition)) throw new LaptopDomainError('وضعیت ظاهری معتبر نیست.');
     if (hasOwn(body, 'storageSize') || hasOwn(body, 'storageType')) {
       data.storage = splitStorage(body.storageSize, body.storageType);
-      if (!partial && !data.storage) throw new LaptopDomainError('حافظه اصلی الزامی است.');
+      if (!data.storage || !String(body.storageSize || '').trim() || !String(body.storageType || '').trim()) throw new LaptopDomainError('حافظه اصلی الزامی است.');
     } else if (!partial) throw new LaptopDomainError('حافظه اصلی الزامی است.');
     if (hasOwn(body, 'storage2Size') || hasOwn(body, 'storage2Type')) {
       data.secondaryStorage = body.storage2Type === 'none' ? null : splitStorage(body.storage2Size, body.storage2Type);
@@ -175,7 +179,10 @@ export function validateLaptopPayload(body, { partial = false } = {}) {
     if (hasOwn(body, 'manufactureYear')) data.manufactureYear = integerValue(body.manufactureYear, 'سال ساخت', { minimum: 1980, maximum: new Date().getUTCFullYear() + 1 });
     if (hasOwn(body, 'batteryHealth')) data.batteryHealth = integerValue(body.batteryHealth, 'سلامت باتری', { minimum: 0, maximum: 100 });
     if (hasOwn(body, 'warrantyDays')) data.warrantyDays = integerValue(body.warrantyDays, 'مدت گارانتی', { minimum: 0, maximum: 3650 });
-    if (hasOwn(body, 'weight')) data.weightKg = decimalValue(body.weight, 'وزن', { maximum: '99.99' });
+    if (hasOwn(body, 'weight')) {
+      data.weightKg = decimalValue(body.weight, 'وزن', { maximum: '99.99' });
+      if (data.weightKg !== null && Number(body.weight) <= 0) throw new LaptopDomainError('وزن باید بیشتر از صفر باشد.');
+    }
     if (hasOwn(body, 'buyingPrice')) data.purchasePriceAed = decimalValue(body.buyingPrice, 'قیمت خرید', { required: !partial, maximum: '9999999999.99' });
     else if (!partial) throw new LaptopDomainError('قیمت خرید الزامی است.');
     if (hasOwn(body, 'extraCosts')) data.extraCostsAed = decimalValue(body.extraCosts, 'هزینه‌های جانبی', { maximum: '9999999999.99' });
@@ -191,11 +198,12 @@ export function validateLaptopPayload(body, { partial = false } = {}) {
     else if (hasOwn(body, 'status')) data.status = statusFromClient(body.status);
     else if (!partial) data.status = 'AVAILABLE';
 
-    const brand = data.brand ?? textValue(body.brand, 'برند', 120);
-    const model = data.model ?? textValue(body.model, 'مدل', 180);
-    if (!partial || hasOwn(body, 'brand') || hasOwn(body, 'model')) {
-      if (brand && model) data.name = `لپ‌تاپ استوک ${brand} مدل ${model}`;
-    }
+    if (!partial) {
+      const suggested = suggestedLaptopNames(data);
+      data.displayNameFa ||= suggested.displayNameFa;
+      data.displayNameEn ||= suggested.displayNameEn;
+      data.name = data.displayNameFa;
+    } else if (data.displayNameFa) data.name = data.displayNameFa;
     if (partial && Object.keys(data).length === 0) throw new LaptopDomainError('هیچ فیلد معتبری برای به‌روزرسانی ارسال نشده است.');
     return { data };
   } catch (error) {
@@ -240,14 +248,15 @@ export function serializeLaptop(laptop) {
   const hardwareTests = safeObject(laptop.hardwareTests, Object.fromEntries(HARDWARE_TEST_KEYS.map(key => [key, false])));
   const accessories = safeObject(laptop.accessories, Object.fromEntries(ACCESSORY_KEYS.map(key => [key, false])));
   const form = {
-    brand: laptop.brand || '', model: laptop.model || '', serial: laptop.serialNumber || '',
+    brand: laptop.brand || '', model: laptop.model || '', series: laptop.series || '',
+    displayNameFa: laptop.displayNameFa || '', displayNameEn: laptop.displayNameEn || '', serial: laptop.serialNumber || '',
     cpu: laptop.cpu || '', ram: String(laptop.ram || '').replace(/\s*GB$/i, ''),
     storageSize: primaryStorage.size, storageType: primaryStorage.type,
-    storage2Size: secondaryStorage.size || '0', storage2Type: secondaryStorage.type || 'none',
+    storage2Size: secondaryStorage.size || '', storage2Type: secondaryStorage.type || 'none',
     gpu: laptop.gpu || '', screenSize: String(laptop.screen || '').replace(/[^\d.]/g, ''),
     manufactureYear: laptop.manufactureYear == null ? '' : String(laptop.manufactureYear), color: laptop.color || '',
     batteryHealth: laptop.batteryHealth == null ? '' : String(laptop.batteryHealth),
-    weight: laptop.weightKg === null ? '' : decimalString(laptop.weightKg, 2).replace(/\.?0+$/, ''),
+    weight: laptop.weightKg == null ? '' : decimalString(laptop.weightKg, 2).replace(/\.?0+$/, ''),
     buyingPrice, extraCosts, sellingPrice, internalNotes: laptop.internalNotes || '', customerNotes: laptop.description || '',
     hardwareTests, accessories, physicalStatus: PHYSICAL_STATUSES.has(laptop.condition) ? laptop.condition : 'good',
     stockStatus: statusToClient(laptop.status), dateEntered: laptop.dateEntered || '', internalSku: laptop.internalSku || '',
@@ -256,7 +265,7 @@ export function serializeLaptop(laptop) {
   };
   const priceAed = new Prisma.Decimal(buyingPrice).plus(extraCosts).toFixed(2);
   return {
-    id: laptop.id, name: laptop.name, brand: laptop.brand || '', model: laptop.model || '', serial: laptop.serialNumber,
+    id: laptop.id, name: laptopDisplayName(laptop), series: laptop.series || null, displayNameFa: laptop.displayNameFa || null, displayNameEn: laptop.displayNameEn || null, brand: laptop.brand || '', model: laptop.model || '', serial: laptop.serialNumber,
     cpu: laptop.cpu, ram: laptop.ram, storage: laptop.storage, gpu: laptop.gpu, screen: laptop.screen,
     condition: laptop.condition, priceToman: sellingPrice, status: laptop.status, stockStatus: statusToClient(laptop.status),
     image, images, description: laptop.description, internalSku: laptop.internalSku, soldAt: laptop.soldAt,
@@ -276,6 +285,9 @@ export function serializePublicLaptop(laptop) {
     name: serialized.name,
     brand: serialized.brand,
     model: serialized.model,
+    series: serialized.series,
+    displayNameFa: serialized.displayNameFa,
+    displayNameEn: serialized.displayNameEn,
     cpu: serialized.cpu,
     ram: serialized.ram,
     storage: serialized.storage,

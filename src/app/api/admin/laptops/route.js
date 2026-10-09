@@ -4,6 +4,7 @@ import { logAdminActivity } from '@/lib/adminActivity';
 import {
   assertLaptopCatalogSelection,
   LAPTOP_STATUS_SET,
+  LaptopDomainError,
   serializeLaptop,
   validateLaptopPayload,
 } from '@/lib/adminLaptops';
@@ -47,6 +48,9 @@ export async function GET(request) {
       { name: { contains: search, mode: 'insensitive' } },
       { brand: { contains: search, mode: 'insensitive' } },
       { model: { contains: search, mode: 'insensitive' } },
+      { series: { contains: search, mode: 'insensitive' } },
+      { displayNameFa: { contains: search, mode: 'insensitive' } },
+      { displayNameEn: { contains: search, mode: 'insensitive' } },
       { serialNumber: { contains: search, mode: 'insensitive' } },
       { internalSku: { contains: search, mode: 'insensitive' } },
       { cpu: { contains: search, mode: 'insensitive' } },
@@ -77,7 +81,7 @@ export async function GET(request) {
       `,
       prisma.laptop.findMany({
         where: { status: 'AVAILABLE', archivedAt: null, reservedOrderId: null },
-        select: { brand: true, model: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
+        select: { brand: true, model: true, series: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
       }),
     ]);
     const groupCounts = countAvailableLaptopGroups(availableUnits);
@@ -132,7 +136,7 @@ export async function POST(request) {
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
 
   try {
-    await assertLaptopCatalogSelection(prisma, { brandName: validated.data.brand, modelName: validated.data.model });
+    await assertLaptopCatalogSelection(prisma, { brandName: validated.data.brand, modelName: validated.data.model, series: validated.data.series });
     const laptop = await prisma.laptop.create({
       data: {
         ...validated.data,
@@ -145,6 +149,7 @@ export async function POST(request) {
     });
     return NextResponse.json(serializeLaptop(laptop), { status: 201 });
   } catch (error) {
+    if (error instanceof LaptopDomainError) return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
     if (error?.code === 'P2002') return NextResponse.json({ error: 'شماره سریال یا کد داخلی قبلاً ثبت شده است.' }, { status: 409 });
     console.error('Error creating admin laptop:', error);
     return NextResponse.json({ error: 'ثبت لپ‌تاپ با خطا مواجه شد.' }, { status: 500 });

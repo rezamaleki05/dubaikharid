@@ -5206,3 +5206,23 @@
 :global(html[data-theme='light']) .dragDropArea,
 :global(html[data-theme='light']) .addImageCard { background: #faf8f5; border-color: rgba(43,35,28,.17); }
 :global(html[data-theme='light']) .imageThumbCard { background: #eee9e2; }
+
+/* Laptop identity form uses the same semantic surfaces in both Admin themes. */
+:global(html[data-theme='light']) .laptopsFormView .pageTitleSection,
+:global(html[data-theme='light']) .laptopsFormView .unifiedStorageGroup {
+  background: var(--admin-input-bg);
+  color: var(--admin-white);
+}
+:global(html[data-theme='light']) .laptopsFormView .cancelFormBtn {
+  color: var(--admin-white);
+  border-color: var(--admin-border);
+}
+@media (max-width: 768px) {
+  .laptopsFormView .titleArea { padding-inline-start: 48px; min-width: 0; }
+  .laptopsFormView .titleArea h1 { overflow-wrap: anywhere; }
+}
+.laptopsFormView .formFieldsGrid4 > * { min-width: 0; }
+@media (max-width: 560px) {
+  .laptopsFormView .formFieldsGrid4 { grid-template-columns: minmax(0, 1fr) !important; }
+  .laptopsFormView .formFieldsGrid4 > * { grid-column: auto !important; }
+}

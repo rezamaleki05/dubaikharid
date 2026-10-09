@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
+import { laptopIdentityName } from '@/lib/laptopIdentity';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request) {
@@ -10,11 +11,12 @@ export async function GET(request) {
     where: { supportsLaptop: true },
     select: {
       id: true, name: true, faName: true,
-      laptopModels: { where: { active: true }, select: { id: true, name: true }, orderBy: { name: 'asc' } },
+      laptopModels: { where: { active: true }, select: { id: true, name: true, series: true, exactModel: true }, orderBy: { name: 'asc' } },
     },
     orderBy: { name: 'asc' },
   });
-  return NextResponse.json({ data: brands });
+  const specs = await prisma.laptop.findMany({ select: { cpu: true, gpu: true }, distinct: ['cpu', 'gpu'] });
+  return NextResponse.json({ data: brands, cpuOptions: [...new Set(specs.map(row => row.cpu).filter(Boolean))], gpuOptions: [...new Set(specs.map(row => row.gpu).filter(Boolean))] });
 }
 
 export async function POST(request) {
@@ -24,12 +26,18 @@ export async function POST(request) {
   try { body = await request.json(); } catch { body = null; }
   const brandId = typeof body?.brandId === 'string' ? body.brandId.trim() : '';
   const name = typeof body?.name === 'string' ? body.name.trim() : '';
+  const series = typeof body?.series === 'string' ? body.series.trim() || null : null;
+  if ((body?.series != null && typeof body.series !== 'string') || (series && series.length > 120)) return NextResponse.json({ error: 'سری معتبر نیست.' }, { status: 400 });
   if (!brandId || !name || brandId.length > 160 || name.length > 180) return NextResponse.json({ error: 'برند و مدل معتبر الزامی است.' }, { status: 400 });
   try {
     const brand = await prisma.brand.findFirst({ where: { id: brandId, supportsLaptop: true }, select: { id: true } });
     if (!brand) return NextResponse.json({ error: 'برند لپ‌تاپ پیدا نشد.' }, { status: 404 });
-    const existing = await prisma.laptopModel.findFirst({ where: { brandId, name: { equals: name, mode: 'insensitive' } } });
-    const model = existing || await prisma.laptopModel.create({ data: { brandId, name } });
+    const catalogName = laptopIdentityName({ series, model: name });
+    const existing = await prisma.laptopModel.findFirst({ where: { brandId, name: { equals: catalogName, mode: 'insensitive' } } });
+    if (existing && (!existing.active || existing.exactModel?.toLowerCase() !== name.toLowerCase() || (existing.series || '').toLowerCase() !== (series || '').toLowerCase())) {
+      return NextResponse.json({ error: 'این عنوان در کاتالوگ وجود دارد؛ یک مدل دقیق و متمایز وارد کنید.' }, { status: 409 });
+    }
+    const model = existing || await prisma.laptopModel.create({ data: { brandId, name: catalogName, series, exactModel: name } });
     return NextResponse.json({ data: model, alreadyExists: Boolean(existing) }, { status: existing ? 200 : 201 });
   } catch (error) {
     if (error?.code === 'P2002') return NextResponse.json({ error: 'این مدل قبلاً ثبت شده است.' }, { status: 409 });

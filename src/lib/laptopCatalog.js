@@ -1,6 +1,7 @@
 export function laptopSpecGroupKey(laptop) {
   return [
     laptop.brand,
+    laptop.series,
     laptop.model,
     laptop.cpu,
     laptop.ram,

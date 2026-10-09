@@ -10,11 +10,10 @@ export default function StockLaptopCatalog({ groups }) {
         {groups.map(group => (
           <Link key={group.identity} href={`/laptops/${group.slug}`} className={styles.productCard}>
             <div className={styles.imageWrap}>
-              <img src={group.image} alt={`لپ تاپ استوک ${group.brand} ${group.model}`} className={styles.productImg} />
+              <img src={group.image} alt={group.name} className={styles.productImg} />
               <span className={styles.storeBadge}>انبار ایران</span>
             </div>
             <div className={styles.cardBody}>
-              <span className={styles.brandName}>{group.brand}</span>
               <h2 className={styles.productName}>{group.name}</h2>
               <p className={styles.productSpec}>
                 {group.availableCount.toLocaleString('fa-IR')} دستگاه موجود با امکان مقایسه مشخصات

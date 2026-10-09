@@ -12,6 +12,7 @@ import {
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import { ownedLaptopBlobPathnames } from '@/lib/laptopImageOwnership';
 import { deleteUnreferencedLaptopBlobs } from '@/lib/laptopImageStorage';
+import { buildLaptopModelGroups, laptopModelIdentity } from '@/lib/laptopSeoDomain';
 import { prisma } from '@/lib/prisma';
 
 function domainError(error, fallback) {
@@ -55,10 +56,13 @@ export async function PATCH(request, { params }) {
       const nextStatus = validated.data.status;
       const brandChanged = validated.data.brand && validated.data.brand.trim().toLowerCase() !== String(previous.brand || '').trim().toLowerCase();
       const modelChanged = validated.data.model && validated.data.model.trim().toLowerCase() !== String(previous.model || '').trim().toLowerCase();
-      if (brandChanged || modelChanged) {
+      const next = { ...previous, ...validated.data };
+      const seriesChanged = (next.series || '') !== (previous.series || '');
+      if (brandChanged || modelChanged || seriesChanged) {
         await assertLaptopCatalogSelection(tx, {
           brandName: validated.data.brand || previous.brand,
           modelName: validated.data.model || previous.model,
+          series: next.series,
         });
       }
       assertLaptopTransition(previous.status, nextStatus);
@@ -66,6 +70,10 @@ export async function PATCH(request, { params }) {
         ...validated.data,
         ...(nextStatus === 'SOLD' && previous.status !== 'SOLD' ? { soldAt: new Date() } : {}),
       };
+      if (laptopModelIdentity(previous.brand, previous.model, previous.series) !== laptopModelIdentity(next.brand, next.model, next.series)) {
+        const oldGroup = buildLaptopModelGroups(await tx.laptop.findMany({ where: { status: 'AVAILABLE', archivedAt: null, reservedOrderId: null } })).find(group => group.units.some(unit => unit.id === id));
+        if (oldGroup) data.previousModelSlugs = [...new Set([...(Array.isArray(previous.previousModelSlugs) ? previous.previousModelSlugs : []), oldGroup.slug])];
+      }
       if (nextStatus === 'SOLD') {
         const updated = await tx.laptop.updateMany({ where: { id, status: { not: 'SOLD' } }, data });
         if (updated.count !== 1) throw new LaptopDomainError('این لپ‌تاپ قبلاً فروخته شده است.', 409, 'LAPTOP_ALREADY_SOLD');

@@ -2,13 +2,17 @@ import 'server-only';
 
 import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
-import { buildLaptopModelGroups, searchLaptopModelGroups } from '@/lib/laptopSeoDomain';
+import { buildLaptopModelGroups, searchLaptopModelGroups, resolveLaptopModelSlug } from '@/lib/laptopSeoDomain';
 
 const PUBLIC_LAPTOP_MODEL_SELECT = Object.freeze({
   id: true,
   name: true,
   brand: true,
   model: true,
+  series: true,
+  displayNameFa: true,
+  displayNameEn: true,
+  previousModelSlugs: true,
   cpu: true,
   ram: true,
   storage: true,
@@ -51,7 +55,7 @@ export const getPublicLaptopModelGroups = cache(async () => {
 export const getPublicLaptopModelBySlug = cache(async slug => {
   if (typeof slug !== 'string' || !slug || slug.length > 180) return null;
   const groups = await getPublicLaptopModelGroups();
-  return groups.find(group => group.slug === slug) || null;
+  return resolveLaptopModelSlug(groups, slug);
 });
 
 export const getPublicLaptopModelForUnit = cache(async id => {

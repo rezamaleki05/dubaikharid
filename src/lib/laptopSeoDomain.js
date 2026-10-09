@@ -1,3 +1,4 @@
+import { laptopDisplayName, laptopIdentityName } from './laptopIdentity.js';
 import { meaningfulSearchTerms, normalizeSearchText, searchTokens } from './searchNormalization.js';
 
 const LAPTOP_CATALOG_TERMS = new Set(['لپ', 'تاپ', 'لپتاپ', 'استوک']);
@@ -24,15 +25,15 @@ function slugPart(value) {
     .slice(0, 120);
 }
 
-export function laptopModelIdentity(brand, model) {
+export function laptopModelIdentity(brand, model, series) {
   const normalizedBrand = normalizedIdentityPart(brand);
   const normalizedModel = normalizedIdentityPart(model);
-  return normalizedBrand && normalizedModel ? `${normalizedBrand}|${normalizedModel}` : '';
+  return normalizedBrand && normalizedModel ? [normalizedBrand, ...(normalizedIdentityPart(series) ? [normalizedIdentityPart(series)] : []), normalizedModel].join('|') : '';
 }
 
-export function laptopModelBaseSlug(brand, model) {
-  const identity = laptopModelIdentity(brand, model);
-  const slug = slugPart(`${brand || ''} ${model || ''}`);
+export function laptopModelBaseSlug(brand, model, series) {
+  const identity = laptopModelIdentity(brand, model, series);
+  const slug = slugPart(laptopIdentityName({ brand, series, model }));
   return slug || (identity ? `laptop-${stableHash(identity)}` : 'laptop-model');
 }
 
@@ -41,7 +42,7 @@ export function isSellableLaptopUnit(laptop) {
     && !laptop.archivedAt
     && !laptop.reservedOrderId
     && Number(laptop.priceToman) > 0
-    && Boolean(laptopModelIdentity(laptop.brand, laptop.model));
+    && Boolean(laptopModelIdentity(laptop.brand, laptop.model, laptop.series));
 }
 
 function publicImageList(laptop) {
@@ -60,7 +61,12 @@ function serializeUnit(laptop) {
     id: laptop.id,
     brand: String(laptop.brand || '').trim(),
     model: String(laptop.model || '').trim(),
-    name: String(laptop.name || '').trim() || `${laptop.brand} ${laptop.model}`,
+    series: String(laptop.series || '').trim(),
+    name: laptopDisplayName(laptop),
+    nameEn: laptopDisplayName(laptop, 'en'),
+    displayNameFa: laptop.displayNameFa || null,
+    displayNameEn: laptop.displayNameEn || null,
+    previousModelSlugs: Array.isArray(laptop.previousModelSlugs) ? laptop.previousModelSlugs : [],
     cpu: laptop.cpu || null,
     ram: laptop.ram || null,
     storage: laptop.storage || null,
@@ -91,7 +97,7 @@ export function buildLaptopModelGroups(laptops) {
   const grouped = new Map();
   for (const laptop of laptops || []) {
     if (!isSellableLaptopUnit(laptop)) continue;
-    const identity = laptopModelIdentity(laptop.brand, laptop.model);
+    const identity = laptopModelIdentity(laptop.brand, laptop.model, laptop.series);
     const units = grouped.get(identity) || [];
     units.push(serializeUnit(laptop));
     grouped.set(identity, units);
@@ -105,10 +111,13 @@ export function buildLaptopModelGroups(laptops) {
     const highPrice = prices.reduce((maximum, price) => price > maximum ? price : maximum);
     return {
       identity,
-      baseSlug: laptopModelBaseSlug(representative.brand, representative.model),
+      baseSlug: laptopModelBaseSlug(representative.brand, representative.model, representative.series),
       brand: representative.brand,
       model: representative.model,
-      name: `${representative.brand} ${representative.model} استوک`,
+      series: representative.series,
+      name: laptopDisplayName(units.find(unit => unit.displayNameFa) || units.find(unit => unit.displayNameEn) || representative),
+      nameEn: laptopDisplayName(units.find(unit => unit.displayNameEn) || representative, 'en'),
+      previousModelSlugs: [...new Set(units.flatMap(unit => unit.previousModelSlugs))],
       image: representative.image,
       images: representative.images,
       description: representative.description,
@@ -144,6 +153,8 @@ export function searchLaptopModelGroups(groups, query, limit = 24) {
     const haystack = normalizeSearchText([
       group.brand,
       group.model,
+      group.series,
+      group.nameEn,
       group.name,
       ...group.units.flatMap(unit => [unit.cpu, unit.ram, unit.storage, unit.secondaryStorage, unit.gpu, unit.screen]),
     ].filter(Boolean).join(' ')).toLocaleLowerCase('fa-IR');
@@ -158,4 +169,12 @@ export function laptopConditionLabel(value) {
     good: 'خوب',
     fair: 'متوسط',
   }[value] || value || null;
+}
+
+// Canonical groups win. Redirect only when a historic slug has exactly one current target.
+export function resolveLaptopModelSlug(groups, slug) {
+  const direct = groups.find(group => group.slug === slug);
+  if (direct) return direct;
+  const targets = groups.filter(group => group.previousModelSlugs?.includes(slug));
+  return targets.length === 1 ? targets[0] : null;
 }
