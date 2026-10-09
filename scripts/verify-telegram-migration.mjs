@@ -20,7 +20,8 @@ const admin = new pg.Client({ connectionString: adminUrl.href }); await admin.co
 await admin.query(`CREATE DATABASE "${url.pathname.slice(1)}"`); await admin.end();
 const sql = new pg.Client({ connectionString: url.href }); await sql.connect();
 const migrations = (await readdir('prisma/migrations')).filter(name => /^\d/.test(name)).sort();
-const latest = migrations.pop(); assert.equal(latest, '20261005000100_telegram_publication_foundation');
+const release = migrations.splice(26);
+assert.deepEqual(release, ['20261005000100_telegram_publication_foundation', '20261009000100_laptop_model_identity']);
 const temporary = await mkdtemp(join(tmpdir(), 'telegram-forward-'));
 const migrationPath = join(temporary, 'migrations'); await mkdir(migrationPath);
 await copyFile('prisma/migrations/migration_lock.toml', join(migrationPath, 'migration_lock.toml'));
@@ -55,10 +56,14 @@ async function unrelatedSnapshot() {
   return values;
 }
 const unrelatedBefore = await unrelatedSnapshot();
-await copyMigration(latest); deploy();
-assert.equal((await sql.query('SELECT count(*) FROM "_prisma_migrations" WHERE finished_at IS NOT NULL')).rows[0].count, '27');
+for (const name of release) await copyMigration(name); deploy();
+assert.equal((await sql.query('SELECT count(*) FROM "_prisma_migrations" WHERE finished_at IS NOT NULL')).rows[0].count, '28');
 assert.deepEqual((await sql.query('SELECT to_jsonb(p) - \'telegramFirstPublishedAt\' AS data FROM "Product" p ORDER BY id')).rows, productsBefore);
-assert.deepEqual(await unrelatedSnapshot(), unrelatedBefore);
+const unrelatedAfter = await unrelatedSnapshot();
+for (const [table, fields] of Object.entries({ Laptop: ['series', 'displayNameFa', 'displayNameEn', 'previousModelSlugs'], LaptopModel: ['series', 'exactModel'] })) {
+  for (const {data} of unrelatedAfter[table]) for (const field of fields) { assert.equal(data[field], null); delete data[field]; }
+}
+assert.deepEqual(unrelatedAfter, unrelatedBefore);
 assert.deepEqual((await sql.query('SELECT * FROM "Setting" ORDER BY key')).rows, before);
 assert.equal((await sql.query('SELECT count(*) FROM "TelegramPublication"')).rows[0].count, '0');
 assert.ok((await sql.query('SELECT "telegramFirstPublishedAt" FROM "Product" WHERE id=$1', ['historic-active'])).rows[0].telegramFirstPublishedAt);
@@ -105,4 +110,4 @@ assert.equal((await db.product.findUnique({ where: { id: 'storage-failure' } }))
 await sql.query('ALTER TABLE "TelegramPublication_offline" RENAME TO "TelegramPublication"');
 assert.equal((await sql.query("SELECT count(*) FROM pg_trigger WHERE tgname LIKE 'telegram_%' AND NOT tgisinternal")).rows[0].count, '2');
 await db.$disconnect(); await sql.end();
-console.log('PASS: normal migrate deploy 26→27; existing Product business fields and every unrelated table unchanged; existing-schema forward migration, historical suppression, first transition, concurrent activation/claim, republish, manual/retry, disabled modes, transaction rollback, outbox storage failure isolation; two triggers present.');
+console.log('PASS: normal migrate deploy 26→28; existing Product business fields and every unrelated table unchanged; existing-schema forward migration, historical suppression, first transition, concurrent activation/claim, republish, manual/retry, disabled modes, transaction rollback, outbox storage failure isolation; two triggers present.');

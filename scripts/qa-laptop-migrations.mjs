@@ -17,7 +17,9 @@ assert.match(parsed.pathname, /^\/laptop_[a-z0-9_]+$/);
 const migration = '20261009000100_laptop_model_identity';
 const temp = mkdtempSync(join(tmpdir(), 'laptop-migrations-'));
 const all = readdirSync(join(root, 'prisma/migrations')).filter(name => /^\d/.test(name)).sort();
-assert.equal(all.indexOf(migration), 26);
+const release = ['20261005000100_telegram_publication_foundation', migration];
+assert.equal(all.length, 28);
+assert.deepEqual(all.slice(26), release);
 const env = url => ({ ...process.env, DATABASE_URL: url, DIRECT_URL: url });
 function prisma(args, url) {
   const result = spawnSync(process.execPath, [join(root, 'node_modules/prisma/build/index.js'), ...args], { cwd: root, env: env(url), encoding: 'utf8' });
@@ -44,7 +46,7 @@ try {
     } else {
       const chain = join(temp, 'migrations'); mkdirSync(chain);
       cpSync(join(root, 'prisma/migrations/migration_lock.toml'), join(chain, 'migration_lock.toml'));
-      for (const name of all.filter(name => name < migration)) cpSync(join(root, 'prisma/migrations', name), join(chain, name), { recursive: true });
+      for (const name of all.slice(0, 26)) cpSync(join(root, 'prisma/migrations', name), join(chain, name), { recursive: true });
       const config = join(temp, 'prisma.config.mjs');
       writeFileSync(config, `import { defineConfig } from ${JSON.stringify(pathToFileURL(require.resolve('prisma/config')).href)}; export default defineConfig({schema:${JSON.stringify(join(root,'prisma/schema.prisma'))},migrations:{path:${JSON.stringify(chain)}},datasource:{url:process.env.DIRECT_URL}});`);
       prisma(['migrate', 'deploy', '--config', config], url.toString());
@@ -55,15 +57,26 @@ try {
         await client.query(`INSERT INTO "Order" (id,"orderCode","customerNameSnapshot","customerPhoneSnapshot",status,"totalToman","updatedAt") VALUES ('qa-order','QA-ORDER','QA','000','pending',100,NOW())`);
         await client.query(`INSERT INTO "WarehouseItem" (id,name,price,stock,"updatedAt") VALUES ('qa-warehouse','QA',100,2,NOW())`);
         const before = await snapshot(client);
-        cpSync(join(root, 'prisma/migrations', migration), join(chain, migration), { recursive: true });
+        for (const name of release) cpSync(join(root, 'prisma/migrations', name), join(chain, name), { recursive: true });
         prisma(['migrate', 'deploy', '--config', config], url.toString());
         const after = await snapshot(client);
+        assert.deepEqual(after.TelegramPublication, []); delete after.TelegramPublication;
+        for (const row of after.Product) {
+          assert.equal(row.telegramFirstPublishedAt, row.status === 'active' ? row.createdAt : null);
+          delete row.telegramFirstPublishedAt;
+        }
         for (const row of after.Laptop) for (const field of ['series','displayNameFa','displayNameEn','previousModelSlugs']) { assert.equal(row[field], null); delete row[field]; }
         for (const row of after.LaptopModel) for (const field of ['series','exactModel']) { assert.equal(row[field], null); delete row[field]; }
         assert.deepEqual(after, before);
-        console.log('Forward snapshot: every existing table and row unchanged; all additions NULL.');
+        console.log('Forward snapshot: all existing business fields unchanged; Laptop additions NULL; historical Products not enqueued.');
       } finally { await client.end(); }
     }
+    const audit = await connect(url.toString());
+    try {
+      assert.equal(Number((await audit.query('SELECT count(*) FROM "_prisma_migrations" WHERE finished_at IS NOT NULL')).rows[0].count), 28);
+      assert.deepEqual((await audit.query("SELECT tgname FROM pg_trigger WHERE tgname LIKE 'telegram_%' AND NOT tgisinternal ORDER BY tgname")).rows.map(row => row.tgname), ['telegram_enqueue_first_publish', 'telegram_mark_first_publish']);
+      assert.deepEqual((await audit.query("SELECT proname FROM pg_proc WHERE proname LIKE 'telegram_%' ORDER BY proname")).rows.map(row => row.proname), ['telegram_enqueue_first_publish', 'telegram_mark_first_publish']);
+    } finally { await audit.end(); }
     prisma(['migrate', 'diff', '--from-config-datasource', '--to-schema', 'prisma/schema.prisma', '--exit-code'], url.toString());
     console.log(`${suffix.toUpperCase()}: PASS / ZERO DRIFT (${dbName})`);
   }
