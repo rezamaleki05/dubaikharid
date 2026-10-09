@@ -5,7 +5,7 @@ import { absoluteUrl, breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
 
 function descriptionFor(item) {
   if (item.kind === 'laptop') {
-    return [item.brand, item.model, item.cpu, item.ram, item.storage].filter(Boolean).join('، ');
+    return [item.brand, item.series, item.model, item.cpu, item.ram, item.storage].filter(Boolean).join('، ');
   }
   if (item.description?.trim()) return item.description.trim().replace(/\s+/g, ' ').slice(0, 220);
   const brand = item.brand?.faName || item.brand?.name;
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   const item = await getSeoProduct(id);
   if (!item) return { title: 'محصول پیدا نشد', robots: { index: false, follow: true } };
   const title = item.kind === 'laptop'
-    ? `${[item.brand, item.model].filter(Boolean).join(' ')} استوک | خرید لپ‌تاپ استوک`
+    ? `${item.name} | خرید لپ‌تاپ استوک`
     : item.name;
   return publicPageMetadata({
     title,

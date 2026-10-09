@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/seo/JsonLd';
@@ -10,7 +10,7 @@ import styles from './LaptopModel.module.css';
 function descriptionFor(group) {
   const availableSpecs = [...new Set(group.units.flatMap(unit => [unit.cpu, unit.ram, unit.storage, unit.gpu]).filter(Boolean))];
   const specSummary = availableSpecs.length ? ` مشخصات موجود شامل ${availableSpecs.slice(0, 4).join('، ')} است.` : '';
-  return `خرید لپ تاپ استوک ${group.brand} ${group.model} با مشخصات پردازنده، رم، حافظه، کارت گرافیک، وضعیت دستگاه و قیمت به‌روز.${specSummary}`;
+  return `خرید ${group.name} با مشخصات پردازنده، رم، حافظه، کارت گرافیک، وضعیت دستگاه و قیمت به‌روز.${specSummary}`;
 }
 
 export async function generateMetadata({ params }) {
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   const group = await getPublicLaptopModelBySlug(slug);
   if (!group) return { title: 'مدل لپ تاپ پیدا نشد', robots: { index: false, follow: true } };
   return publicPageMetadata({
-    title: `${group.brand} ${group.model} استوک | قیمت و خرید`,
+    title: `${group.name} | قیمت و خرید`,
     description: descriptionFor(group),
     path: `/laptops/${group.slug}`,
     image: group.image,
@@ -31,6 +31,8 @@ export default async function LaptopModelPage({ params }) {
   const group = await getPublicLaptopModelBySlug(slug);
   if (!group) notFound();
 
+  if (group.slug !== slug) permanentRedirect(`/laptops/${group.slug}`);
+
   const canonicalPath = `/laptops/${group.slug}`;
   const lowPriceIrr = (BigInt(group.lowPriceToman) * 10n).toString();
   const highPriceIrr = (BigInt(group.highPriceToman) * 10n).toString();
@@ -39,6 +41,7 @@ export default async function LaptopModelPage({ params }) {
     '@type': 'Product',
     '@id': `${absoluteUrl(canonicalPath)}#product`,
     name: group.name,
+    alternateName: group.nameEn,
     url: absoluteUrl(canonicalPath),
     description: descriptionFor(group),
     image: group.images.length ? group.images.map(absoluteUrl) : [absoluteUrl(group.image)],
@@ -68,7 +71,7 @@ export default async function LaptopModelPage({ params }) {
       <main className={styles.main} dir="rtl">
         <section className={styles.hero}>
           <div className={styles.imageStage}>
-            <img src={group.image} alt={`لپ تاپ استوک ${group.brand} ${group.model}`} />
+            <img src={group.image} alt={group.name} />
           </div>
           <div className={styles.summary}>
             <span className={styles.eyebrow}>{group.brand}</span>

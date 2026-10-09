@@ -43,7 +43,8 @@ test('reconciliation runs after every existing release migration', () => {
     .filter(entry => entry.isDirectory())
     .map(entry => entry.name)
     .sort();
-  assert.equal(migrations.at(-1), migrationName);
+  assert.ok(migrations.includes(migrationName));
+  assert.deepEqual(migrations.filter(name => name > migrationName), ['20261009000100_laptop_model_identity']);
   for (const releaseMigration of [
     '20260902000100_category_attribute_foundation',
     '20260902000200_product_variant_foundation',

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { emptyLaptopForm } from '../src/lib/laptopForm.js';
 import {
   failedAedRateSettings,
   isAedUpdateDue,
@@ -26,7 +27,8 @@ test('Jalali manual input normalizes Persian digits and rejects invalid dates', 
 });
 
 test('Laptop form starts without a default brand, provides autocomplete, numeric weight, and Jalali field', () => {
-  assert.match(laptopPage, /brand: '', model: ''/);
+  assert.equal(emptyLaptopForm().brand, '');
+  assert.equal(emptyLaptopForm().model, '');
   assert.doesNotMatch(laptopPage, /brand: 'Apple'/);
   assert.match(laptopPage, /placeholder="جستجوی برند/);
   assert.match(laptopPage, /type="number"[\s\S]*?max="99\.99"[\s\S]*?step="0\.01"[\s\S]*?value=\{laptopForm\.weight\}/);

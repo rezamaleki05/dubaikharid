@@ -343,6 +343,10 @@ model Laptop {
   name             String
   brand            String?
   model            String?
+  series           String?
+  displayNameFa    String?
+  displayNameEn    String?
+  previousModelSlugs Json?
   serialNumber     String?      @unique
   internalSku      String?      @unique
   cpu              String?
@@ -618,6 +622,9 @@ model Brand {
 }
 
 model LaptopModel {
+  // name remains the legacy-compatible full catalog label, unique within Brand.
+  series    String?
+  exactModel String?
   id        String   @id @default(cuid())
   brandId   String
   name      String

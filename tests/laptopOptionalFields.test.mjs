@@ -10,6 +10,7 @@ async function importLaptopValidation() {
   const jalaliHelpers = (await source('../src/lib/jalaliDate.js')).replaceAll('export ', '');
   const contents = (await source('../src/lib/adminLaptops.js'))
     .replace("import 'server-only';", '')
+    .replace("'./laptopIdentity.js'", JSON.stringify(new URL('../src/lib/laptopIdentity.js', import.meta.url).href))
     .replace("import { normalizeJalaliDate, validateJalaliDate } from '@/lib/jalaliDate';", jalaliHelpers)
     .replace(
       "import { Prisma } from '@/generated/prisma/client';",
@@ -43,6 +44,7 @@ const requiredLaptopFields = Object.freeze({
   model: 'Latitude 7440',
   cpu: 'Intel Core i7',
   ram: '16',
+  screenSize: '15.6',
   storageSize: '512',
   storageType: 'GB SSD',
   buyingPrice: '1200',

@@ -1,4 +1,5 @@
 import 'server-only';
+import { laptopDisplayName } from './laptopIdentity.js';
 
 import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
@@ -66,7 +67,7 @@ export const getSeoProduct = cache(async id => {
   const laptop = await prisma.laptop.findFirst({
     where: { id, status: 'AVAILABLE', archivedAt: null },
     select: {
-      id: true, name: true, brand: true, model: true, cpu: true, ram: true, storage: true,
+      id: true, name: true, brand: true, model: true, series: true, displayNameFa: true, displayNameEn: true, cpu: true, ram: true, storage: true,
       image: true, priceToman: true, status: true, updatedAt: true,
     },
   });
@@ -75,6 +76,7 @@ export const getSeoProduct = cache(async id => {
   return {
     kind: 'laptop',
     ...laptop,
+    name: laptopDisplayName(laptop),
     modelGroup,
     canonicalPath: modelGroup ? `/laptops/${modelGroup.slug}` : '/stock-laptops',
   };
