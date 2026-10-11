@@ -64,3 +64,22 @@
   .preview { grid-row: auto; max-height: 240px; }
   .galleryHeader { align-items: flex-end; }
 }
+
+/* Light Admin uses the existing semantic palette; dark declarations stay intact. */
+:global(html[data-theme='light']) .galleryHeader strong { color: var(--text-primary); }
+:global(html[data-theme='light']) .galleryHeader span { color: var(--text-secondary); }
+:global(html[data-theme='light']) .galleryHeader output { color: var(--accent-hover); }
+:global(html[data-theme='light']) .uploadZone { color: var(--text-secondary) !important; }
+:global(html[data-theme='light']) .uploadZone strong { color: var(--text-primary); }
+:global(html[data-theme='light']) .uploadZone span { color: var(--text-secondary); }
+:global(html[data-theme='light']) .urlRow input,:global(html[data-theme='light']) .altFields input { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-primary); }
+:global(html[data-theme='light']) .urlRow button,:global(html[data-theme='light']) .primaryButton,:global(html[data-theme='light']) .actions button,:global(html[data-theme='light']) .legacy button { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .urlRow button { color: var(--accent-hover); }
+:global(html[data-theme='light']) .imageCard,:global(html[data-theme='light']) .imagePrimary { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); }
+:global(html[data-theme='light']) .primaryButton { color: var(--accent-hover); }
+:global(html[data-theme='light']) .primaryButton[aria-pressed='true'] { color: var(--text-secondary); }
+:global(html[data-theme='light']) .danger { color: var(--danger) !important; }
+:global(html[data-theme='light']) .legacy strong { color: var(--text-primary); }
+:global(html[data-theme='light']) .legacy span { color: var(--text-secondary); }
+:global(html[data-theme='light']) .error { color: var(--danger); }
+:global(html[data-theme='light']) .urlRow button:disabled,:global(html[data-theme='light']) .primaryButton:disabled,:global(html[data-theme='light']) .actions button:disabled,:global(html[data-theme='light']) .legacy button:disabled { opacity: .75; }

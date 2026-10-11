@@ -206,13 +206,13 @@ function SettingsContent() {
               <div className={styles.settingsResponsivePage} style={{ direction: 'rtl' }}>
                 {/* Page Title */}
                 <div style={{ marginBottom: '24px' }}>
-                  <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h1 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-white)', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {AdminIcons.settings(22)} تنظیمات
                   </h1>
-                  <p style={{ fontSize: '12px', color: '#8b92a5', margin: 0 }}>مدیریت تنظیمات کلی سیستم دبی خرید</p>
-                  {isLoadingSettings && <div style={{ marginTop: '10px', color: '#8b92a5', fontSize: '11px' }}>در حال بارگذاری تنظیمات...</div>}
-                  {settingsError && <div style={{ marginTop: '10px', color: '#ef4444', fontSize: '11px' }}>{settingsError}</div>}
-                  {settingsMessage && <div style={{ marginTop: '10px', color: '#2ecc71', fontSize: '11px' }}>{settingsMessage}</div>}
+                  <p style={{ fontSize: '12px', color: 'var(--admin-light-muted, #8b92a5)', margin: 0 }}>مدیریت تنظیمات کلی سیستم دبی خرید</p>
+                  {isLoadingSettings && <div style={{ marginTop: '10px', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11px' }}>در حال بارگذاری تنظیمات...</div>}
+                  {settingsError && <div style={{ marginTop: '10px', color: 'var(--admin-light-danger, #ef4444)', fontSize: '11px' }}>{settingsError}</div>}
+                  {settingsMessage && <div style={{ marginTop: '10px', color: 'var(--admin-light-success, #2ecc71)', fontSize: '11px' }}>{settingsMessage}</div>}
                 </div>
 
                 <div className={styles.settingsLayoutGrid} style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '20px', alignItems: 'start' }}>
@@ -227,7 +227,7 @@ function SettingsContent() {
                           display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
                           padding: '11px 14px', borderRadius: '10px', border: 'none',
                           background: settingsTab === tab.id ? 'rgba(248,120,32,0.12)' : 'transparent',
-                          color: settingsTab === tab.id ? '#f87820' : '#8b92a5',
+                          color: settingsTab === tab.id ? 'var(--admin-light-accent, #f87820)' : 'var(--admin-light-muted, #8b92a5)',
                           fontSize: '12.5px', fontWeight: settingsTab === tab.id ? '700' : '500',
                           cursor: 'pointer', marginBottom: '2px', textAlign: 'right', transition: 'all 0.15s',
                           borderRight: settingsTab === tab.id ? '3px solid #f87820' : '3px solid transparent'
@@ -247,12 +247,12 @@ function SettingsContent() {
                     {/* ── تنظیمات عمومی ── */}
                     {settingsTab === 'general' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                           تنظیمات عمومی
                         </h2>
 
                         {saveGeneralSuccess && (
-                          <div style={{ padding: '12px 16px', background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '10px', color: '#2ecc71', fontSize: '12.5px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ padding: '12px 16px', background: 'rgba(46,204,113,0.1)', border: '1px solid rgba(46,204,113,0.25)', borderRadius: '10px', color: 'var(--admin-light-success, #2ecc71)', fontSize: '12.5px', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {AdminIcons.check(13)} تغییرات با موفقیت ذخیره شد و در سایت اصلی اعمال شد.
                           </div>
                         )}
@@ -262,7 +262,7 @@ function SettingsContent() {
 
                           {/* Logo Upload */}
                           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                            <div style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: '600', marginBottom: '14px' }}>لوگوی سایت</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', fontWeight: '600', marginBottom: '14px' }}>لوگوی سایت</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                               <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                                 <img src={logoPreview} alt="logo preview" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
@@ -270,22 +270,22 @@ function SettingsContent() {
                               <div style={{ flex: 1 }}>
                                 <label
                                   htmlFor="logoUpload"
-                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', borderRadius: '9px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.2s' }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', borderRadius: '9px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.2)', color: 'var(--admin-light-accent, #f87820)', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.2s' }}
                                   onMouseOver={e => e.currentTarget.style.background = 'rgba(248,120,32,0.15)'}
                                   onMouseOut={e => e.currentTarget.style.background = 'rgba(248,120,32,0.08)'}
                                 >
                                   {AdminIcons.upload(13)} آپلود لوگو
                                 </label>
                                 <input id="logoUpload" type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'siteLogoUrl', setLogoPreview)} />
-                                <div style={{ fontSize: '10px', color: '#8b92a5' }}>PNG، JPG یا SVG — حداکثر ۲ مگابایت</div>
-                                <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '3px' }}>ابعاد پیشنهادی: ۲۰۰×۶۰ پیکسل</div>
+                                <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>PNG، JPG یا SVG — حداکثر ۲ مگابایت</div>
+                                <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '3px' }}>ابعاد پیشنهادی: ۲۰۰×۶۰ پیکسل</div>
                               </div>
                             </div>
                           </div>
 
                           {/* Favicon Upload */}
                           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                            <div style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: '600', marginBottom: '14px' }}>فاوآیکون (Favicon)</div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', fontWeight: '600', marginBottom: '14px' }}>فاوآیکون (Favicon)</div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                               <div style={{ width: '80px', height: '80px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                                 <img src={faviconPreview} alt="favicon preview" style={{ width: '32px', height: '32px', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
@@ -293,14 +293,14 @@ function SettingsContent() {
                               <div style={{ flex: 1 }}>
                                 <label
                                   htmlFor="faviconUpload"
-                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', borderRadius: '9px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.2s' }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 16px', borderRadius: '9px', background: 'rgba(248,120,32,0.08)', border: '1px solid rgba(248,120,32,0.2)', color: 'var(--admin-light-accent, #f87820)', fontSize: '12px', fontWeight: '600', cursor: 'pointer', marginBottom: '8px', transition: 'all 0.2s' }}
                                   onMouseOver={e => e.currentTarget.style.background = 'rgba(248,120,32,0.15)'}
                                   onMouseOut={e => e.currentTarget.style.background = 'rgba(248,120,32,0.08)'}
                                 >
                                   {AdminIcons.upload(13)} آپلود فاوآیکون
                                 </label>
                                 <input id="faviconUpload" type="file" accept="image/*,.ico" style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'faviconUrl', setFaviconPreview)} />
-                                <div style={{ fontSize: '10px', color: '#8b92a5' }}>ICO، PNG — اندازه ۳۲×۳۲ یا ۶۴×۶۴</div>
+                                <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>ICO، PNG — اندازه ۳۲×۳۲ یا ۶۴×۶۴</div>
                               </div>
                             </div>
                           </div>
@@ -315,11 +315,11 @@ function SettingsContent() {
                             hint="نمایش داده می‌شود در تب مرورگر و هدر سایت"
                           />
                           <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>منطقه زمانی</label>
+                            <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>منطقه زمانی</label>
                             <select
                               value={localGeneral.timezone}
                               onChange={e => setLocalGeneral(p => ({ ...p, timezone: e.target.value }))}
-                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'var(--admin-white)', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
                               onFocus={e => e.target.style.borderColor = 'rgba(248,120,32,0.5)'}
                               onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
                             >
@@ -351,26 +351,26 @@ function SettingsContent() {
                           {/* Google OAuth Configuration Area */}
                           <div style={{ marginBottom: '20px', gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(248, 120, 32, 0.05)', border: '1px dashed rgba(248, 120, 32, 0.2)', padding: '16px', borderRadius: '12px', marginTop: '12px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <label style={{ display: 'block', fontSize: '12px', color: '#f87820', fontWeight: '800' }}>تنظیمات ورود با گوگل (Google OAuth)</label>
+                              <label style={{ display: 'block', fontSize: '12px', color: 'var(--admin-light-accent, #f87820)', fontWeight: '800' }}>تنظیمات ورود با گوگل (Google OAuth)</label>
                               <select
                                 value={localGeneral.googleAuthMode}
                                 disabled
-                                style={{ padding: '8px 12px', background: '#1c1926', border: '1px solid rgba(248,120,32,0.3)', borderRadius: '8px', color: '#fff', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                                style={{ padding: '8px 12px', background: '#1c1926', border: '1px solid rgba(248,120,32,0.3)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
                               >
                                 <option value="simulated">شبیه‌سازی‌شده (Simulation Mode)</option>
                                 <option value="real">واقعی (Real OAuth API Mode)</option>
                               </select>
                             </div>
                             <div style={{ marginTop: '8px' }}>
-                              <label style={{ display: 'block', fontSize: '11px', color: '#8b92a5', marginBottom: '6px', fontWeight: '600' }}>شناسه کلاینت گوگل (Google OAuth Client ID):</label>
+                              <label style={{ display: 'block', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px', fontWeight: '600' }}>شناسه کلاینت گوگل (Google OAuth Client ID):</label>
                               <input
                                 type="text"
                                 value={localGeneral.googleClientId}
                                 readOnly
-                                style={{ width: '100%', padding: '10px 14px', background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none', direction: 'ltr' }}
+                                style={{ width: '100%', padding: '10px 14px', background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none', direction: 'ltr' }}
                                 placeholder="Enter your Client ID from Google Cloud Console"
                               />
-                              <span style={{ fontSize: '10px', color: '#8b92a5', display: 'block', marginTop: '6px', lineHeight: '1.5' }}>
+                              <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginTop: '6px', lineHeight: '1.5' }}>
                                 💡 <strong>نکته:</strong> برای استفاده از حالت واقعی، باید یک کلاینت وب (Web Application Client ID) در کنسول گوگل کلود خود ایجاد کرده و آدرس <code>http://localhost:4000</code> را در بخش Authorized JavaScript Origins قرار دهید.
                               </span>
                             </div>
@@ -382,13 +382,13 @@ function SettingsContent() {
                           <button
                             onClick={handleSaveGeneral}
                             disabled={isSavingSettings || isLoadingSettings || !can(ADMIN_PERMISSIONS.SETTINGS_EDIT)}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: 'var(--admin-white)', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
                             onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
                             onMouseOut={e => e.currentTarget.style.opacity = '1'}
                           >
                             {AdminIcons.check(14)} ذخیره تغییرات
                           </button>
-                          <span style={{ fontSize: '11px', color: '#8b92a5' }}>تغییرات بلافاصله در سایت اصلی اعمال می‌شوند</span>
+                          <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>تغییرات بلافاصله در سایت اصلی اعمال می‌شوند</span>
                         </div>
                       </div>
                     )}
@@ -396,7 +396,7 @@ function SettingsContent() {
                     {/* ── اطلاعات تماس ── */}
                     {settingsTab === 'contact' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>اطلاعات تماس</h2>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>اطلاعات تماس</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
                           <Field label="شماره واتساپ" value={siteSettings.whatsapp || ''} onChange={e => setSiteSettings(p => ({ ...p, whatsapp: e.target.value }))} hint="مثال: +971501234567" />
                           <Field label="شماره واتساپ پشتیبانی" value={siteSettings.supportWhatsapp || ''} onChange={e => setSiteSettings(p => ({ ...p, supportWhatsapp: e.target.value }))} hint="مثال: +971527556964" />
@@ -423,36 +423,36 @@ function SettingsContent() {
                     {/* ── نرخ درهم ── */}
                     {settingsTab === 'aed' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>نرخ برابری درهم</h2>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>نرخ برابری درهم</h2>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '28px' }}>
                           
                           {/* Current Status Card */}
                           <div style={{ background: 'rgba(248,120,32,0.06)', border: '1px solid rgba(248,120,32,0.2)', borderRadius: '12px', padding: '20px' }}>
-                            <div style={{ fontSize: '11px', color: '#8b92a5', marginBottom: '8px' }}>نرخ فعلی درهم امارات</div>
+                            <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '8px' }}>نرخ فعلی درهم امارات</div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                              <span style={{ fontSize: '38px', fontWeight: '900', color: '#f87820' }}>{Number(siteSettings.aedRate || 0).toLocaleString()}</span>
-                              <span style={{ fontSize: '13px', color: '#8b92a5' }}>تومان / ۱ درهم</span>
+                              <span style={{ fontSize: '38px', fontWeight: '900', color: 'var(--admin-light-accent, #f87820)' }}>{Number(siteSettings.aedRate || 0).toLocaleString()}</span>
+                              <span style={{ fontSize: '13px', color: 'var(--admin-light-muted, #8b92a5)' }}>تومان / ۱ درهم</span>
                             </div>
-                            <div style={{ fontSize: '10.5px', color: '#8b92a5', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                              <div>آخرین بروزرسانی: <strong style={{ color: '#fff' }}>{siteSettings.aedLastUpdate || 'ثبت نشده'}</strong></div>
-                              <div>حالت بروزرسانی: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateMode === 'auto' ? 'خودکار' : 'دستی'}</strong></div>
-                              <div>بازه: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateIntervalHours || 1} ساعت</strong></div>
-                              <div>آخرین موفق: <strong style={{ color: '#fff' }}>{siteSettings.aedLastSuccessfulUpdate ? new Date(siteSettings.aedLastSuccessfulUpdate).toLocaleString('fa-IR') : 'ثبت نشده'}</strong></div>
-                              <div>بروزرسانی بعدی: <strong style={{ color: '#fff' }}>{siteSettings.aedUpdateMode === 'auto' ? (nextAedUpdate ? nextAedUpdate.toLocaleString('fa-IR') : 'در اولین اجرا') : 'غیرفعال'}</strong></div>
+                            <div style={{ fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div>آخرین بروزرسانی: <strong style={{ color: 'var(--admin-white)' }}>{siteSettings.aedLastUpdate || 'ثبت نشده'}</strong></div>
+                              <div>حالت بروزرسانی: <strong style={{ color: 'var(--admin-white)' }}>{siteSettings.aedUpdateMode === 'auto' ? 'خودکار' : 'دستی'}</strong></div>
+                              <div>بازه: <strong style={{ color: 'var(--admin-white)' }}>{siteSettings.aedUpdateIntervalHours || 1} ساعت</strong></div>
+                              <div>آخرین موفق: <strong style={{ color: 'var(--admin-white)' }}>{siteSettings.aedLastSuccessfulUpdate ? new Date(siteSettings.aedLastSuccessfulUpdate).toLocaleString('fa-IR') : 'ثبت نشده'}</strong></div>
+                              <div>بروزرسانی بعدی: <strong style={{ color: 'var(--admin-white)' }}>{siteSettings.aedUpdateMode === 'auto' ? (nextAedUpdate ? nextAedUpdate.toLocaleString('fa-IR') : 'در اولین اجرا') : 'غیرفعال'}</strong></div>
                               <div>وضعیت: <strong style={{ color: siteSettings.aedFetchStatus === 'error' ? '#fb7185' : '#80e5b1' }}>{siteSettings.aedFetchStatus === 'error' ? 'خطای دریافت' : siteSettings.aedFetchStatus === 'success' ? 'موفق' : 'بدون اجرا'}</strong></div>
-                              {siteSettings.aedLastFetchError ? <div style={{ color: '#fb7185' }}>{siteSettings.aedLastFetchError}</div> : null}
+                              {siteSettings.aedLastFetchError ? <div style={{ color: 'var(--admin-light-danger, #fb7185)' }}>{siteSettings.aedLastFetchError}</div> : null}
                             </div>
                           </div>
 
                           {/* Quick conversion list */}
                           <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '16px 20px' }}>
-                            <div style={{ fontSize: '11.5px', color: '#8b92a5', fontWeight: '600', marginBottom: '10px' }}>تبدیل سریع در بازار</div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '11px', color: '#c0c8d8' }}>
-                              <div>۱۰۰ درهم: <span style={{ color: '#fff' }}>{(100 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
-                              <div>۵۰۰ درهم: <span style={{ color: '#fff' }}>{(500 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
-                              <div>۱,۰۰۰ درهم: <span style={{ color: '#fff' }}>{(1000 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
-                              <div>۵,۰۰۰ درهم: <span style={{ color: '#fff' }}>{(5000 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
+                            <div style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', fontWeight: '600', marginBottom: '10px' }}>تبدیل سریع در بازار</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '11px', color: 'var(--admin-light-text, #c0c8d8)' }}>
+                              <div>۱۰۰ درهم: <span style={{ color: 'var(--admin-white)' }}>{(100 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
+                              <div>۵۰۰ درهم: <span style={{ color: 'var(--admin-white)' }}>{(500 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
+                              <div>۱,۰۰۰ درهم: <span style={{ color: 'var(--admin-white)' }}>{(1000 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
+                              <div>۵,۰۰۰ درهم: <span style={{ color: 'var(--admin-white)' }}>{(5000 * Number(siteSettings.aedRate || 0)).toLocaleString()} ت</span></div>
                             </div>
                           </div>
                         </div>
@@ -468,11 +468,11 @@ function SettingsContent() {
                           />
 
                           <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>حالت بروزرسانی</label>
+                            <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>حالت بروزرسانی</label>
                             <select
                               value={siteSettings.aedUpdateMode || 'manual'}
                               onChange={e => setSiteSettings(p => ({ ...p, aedUpdateMode: e.target.value, aedAutoUpdate: e.target.value === 'auto' }))}
-                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'var(--admin-white)', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
                             >
                               <option value="manual" style={{ background: '#1a1d26' }}>بروزرسانی دستی (Manual)</option>
                               <option value="auto" style={{ background: '#1a1d26' }}>بروزرسانی خودکار (Automatic)</option>
@@ -481,19 +481,19 @@ function SettingsContent() {
 
                           {(siteSettings.aedUpdateMode === 'auto' || siteSettings.aedAutoUpdate) && (
                             <div style={{ marginBottom: '20px' }}>
-                              <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>بازه بروزرسانی خودکار</label>
+                              <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>بازه بروزرسانی خودکار</label>
                               <select
                                 value={aedIntervalChoice}
                                 onChange={e => {
                                   setAedIntervalChoice(e.target.value);
                                   if (e.target.value !== 'custom') setSiteSettings(p => ({ ...p, aedUpdateIntervalHours: e.target.value }));
                                 }}
-                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'var(--admin-white)', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
                               >
                                 {AED_INTERVAL_PRESETS.map(hours => <option key={hours} value={String(hours)} style={{ background: '#1a1d26' }}>هر {hours.toLocaleString('fa-IR')} ساعت</option>)}
                                 <option value="custom" style={{ background: '#1a1d26' }}>سفارشی</option>
                               </select>
-                              {aedIntervalChoice === 'custom' ? <input type="number" min="1" max="720" step="1" value={siteSettings.aedUpdateIntervalHours || ''} onChange={e => setSiteSettings(p => ({ ...p, aedUpdateIntervalHours: e.target.value }))} placeholder="تعداد ساعت" style={{ width: '100%', marginTop: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff' }} /> : null}
+                              {aedIntervalChoice === 'custom' ? <input type="number" min="1" max="720" step="1" value={siteSettings.aedUpdateIntervalHours || ''} onChange={e => setSiteSettings(p => ({ ...p, aedUpdateIntervalHours: e.target.value }))} placeholder="تعداد ساعت" style={{ width: '100%', marginTop: 8, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--admin-white)' }} /> : null}
                             </div>
                           )}
                         </div>
@@ -508,7 +508,7 @@ function SettingsContent() {
                               aedUpdateIntervalHours: siteSettings.aedUpdateIntervalHours || '1',
                             }, 'نرخ درهم و تنظیمات بروزرسانی ذخیره شد.')}
                             disabled={isSavingSettings}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 28px', borderRadius: '10px', background: '#f87820', border: 'none', color: 'var(--admin-white)', fontSize: '13px', fontWeight: '700', cursor: 'pointer', transition: 'opacity 0.2s' }}
                             onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
                             onMouseOut={e => e.currentTarget.style.opacity = '1'}
                           >
@@ -525,7 +525,7 @@ function SettingsContent() {
                               finally { setIsUpdatingAedRate(false); }
                             }}
                             disabled={isUpdatingAedRate}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 24px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'opacity 0.2s', opacity: isUpdatingAedRate ? 0.5 : 1 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 24px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--admin-white)', fontSize: '13px', fontWeight: '600', cursor: 'pointer', transition: 'opacity 0.2s', opacity: isUpdatingAedRate ? 0.5 : 1 }}
                           >
                             {isUpdatingAedRate ? 'در حال بروزرسانی...' : 'بروزرسانی آنلاین نرخ'}
                           </button>
@@ -536,7 +536,7 @@ function SettingsContent() {
                     {/* ── تنظیمات ارسال ── */}
                     {settingsTab === 'shipping' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات ارسال و کارمزد</h2>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات ارسال و کارمزد</h2>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
                           <Field
                             label="هزینه ارسال هر کیلوگرم (AED)"
@@ -557,11 +557,11 @@ function SettingsContent() {
                             type="number"
                           />
                           <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>روش گرد کردن وزن</label>
+                            <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>روش گرد کردن وزن</label>
                             <select
                               value={siteSettings.roundingMethod || 'ceil'}
                               onChange={e => setSiteSettings(p => ({ ...p, roundingMethod: e.target.value }))}
-                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
+                              style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'var(--admin-white)', fontSize: '13px', outline: 'none', direction: 'rtl', cursor: 'pointer', boxSizing: 'border-box' }}
                             >
                               <option value="ceil" style={{ background: '#1a1d26' }}>رو به بالا (Ceil)</option>
                             </select>
@@ -569,8 +569,8 @@ function SettingsContent() {
                         </div>
 
                         <div style={{ marginTop: '8px', padding: '16px 20px', background: 'rgba(46,204,113,0.06)', border: '1px solid rgba(46,204,113,0.15)', borderRadius: '10px' }}>
-                          <div style={{ fontSize: '12px', fontWeight: '700', color: '#2ecc71', marginBottom: '8px' }}>مثال‌های محاسبه ارسال (با نرخ {siteSettings.shippingPerKgAed || ''} AED)</div>
-                          <div style={{ fontSize: '11.5px', color: '#c0c8d8', lineHeight: '1.8' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--admin-light-success, #2ecc71)', marginBottom: '8px' }}>مثال‌های محاسبه ارسال (با نرخ {siteSettings.shippingPerKgAed || ''} AED)</div>
+                          <div style={{ fontSize: '11.5px', color: 'var(--admin-light-text, #c0c8d8)', lineHeight: '1.8' }}>
                             <div>کالای ۰.۳ کیلوگرم (گرد شده به ۱ کیلو) = <strong>{(1 * Number(siteSettings.shippingPerKgAed || 0))} AED</strong></div>
                             <div>کالای ۱.۳ کیلوگرم (گرد شده به ۲ کیلو) = <strong>{(2 * Number(siteSettings.shippingPerKgAed || 0))} AED</strong></div>
                             <div>کالای ۲.۱ کیلوگرم (گرد شده به ۳ کیلو) = <strong>{(3 * Number(siteSettings.shippingPerKgAed || 0))} AED</strong></div>
@@ -590,7 +590,7 @@ function SettingsContent() {
                     {/* ── مدیریت سایت ── */}
                     {settingsTab === 'site' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                           مدیریت محتوای سایت
                         </h2>
 
@@ -629,7 +629,7 @@ function SettingsContent() {
                                 display: 'flex', alignItems: 'center', gap: '6px',
                                 padding: '8px 16px', borderRadius: '8px', border: 'none',
                                 background: siteSubTab === sub.id ? 'rgba(248,120,32,0.12)' : 'rgba(255,255,255,0.02)',
-                                color: siteSubTab === sub.id ? '#f87820' : '#8b92a5',
+                                color: siteSubTab === sub.id ? 'var(--admin-light-accent, #f87820)' : 'var(--admin-light-muted, #8b92a5)',
                                 borderRight: siteSubTab === sub.id ? '2px solid #f87820' : 'none',
                                 fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.15s',
                                 whiteSpace: 'nowrap'
@@ -644,7 +644,7 @@ function SettingsContent() {
                         {siteSubTab === 'banners' && (
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', margin: 0 }}>لیست بنرهای صفحه اصلی</h3>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-text, #c0c8d8)', margin: 0 }}>لیست بنرهای صفحه اصلی</h3>
                               <button
                                 onClick={() => {
                                   const title = prompt('عنوان بنر:');
@@ -654,7 +654,7 @@ function SettingsContent() {
                                     setBanners(prev => [...prev, { id: Date.now(), title, subtitle, link, status: 'فعال' }]);
                                   }
                                 }}
-                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: 'var(--admin-light-accent, #f87820)', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
                               >
                                 {AdminIcons.plus(11)} افزودن بنر جدید
                               </button>
@@ -664,12 +664,12 @@ function SettingsContent() {
                               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'right' }}>
                                 <thead>
                                   <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>تصویر</th>
-                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>عنوان</th>
-                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>زیرعنوان</th>
-                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>لینک هدایت</th>
-                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>وضعیت</th>
-                                    <th style={{ padding: '12px 16px', color: '#8b92a5' }}>عملیات</th>
+                                    <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>تصویر</th>
+                                    <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>عنوان</th>
+                                    <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>زیرعنوان</th>
+                                    <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>لینک هدایت</th>
+                                    <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>وضعیت</th>
+                                    <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>عملیات</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -678,11 +678,11 @@ function SettingsContent() {
                                       <td style={{ padding: '12px 16px' }}>
                                         <div style={{ width: '60px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🖼️</div>
                                       </td>
-                                      <td style={{ padding: '12px 16px', fontWeight: '700', color: '#fff' }}>{banner.title}</td>
-                                      <td style={{ padding: '12px 16px', color: '#c0c8d8' }}>{banner.subtitle}</td>
-                                      <td style={{ padding: '12px 16px', color: '#8b92a5', direction: 'ltr' }}>{banner.link}</td>
+                                      <td style={{ padding: '12px 16px', fontWeight: '700', color: 'var(--admin-white)' }}>{banner.title}</td>
+                                      <td style={{ padding: '12px 16px', color: 'var(--admin-light-text, #c0c8d8)' }}>{banner.subtitle}</td>
+                                      <td style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)', direction: 'ltr' }}>{banner.link}</td>
                                       <td style={{ padding: '12px 16px' }}>
-                                        <span style={{ padding: '2px 8px', borderRadius: '4px', background: banner.status === 'فعال' ? 'rgba(46,204,113,0.1)' : 'rgba(239,68,68,0.1)', color: banner.status === 'فعال' ? '#2ecc71' : '#ef4444', fontSize: '11px', fontWeight: '700' }}>
+                                        <span style={{ padding: '2px 8px', borderRadius: '4px', background: banner.status === 'فعال' ? 'rgba(46,204,113,0.1)' : 'rgba(239,68,68,0.1)', color: banner.status === 'فعال' ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-danger, #ef4444)', fontSize: '11px', fontWeight: '700' }}>
                                           {banner.status}
                                         </span>
                                       </td>
@@ -690,13 +690,13 @@ function SettingsContent() {
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                           <button
                                             onClick={() => setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, status: b.status === 'فعال' ? 'غیرفعال' : 'فعال' } : b))}
-                                            style={{ padding: '4px 8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontSize: '11px' }}
+                                            style={{ padding: '4px 8px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', cursor: 'pointer', fontSize: '11px' }}
                                           >
                                             تغییر وضعیت
                                           </button>
                                           <button
                                             onClick={() => setBanners(prev => prev.filter(b => b.id !== banner.id))}
-                                            style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '6px', color: '#ef4444', cursor: 'pointer', fontSize: '11px' }}
+                                            style={{ padding: '4px 8px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '6px', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', fontSize: '11px' }}
                                           >
                                             حذف
                                           </button>
@@ -715,32 +715,32 @@ function SettingsContent() {
                         {siteSubTab === 'pages' && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                              <label style={{ display: 'block', fontSize: '12.5px', color: '#fff', fontWeight: '700', marginBottom: '10px' }}>صفحه درباره ما (About Us)</label>
+                              <label style={{ display: 'block', fontSize: '12.5px', color: 'var(--admin-white)', fontWeight: '700', marginBottom: '10px' }}>صفحه درباره ما (About Us)</label>
                               <textarea
                                 value={sitePages.about}
                                 onChange={e => setSitePages(p => ({ ...p, about: e.target.value }))}
                                 rows="3"
-                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
                               />
                             </div>
 
                             <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                              <label style={{ display: 'block', fontSize: '12.5px', color: '#fff', fontWeight: '700', marginBottom: '10px' }}>قوانین و مقررات خرید (Terms of Service)</label>
+                              <label style={{ display: 'block', fontSize: '12.5px', color: 'var(--admin-white)', fontWeight: '700', marginBottom: '10px' }}>قوانین و مقررات خرید (Terms of Service)</label>
                               <textarea
                                 value={sitePages.terms}
                                 onChange={e => setSitePages(p => ({ ...p, terms: e.target.value }))}
                                 rows="4"
-                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
                               />
                             </div>
 
                             <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                              <label style={{ display: 'block', fontSize: '12.5px', color: '#fff', fontWeight: '700', marginBottom: '10px' }}>سیاست حریم خصوصی (Privacy Policy)</label>
+                              <label style={{ display: 'block', fontSize: '12.5px', color: 'var(--admin-white)', fontWeight: '700', marginBottom: '10px' }}>سیاست حریم خصوصی (Privacy Policy)</label>
                               <textarea
                                 value={sitePages.privacy}
                                 onChange={e => setSitePages(p => ({ ...p, privacy: e.target.value }))}
                                 rows="3"
-                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
                               />
                             </div>
                             <SaveBtn onClick={() => alert('محتوای صفحات با موفقیت ذخیره شد.')} />
@@ -751,7 +751,7 @@ function SettingsContent() {
                         {siteSubTab === 'faqs' && (
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', margin: 0 }}>لیست سوالات متداول کاربران</h3>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-text, #c0c8d8)', margin: 0 }}>لیست سوالات متداول کاربران</h3>
                               <button
                                 onClick={() => {
                                   const question = prompt('صورت سوال:');
@@ -760,7 +760,7 @@ function SettingsContent() {
                                     setFaqs(prev => [...prev, { id: Date.now(), question, answer }]);
                                   }
                                 }}
-                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: 'var(--admin-light-accent, #f87820)', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
                               >
                                 {AdminIcons.plus(11)} افزودن سوال جدید
                               </button>
@@ -771,13 +771,13 @@ function SettingsContent() {
                                 <div key={faq.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', position: 'relative' }}>
                                   <button
                                     onClick={() => setFaqs(prev => prev.filter(f => f.id !== faq.id))}
-                                    style={{ position: 'absolute', top: '16px', left: '16px', border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '14px' }}
+                                    style={{ position: 'absolute', top: '16px', left: '16px', border: 'none', background: 'transparent', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', fontSize: '14px' }}
                                     title="حذف سوال"
                                   >
                                     ✕
                                   </button>
-                                  <div style={{ fontWeight: '700', color: '#fff', fontSize: '13px', marginBottom: '8px', paddingLeft: '24px' }}>{faq.question}</div>
-                                  <div style={{ color: '#8b92a5', fontSize: '12.5px', lineHeight: '1.6' }}>{faq.answer}</div>
+                                  <div style={{ fontWeight: '700', color: 'var(--admin-white)', fontSize: '13px', marginBottom: '8px', paddingLeft: '24px' }}>{faq.question}</div>
+                                  <div style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '12.5px', lineHeight: '1.6' }}>{faq.answer}</div>
                                 </div>
                               ))}
                             </div>
@@ -789,7 +789,7 @@ function SettingsContent() {
                         {siteSubTab === 'rules' && (
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', margin: 0 }}>قوانین و مقررات خرید و ارسال کالا</h3>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-text, #c0c8d8)', margin: 0 }}>قوانین و مقررات خرید و ارسال کالا</h3>
                               <button
                                 onClick={() => {
                                   const title = prompt('عنوان قانون:');
@@ -798,7 +798,7 @@ function SettingsContent() {
                                     setRules(prev => [...prev, { id: Date.now(), title, desc }]);
                                   }
                                 }}
-                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 14px', background: 'rgba(248,120,32,0.1)', border: '1px solid rgba(248,120,32,0.2)', color: 'var(--admin-light-accent, #f87820)', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
                               >
                                 {AdminIcons.plus(11)} افزودن قانون جدید
                               </button>
@@ -809,13 +809,13 @@ function SettingsContent() {
                                 <div key={rule.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', position: 'relative' }}>
                                   <button
                                     onClick={() => setRules(prev => prev.filter(r => r.id !== rule.id))}
-                                    style={{ position: 'absolute', top: '16px', left: '16px', border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '14px' }}
+                                    style={{ position: 'absolute', top: '16px', left: '16px', border: 'none', background: 'transparent', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', fontSize: '14px' }}
                                     title="حذف قانون"
                                   >
                                     ✕
                                   </button>
-                                  <div style={{ fontWeight: '700', color: '#fff', fontSize: '13px', marginBottom: '8px', paddingLeft: '24px' }}>{rule.title}</div>
-                                  <div style={{ color: '#8b92a5', fontSize: '12.5px', lineHeight: '1.6' }}>{rule.desc}</div>
+                                  <div style={{ fontWeight: '700', color: 'var(--admin-white)', fontSize: '13px', marginBottom: '8px', paddingLeft: '24px' }}>{rule.title}</div>
+                                  <div style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '12.5px', lineHeight: '1.6' }}>{rule.desc}</div>
                                 </div>
                               ))}
                             </div>
@@ -839,21 +839,21 @@ function SettingsContent() {
                               hint="مثال: G-XXXXXXXXXX"
                             />
                             <div style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
-                              <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>کلمات کلیدی سایت (Meta Keywords)</label>
+                              <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>کلمات کلیدی سایت (Meta Keywords)</label>
                               <input
                                 value={seo.keywords}
                                 onChange={e => setSeo(p => ({ ...p, keywords: e.target.value }))}
-                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                                style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: 'var(--admin-white)', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                               />
-                              <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '5px' }}>کلمات کلیدی را با کاما (,) جدا کنید</div>
+                              <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '5px' }}>کلمات کلیدی را با کاما (,) جدا کنید</div>
                             </div>
                             <div style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
-                              <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>توضیحات پیش‌فرض سایت (Meta Description)</label>
+                              <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>توضیحات پیش‌فرض سایت (Meta Description)</label>
                               <textarea
                                 value={seo.desc}
                                 onChange={e => setSeo(p => ({ ...p, desc: e.target.value }))}
                                 rows="3"
-                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
+                                style={{ width: '100%', padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', outline: 'none', fontSize: '12.5px', lineHeight: '1.7', resize: 'vertical' }}
                               />
                             </div>
                             <div style={{ gridColumn: '1 / -1' }}>
@@ -867,14 +867,14 @@ function SettingsContent() {
                     {/* ── امنیت و حساب کاربری ── */}
                     {settingsTab === 'security' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                           امنیت و حساب کاربری
                         </h2>
 
                         {/* Admin credentials are managed securely on the server. */}
                         <div style={{ marginBottom: '32px' }}>
-                          <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#c0c8d8', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px' }}>{AdminIcons.lock(13)} رمز عبور ادمین</h3>
-                          <div style={{ padding: '12px 14px', background: 'rgba(248,120,32,0.06)', border: '1px solid rgba(248,120,32,0.16)', borderRadius: '8px', color: '#c0c8d8', fontSize: '12px', lineHeight: '1.8' }}>
+                          <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-text, #c0c8d8)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '7px' }}>{AdminIcons.lock(13)} رمز عبور ادمین</h3>
+                          <div style={{ padding: '12px 14px', background: 'rgba(248,120,32,0.06)', border: '1px solid rgba(248,120,32,0.16)', borderRadius: '8px', color: 'var(--admin-light-text, #c0c8d8)', fontSize: '12px', lineHeight: '1.8' }}>
                             رمز عبور مدیر به‌صورت هش‌شده و از طریق متغیرهای امن سرور مدیریت می‌شود.
                           </div>
                         </div>
@@ -884,7 +884,7 @@ function SettingsContent() {
                           
                           {/* 2FA Option */}
                           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '12px' }}>🛡️ ورود دو مرحله‌ای (2FA)</h3>
+                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-white)', marginBottom: '12px' }}>🛡️ ورود دو مرحله‌ای (2FA)</h3>
                             <Toggle
                               label="فعال‌سازی ورود دو مرحله‌ای"
                               desc="ارسال رمز یکبار مصرف به تلفن همراه ادمین هنگام ورود"
@@ -896,12 +896,12 @@ function SettingsContent() {
                           {/* Terminate Sessions */}
                           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                             <div>
-                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '8px' }}>💻 خروج از دستگاه‌های دیگر</h3>
-                              <p style={{ fontSize: '11.5px', color: '#8b92a5', margin: '0 0 16px 0', lineHeight: '1.6' }}>اتمام کلیه جلسات فعال در سایر مرورگرها و دستگاه‌ها</p>
+                              <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-white)', marginBottom: '8px' }}>💻 خروج از دستگاه‌های دیگر</h3>
+                              <p style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', margin: '0 0 16px 0', lineHeight: '1.6' }}>اتمام کلیه جلسات فعال در سایر مرورگرها و دستگاه‌ها</p>
                             </div>
                             <button
                               onClick={() => alert('با موفقیت از تمام دستگاه‌های دیگر خارج شدید.')}
-                              style={{ width: 'max-content', padding: '8px 16px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px', color: '#ef4444', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                              style={{ width: 'max-content', padding: '8px 16px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '8px', color: 'var(--admin-light-danger, #ef4444)', fontSize: '12px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
                               onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
                               onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                             >
@@ -913,19 +913,19 @@ function SettingsContent() {
                         {/* Last Login Info & System Reset */}
                         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
                           <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '14px' }}>📌 اطلاعات آخرین ورود</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: '#c0c8d8' }}>
-                              <div>آخرین ورود: <strong style={{ color: '#fff' }}>{lastLoginTime}</strong></div>
-                              <div>IP آخرین ورود: <strong style={{ color: '#fff', direction: 'ltr', display: 'inline-block' }}>{lastLoginIp}</strong></div>
+                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-white)', marginBottom: '14px' }}>📌 اطلاعات آخرین ورود</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--admin-light-text, #c0c8d8)' }}>
+                              <div>آخرین ورود: <strong style={{ color: 'var(--admin-white)' }}>{lastLoginTime}</strong></div>
+                              <div>IP آخرین ورود: <strong style={{ color: 'var(--admin-white)', direction: 'ltr', display: 'inline-block' }}>{lastLoginIp}</strong></div>
                             </div>
                           </div>
 
                           <div style={{ padding: '20px', background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '12px' }}>
-                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: '#ef4444', marginBottom: '8px' }}>⚠️ ابزارهای احیا (توسعه‌دهنده)</h3>
-                            <p style={{ fontSize: '11.5px', color: '#8b92a5', lineHeight: '1.6', margin: '0 0 16px 0' }}>حذف اطلاعات آزمایشی و بازگشت به تنظیمات کارخانه</p>
+                            <h3 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-danger, #ef4444)', marginBottom: '8px' }}>⚠️ ابزارهای احیا (توسعه‌دهنده)</h3>
+                            <p style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', lineHeight: '1.6', margin: '0 0 16px 0' }}>حذف اطلاعات آزمایشی و بازگشت به تنظیمات کارخانه</p>
                             <button
                               onClick={handleRestoreDefaults}
-                              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(239,68,68,0.4)', color: 'var(--admin-light-danger, #ef4444)', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer', transition: 'all 0.2s' }}
                               onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
                               onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                             >
@@ -939,7 +939,7 @@ function SettingsContent() {
                     {/* ── اعلان‌ها ── */}
                     {settingsTab === 'notifications' && (
                       <div>
-                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات اعلان‌ها</h2>
+                        <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات اعلان‌ها</h2>
                         <Toggle
                           label="اعلان‌های خودکار"
                           desc="ارسال پیام اتوماتیک به مشتری پس از هر تغییر وضعیت"
@@ -992,7 +992,7 @@ export default function SettingsPage() {
 
 const Field = ({ label, value, onChange, type = 'text', hint, readOnly }) => (
   <div style={{ marginBottom: '20px' }}>
-    <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '7px', fontWeight: '600' }}>{label}</label>
+    <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '7px', fontWeight: '600' }}>{label}</label>
     <input
       type={type}
       value={value}
@@ -1001,21 +1001,21 @@ const Field = ({ label, value, onChange, type = 'text', hint, readOnly }) => (
       style={{
         width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.04)',
         border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px',
-        color: readOnly ? '#8b92a5' : '#fff', fontSize: '13px', outline: 'none',
+        color: readOnly ? 'var(--admin-light-muted, #8b92a5)' : '#fff', fontSize: '13px', outline: 'none',
         direction: 'rtl', transition: 'border-color 0.2s', boxSizing: 'border-box'
       }}
       onFocus={e => e.target.style.borderColor = 'rgba(248,120,32,0.5)'}
       onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
     />
-    {hint && <div style={{ fontSize: '10px', color: '#8b92a5', marginTop: '5px' }}>{hint}</div>}
+    {hint && <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '5px' }}>{hint}</div>}
   </div>
 );
 
 const Toggle = ({ label, desc, value, onChange }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
     <div>
-      <div style={{ fontSize: '13px', fontWeight: '600', color: '#fff' }}>{label}</div>
-      {desc && <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '3px' }}>{desc}</div>}
+      <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--admin-white)' }}>{label}</div>
+      {desc && <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '3px' }}>{desc}</div>}
     </div>
     <div
       onClick={() => onChange(!value)}
@@ -1038,7 +1038,7 @@ const SaveBtn = ({ onClick, label = 'ذخیره تغییرات', disabled = fals
   <button
     onClick={onClick}
     disabled={disabled}
-    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 24px', borderRadius: '10px', background: '#f87820', border: 'none', color: '#fff', fontSize: '13px', fontWeight: '700', cursor: disabled ? 'not-allowed' : 'pointer', marginTop: '24px', transition: 'opacity 0.2s', opacity: disabled ? 0.55 : 1 }}
+    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 24px', borderRadius: '10px', background: '#f87820', border: 'none', color: 'var(--admin-white)', fontSize: '13px', fontWeight: '700', cursor: disabled ? 'not-allowed' : 'pointer', marginTop: '24px', transition: 'opacity 0.2s', opacity: disabled ? 0.55 : 1 }}
     onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
     onMouseOut={e => e.currentTarget.style.opacity = '1'}
   >

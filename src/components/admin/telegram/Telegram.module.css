@@ -15,5 +15,10 @@
 .notice { color: var(--warning) !important; overflow-wrap: anywhere; }
 @media (max-width: 600px) { .actions button { flex: 1 1 150px; } .status { flex-direction: column; gap: 6px; } }
 
-/* The existing Product configurator is a dark dialog in both site themes. */
+/* Preserve the Product dialog dark palette; light overrides use Admin roles. */
 .product { --text-primary: #e8eaf0; --text-secondary: #abb2c4; --surface-primary: transparent; --border-primary: #353b4a; --accent-hover: #ffab70; --warning: #ffcf91; }
+
+:global(html[data-theme='light']) .product { --text-primary: var(--admin-white); --text-secondary: var(--admin-grey-text); --border-primary: var(--admin-control-border); --accent-hover: #a34408; --warning: #945409; }
+:global(html[data-theme='light']) .actions button:disabled { opacity: .75; }
+
+:global(html[data-theme='light']) .panel { --accent-hover: var(--admin-light-accent); }

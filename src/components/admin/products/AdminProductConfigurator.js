@@ -380,6 +380,12 @@ export default function AdminProductConfigurator({
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
+
+  useEffect(() => {
     if (mode !== 'edit' || !productId) return;
     let cancelled = false;
     fetch('/api/admin/products/' + encodeURIComponent(productId) + '/configuration', { cache: 'no-store' })

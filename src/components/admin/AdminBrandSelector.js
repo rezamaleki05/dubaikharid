@@ -103,7 +103,7 @@ export default function AdminBrandSelector({
   const selectorDisabled = disabled || isSaving || !categoryId;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '11px', color: '#8b92a5' }}>برند:</label>
+      <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>برند:</label>
       <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch', flexWrap: 'wrap' }}>
         <select
           value={value || ''}
@@ -112,7 +112,7 @@ export default function AdminBrandSelector({
             setFeedback('');
           }}
           disabled={selectorDisabled}
-          style={{ flex: '1 1 150px', minWidth: 0, padding: '8px 12px', background: '#1c1f2a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '12px', outline: 'none' }}
+          style={{ flex: '1 1 150px', minWidth: 0, padding: '8px 12px', background: 'var(--admin-light-control-bg, #1c1f2a)', border: '1px solid var(--admin-control-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none' }}
         >
           {!categoryId ? (
             <option value="">ابتدا دسته‌بندی را انتخاب کنید</option>
@@ -134,13 +134,13 @@ export default function AdminBrandSelector({
             setIsCreating(current => !current);
             setFeedback('');
           }}
-          style={{ padding: '8px 10px', border: '1px solid rgba(248,120,32,0.28)', borderRadius: '8px', background: 'rgba(248,120,32,0.08)', color: '#f87820', fontSize: '11px', fontWeight: '700', cursor: selectorDisabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
+          style={{ padding: '8px 10px', border: '1px solid rgba(248,120,32,0.28)', borderRadius: '8px', background: 'rgba(248,120,32,0.08)', color: 'var(--admin-light-accent, #f87820)', fontSize: '11px', fontWeight: '700', cursor: selectorDisabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
         >
           + افزودن برند جدید
         </button>
       </div>
       {categoryId && (
-        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#aeb5c5', fontSize: '10.5px', cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--admin-light-muted, #aeb5c5)', fontSize: '10.5px', cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={showAll}
@@ -151,12 +151,12 @@ export default function AdminBrandSelector({
         </label>
       )}
       {associationWarning && (
-        <p role="status" style={{ margin: 0, color: '#f59e0b', fontSize: '10.5px' }}>
+        <p role="status" style={{ margin: 0, color: 'var(--admin-light-accent, #f59e0b)', fontSize: '10.5px' }}>
           این برند در حال حاضر به این دسته‌بندی متصل نیست.
         </p>
       )}
       {isCreating && categoryId && (
-        <div style={{ display: 'flex', gap: '8px', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.025)' }}>
+        <div style={{ display: 'flex', gap: '8px', padding: '10px', borderRadius: '8px', border: '1px solid var(--admin-control-border, rgba(255,255,255,0.08))', background: 'rgba(255,255,255,0.025)' }}>
           <input
             autoFocus
             required
@@ -171,14 +171,14 @@ export default function AdminBrandSelector({
             }}
             placeholder="نام برند *"
             disabled={isSaving}
-            style={{ minWidth: 0, flex: 1, padding: '8px 10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '7px', color: '#fff', fontSize: '12px', outline: 'none' }}
+            style={{ minWidth: 0, flex: 1, padding: '8px 10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-control-border, rgba(255,255,255,0.08))', borderRadius: '7px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none' }}
           />
-          <button type="button" onClick={handleCreate} disabled={isSaving} style={{ padding: '8px 12px', border: 0, borderRadius: '7px', background: '#f87820', color: '#fff', fontSize: '11px', fontWeight: '700', cursor: isSaving ? 'wait' : 'pointer' }}>
+          <button type="button" onClick={handleCreate} disabled={isSaving} style={{ padding: '8px 12px', border: 0, borderRadius: '7px', background: '#f87820', color: 'var(--admin-white)', fontSize: '11px', fontWeight: '700', cursor: isSaving ? 'wait' : 'pointer' }}>
             {isSaving ? 'در حال ثبت…' : 'ثبت برند'}
           </button>
         </div>
       )}
-      {feedback && <p role="status" style={{ margin: 0, fontSize: '10.5px', color: feedback.includes('خطا') || feedback.includes('الزامی') ? '#ef4444' : '#10b981' }}>{feedback}</p>}
+      {feedback && <p role="status" style={{ margin: 0, fontSize: '10.5px', color: feedback.includes('خطا') || feedback.includes('الزامی') ? 'var(--admin-light-danger, #ef4444)' : 'var(--admin-light-success, #10b981)' }}>{feedback}</p>}
     </div>
   );
 }

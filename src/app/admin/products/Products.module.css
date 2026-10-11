@@ -1,0 +1,16 @@
+.header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+.summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.workspace { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.3fr); gap: 24px; direction: rtl; }
+.workspace > * { min-width: 0; }
+.tableScroller { max-width: 100%; overflow-x: auto; background: rgba(255,255,255,.01); border: 1px solid var(--admin-border); border-radius: 12px; }
+.tableScroller:focus-visible { outline: 2px solid var(--admin-orange); outline-offset: 3px; }
+@media (max-width: 1000px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .header { align-items: flex-start; flex-wrap: wrap; }
+  .tableScroller table { min-width: 760px; }
+  .rowActions { position: sticky; left: 0; z-index: 1; background: var(--admin-card-bg); box-shadow: 3px 0 0 var(--admin-border); }
+}
+@media (max-width: 450px) {
+  .summary { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}

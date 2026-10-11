@@ -5,7 +5,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  overflow: hidden;
+  overflow: clip;
   background: rgba(3, 4, 8, .86);
   backdrop-filter: blur(10px);
 }
@@ -25,6 +25,7 @@
 }
 
 .header {
+  flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -50,6 +51,10 @@
 }
 
 .form {
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
+  scroll-padding-block: 16px 90px;
   min-width: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -267,3 +272,57 @@
   .input,
   .textarea { transition: none; }
 }
+
+/* Light Admin uses the existing semantic palette; dark declarations stay intact. */
+:global(html[data-theme='light']) .backdrop { background: var(--overlay); }
+:global(html[data-theme='light']) .dialog { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-primary); }
+:global(html[data-theme='light']) .header { border-bottom: 1px solid var(--admin-control-border); }
+:global(html[data-theme='light']) .header p { color: var(--text-secondary); }
+:global(html[data-theme='light']) .eyebrow { color: var(--accent-hover); }
+:global(html[data-theme='light']) .closeButton { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .section { border-bottom: 1px solid var(--admin-control-border); }
+:global(html[data-theme='light']) .sectionHeading > span { color: var(--accent-hover); }
+:global(html[data-theme='light']) .sectionHeading p { color: var(--text-secondary); }
+:global(html[data-theme='light']) .inventoryGrid { border-top: 1px solid var(--admin-control-border); }
+:global(html[data-theme='light']) .section label,:global(html[data-theme='light']) .variantFields label,:global(html[data-theme='light']) .inventoryGrid label { color: var(--text-secondary); }
+:global(html[data-theme='light']) .input,:global(html[data-theme='light']) .textarea { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-primary); }
+:global(html[data-theme='light']) .input:disabled { opacity: .75; }
+:global(html[data-theme='light']) .input::placeholder { color: var(--text-secondary); }
+:global(html[data-theme='light']) .input option { background: var(--surface-secondary); }
+:global(html[data-theme='light']) .attributeField { background: var(--surface-secondary); }
+:global(html[data-theme='light']) .fieldLabel { color: var(--text-primary); }
+:global(html[data-theme='light']) .fieldLabel strong { color: var(--accent-hover); }
+:global(html[data-theme='light']) .fieldLabel small { color: var(--text-secondary); }
+:global(html[data-theme='light']) .sourceField { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); }
+:global(html[data-theme='light']) .sourceModes button { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .sourceModes button[aria-pressed='true'] { color: var(--text-primary); }
+:global(html[data-theme='light']) .sourceNote { color: var(--text-secondary); }
+:global(html[data-theme='light']) .fieldLabel em { color: var(--text-secondary); }
+:global(html[data-theme='light']) .option,:global(html[data-theme='light']) .optionSelected { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .optionSelected { color: var(--text-primary); }
+:global(html[data-theme='light']) .option small,:global(html[data-theme='light']) .optionSelected small { color: var(--text-secondary); }
+:global(html[data-theme='light']) .swatch { border: 1px solid var(--admin-control-border); }
+:global(html[data-theme='light']) .inputWithUnit > span { color: var(--text-secondary); }
+:global(html[data-theme='light']) .supplyMode,:global(html[data-theme='light']) .supplyActive { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .supplyActive { color: var(--text-primary); }
+:global(html[data-theme='light']) .supplyMode small,:global(html[data-theme='light']) .supplyActive small { color: var(--text-secondary); }
+:global(html[data-theme='light']) .clearGender { background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .axis { border-bottom: 1px dashed var(--admin-control-border); }
+:global(html[data-theme='light']) .matrixToolbar { color: var(--text-secondary); }
+:global(html[data-theme='light']) .matrixToolbar button { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .variantRow,:global(html[data-theme='light']) .variantSelected { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); }
+:global(html[data-theme='light']) .variantEditor { border-top: 1px solid var(--admin-control-border); }
+:global(html[data-theme='light']) .variantName { color: var(--text-primary); }
+:global(html[data-theme='light']) .preserved { color: var(--success); }
+:global(html[data-theme='light']) .readOnlyInventory { background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .readOnlyInventory strong { color: var(--success); }
+:global(html[data-theme='light']) .warning { color: var(--warning); }
+:global(html[data-theme='light']) .error { color: var(--danger); }
+:global(html[data-theme='light']) .emptyMessage { color: var(--text-secondary); }
+:global(html[data-theme='light']) .footer { background: var(--surface-secondary); }
+:global(html[data-theme='light']) .cancel { border: 1px solid var(--admin-control-border); background: var(--surface-secondary); color: var(--text-secondary); }
+:global(html[data-theme='light']) .submit { color: var(--text-primary); }
+:global(html[data-theme='light']) .submit:disabled { opacity: .75; }
+:global(html[data-theme='light']) .loading { background: var(--surface-secondary); color: var(--text-secondary); }
+
+:global(html[data-theme='light']) .dialog { --admin-control-border: #8a8178; --accent-hover: var(--admin-light-accent); }

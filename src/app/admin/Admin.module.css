@@ -80,7 +80,7 @@
 }
 
 .logoDubai {
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
 }
 
 .logoKharid {
@@ -126,7 +126,7 @@
 
 /* Exact parity Active menu (Sleek Orange Border Outline Box) */
 .navMenuLinkActive {
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   background: var(--admin-orange-glow);
   border: 1px solid var(--admin-orange);
   box-shadow: inset 0 0 10px rgba(248, 120, 32, 0.05);
@@ -161,7 +161,7 @@
 
 .badgeOrange {
   background: rgba(248, 120, 32, 0.12);
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
 }
 
 .badgeGrey {
@@ -224,7 +224,7 @@
 }
 
 .exitButton:hover {
-  color: #ff4d4d;
+  color: var(--admin-light-danger, #ff4d4d);
 }
 
 /* ── MAIN WORKSPACE CONTAINER ── */
@@ -280,11 +280,11 @@
 }
 
 .searchInput::placeholder {
-  color: #555;
+  color: var(--admin-light-muted, #555555);
 }
 
 .searchIcon {
-  color: #555;
+  color: var(--admin-light-muted, #555555);
   font-size: 14px;
 }
 
@@ -320,7 +320,7 @@
   top: -4px;
   left: -4px;
   background: #ff3333;
-  color: #fff;
+  color: var(--admin-white);
   font-size: 9px;
   font-weight: bold;
   width: 16px;
@@ -335,7 +335,7 @@
 .notificationDropdown { position: absolute; top: 50px; left: 0; z-index: 999; width: min(340px, calc(100vw - 24px)); overflow: hidden; color: var(--admin-white); direction: rtl; text-align: right; background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 12px; box-shadow: 0 18px 42px rgba(0,0,0,.42); }
 .notificationHeader { display: flex; padding: 12px 16px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--admin-border); }
 .notificationHeader > span { display: inline-flex; align-items: center; gap: 6px; color: var(--admin-white); font-size: 13px; font-weight: 800; }
-.notificationCount { padding: 1px 7px; color: #fff; background: var(--admin-orange); border-radius: 20px; font-size: 10px; }
+.notificationCount { padding: 1px 7px; color: var(--admin-white); background: var(--admin-orange); border-radius: 20px; font-size: 10px; }
 .notificationList { max-height: 300px; overflow-y: auto; }
 .notificationEmpty { padding: 24px; color: var(--admin-grey-text); text-align: center; font-size: 12px; }
 .notificationItem { display: flex; padding: 11px 16px; align-items: flex-start; gap: 10px; background: rgba(248,120,32,.035); border-bottom: 1px solid var(--admin-border); cursor: pointer; transition: background-color .2s ease; }
@@ -345,7 +345,7 @@
 .notificationBody p { margin: 0; color: var(--admin-white); font-size: 11.5px; font-weight: 650; line-height: 1.5; }
 .notificationMeta { display: flex; margin-top: 4px; align-items: center; justify-content: space-between; gap: 8px; }
 .notificationMeta span { min-width: 0; color: var(--admin-grey-text); font-size: 9.5px; overflow-wrap: anywhere; }
-.notificationMeta strong { padding: 2px 7px; flex-shrink: 0; color: var(--admin-orange); background: var(--admin-orange-glow); border-radius: 6px; font-size: 9px; }
+.notificationMeta strong { padding: 2px 7px; flex-shrink: 0; color: var(--admin-light-accent, var(--admin-orange)); background: var(--admin-orange-glow); border-radius: 6px; font-size: 9px; }
 
 :global(html[data-theme='light']) .notificationDropdown { box-shadow: 0 18px 42px rgba(62,45,31,.14); }
 :global(html[data-theme='light']) .notificationItem:hover { background: rgba(43,35,28,.035); }
@@ -400,7 +400,7 @@
 }
 
 .breadcrumbs a:hover {
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
 }
 
 /* Action Trigger buttons in Title Section */
@@ -492,7 +492,7 @@
 
 .cardHeaderIcon {
   font-size: 18px;
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   background: var(--admin-orange-glow);
   width: 32px;
   height: 32px;
@@ -543,7 +543,7 @@
 }
 
 .requiredStar {
-  color: #ff3333;
+  color: var(--admin-light-danger, #ff3333);
   margin-right: 4px;
 }
 
@@ -645,7 +645,7 @@
 
 .laptopUploaderHeader output {
   direction: ltr;
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   font-weight: 800;
 }
 
@@ -667,12 +667,12 @@
 }
 
 .dragDropArea:hover {
-  border-color: var(--admin-orange);
+  border-color: var(--admin-light-accent, var(--admin-orange));
   background: rgba(248, 120, 32, 0.01);
 }
 
 .dragDropAreaActive {
-  border-color: var(--admin-orange);
+  border-color: var(--admin-light-accent, var(--admin-orange));
   background: rgba(248, 120, 32, 0.08);
   box-shadow: inset 0 0 0 1px rgba(248, 120, 32, 0.2);
   transform: translateY(-1px);
@@ -708,7 +708,7 @@
 
 .dragDropArea p span {
   font-size: 9px;
-  color: #777f91;
+  color: var(--admin-light-muted, #777f91);
 }
 
 .imageThumbCard {
@@ -726,7 +726,7 @@
 }
 
 .imageThumbCardPrimary {
-  border-color: var(--admin-orange);
+  border-color: var(--admin-light-accent, var(--admin-orange));
   box-shadow: 0 0 0 1px rgba(248, 120, 32, 0.26);
 }
 
@@ -749,7 +749,7 @@
   justify-content: center;
   border-radius: 999px;
   background: rgba(7, 8, 11, 0.78);
-  color: #fff;
+  color: var(--admin-white);
   font-size: 8px;
   font-weight: 800;
 }
@@ -763,7 +763,7 @@
   border: 1px solid rgba(248, 120, 32, 0.48);
   border-radius: 6px;
   background: rgba(7, 8, 11, 0.82);
-  color: #ffd3b4;
+  color: var(--admin-light-info, #ffd3b4);
   font-size: 8px;
   font-weight: 750;
   cursor: pointer;
@@ -771,7 +771,7 @@
 
 .primaryThumbBtn:disabled {
   cursor: default;
-  color: #fff;
+  color: var(--admin-white);
   background: rgba(248, 120, 32, 0.88);
 }
 
@@ -789,7 +789,7 @@
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 5px;
   background: rgba(7, 8, 11, 0.82);
-  color: #fff;
+  color: var(--admin-white);
   cursor: pointer;
   font-size: 10px;
 }
@@ -809,7 +809,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  color: #fff;
+  color: var(--admin-white);
   font-size: 8px;
   cursor: pointer;
   display: flex;
@@ -845,8 +845,8 @@
 }
 
 .addImageCard:hover {
-  border-color: var(--admin-orange);
-  color: var(--admin-orange);
+  border-color: var(--admin-light-accent, var(--admin-orange));
+  color: var(--admin-light-accent, var(--admin-orange));
   background: var(--admin-orange-glow);
 }
 
@@ -865,19 +865,19 @@
 }
 
 .laptopUploadFeedback_progress {
-  color: #ffd3b4;
+  color: var(--admin-light-info, #ffd3b4);
   border-color: rgba(248, 120, 32, 0.28);
   background: rgba(248, 120, 32, 0.06);
 }
 
 .laptopUploadFeedback_success {
-  color: #90e7bb;
+  color: var(--admin-light-success, #90e7bb);
   border-color: rgba(41, 182, 112, 0.28);
   background: rgba(41, 182, 112, 0.06);
 }
 
 .laptopUploadFeedback_error {
-  color: #ffaca8;
+  color: var(--admin-light-danger, #ffaca8);
   border-color: rgba(255, 83, 76, 0.3);
   background: rgba(255, 83, 76, 0.06);
 }
@@ -914,7 +914,7 @@
 .checklistGrid input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: var(--admin-orange);
+  accent-color: var(--admin-light-accent, var(--admin-orange));
   cursor: pointer;
 }
 
@@ -955,7 +955,7 @@
 .radioLabelRow input[type="radio"] {
   width: 16px;
   height: 16px;
-  accent-color: var(--admin-orange);
+  accent-color: var(--admin-light-accent, var(--admin-orange));
   cursor: pointer;
 }
 
@@ -1106,7 +1106,7 @@
 
   .mobileMenuButton:hover,
   .mobileMenuButton:focus-visible {
-    border-color: var(--admin-orange);
+    border-color: var(--admin-light-accent, var(--admin-orange));
     background: #181a22;
     box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45), 0 0 18px rgba(248, 120, 32, 0.16);
     outline: none;
@@ -1122,7 +1122,7 @@
   }
 
   .mobileMenuButtonOpen {
-    color: var(--admin-orange);
+    color: var(--admin-light-accent, var(--admin-orange));
     border-color: rgba(248, 120, 32, 0.64);
   }
 
@@ -1335,7 +1335,7 @@
 }
 
 .loginInput:focus {
-  border-color: var(--admin-orange);
+  border-color: var(--admin-light-accent, var(--admin-orange));
   box-shadow: 0 0 0 3px rgba(248, 120, 32, 0.15);
 }
 
@@ -1373,7 +1373,7 @@
 .loginError {
   background-color: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #f87171;
+  color: var(--admin-light-danger, #f87171);
   padding: 10px 14px;
   border-radius: 8px;
   font-size: 12px;
@@ -1440,7 +1440,7 @@
 
 .statOrdersCardActive {
   background-color: var(--admin-orange-glow) !important;
-  border-color: var(--admin-orange) !important;
+  border-color: var(--admin-light-accent, var(--admin-orange)) !important;
   box-shadow: 0 4px 15px rgba(248, 120, 32, 0.08);
 }
 
@@ -1489,12 +1489,12 @@
 
 .statOrdersCardActive .statOrdersLabel,
 .statOrdersCardActive .statOrdersSub {
-  color: var(--admin-orange) !important;
+  color: var(--admin-light-accent, var(--admin-orange)) !important;
   opacity: 0.8;
 }
 
 .statOrdersCardActive .statOrdersCount {
-  color: var(--admin-orange) !important;
+  color: var(--admin-light-accent, var(--admin-orange)) !important;
 }
 
 /* ── DOUBLE COLUMN WORKSPACE GRID ── */
@@ -1689,7 +1689,7 @@
 
 .detailsProductQty {
   font-size: 11px;
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -1751,7 +1751,7 @@
 
 .detailsActionBtnRed {
   border-color: rgba(239, 68, 68, 0.2) !important;
-  color: #f87171 !important;
+  color: var(--admin-light-danger, #f87171) !important;
 }
 
 .detailsActionBtnRed:hover {
@@ -1804,8 +1804,8 @@
 }
 
 .pagerBtnActive {
-  background-color: var(--admin-orange) !important;
-  border-color: var(--admin-orange) !important;
+  background-color: var(--admin-light-accent, var(--admin-orange)) !important;
+  border-color: var(--admin-light-accent, var(--admin-orange)) !important;
   color: var(--admin-white) !important;
 }
 
@@ -1835,7 +1835,7 @@
 
 .adminTable td {
   padding: 12px 12px;
-  color: #e5e7eb;
+  color: var(--admin-light-text, #e5e7eb);
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   vertical-align: middle;
   font-size: 13px;
@@ -1914,14 +1914,14 @@
 
 .metricLabel {
   font-size: 11px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-weight: bold;
 }
 
 .metricValue {
   font-size: 22px;
   font-weight: 850;
-  color: #fff;
+  color: var(--admin-white);
   font-family: var(--font-vazirmatn), system-ui;
 }
 
@@ -1931,7 +1931,7 @@
 }
 
 .metricSubText.up {
-  color: #10b981;
+  color: var(--admin-light-success, #10b981);
 }
 
 .metricIconContainer {
@@ -1974,7 +1974,7 @@
   left: 0;
   background: none;
   border: none;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 18px;
   cursor: pointer;
   padding: 4px;
@@ -1982,7 +1982,7 @@
 }
 
 .detailsCloseBtn:hover {
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .largeAvatar {
@@ -1997,14 +1997,14 @@
 .detailsName {
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--admin-white);
   margin: 0 0 6px 0;
 }
 
 /* Status Badges */
 .badgeActive {
   background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--admin-light-success, #10b981);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11px;
@@ -2013,7 +2013,7 @@
 
 .badgeVip {
   background-color: rgba(248, 120, 32, 0.1);
-  color: #f87820;
+  color: var(--admin-light-accent, #f87820);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11px;
@@ -2022,7 +2022,7 @@
 
 .badgeInactive {
   background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--admin-light-danger, #ef4444);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 11px;
@@ -2051,7 +2051,7 @@
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background-color: rgba(255, 255, 255, 0.02);
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2062,26 +2062,26 @@
 
 .actionCircleBtn:hover {
   background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: var(--admin-white);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 .actionCircleBtn.delete {
   background-color: rgba(239, 68, 68, 0.05);
   border-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  color: var(--admin-light-danger, #ef4444);
 }
 
 .actionCircleBtn.delete:hover {
   background-color: #ef4444;
-  color: #fff;
+  color: var(--admin-white);
   border-color: #ef4444;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .actionLabel {
   font-size: 9.5px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
 }
 
 /* Sticky Details Tab controls */
@@ -2096,7 +2096,7 @@
   flex: 1;
   background: none;
   border: none;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 11.5px;
   font-weight: 750;
   cursor: pointer;
@@ -2108,11 +2108,11 @@
 }
 
 .detailsTabBtn:hover {
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .detailsTabBtnActive {
-  color: #f87820 !important;
+  color: var(--admin-light-accent, #f87820) !important;
 }
 
 .detailsTabBtnActive::after {
@@ -2140,12 +2140,12 @@
 }
 
 .fieldLabel {
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 11.5px;
 }
 
 .fieldValue {
-  color: #fff;
+  color: var(--admin-white);
   font-size: 12px;
   font-weight: 700;
   text-align: left;
@@ -2170,24 +2170,24 @@
 .notesWidgetTitle {
   font-size: 12px;
   font-weight: bold;
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .notesEditBtn {
   background: none;
   border: none;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   cursor: pointer;
   font-size: 11px;
 }
 
 .notesEditBtn:hover {
-  color: #f87820;
+  color: var(--admin-light-accent, #f87820);
 }
 
 .notesContentBlock {
   font-size: 11.5px;
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
   line-height: 1.6;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
@@ -2203,7 +2203,7 @@
   background-color: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(248, 120, 32, 0.3);
   border-radius: 8px;
-  color: #fff;
+  color: var(--admin-white);
   padding: 10px;
   font-size: 11.5px;
   font-family: inherit;
@@ -2222,7 +2222,7 @@
 .performanceTitle {
   font-size: 12.5px;
   font-weight: bold;
-  color: #fff;
+  color: var(--admin-white);
   margin: 0;
 }
 
@@ -2248,13 +2248,13 @@
 
 .perfLabel {
   font-size: 10px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
 }
 
 .perfValue {
   font-size: 12px;
   font-weight: 800;
-  color: #fff;
+  color: var(--admin-white);
   font-family: var(--font-vazirmatn), 'Inter', system-ui;
 }
 
@@ -2287,7 +2287,7 @@
 .searchBarIcon {
   position: absolute;
   right: 12px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 12px;
   pointer-events: none;
 }
@@ -2298,7 +2298,7 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 8px 36px 8px 12px;
-  color: #fff;
+  color: var(--admin-white);
   font-size: 12px;
   outline: none;
   transition: all 0.2s;
@@ -2315,7 +2315,7 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 8px 12px;
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
   font-size: 11.5px;
   outline: none;
   cursor: pointer;
@@ -2341,7 +2341,7 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   padding: 8px 14px;
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
   font-size: 11.5px;
   cursor: pointer;
   display: flex;
@@ -2352,7 +2352,7 @@
 
 .advFilterBtn:hover {
   background-color: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  color: var(--admin-white);
 }
 
 /* ── STOCK LAPTOPS — MODERN OPERATIONS UI ── */
@@ -2456,7 +2456,7 @@
 .laptopsExportButton {
   background: rgba(255, 255, 255, 0.035) !important;
   border-color: var(--laptop-border-strong) !important;
-  color: #dfe3ec !important;
+  color: var(--admin-light-text, #dfe3ec) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
@@ -2606,7 +2606,7 @@
   border-color: var(--laptop-border-strong) !important;
   border-radius: 11px !important;
   background-color: rgba(8, 9, 14, 0.38) !important;
-  color: #dfe3ec;
+  color: var(--admin-light-text, #dfe3ec);
 }
 
 .laptopsFilterBar .searchInput {
@@ -2615,7 +2615,7 @@
 }
 
 .laptopsFilterBar .searchInput::placeholder {
-  color: #777f92;
+  color: var(--admin-light-muted, #777f92);
 }
 
 .laptopsFilterBar .selectField {
@@ -2627,14 +2627,14 @@
 
 .laptopsFilterBar .cancelFormBtn {
   padding: 0 13px !important;
-  color: #ff9b55 !important;
+  color: var(--admin-light-accent, #ff9b55) !important;
   transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
 }
 
 .laptopsFilterBar .cancelFormBtn:hover {
   border-color: rgba(248, 120, 32, 0.4) !important;
   background-color: rgba(248, 120, 32, 0.08) !important;
-  color: #ffb47d !important;
+  color: var(--admin-light-danger, #ffb47d) !important;
 }
 
 .laptopsModernPage .searchInput:focus,
@@ -2659,7 +2659,7 @@
 
 .laptopsTableCard .adminTable th {
   height: 48px;
-  color: #9ca4b8 !important;
+  color: var(--admin-light-muted, #9ca4b8) !important;
   font-weight: 700;
   letter-spacing: 0.01em;
   border-bottom-color: var(--laptop-border) !important;
@@ -2947,7 +2947,7 @@
   box-shadow:
     0 10px 24px rgba(248, 120, 32, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.32);
-  color: #fff;
+  color: var(--admin-white);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -3096,20 +3096,20 @@
 .modalHeader h3 {
   font-size: 15px;
   font-weight: 800;
-  color: #fff;
+  color: var(--admin-white);
   margin: 0;
 }
 
 .modalCloseBtn {
   background: none;
   border: none;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 20px;
   cursor: pointer;
 }
 
 .modalCloseBtn:hover {
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .modalBody {
@@ -3160,7 +3160,7 @@
 .shipmentsCardTitle {
   font-size: 13.5px;
   font-weight: 800;
-  color: #fff;
+  color: var(--admin-white);
   margin: 0 0 16px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding-bottom: 12px;
@@ -3197,13 +3197,13 @@
 .doughnutCenterNum {
   font-size: 18px;
   font-weight: 900;
-  color: #fff;
+  color: var(--admin-white);
   font-family: var(--font-vazirmatn), 'Inter', system-ui;
 }
 
 .doughnutCenterLabel {
   font-size: 8.5px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   margin-top: 2px;
   font-weight: bold;
 }
@@ -3236,7 +3236,7 @@
 }
 
 .legendText {
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
 }
 
 .legendValBlock {
@@ -3247,12 +3247,12 @@
 }
 
 .legendCount {
-  color: #fff;
+  color: var(--admin-white);
   font-weight: bold;
 }
 
 .legendPct {
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 10px;
 }
 
@@ -3305,12 +3305,12 @@
 
 .timelineTime {
   font-size: 9.5px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
 }
 
 .timelineDesc {
   font-size: 11px;
-  color: #e5e7eb;
+  color: var(--admin-light-text, #e5e7eb);
   line-height: 1.5;
 }
 
@@ -3325,7 +3325,7 @@
 
 .trackingCardHeaderLink {
   font-size: 10.5px;
-  color: #f87820;
+  color: var(--admin-light-accent, #f87820);
   cursor: pointer;
   font-weight: bold;
 }
@@ -3365,7 +3365,7 @@
 .trackingBoxCode {
   font-size: 11.5px;
   font-weight: 850;
-  color: #fff;
+  color: var(--admin-white);
   font-family: 'Inter', monospace;
 }
 
@@ -3374,7 +3374,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 11px;
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
 }
 
 .trackingBoxRouteDetails {
@@ -3386,13 +3386,13 @@
 
 .trackingBoxRouteEst {
   font-size: 10px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-family: var(--font-vazirmatn), 'Inter', system-ui;
 }
 
 .badgeCustoms {
   background-color: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  color: var(--admin-light-accent, #f59e0b);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 9.5px;
@@ -3401,7 +3401,7 @@
 
 .badgeIran {
   background-color: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
+  color: var(--admin-light-danger, #a855f7);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 9.5px;
@@ -3410,7 +3410,7 @@
 
 .badgeProblem {
   background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--admin-light-danger, #ef4444);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 9.5px;
@@ -3425,7 +3425,7 @@
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   direction: rtl;
-  color: #e5e7eb;
+  color: var(--admin-light-text, #e5e7eb);
 }
 
 .detailsHeader {
@@ -3441,12 +3441,12 @@
   margin: 0;
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .backToStatsBtn {
   background: rgba(248, 120, 32, 0.1);
-  color: #f87820;
+  color: var(--admin-light-accent, #f87820);
   border: 1px solid rgba(248, 120, 32, 0.2);
   border-radius: 8px;
   padding: 6px 14px;
@@ -3462,7 +3462,7 @@
 
 .backToStatsBtn:hover {
   background: #f87820;
-  color: #fff;
+  color: var(--admin-white);
   transform: translateY(-1px);
 }
 
@@ -3476,7 +3476,7 @@
 .shipmentMainCode {
   font-size: 18px;
   font-weight: 900;
-  color: #ff9d00;
+  color: var(--admin-light-accent, #ff9d00);
   font-family: var(--font-vazirmatn), 'Inter', monospace;
 }
 
@@ -3509,19 +3509,19 @@
 .productMiniName {
   font-size: 13px;
   font-weight: 750;
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .productMiniOrderId {
   font-size: 11.5px;
-  color: #f87820;
+  color: var(--admin-light-accent, #f87820);
   text-decoration: underline;
   cursor: pointer;
   font-weight: bold;
 }
 
 .productMiniOrderId:hover {
-  color: #ff8c3a;
+  color: var(--admin-light-accent, #ff8c3a);
 }
 
 .specsGrid {
@@ -3543,14 +3543,14 @@
 
 .specLabel {
   font-size: 10.5px;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-weight: bold;
 }
 
 .specValue {
   font-size: 12.5px;
   font-weight: 750;
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .addressSection {
@@ -3567,7 +3567,7 @@
 .addressTitle {
   font-size: 12px;
   font-weight: bold;
-  color: #fff;
+  color: var(--admin-white);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   padding-bottom: 6px;
   margin: 0;
@@ -3580,11 +3580,11 @@
 }
 
 .addressLabel {
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
 }
 
 .addressVal {
-  color: #e5e7eb;
+  color: var(--admin-light-text, #e5e7eb);
   font-weight: 700;
   text-align: left;
 }
@@ -3596,7 +3596,7 @@
 .timelineHeading {
   font-size: 12px;
   font-weight: bold;
-  color: #fff;
+  color: var(--admin-white);
   margin-bottom: 16px;
 }
 
@@ -3655,21 +3655,21 @@
 .stageTitle {
   font-size: 12px;
   font-weight: 750;
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   transition: color 0.3s;
 }
 
 .stageTitleActive {
-  color: #fff;
+  color: var(--admin-white);
 }
 
 .stageTitleCompleted {
-  color: #10b981;
+  color: var(--admin-light-success, #10b981);
 }
 
 .stageSubtext {
   font-size: 10px;
-  color: #6c7284;
+  color: var(--admin-light-muted, #6c7284);
 }
 
 .printLabelActionBtn {
@@ -3678,7 +3678,7 @@
   background: linear-gradient(135deg, #f87820 0%, #ff5e00 100%);
   border: none;
   border-radius: 10px;
-  color: #fff;
+  color: var(--admin-white);
   font-weight: 800;
   font-size: 12.5px;
   cursor: pointer;
@@ -3716,7 +3716,7 @@
 .downloadActionLink {
   cursor: pointer;
   text-decoration: underline;
-  color: #f87820;
+  color: var(--admin-light-accent, #f87820);
 }
 
 /* Financial Reports dashboard styles */
@@ -3761,7 +3761,7 @@
 .finChartTitle {
   font-size: 15px;
   font-weight: 850;
-  color: #fff;
+  color: var(--admin-white);
   margin: 0 0 20px 0;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -3790,12 +3790,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
 }
 
 .finBreakdownVal {
   font-weight: bold;
-  color: #fff;
+  color: var(--admin-white);
 }
 
 /* ── ADMIN MOBILE LAYOUT SYSTEM ── */
@@ -4243,7 +4243,7 @@
 }
 
 .categoryListText {
-  color: #c4c8d4;
+  color: var(--admin-light-text, #c4c8d4);
   font-size: 11.5px;
   font-weight: 500;
   display: flex;
@@ -4252,7 +4252,7 @@
 }
 
 .categoryListCount {
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 11px;
   font-family: var(--font-vazirmatn), system-ui;
 }
@@ -4288,13 +4288,13 @@
 }
 
 .brandListText {
-  color: #fff;
+  color: var(--admin-white);
   font-size: 11.5px;
   font-weight: bold;
 }
 
 .brandListCount {
-  color: #8b92a5;
+  color: var(--admin-light-muted, #8b92a5);
   font-size: 11px;
   font-family: var(--font-vazirmatn), system-ui;
 }
@@ -4308,7 +4308,7 @@
   --admin-orange-glow: rgba(248, 120, 32, .085);
   --admin-green: #167c45;
   --admin-green-bg: #edf8f1;
-  --admin-grey-text: #706a63;
+  --admin-grey-text: #645d56;
   --admin-white: #211d19;
   background-color: var(--admin-bg);
   color: var(--admin-white);
@@ -4350,7 +4350,7 @@
 .ordersPageEyebrow {
   display: block;
   margin-bottom: 7px;
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   font-size: 10px;
   font-weight: 750;
   letter-spacing: .04em;
@@ -4368,7 +4368,7 @@
   letter-spacing: -.025em;
 }
 
-.ordersPageHeader h1 svg { color: var(--admin-orange); }
+.ordersPageHeader h1 svg { color: var(--admin-light-accent, var(--admin-orange)); }
 
 .ordersPageHeader p {
   max-width: 52ch;
@@ -4381,7 +4381,7 @@
 .ordersError {
   margin-bottom: 16px;
   padding: 11px 14px;
-  color: #fecaca;
+  color: var(--admin-light-text, #fecaca);
   background: rgba(239,68,68,.08);
   border: 1px solid rgba(239,68,68,.2);
   border-radius: 10px;
@@ -4472,7 +4472,7 @@
   border-radius: 9px;
 }
 
-.ordersSummaryCardActive .ordersSummaryIcon { color: var(--admin-orange); }
+.ordersSummaryCardActive .ordersSummaryIcon { color: var(--admin-light-accent, var(--admin-orange)); }
 
 .ordersSummaryMeta {
   display: flex;
@@ -4565,7 +4565,7 @@
 
 .ordersFilterTrigger:hover,
 .ordersFilterTriggerActive {
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   background: rgba(248,120,32,.055);
   border-color: rgba(248,120,32,.28);
 }
@@ -4774,8 +4774,8 @@
   transition: color .18s ease, background-color .18s ease, border-color .18s ease, transform .18s ease;
 }
 
-.ordersRowActions a:hover { color: #37b56d; background: rgba(55,181,109,.08); border-color: rgba(55,181,109,.16); }
-.ordersRowActions button:hover { color: #ef6b6b; background: rgba(239,68,68,.07); border-color: rgba(239,68,68,.15); }
+.ordersRowActions a:hover { color: var(--admin-light-success, #37b56d); background: rgba(55,181,109,.08); border-color: rgba(55,181,109,.16); }
+.ordersRowActions button:hover { color: var(--admin-light-danger, #ef6b6b); background: rgba(239,68,68,.07); border-color: rgba(239,68,68,.15); }
 .ordersRowActions a:active,
 .ordersRowActions button:active { transform: scale(.96); }
 .ordersRowActions button:disabled { opacity: .45; cursor: wait; }
@@ -4795,10 +4795,10 @@
   text-align: center;
 }
 
-.ordersEmptyState > span { display: grid; width: 48px; height: 48px; place-items: center; color: var(--admin-orange); background: rgba(248,120,32,.07); border-radius: 13px; }
+.ordersEmptyState > span { display: grid; width: 48px; height: 48px; place-items: center; color: var(--admin-light-accent, var(--admin-orange)); background: rgba(248,120,32,.07); border-radius: 13px; }
 .ordersEmptyState strong { color: var(--admin-white); font-size: 13px; }
 .ordersEmptyState p { margin: 0; font-size: 11px; }
-.ordersEmptyState button { margin-top: 5px; color: var(--admin-orange); font-family: inherit; font-size: 10.5px; font-weight: 700; background: transparent; border: 0; cursor: pointer; }
+.ordersEmptyState button { margin-top: 5px; color: var(--admin-light-accent, var(--admin-orange)); font-family: inherit; font-size: 10.5px; font-weight: 700; background: transparent; border: 0; cursor: pointer; }
 
 .ordersPager {
   display: flex;
@@ -4825,7 +4825,7 @@
   cursor: pointer;
 }
 
-.ordersPager button:hover:not(:disabled) { border-color: rgba(248,120,32,.28); color: var(--admin-orange); }
+.ordersPager button:hover:not(:disabled) { border-color: rgba(248,120,32,.28); color: var(--admin-light-accent, var(--admin-orange)); }
 .ordersPager button:disabled { opacity: .35; cursor: default; }
 
 .orderDetailPanel,
@@ -4855,7 +4855,7 @@
 .orderDetailCodeRow { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
 .orderDetailCodeRow strong { color: var(--admin-white); font-size: 15px; font-weight: 850; font-variant-numeric: tabular-nums; }
 .orderDetailCodeRow button { width: 27px; height: 27px; }
-.orderDetailCodeRow button:hover { color: var(--admin-orange); background: rgba(248,120,32,.06); }
+.orderDetailCodeRow button:hover { color: var(--admin-light-accent, var(--admin-orange)); background: rgba(248,120,32,.06); }
 
 .orderDetailFacts {
   display: grid;
@@ -4881,14 +4881,14 @@
   border-radius: 11px;
 }
 
-.orderNextAction > div > span { display: block; margin-bottom: 3px; color: var(--admin-orange); font-size: 8.5px; font-weight: 750; }
+.orderNextAction > div > span { display: block; margin-bottom: 3px; color: var(--admin-light-accent, var(--admin-orange)); font-size: 8.5px; font-weight: 750; }
 .orderNextAction strong { display: block; color: var(--admin-white); font-size: 12px; font-weight: 800; }
 .orderNextAction p { margin: 3px 0 0; color: var(--admin-grey-text); font-size: 9px; line-height: 1.55; }
 
 .orderNextAction_complete { background: rgba(34,197,94,.045); border-color: rgba(34,197,94,.15); }
-.orderNextAction_complete > div > span { color: #41b96e; }
+.orderNextAction_complete > div > span { color: var(--admin-light-success, #41b96e); }
 .orderNextAction_cancelled { background: rgba(239,68,68,.035); border-color: rgba(239,68,68,.13); }
-.orderNextAction_cancelled > div > span { color: #ef7777; }
+.orderNextAction_cancelled > div > span { color: var(--admin-light-danger, #ef7777); }
 
 .orderNextActionButton {
   display: inline-flex;
@@ -4897,7 +4897,7 @@
   justify-content: center;
   gap: 7px;
   padding: 0 13px;
-  color: #fff;
+  color: var(--admin-white);
   text-decoration: none;
   font-family: inherit;
   font-size: 10px;
@@ -4935,7 +4935,7 @@
 
 .orderDetailSectionHeader:hover { background: var(--orders-muted-surface); }
 .orderDetailSectionTitle { display: inline-flex; align-items: center; gap: 7px; font-size: 10.5px; font-weight: 750; }
-.orderDetailSectionTitle svg { color: var(--admin-orange); }
+.orderDetailSectionTitle svg { color: var(--admin-light-accent, var(--admin-orange)); }
 .orderDetailSectionTrailing { display: inline-flex; align-items: center; gap: 8px; color: var(--admin-grey-text); font-size: 8.5px; }
 .orderDetailChevron { display: grid; place-items: center; }
 .orderDetailSectionBody { padding: 2px 15px 14px; animation: ordersSectionReveal .18s ease both; }
@@ -4975,7 +4975,7 @@
 .orderPriceTotal { margin-top: 4px; padding-top: 9px !important; border-top: 1px solid var(--orders-soft-line); }
 .orderPriceTotal dt,
 .orderPriceTotal dd { color: var(--admin-white); font-size: 10.5px; font-weight: 800; }
-.orderPriceTotal dd { color: var(--admin-orange); }
+.orderPriceTotal dd { color: var(--admin-light-accent, var(--admin-orange)); }
 
 .orderDetailEmpty,
 .orderAdminNote { margin: 0; color: var(--admin-grey-text); font-size: 9.5px; line-height: 1.75; }
@@ -4986,7 +4986,7 @@
   align-items: center;
   gap: 5px;
   margin-top: 12px;
-  color: var(--admin-orange);
+  color: var(--admin-light-accent, var(--admin-orange));
   text-decoration: none;
   font-size: 9.5px;
   font-weight: 700;
@@ -5011,7 +5011,7 @@
   cursor: pointer;
 }
 
-.orderSecondaryButton:hover:not(:disabled) { color: var(--admin-orange); border-color: rgba(248,120,32,.25); }
+.orderSecondaryButton:hover:not(:disabled) { color: var(--admin-light-accent, var(--admin-orange)); border-color: rgba(248,120,32,.25); }
 .orderSecondaryButton:disabled { opacity: .4; cursor: not-allowed; }
 
 .orderDetailFooter {
@@ -5031,7 +5031,7 @@
   align-items: center;
   gap: 6px;
   padding: 0 11px;
-  color: #ef7777;
+  color: var(--admin-light-danger, #ef7777);
   font-family: inherit;
   font-size: 9.5px;
   font-weight: 700;
@@ -5041,7 +5041,7 @@
   cursor: pointer;
 }
 
-.orderCancelButton:hover:not(:disabled) { color: #fecaca; background: rgba(239,68,68,.07); border-color: rgba(239,68,68,.3); }
+.orderCancelButton:hover:not(:disabled) { color: var(--admin-light-text, #fecaca); background: rgba(239,68,68,.07); border-color: rgba(239,68,68,.3); }
 .orderCancelButton:disabled { opacity: .4; cursor: not-allowed; }
 
 .orderDetailPlaceholder {
@@ -5072,7 +5072,7 @@
 
 :global(html[data-theme='light']) .ordersSummaryIcon { background: rgba(72,55,41,.035); }
 :global(html[data-theme='light']) .ordersSkeletonRow span { background: rgba(72,55,41,.08); }
-:global(html[data-theme='light']) .ordersError { color: #a92f2f; }
+:global(html[data-theme='light']) .ordersError { color: var(--admin-light-danger, #a92f2f); }
 
 @media (max-width: 1180px) {
   .ordersWorkspace { grid-template-columns: minmax(0, 1.45fr) minmax(300px, .82fr); }
@@ -5178,7 +5178,7 @@
 :global(html[data-theme='light']) .modalFooter,
 :global(html[data-theme='light']) .shipmentsCardTitle,
 :global(html[data-theme='light']) .finChartTitle { border-color: var(--admin-border); }
-:global(html[data-theme='light']) .adminTable td { color: #403a34; }
+:global(html[data-theme='light']) .adminTable td { color: var(--admin-light-muted, #403a34); }
 :global(html[data-theme='light']) .adminTable tbody tr:hover { background-color: rgba(72,55,41,.035) !important; }
 :global(html[data-theme='light']) .metricValue,
 :global(html[data-theme='light']) .detailsName,
@@ -5195,12 +5195,12 @@
 :global(html[data-theme='light']) .finBreakdownName,
 :global(html[data-theme='light']) .checklistLabel,
 :global(html[data-theme='light']) .detailsActionBtn,
-:global(html[data-theme='light']) .actionCircleBtn { color: #514b45; }
+:global(html[data-theme='light']) .actionCircleBtn { color: var(--admin-light-muted, #514b45); }
 :global(html[data-theme='light']) .performanceGrid,
 :global(html[data-theme='light']) .progressBarTrack { background-color: rgba(43,35,28,.09); border-color: var(--admin-border); }
-:global(html[data-theme='light']) .badgeActive { color: #116c3e; background: rgba(17,108,62,.09); }
-:global(html[data-theme='light']) .badgeInactive { color: #b52f2f; background: rgba(181,47,47,.08); }
-:global(html[data-theme='light']) .badgeGrey { color: #625b54; background: rgba(43,35,28,.06); }
+:global(html[data-theme='light']) .badgeActive { color: var(--admin-light-success, #116c3e); background: rgba(17,108,62,.09); }
+:global(html[data-theme='light']) .badgeInactive { color: var(--admin-light-danger, #b52f2f); background: rgba(181,47,47,.08); }
+:global(html[data-theme='light']) .badgeGrey { color: var(--admin-light-muted, #625b54); background: rgba(43,35,28,.06); }
 :global(html[data-theme='light']) .modalOverlay,
 :global(html[data-theme='light']) .mobileMenuBackdrop { background-color: rgba(43,35,28,.48); }
 :global(html[data-theme='light']) .dragDropArea,
@@ -5226,3 +5226,39 @@
   .laptopsFormView .formFieldsGrid4 { grid-template-columns: minmax(0, 1fr) !important; }
   .laptopsFormView .formFieldsGrid4 > * { grid-column: auto !important; }
 }
+
+/* Legacy Admin text consumes light-theme roles without altering dark colors. */
+:global(html[data-theme='light']) .pageWrapper {
+  --admin-light-text: var(--admin-white);
+  --admin-light-muted: var(--admin-grey-text);
+}
+
+:global(html[data-theme='light']) .pageWrapper { --admin-control-border: #8a8178; --admin-light-control-bg: var(--admin-input-bg); }
+:global(html[data-theme='light']) .pageWrapper input:not([type='checkbox']):not([type='radio']),
+:global(html[data-theme='light']) .pageWrapper select,
+:global(html[data-theme='light']) .pageWrapper textarea { border-color: var(--admin-control-border); }
+
+:global(html[data-theme='light']) .pageWrapper {
+  --admin-light-accent: #a34408;
+  --admin-light-success: #116c3e;
+  --admin-light-danger: #a92f2f;
+  --admin-light-info: #356aa8;
+}
+
+/* Laptop surfaces follow the existing light Admin palette. */
+:global(html[data-theme='light']) .laptopsModernPage {
+  --laptop-muted: var(--admin-grey-text);
+  --laptop-surface: var(--admin-card-bg);
+  --laptop-surface-raised: var(--admin-input-bg);
+  --laptop-border: var(--admin-border);
+  --laptop-border-strong: var(--admin-control-border);
+}
+:global(html[data-theme='light']) .laptopsPageHeader { background: var(--admin-card-bg); }
+:global(html[data-theme='light']) .laptopsTableCard .adminTable thead { background: var(--admin-input-bg); }
+:global(html[data-theme='light']) .laptopsFilterBar .searchInput,
+:global(html[data-theme='light']) .laptopsFilterBar .selectField,
+:global(html[data-theme='light']) .laptopsFilterBar .cancelFormBtn,
+:global(html[data-theme='light']) .laptopsFormView .inputField,
+:global(html[data-theme='light']) .laptopsFormView .selectField,
+:global(html[data-theme='light']) .laptopsFormView .textareaField,
+:global(html[data-theme='light']) .laptopsFormView .unifiedStorageGroup { background-color: var(--admin-input-bg) !important; }

@@ -346,10 +346,10 @@ function StockLaptopsContent() {
             {/* Mockup Header Row */}
             <div className={`${styles.pageTitleSection} ${styles.laptopsPageHeader}`} style={{ marginBottom: '24px' }}>
               <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span className={styles.laptopsTitleIcon} style={{ fontSize: '28px', color: '#f87820' }}>{AdminIcons.laptop(28)}</span>
+                <span className={styles.laptopsTitleIcon} style={{ fontSize: '28px', color: 'var(--admin-light-accent, #f87820)' }}>{AdminIcons.laptop(28)}</span>
                 <div>
-                  <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>لپ‌تاپ‌های استوک</h1>
-                  <p style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت موجودی و فروش لپ‌تاپ‌های کارکرده</p>
+                  <h1 style={{ fontSize: '22px', fontWeight: '750', color: 'var(--admin-white)', margin: 0 }}>لپ‌تاپ‌های استوک</h1>
+                  <p style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px', margin: 0 }}>مدیریت موجودی و فروش لپ‌تاپ‌های کارکرده</p>
                 </div>
               </div>
 
@@ -358,7 +358,7 @@ function StockLaptopsContent() {
                   type="button" 
                   onClick={handleExportLaptopsExcel} 
                   className={styles.laptopsExportButton}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}
                 >
                   <span style={{ fontSize: '10px' }}>{AdminIcons.chart(10)}</span>
                   <span>خروجی اکسل</span>
@@ -367,7 +367,7 @@ function StockLaptopsContent() {
                   type="button" 
                   onClick={triggerAddLaptop} 
                   className={styles.laptopsPrimaryButton}
-                  style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.4)', borderRadius: '6px', padding: '4px 10px', fontWeight: '700', fontSize: '11px', height: '28px', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: '#fff', cursor: 'pointer' }}
+                  style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', boxShadow: '0 4px 15px rgba(248, 120, 32, 0.4)', borderRadius: '6px', padding: '4px 10px', fontWeight: '700', fontSize: '11px', height: '28px', border: 'none', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--admin-white)', cursor: 'pointer' }}
                 >
                   <span>{AdminIcons.plus(10)}</span>
                   <span>افزودن لپ‌تاپ جدید</span>
@@ -381,58 +381,58 @@ function StockLaptopsContent() {
               <div className={`${styles.cardPanel} ${styles.laptopsMetricCard}`} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #a855f7' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(168, 85, 247, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#a855f7' }}>{AdminIcons.laptop(18)}</div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>کل لپ‌تاپ‌ها</span>
+                  <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block' }}>کل لپ‌تاپ‌ها</span>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.total}</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                    <strong style={{ fontSize: '20px', fontWeight: '800', color: 'var(--admin-white)' }}>{metrics.total}</strong>
+                    <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>دستگاه</span>
                   </div>
                 </div>
               </div>
 
               {/* Card 2: Available */}
               <div className={`${styles.cardPanel} ${styles.laptopsMetricCard}`} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #2ecc71' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#2ecc71' }}>{AdminIcons.circle(18)}</div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: 'var(--admin-light-success, #2ecc71)' }}>{AdminIcons.circle(18)}</div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>موجود</span>
+                  <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block' }}>موجود</span>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.available}</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                    <strong style={{ fontSize: '20px', fontWeight: '800', color: 'var(--admin-white)' }}>{metrics.available}</strong>
+                    <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>دستگاه</span>
                   </div>
                 </div>
               </div>
 
               {/* Card 3: Reserved */}
               <div className={`${styles.cardPanel} ${styles.laptopsMetricCard}`} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #ff9d00' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255, 157, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#ff9d00' }}>{AdminIcons.lock(18)}</div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255, 157, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: 'var(--admin-light-accent, #ff9d00)' }}>{AdminIcons.lock(18)}</div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>رزرو شده</span>
+                  <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block' }}>رزرو شده</span>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.reserved}</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                    <strong style={{ fontSize: '20px', fontWeight: '800', color: 'var(--admin-white)' }}>{metrics.reserved}</strong>
+                    <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>دستگاه</span>
                   </div>
                 </div>
               </div>
 
               {/* Card 4: Sold */}
               <div className={`${styles.cardPanel} ${styles.laptopsMetricCard}`} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #3b82f6' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#3b82f6' }}>{AdminIcons.bag(18)}</div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: 'var(--admin-light-info, #3b82f6)' }}>{AdminIcons.bag(18)}</div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>فروخته شده</span>
+                  <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block' }}>فروخته شده</span>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{metrics.sold}</strong>
-                    <span style={{ fontSize: '10px', color: '#8b92a5' }}>دستگاه</span>
+                    <strong style={{ fontSize: '20px', fontWeight: '800', color: 'var(--admin-white)' }}>{metrics.sold}</strong>
+                    <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>دستگاه</span>
                   </div>
                 </div>
               </div>
 
               {/* Card 5: Total Profit */}
               <div className={`${styles.cardPanel} ${styles.laptopsMetricCard}`} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', position: 'relative', overflow: 'hidden', borderLeft: '4px solid #2ecc71' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#2ecc71' }}>{AdminIcons.bank(18)}</div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: 'var(--admin-light-success, #2ecc71)' }}>{AdminIcons.bank(18)}</div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block' }}>سود کل</span>
+                  <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block' }}>سود کل</span>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                    <strong style={{ fontSize: '18px', fontWeight: '800', color: '#2ecc71' }}>{Math.round(metrics.profit).toLocaleString('fa-IR')}</strong>
-                    <span style={{ fontSize: '9px', color: '#2ecc71' }}>تومان</span>
+                    <strong style={{ fontSize: '18px', fontWeight: '800', color: 'var(--admin-light-success, #2ecc71)' }}>{Math.round(metrics.profit).toLocaleString('fa-IR')}</strong>
+                    <span style={{ fontSize: '9px', color: 'var(--admin-light-success, #2ecc71)' }}>تومان</span>
                   </div>
                 </div>
               </div>
@@ -446,18 +446,18 @@ function StockLaptopsContent() {
                 
                 {/* Filter Area */}
                 <div className={styles.laptopsFilterBar} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(255, 255, 255, 0.01)' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff', marginLeft: 'auto' }}>لیست لپ‌تاپ‌ها</span>
+                  <span style={{ fontSize: '13px', fontWeight: '750', color: 'var(--admin-white)', marginLeft: 'auto' }}>لیست لپ‌تاپ‌ها</span>
                   
                   {/* Search keyword */}
                   <div className={styles.laptopsSearchBox} style={{ position: 'relative', width: '180px' }}>
-                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', color: '#8b92a5', fontSize: '11px' }}>{AdminIcons.search(11)}</span>
+                    <span style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11px' }}>{AdminIcons.search(11)}</span>
                     <input 
                       type="text" 
                       placeholder="جستجو (مدل، برند، پردازنده...)" 
                       value={laptopSearchQuery}
                       onChange={(e) => { setLaptopSearchQuery(e.target.value); setLaptopsPage(1); }}
                       className={styles.searchInput}
-                      style={{ width: '100%', padding: '5px 26px 5px 10px', fontSize: '11px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)' }}
+                      style={{ width: '100%', padding: '5px 26px 5px 10px', fontSize: '11px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', border: '1px solid rgba(255,255,255,0.06)' }}
                     />
                   </div>
 
@@ -524,7 +524,7 @@ function StockLaptopsContent() {
                       setLaptopsPage(1);
                     }}
                     className={styles.cancelFormBtn}
-                    style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(248,120,32,0.2)', color: '#f87820', borderRadius: '6px' }}
+                    style={{ padding: '4px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(248,120,32,0.2)', color: 'var(--admin-light-accent, #f87820)', borderRadius: '6px' }}
                   >
                     <span>{AdminIcons.sliders(12)}</span> فیلتر
                   </button>
@@ -536,23 +536,23 @@ function StockLaptopsContent() {
                     <thead>
                       <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
                         <th style={{ padding: '12px 15px', textAlign: 'center', width: '60px' }}>تصویر</th>
-                        <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>مدل</th>
-                        <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>پردازنده</th>
-                        <th style={{ textAlign: 'right', fontSize: '11.5px', color: '#8b92a5' }}>کارت گرافیک</th>
-                        <th style={{ textAlign: 'left', fontSize: '11.5px', color: '#8b92a5' }}>قیمت فروش (تومان)</th>
-                        <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5' }}>وضعیت</th>
-                        <th style={{ textAlign: 'center', fontSize: '11.5px', color: '#8b92a5', width: '100px' }}>عملیات</th>
+                        <th style={{ textAlign: 'right', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>مدل</th>
+                        <th style={{ textAlign: 'right', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>پردازنده</th>
+                        <th style={{ textAlign: 'right', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>کارت گرافیک</th>
+                        <th style={{ textAlign: 'left', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>قیمت فروش (تومان)</th>
+                        <th style={{ textAlign: 'center', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>وضعیت</th>
+                        <th style={{ textAlign: 'center', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', width: '100px' }}>عملیات</th>
                       </tr>
                     </thead>
                     <tbody>
                       {laptopsLoading && (
-                        <tr><td colSpan="7" style={{ padding: '36px 15px', textAlign: 'center', color: '#8b92a5' }}>در حال بارگذاری لپ‌تاپ‌ها...</td></tr>
+                        <tr><td colSpan="7" style={{ padding: '36px 15px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)' }}>در حال بارگذاری لپ‌تاپ‌ها...</td></tr>
                       )}
                       {!laptopsLoading && laptopsError && (
-                        <tr><td colSpan="7" style={{ padding: '36px 15px', textAlign: 'center', color: '#ff6b6b' }}>{laptopsError}</td></tr>
+                        <tr><td colSpan="7" style={{ padding: '36px 15px', textAlign: 'center', color: 'var(--admin-light-danger, #ff6b6b)' }}>{laptopsError}</td></tr>
                       )}
                       {!laptopsLoading && !laptopsError && activeLaptopsList.length === 0 && (
-                        <tr><td colSpan="7" style={{ padding: '36px 15px', textAlign: 'center', color: '#8b92a5' }}>هیچ لپ‌تاپی پیدا نشد.</td></tr>
+                        <tr><td colSpan="7" style={{ padding: '36px 15px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)' }}>هیچ لپ‌تاپی پیدا نشد.</td></tr>
                       )}
                       {!laptopsLoading && !laptopsError && activeLaptopsList.map((laptop) => {
                         const parsedSpecs = parseProductToForm(laptop);
@@ -568,17 +568,17 @@ function StockLaptopsContent() {
                         const statusValue = laptop.stockStatus || 'available';
 
                         // Status badges colors exactly matching mockup
-                        let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)' };
+                        let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: 'var(--admin-light-success, #2ecc71)', border: '1px solid rgba(46,204,113,0.2)' };
                         let badgeText = 'موجود';
                         
                         if (statusValue === 'reserved') {
-                          badgeStyle = { background: 'rgba(255,157,0,0.1)', color: '#ff9d00', border: '1px solid rgba(255,157,0,0.2)' };
+                          badgeStyle = { background: 'rgba(255,157,0,0.1)', color: 'var(--admin-light-accent, #ff9d00)', border: '1px solid rgba(255,157,0,0.2)' };
                           badgeText = 'رزرو شده';
                         } else if (statusValue === 'sold') {
-                          badgeStyle = { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' };
+                          badgeStyle = { background: 'rgba(59,130,246,0.1)', color: 'var(--admin-light-info, #3b82f6)', border: '1px solid rgba(59,130,246,0.2)' };
                           badgeText = 'فروخته شده';
                         } else if (statusValue === 'unavailable') {
-                          badgeStyle = { background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.2)' };
+                          badgeStyle = { background: 'rgba(255,77,77,0.1)', color: 'var(--admin-light-danger, #ff4d4d)', border: '1px solid rgba(255,77,77,0.2)' };
                           badgeText = 'ناموجود';
                         }
 
@@ -598,22 +598,22 @@ function StockLaptopsContent() {
                               {laptop.image ? <img 
                                 src={laptop.image} alt={laptop.name}
                                 style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.08)' }}
-                              /> : <span style={{ width: '40px', height: '40px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', color: '#8b92a5' }}>{AdminIcons.laptop(18)}</span>}
+                              /> : <span style={{ width: '40px', height: '40px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', color: 'var(--admin-light-muted, #8b92a5)' }}>{AdminIcons.laptop(18)}</span>}
                             </td>
                             <td style={{ padding: '18px 10px', fontSize: '12px' }}>
-                              <div style={{ fontWeight: '700', color: '#fff' }}>{laptopDisplayName(parsedSpecs)}</div>
-                              <div style={{ fontSize: '10.5px', fontWeight: '300', color: '#8b92a5', marginTop: '4px' }}>
+                              <div style={{ fontWeight: '700', color: 'var(--admin-white)' }}>{laptopDisplayName(parsedSpecs)}</div>
+                              <div style={{ fontSize: '10.5px', fontWeight: '300', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>
                                 رم: {parsedSpecs.ram}GB | حافظه: {parsedSpecs.storageSize}{parsedSpecs.storageType}
                               </div>
                               {laptop.groupAvailableCount > 0 && (
-                                <div style={{ fontSize: '10px', color: '#f87820', marginTop: '4px' }}>
+                                <div style={{ fontSize: '10px', color: 'var(--admin-light-accent, #f87820)', marginTop: '4px' }}>
                                   {laptop.groupAvailableCount.toLocaleString('fa-IR')} واحد موجود با مشخصات یکسان
                                 </div>
                               )}
                             </td>
-                            <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#c4c8d4' }}>{parsedSpecs.cpu}</td>
-                            <td style={{ padding: '18px 10px', fontSize: '11.5px', color: '#8b92a5' }}>{parsedSpecs.gpu}</td>
-                            <td style={{ padding: '18px 10px', fontWeight: '700', color: '#fff', fontSize: '12.5px', textAlign: 'left', fontFamily: 'var(--font-vazirmatn)' }}>
+                            <td style={{ padding: '18px 10px', fontSize: '11.5px', color: 'var(--admin-light-text, #c4c8d4)' }}>{parsedSpecs.cpu}</td>
+                            <td style={{ padding: '18px 10px', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>{parsedSpecs.gpu}</td>
+                            <td style={{ padding: '18px 10px', fontWeight: '700', color: 'var(--admin-white)', fontSize: '12.5px', textAlign: 'left', fontFamily: 'var(--font-vazirmatn)' }}>
                               {Math.round(priceToman).toLocaleString('fa-IR')}
                             </td>
                             <td style={{ padding: '18px 10px', textAlign: 'center' }}>
@@ -629,7 +629,7 @@ function StockLaptopsContent() {
                                 <button 
                                   onClick={() => setSelectedLaptopId(laptop.id)}
                                   className={styles.laptopIconButton}
-                                  style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '13px' }}
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-muted, #8b92a5)', cursor: 'pointer', fontSize: '13px' }}
                                   title="مشاهده جزئیات"
                                 >
                                   {AdminIcons.eye(13)}
@@ -637,7 +637,7 @@ function StockLaptopsContent() {
                                 <button 
                                   onClick={() => triggerEditLaptop(laptop)}
                                   className={styles.laptopIconButton}
-                                  style={{ background: 'transparent', border: 'none', color: '#f87820', cursor: 'pointer', fontSize: '13px' }}
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-accent, #f87820)', cursor: 'pointer', fontSize: '13px' }}
                                   title="ویرایش"
                                 >
                                   {AdminIcons.edit(13)}
@@ -645,7 +645,7 @@ function StockLaptopsContent() {
                                 <button
                                   onClick={() => triggerDuplicateLaptop(laptop)}
                                   className={styles.laptopIconButton}
-                                  style={{ background: 'transparent', border: 'none', color: '#c4c8d4', cursor: 'pointer', fontSize: '13px' }}
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-text, #c4c8d4)', cursor: 'pointer', fontSize: '13px' }}
                                   title="تکثیر واحد با شماره سریال و کد داخلی جدید"
                                 >
                                   {AdminIcons.plus(13)}
@@ -653,7 +653,7 @@ function StockLaptopsContent() {
                                 <button 
                                   onClick={() => handleDeleteLaptop(laptop.id)}
                                   className={styles.laptopIconButton}
-                                  style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '13px' }}
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-danger, #ff4d4d)', cursor: 'pointer', fontSize: '13px' }}
                                   title="حذف"
                                 >
                                   {AdminIcons.trash(13)}
@@ -669,15 +669,15 @@ function StockLaptopsContent() {
 
                 {/* Pagination Footer */}
                 <div className={styles.laptopsPagination} style={{ padding: '15px 20px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#8b92a5' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                     <span>نمایش {laptopsPagination.total === 0 ? 0 : ((laptopsPagination.page - 1) * laptopsPagination.limit) + 1} تا {Math.min(laptopsPagination.page * laptopsPagination.limit, laptopsPagination.total)} از {laptopsPagination.total} نتیجه</span>
                   </div>
 
                   {/* Page Numbers */}
                   <div style={{ display: 'flex', gap: '6px', direction: 'ltr' }}>
-                    <button disabled={laptopsPage <= 1 || laptopsLoading} onClick={() => setLaptopsPage(page => Math.max(1, page - 1))} style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: laptopsPage <= 1 ? 'not-allowed' : 'pointer', opacity: laptopsPage <= 1 ? 0.4 : 1 }}>&lt;</button>
-                    <button style={{ border: 'none', background: '#f87820', minWidth: '26px', height: '26px', padding: '0 7px', borderRadius: '4px', color: '#fff', fontSize: '10px', fontWeight: 'bold' }}>{laptopsPagination.page}</button>
-                    <button disabled={laptopsPage >= laptopsPagination.totalPages || laptopsLoading} onClick={() => setLaptopsPage(page => Math.min(laptopsPagination.totalPages, page + 1))} style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: '#fff', fontSize: '10px', cursor: laptopsPage >= laptopsPagination.totalPages ? 'not-allowed' : 'pointer', opacity: laptopsPage >= laptopsPagination.totalPages ? 0.4 : 1 }}>&gt;</button>
+                    <button disabled={laptopsPage <= 1 || laptopsLoading} onClick={() => setLaptopsPage(page => Math.max(1, page - 1))} style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', cursor: laptopsPage <= 1 ? 'not-allowed' : 'pointer', opacity: laptopsPage <= 1 ? 0.4 : 1 }}>&lt;</button>
+                    <button style={{ border: 'none', background: '#f87820', minWidth: '26px', height: '26px', padding: '0 7px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', fontWeight: 'bold' }}>{laptopsPagination.page}</button>
+                    <button disabled={laptopsPage >= laptopsPagination.totalPages || laptopsLoading} onClick={() => setLaptopsPage(page => Math.min(laptopsPagination.totalPages, page + 1))} style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', cursor: laptopsPage >= laptopsPagination.totalPages ? 'not-allowed' : 'pointer', opacity: laptopsPage >= laptopsPagination.totalPages ? 0.4 : 1 }}>&gt;</button>
                   </div>
                 </div>
 
@@ -703,16 +703,16 @@ function StockLaptopsContent() {
                 const statusValue = selectedLaptop.stockStatus || 'available';
 
                 // Status tag
-                let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: '#2ecc71', border: '1px solid rgba(46,204,113,0.2)' };
+                let badgeStyle = { background: 'rgba(46,204,113,0.1)', color: 'var(--admin-light-success, #2ecc71)', border: '1px solid rgba(46,204,113,0.2)' };
                 let badgeText = 'موجود';
                 if (statusValue === 'reserved') {
-                  badgeStyle = { background: 'rgba(255,157,0,0.1)', color: '#ff9d00', border: '1px solid rgba(255,157,0,0.2)' };
+                  badgeStyle = { background: 'rgba(255,157,0,0.1)', color: 'var(--admin-light-accent, #ff9d00)', border: '1px solid rgba(255,157,0,0.2)' };
                   badgeText = 'رزرو شده';
                 } else if (statusValue === 'sold') {
-                  badgeStyle = { background: 'rgba(59,130,246,0.1)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' };
+                  badgeStyle = { background: 'rgba(59,130,246,0.1)', color: 'var(--admin-light-info, #3b82f6)', border: '1px solid rgba(59,130,246,0.2)' };
                   badgeText = 'فروخته شده';
                 } else if (statusValue === 'unavailable') {
-                  badgeStyle = { background: 'rgba(255,77,77,0.1)', color: '#ff4d4d', border: '1px solid rgba(255,77,77,0.2)' };
+                  badgeStyle = { background: 'rgba(255,77,77,0.1)', color: 'var(--admin-light-danger, #ff4d4d)', border: '1px solid rgba(255,77,77,0.2)' };
                   badgeText = 'ناموجود';
                 }
 
@@ -725,12 +725,12 @@ function StockLaptopsContent() {
                   <div className={`${styles.cardPanel} ${styles.laptopsDetailsCard}`} style={{ padding: '20px', position: 'sticky', top: '80px', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}>
                     {/* Details Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff' }}>جزئیات لپ‌تاپ</span>
+                      <span style={{ fontSize: '13px', fontWeight: '750', color: 'var(--admin-white)' }}>جزئیات لپ‌تاپ</span>
                       <button 
                         onClick={() => setSelectedLaptopId(null)}
                         className={styles.laptopIconButton}
                         aria-label="بستن جزئیات لپ‌تاپ"
-                        style={{ background: 'transparent', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '14px', display: 'inline-flex', alignItems: 'center' }}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-muted, #8b92a5)', cursor: 'pointer', fontSize: '14px', display: 'inline-flex', alignItems: 'center' }}
                       >
                         {AdminIcons.close(14)}
                       </button>
@@ -740,7 +740,7 @@ function StockLaptopsContent() {
                     <div style={{ display: 'grid', gridTemplateColumns: '4fr 1.2fr', gap: '10px', marginBottom: '15px' }}>
                       {/* Main Active Picture */}
                       <div style={{ background: '#000', borderRadius: '10px', overflow: 'hidden', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        {imagesToUse[0] ? <img src={imagesToUse[0]} alt="Laptop main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: '#8b92a5' }}>{AdminIcons.laptop(30)}</span>}
+                        {imagesToUse[0] ? <img src={imagesToUse[0]} alt="Laptop main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>{AdminIcons.laptop(30)}</span>}
                       </div>
                       {/* Thumbnails vertical stack */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -750,7 +750,7 @@ function StockLaptopsContent() {
                           </div>
                         ))}
                         {imagesToUse.length > 4 && (
-                          <div style={{ height: '42px', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: '#fff' }}>
+                          <div style={{ height: '42px', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: 'var(--admin-white)' }}>
                             +{imagesToUse.length - 4}
                           </div>
                         )}
@@ -759,27 +759,27 @@ function StockLaptopsContent() {
 
                     {/* Product Title and status row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: '750', color: '#fff' }}>{laptopDisplayName(parsed)}</span>
+                      <span style={{ fontSize: '14px', fontWeight: '750', color: 'var(--admin-white)' }}>{laptopDisplayName(parsed)}</span>
                       <span style={{ ...badgeStyle, padding: '3px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 'bold' }}>{badgeText}</span>
                     </div>
 
                     {/* Financial Specs Box */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', padding: '10px 6px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '15px' }}>
                       <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '9.5px', color: '#8b92a5', display: 'block', marginBottom: '2px' }}>قیمت خرید</span>
-                        <strong style={{ fontSize: '11px', color: '#fff', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '2px' }}>قیمت خرید</span>
+                        <strong style={{ fontSize: '11px', color: 'var(--admin-white)', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {Math.round(costToman).toLocaleString('fa-IR')}
                         </strong>
                       </div>
                       <div style={{ textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.06)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
-                        <span style={{ fontSize: '9.5px', color: '#8b92a5', display: 'block', marginBottom: '2px' }}>قیمت فروش</span>
-                        <strong style={{ fontSize: '11px', color: 'var(--admin-orange)', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '2px' }}>قیمت فروش</span>
+                        <strong style={{ fontSize: '11px', color: 'var(--admin-light-accent, var(--admin-orange))', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {Math.round(priceToman).toLocaleString('fa-IR')}
                         </strong>
                       </div>
                       <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '9.5px', color: '#8b92a5', display: 'block', marginBottom: '2px' }}>سود معامله</span>
-                        <strong style={{ fontSize: '11px', color: '#2ecc71', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '2px' }}>سود معامله</span>
+                        <strong style={{ fontSize: '11px', color: 'var(--admin-light-success, #2ecc71)', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {Math.round(profitToman).toLocaleString('fa-IR')}
                         </strong>
                       </div>
@@ -801,7 +801,7 @@ function StockLaptopsContent() {
                             style={{ 
                               background: 'transparent', 
                               border: 'none', 
-                              color: isTabActive ? '#f87820' : '#8b92a5',
+                              color: isTabActive ? 'var(--admin-light-accent, #f87820)' : 'var(--admin-light-muted, #8b92a5)',
                               borderBottom: isTabActive ? '2px solid #f87820' : 'none',
                               fontSize: '11px',
                               fontWeight: isTabActive ? 'bold' : 'normal',
@@ -839,12 +839,12 @@ function StockLaptopsContent() {
                               { label: 'سود (تومان)', value: Math.round(profitToman).toLocaleString('fa-IR'), isProfit: true }
                             ].map((row, idx) => (
                               <tr key={idx} style={{ borderBottom: '1px dashed rgba(255,255,255,0.03)' }}>
-                                <td style={{ padding: '6px 0', color: '#8b92a5' }}>{row.label}</td>
+                                <td style={{ padding: '6px 0', color: 'var(--admin-light-muted, #8b92a5)' }}>{row.label}</td>
                                 <td style={{ 
                                   padding: '6px 0', 
                                   textAlign: 'left', 
                                   fontWeight: row.isProfit ? 'bold' : 'normal',
-                                  color: row.isProfit ? '#2ecc71' : '#fff' 
+                                  color: row.isProfit ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-white)'
                                 }}>
                                   {row.value}
                                 </td>
@@ -870,8 +870,8 @@ function StockLaptopsContent() {
                             };
                             return (
                               <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'rgba(255,255,255,0.01)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                                <span style={{ color: '#c4c8d4' }}>{labelMap[key] || key}</span>
-                                <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{passed ? <>{AdminIcons.check(12)} تایید شده</> : <>{AdminIcons.close(12)} خطا</>}</span>
+                                <span style={{ color: 'var(--admin-light-text, #c4c8d4)' }}>{labelMap[key] || key}</span>
+                                <span style={{ color: passed ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-danger, #ff4d4d)', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{passed ? <>{AdminIcons.check(12)} تایید شده</> : <>{AdminIcons.close(12)} خطا</>}</span>
                               </div>
                             );
                           })}
@@ -882,19 +882,19 @@ function StockLaptopsContent() {
                       {activeDetailTab === 'accessories' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                           <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                            <h4 style={{ color: '#f87820', margin: '0 0 8px 0', fontSize: '12px' }}>اقلام همراه لپ‌تاپ</h4>
+                            <h4 style={{ color: 'var(--admin-light-accent, #f87820)', margin: '0 0 8px 0', fontSize: '12px' }}>اقلام همراه لپ‌تاپ</h4>
                             <div style={{ display: 'flex', gap: '15px' }}>
-                              <span style={{ color: parsed.accessories?.charger ? '#2ecc71' : '#8b92a5' }}>
+                              <span style={{ color: parsed.accessories?.charger ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-muted, #8b92a5)' }}>
                                 {parsed.accessories?.charger ? '{AdminIcons.check(11)} شارژر اصلی دبی' : '{AdminIcons.close(11)} فاقد شارژر اصلی'}
                               </span>
-                              <span style={{ color: parsed.accessories?.box ? '#2ecc71' : '#8b92a5' }}>
+                              <span style={{ color: parsed.accessories?.box ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-muted, #8b92a5)' }}>
                                 {parsed.accessories?.box ? '{AdminIcons.check(11)} کارتن اورجینال' : '{AdminIcons.close(11)} فاقد کارتن'}
                               </span>
                             </div>
                           </div>
                           <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                            <h4 style={{ color: '#fff', margin: '0 0 8px 0', fontSize: '12px' }}>وضعیت ظاهری و بدنه</h4>
-                            <span style={{ color: '#ffd073' }}>
+                            <h4 style={{ color: 'var(--admin-white)', margin: '0 0 8px 0', fontSize: '12px' }}>وضعیت ظاهری و بدنه</h4>
+                            <span style={{ color: 'var(--admin-light-accent, #ffd073)' }}>
                               وضعیت بدنه: {
                                 parsed.physicalStatus === 'excellent' ? 'عالی (در حد نو)' :
                                 parsed.physicalStatus === 'very_good' ? 'خیلی خوب' :
@@ -908,15 +908,15 @@ function StockLaptopsContent() {
                       {/* TAB: EXTRA INFO */}
                       {activeDetailTab === 'info' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-                            <div style={{ color: '#8b92a5', marginBottom: '4px' }}>گارانتی و پشتیبانی:</div>
-                            <strong style={{ color: '#ffd073' }}>{parsed.warrantyDays} روز مهلت تست و تعویض کالا</strong>
-                            <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '4px' }}>انقضا: {parsed.warrantyExpiry}</div>
+                          <div style={{ padding: '10px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', borderRadius: '8px' }}>
+                            <div style={{ color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>گارانتی و پشتیبانی:</div>
+                            <strong style={{ color: 'var(--admin-light-accent, #ffd073)' }}>{parsed.warrantyDays} روز مهلت تست و تعویض کالا</strong>
+                            <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>انقضا: {parsed.warrantyExpiry}</div>
                           </div>
                           {parsed.customerNotes && (
-                            <div style={{ padding: '10px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-                              <div style={{ color: '#8b92a5', marginBottom: '4px' }}>یادداشت مشتری (توضیحات):</div>
-                              <div style={{ color: '#fff', lineHeight: '1.5' }}>{parsed.customerNotes}</div>
+                            <div style={{ padding: '10px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', borderRadius: '8px' }}>
+                              <div style={{ color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>یادداشت مشتری (توضیحات):</div>
+                              <div style={{ color: 'var(--admin-white)', lineHeight: '1.5' }}>{parsed.customerNotes}</div>
                             </div>
                           )}
                         </div>
@@ -929,28 +929,28 @@ function StockLaptopsContent() {
                       <button 
                         onClick={() => alert('دستور چاپ برچسب بارکد برای پرینتر انبار ارسال شد.')}
                         className={styles.cancelFormBtn}
-                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', justifyContent: 'center' }}
+                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', justifyContent: 'center' }}
                       >
                         {AdminIcons.printer(12)} چاپ برچسب
                       </button>
                       <button 
                         onClick={() => triggerEditLaptop(selectedLaptop)}
                         className={styles.saveFormBtn}
-                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', borderRadius: '8px', color: '#fff', justifyContent: 'center', fontWeight: 'bold' }}
+                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', borderRadius: '8px', color: 'var(--admin-white)', justifyContent: 'center', fontWeight: 'bold' }}
                       >
                         {AdminIcons.edit(13)} ویرایش
                       </button>
                       <button
                         onClick={() => triggerDuplicateLaptop(selectedLaptop)}
                         className={styles.cancelFormBtn}
-                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(248,120,32,0.25)', borderRadius: '8px', color: '#f87820', justifyContent: 'center' }}
+                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(248,120,32,0.25)', borderRadius: '8px', color: 'var(--admin-light-accent, #f87820)', justifyContent: 'center' }}
                       >
                         {AdminIcons.plus(12)} تکثیر واحد
                       </button>
                       <button 
                         onClick={() => handleDeleteLaptop(selectedLaptop.id)}
                         className={styles.cancelFormBtn}
-                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255, 77, 77, 0.3)', borderRadius: '8px', color: '#ff4d4d', justifyContent: 'center', background: 'rgba(255, 77, 77, 0.05)' }}
+                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255, 77, 77, 0.3)', borderRadius: '8px', color: 'var(--admin-light-danger, #ff4d4d)', justifyContent: 'center', background: 'rgba(255, 77, 77, 0.05)' }}
                       >
                         {AdminIcons.trash(13)} حذف
                       </button>
@@ -959,7 +959,7 @@ function StockLaptopsContent() {
                   </div>
                 );
               })() : (
-                <div className={styles.cardPanel} style={{ padding: '30px', textAlign: 'center', color: '#8b92a5' }}>
+                <div className={styles.cardPanel} style={{ padding: '30px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)' }}>
                   برای مشاهده جزئیات لپ‌تاپ، یکی از ردیف‌های جدول را انتخاب نمایید.
                 </div>
               )}
@@ -984,17 +984,17 @@ function StockLaptopsContent() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', minHeight: '25px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '750', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '750', color: 'var(--admin-white)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {AdminIcons.trendingUp(14)} سود ماهانه لپ‌تاپ‌های استوک
                     {!isMonthlyProfitExpanded && (
-                      <span style={{ fontSize: '11px', color: '#2ecc71', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', marginRight: '10px' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--admin-light-success, #2ecc71)', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)', marginRight: '10px' }}>
                         (کل سود انبار: {Math.round(metrics.profit).toLocaleString('fa-IR')} تومان)
                       </span>
                     )}
                   </span>
-                  <span style={{ fontSize: '11px', color: '#8b92a5', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>{isMonthlyProfitExpanded ? AdminIcons.chevronUp(12) : AdminIcons.chevronDown(12)}</span>
-                    <span style={{ fontSize: '9px', color: '#8b92a5' }}>۶ ماه اخیر</span>
+                    <span style={{ fontSize: '9px', color: 'var(--admin-light-muted, #8b92a5)' }}>۶ ماه اخیر</span>
                   </span>
                 </div>
                 
@@ -1087,7 +1087,7 @@ function StockLaptopsContent() {
               </div>
             </div>
 
-            {formMessage && <p role="alert" style={{ color: '#fb7185' }}>{formMessage}</p>}
+            {formMessage && <p role="alert" style={{ color: 'var(--admin-light-danger, #fb7185)' }}>{formMessage}</p>}
             {/* Form split layout grid */}
             <div className={styles.formGridSplit}>
           
@@ -1113,7 +1113,7 @@ function StockLaptopsContent() {
                 <div>
                   <LaptopCombobox label="برند" required value={laptopForm.brand} options={brands.map(brand => brand.name)} placeholder="جستجوی برند…"
                     onChange={brand => { updateIdentity({ brand }); setBrandError(''); }} />
-                  {brandError && <small role="alert" style={{ color: '#fb7185' }}>{brandError}</small>}
+                  {brandError && <small role="alert" style={{ color: 'var(--admin-light-danger, #fb7185)' }}>{brandError}</small>}
                 </div>
                 <LaptopCombobox key={`series-${laptopForm.brand}`} label="سری / خانواده (اختیاری)" value={laptopForm.series}
                   disabled={!laptopForm.brand} options={laptopCatalogOptions(brands.find(brand => brand.name === laptopForm.brand)).series}
@@ -1159,7 +1159,7 @@ function StockLaptopsContent() {
                       className={styles.inputField}
                       required
                     />
-                    <span style={{ fontSize: '13px', color: '#8b92a5', fontWeight: 'bold' }}>GB</span>
+                    <span style={{ fontSize: '13px', color: 'var(--admin-light-muted, #8b92a5)', fontWeight: 'bold' }}>GB</span>
                   </div>
                 </div>
 
@@ -1235,7 +1235,7 @@ function StockLaptopsContent() {
                       className={styles.inputField}
                       required
                     />
-                    <span style={{ fontSize: '13px', color: '#8b92a5' }}>اینچ</span>
+                    <span style={{ fontSize: '13px', color: 'var(--admin-light-muted, #8b92a5)' }}>اینچ</span>
                   </div>
                 </div>
 
@@ -1269,7 +1269,7 @@ function StockLaptopsContent() {
                       placeholder="مثال: 92"
                       className={styles.inputField}
                     />
-                    <span style={{ fontSize: '13px', color: '#8b92a5', fontWeight: 'bold' }}>٪</span>
+                    <span style={{ fontSize: '13px', color: 'var(--admin-light-muted, #8b92a5)', fontWeight: 'bold' }}>٪</span>
                   </div>
                 </div>
 

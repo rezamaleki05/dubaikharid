@@ -16,3 +16,12 @@
 .days button:hover { border-color: rgba(248,120,32,.45); color: #fff; }
 .days .selected { background: #f87820; color: #fff; }
 @media (max-width: 520px) { .popover { position: fixed; inset: auto 16px 16px; width: auto; } }
+
+:global(html[data-theme='light']) .input { background: var(--admin-input-bg); color: var(--admin-white); border-color: var(--admin-control-border); }
+:global(html[data-theme='light']) .help { color: var(--admin-grey-text); }
+:global(html[data-theme='light']) .error { color: var(--admin-light-danger); }
+:global(html[data-theme='light']) .toggle { color: var(--admin-light-accent); }
+:global(html[data-theme='light']) .popover { background: var(--admin-card-bg); border-color: var(--admin-control-border); }
+:global(html[data-theme='light']) .header strong,
+:global(html[data-theme='light']) .header button,
+:global(html[data-theme='light']) .days button { color: var(--admin-white); }
