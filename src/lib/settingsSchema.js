@@ -1,7 +1,14 @@
 import { normalizeTelegramChannel } from './telegram/domain.js';
 import { DEFAULT_SUPPORT_WHATSAPP, normalizeSupportWhatsappNumber } from './supportWhatsapp.js';
+import { normalizePrivateChatId, normalizeLeadRecipient } from './leadNotifications/domain.js';
 
 export const SETTING_DEFINITIONS = Object.freeze({
+  telegramLeadsEnabled: { dbKey: 'telegramLeadsEnabled', type: 'boolean', defaultValue: false },
+  telegramLeadChatId: { dbKey: 'telegramLeadChatId', type: 'privateChatId', defaultValue: '' },
+  whatsappLeadsEnabled: { dbKey: 'whatsappLeadsEnabled', type: 'boolean', defaultValue: false },
+  whatsappLeadRecipient: { dbKey: 'whatsappLeadRecipient', type: 'leadRecipient', defaultValue: '' },
+  whatsappLeadTemplate: { dbKey: 'whatsappLeadTemplate', type: 'templateName', defaultValue: '' },
+  whatsappLeadTemplateLanguage: { dbKey: 'whatsappLeadTemplateLanguage', type: 'templateLanguage', defaultValue: 'fa' },
   telegramEnabled: { dbKey: 'telegramEnabled', type: 'boolean', defaultValue: false },
   telegramAutoPublishProducts: { dbKey: 'telegramAutoPublishProducts', type: 'boolean', defaultValue: false },
   telegramChannel: { dbKey: 'telegramChannel', type: 'telegramChannel', max: 40, defaultValue: '' },
@@ -97,6 +104,15 @@ export function validateSettingValue(key, value) {
     if (value === '') return { value: '' };
     const normalized = normalizeTelegramChannel(value);
     return normalized ? { value: normalized } : { error: 'شناسه کانال تلگرام معتبر نیست.' };
+  }
+
+  if (['privateChatId', 'leadRecipient', 'templateName', 'templateLanguage'].includes(definition.type)) {
+    if (value === '') return { value: '' };
+    const normalized = definition.type === 'privateChatId' ? normalizePrivateChatId(value)
+      : definition.type === 'leadRecipient' ? normalizeLeadRecipient(value)
+        : typeof value === 'string' && (definition.type === 'templateName'
+          ? /^[a-z0-9_]{1,100}$/ : /^[a-z]{2,3}(?:_[A-Z]{2})?$/).test(value.trim()) ? value.trim() : null;
+    return normalized ? { value: normalized } : { error: `مقدار ${key} معتبر نیست.` };
   }
 
   if (definition.type === 'optionalText') {

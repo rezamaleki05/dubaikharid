@@ -37,8 +37,20 @@ export function createTelegramClient({ token, fetchImpl = fetch, timeoutMs = 800
     }
     return call('sendMessage', { ...common, text: post.text }, true);
   }
+  async function verifyPrivateChat(chatId) {
+    const invalid = () => Object.assign(new Error('Private chat required'), { code: 'TELEGRAM_PRIVATE_CHAT_REQUIRED' });
+    if (!/^[1-9]\d{0,15}$/.test(String(chatId)) || BigInt(chatId) > 4503599627370495n) throw invalid();
+    const chat = await call('getChat', { chat_id: chatId });
+    if (chat?.type !== 'private' || String(chat.id) !== String(chatId)) throw invalid();
+    return { connected: true, privateChat: true };
+  }
   return {
     sendProductPost,
+    verifyPrivateChat,
+    async sendPrivateLead(chatId, message) {
+      await verifyPrivateChat(chatId);
+      return call('sendMessage', { ...message, chat_id: chatId }, true);
+    },
     async testConnection(channel) {
       const bot = await call('getMe', {});
       const chat = await call('getChat', { chat_id: channel });

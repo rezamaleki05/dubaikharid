@@ -6,6 +6,9 @@ import { getCurrentCustomer } from '@/lib/customerAuth';
 import { normalizeProductSourceUrl } from '@/lib/externalUrls';
 import { prisma } from '@/lib/prisma';
 import { publicRequestGuard, readIdempotencyKey } from '@/lib/publicRequestGuard';
+import { scheduleOwnerLeadNotification } from '@/lib/leadNotifications/service';
+
+export const maxDuration = 60;
 
 function clean(value, maximum, required = false) {
   if (value === null || value === undefined || value === '') return required ? null : '';
@@ -67,6 +70,7 @@ export async function POST(request) {
       });
       return { record, created: true };
     }, { isolationLevel: 'Serializable' });
+    scheduleOwnerLeadNotification({ created: result.created, type: 'purchase_request', id: result.record.id });
     if (result.created) await logAdminActivity({ action: 'PURCHASE_REQUEST_CREATED', entityType: 'PurchaseRequest', entityId: result.record.id, metadata: { requestCode: result.record.requestCode, customerId: result.record.customerId }, request });
     return NextResponse.json({ data: { id: result.record.id, requestCode: result.record.requestCode, status: result.record.status, pricingStatus: 'ESTIMATED', finalToman: result.record.finalToman } }, { status: result.created ? 201 : 200 });
   } catch (error) {

@@ -10,6 +10,7 @@ import { useSiteSettings } from '@/context/SiteSettingsContext';
 import { useAdminAccess } from '@/components/admin/AdminAccessProvider';
 import { ADMIN_PERMISSIONS } from '@/lib/adminPermissions';
 import TelegramSettings from '@/components/admin/telegram/TelegramSettings';
+import LeadNotificationSettings from '@/components/admin/LeadNotificationSettings';
 import { AED_INTERVAL_PRESETS, nextAedUpdateAt } from '@/lib/aedRateDomain';
 
 function SettingsContent() {
@@ -187,7 +188,7 @@ function SettingsContent() {
       {(() => {
             const SETTINGS_TABS = [
               { id: 'general', label: 'تنظیمات عمومی', icon: AdminIcons.settings(13) },
-              { id: 'telegram', label: 'تلگرام', icon: AdminIcons.bell(13) },
+              { id: 'telegram', label: 'کانال تلگرام محصولات', icon: AdminIcons.bell(13) },
               { id: 'contact', label: 'اطلاعات تماس', icon: AdminIcons.phone(13) },
               { id: 'aed', label: 'نرخ درهم', icon: AdminIcons.dollar(13) },
               { id: 'shipping', label: 'تنظیمات ارسال', icon: AdminIcons.truck(13) },
@@ -939,6 +940,7 @@ function SettingsContent() {
                     {/* ── اعلان‌ها ── */}
                     {settingsTab === 'notifications' && (
                       <div>
+                        <LeadNotificationSettings values={siteSettings} onChange={setSiteSettings} onSave={saveSettings} canEdit={can(ADMIN_PERMISSIONS.SETTINGS_EDIT)} saving={isSavingSettings} loading={isLoadingSettings} />
                         <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-white)', margin: '0 0 24px 0', paddingBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>تنظیمات اعلان‌ها</h2>
                         <Toggle
                           label="اعلان‌های خودکار"

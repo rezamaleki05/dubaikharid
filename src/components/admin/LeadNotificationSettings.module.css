@@ -1,0 +1,8 @@
+.root { padding: 0 0 32px; }
+.root h2 { font-size: 20px; margin: 0 0 12px; color: var(--text-primary); }
+.provider { padding: 24px 0; border-top: 1px solid var(--border-primary); }
+.provider h3 { margin-bottom: 20px; }
+.root p, .root small { overflow-wrap: anywhere; }
+.root small { line-height: 1.9; color: var(--text-secondary); }
+.root input { min-width: 0; }
+@media (max-width: 600px) { .root h2 { font-size: 18px; } .provider { padding-block: 20px; } }

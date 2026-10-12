@@ -41,7 +41,7 @@ export default function TelegramSettings({ values, onChange, onSave, canEdit, sa
   }
   const disabled = !canEdit || busy || saving || loading;
   return <section className={styles.panel} aria-labelledby="telegram-settings-title">
-    <h3 id="telegram-settings-title">تلگرام</h3>
+    <h3 id="telegram-settings-title">کانال تلگرام محصولات</h3>
     <p>انتشار محصولات در کانال فروشگاه. محصولات قبلی فقط با ارسال دستی منتشر می‌شوند.</p>
     <div className={styles.fields}>
       <label className={styles.toggle}><input type="checkbox" disabled={disabled} checked={Boolean(values.telegramEnabled)} onChange={event => onChange({ ...values, telegramEnabled: event.target.checked })} />فعال‌سازی تلگرام</label>
