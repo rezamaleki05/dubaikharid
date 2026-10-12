@@ -1,7 +1,11 @@
 import { normalizeTelegramChannel } from './telegram/domain.js';
 import { DEFAULT_SUPPORT_WHATSAPP, normalizeSupportWhatsappNumber } from './supportWhatsapp.js';
 
+import { normalizeLeadGroupId } from './leadNotifications/domain.js';
+
 export const SETTING_DEFINITIONS = Object.freeze({
+  telegramLeadEnabled: { dbKey: 'telegramLeadEnabled', type: 'boolean', defaultValue: false },
+  telegramLeadChatId: { dbKey: 'telegramLeadChatId', type: 'leadGroupId', defaultValue: '' },
   telegramEnabled: { dbKey: 'telegramEnabled', type: 'boolean', defaultValue: false },
   telegramAutoPublishProducts: { dbKey: 'telegramAutoPublishProducts', type: 'boolean', defaultValue: false },
   telegramChannel: { dbKey: 'telegramChannel', type: 'telegramChannel', max: 40, defaultValue: '' },
@@ -97,6 +101,12 @@ export function validateSettingValue(key, value) {
     if (value === '') return { value: '' };
     const normalized = normalizeTelegramChannel(value);
     return normalized ? { value: normalized } : { error: 'شناسه کانال تلگرام معتبر نیست.' };
+  }
+
+  if (definition.type === 'leadGroupId') {
+    if (value === '') return { value: '' };
+    const normalized = normalizeLeadGroupId(value);
+    return normalized ? { value: normalized } : { error: 'شناسه عددی منفی گروه لیدها معتبر نیست.' };
   }
 
   if (definition.type === 'optionalText') {

@@ -1,4 +1,5 @@
 import 'server-only';
+import { normalizeLeadGroupId } from '../leadNotifications/domain.js';
 import { TelegramError } from './domain.js';
 
 export function createTelegramClient({ token, fetchImpl = fetch, timeoutMs = 8000 }) {
@@ -37,8 +38,30 @@ export function createTelegramClient({ token, fetchImpl = fetch, timeoutMs = 800
     }
     return call('sendMessage', { ...common, text: post.text }, true);
   }
+  async function verifyLeadGroup(chatId) {
+    const invalid = () => Object.assign(new Error('Private group required'), { code: 'TELEGRAM_PRIVATE_GROUP_REQUIRED' });
+    if (!normalizeLeadGroupId(chatId)) throw invalid();
+    const chat = await call('getChat', { chat_id: chatId });
+    if (!chat || !['group', 'supergroup'].includes(chat.type) || String(chat.id) !== chatId
+      || chat.username || (chat.active_usernames && (!Array.isArray(chat.active_usernames) || chat.active_usernames.length))
+      || chat.is_direct_messages || chat.linked_chat_id) throw invalid();
+    const bot = await call('getMe', {});
+    if (!bot?.is_bot || !Number.isSafeInteger(bot.id)) throw new TelegramError('TELEGRAM_UNAVAILABLE');
+    const member = await call('getChatMember', { chat_id: chatId, user_id: bot.id });
+    const canSend = member?.status === 'creator' || member?.status === 'administrator'
+      || (member?.status === 'member' && chat.permissions?.can_send_messages === true)
+      || (member?.status === 'restricted' && member.is_member === true && member.can_send_messages === true);
+    if (!canSend) throw new TelegramError('TELEGRAM_FORBIDDEN');
+    return { connected: true, privateGroup: true, canSend: true };
+  }
   return {
     sendProductPost,
+    verifyLeadGroup,
+    async sendLeadGroup(chatId, message) {
+      await verifyLeadGroup(chatId);
+      return call('sendMessage', { text: message.text, parse_mode: message.parse_mode,
+        link_preview_options: message.link_preview_options, chat_id: chatId }, true);
+    },
     async testConnection(channel) {
       const bot = await call('getMe', {});
       const chat = await call('getChat', { chat_id: channel });

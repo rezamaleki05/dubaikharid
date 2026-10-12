@@ -4,6 +4,9 @@ import { getCurrentCustomer } from '@/lib/customerAuth';
 import { createPublicOrder, PublicOrderError, serializePublicOrder } from '@/lib/publicOrders';
 import { publicRequestGuard, readIdempotencyKey } from '@/lib/publicRequestGuard';
 import { buildManualPaymentAccess } from '@/lib/manualPayments';
+import { scheduleOwnerLeadNotification } from '@/lib/leadNotifications/service';
+
+export const maxDuration = 60;
 
 export async function POST(request) {
   const guard = publicRequestGuard(request);
@@ -15,6 +18,7 @@ export async function POST(request) {
   try {
     const authenticatedCustomer = await getCurrentCustomer();
     const result = await createPublicOrder(body, idempotencyKey, { authenticatedCustomerId: authenticatedCustomer?.id || null });
+    scheduleOwnerLeadNotification({ created: result.created, type: 'order', id: result.order.id });
     if (result.created) await logAdminActivity({ action: 'ORDER_CREATED', entityType: 'Order', entityId: result.order.id, metadata: { orderCode: result.order.orderCode, type: result.order.type, customerId: result.order.customerId, totalToman: result.order.totalToman }, request });
     const data = serializePublicOrder(result.order);
     const manualPayment = data.paymentMethod === 'CARD'

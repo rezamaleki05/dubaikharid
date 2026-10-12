@@ -8,7 +8,7 @@ import { buildTelegramProductPost, telegramExcerpt, escapeTelegramHtml } from '.
 import { defaultSettings, validateSettingValue, PUBLIC_SETTING_KEYS } from '../src/lib/settingsSchema.js';
 
 // Only the server-only build sentinel is removed. All real client code runs against a mock transport.
-const clientSource = readFileSync('src/lib/telegram/client.js', 'utf8').replace("import 'server-only';", '').replace("'./domain.js'", JSON.stringify(pathToFileURL(process.cwd() + '/src/lib/telegram/domain.js').href));
+const clientSource = readFileSync('src/lib/telegram/client.js', 'utf8').replace("import 'server-only';", '').replace("'../leadNotifications/domain.js'", JSON.stringify(pathToFileURL(process.cwd() + '/src/lib/leadNotifications/domain.js').href)).replace("'./domain.js'", JSON.stringify(pathToFileURL(process.cwd() + '/src/lib/telegram/domain.js').href));
 const { createTelegramClient } = await import('data:text/javascript;base64,' + Buffer.from(clientSource).toString('base64'));
 const enabled = { telegramEnabled: true, telegramAutoPublishProducts: true, telegramChannel: '@shoptest' };
 const env = { VERCEL_ENV: 'production', TELEGRAM_BOT_TOKEN: 'fake-unit-test-secret' };
