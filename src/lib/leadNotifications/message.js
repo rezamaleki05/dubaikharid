@@ -1,3 +1,5 @@
+import { formatLeadTimestamp } from './timestamp.js';
+
 const TYPES = { purchase_request: 'درخواست قیمت / خرید محصول', order: 'سفارش جدید', contact: 'درخواست تماس', test: 'آزمایش اعلان گروه' };
 function clean(value, max = 400) {
   if (value === undefined || value === null) return '';
@@ -24,12 +26,14 @@ export function leadFields(event) {
     ['شماره', clean(event.phone, 40)], ['ایمیل', clean(event.email, 320)],
     ['محصول / اقلام', clean(event.product, 500)], ['شماره سفارش', clean(event.orderId, 100)],
     ['مبلغ (تومان)', clean(event.estimatedAmount, 80)], ['قیمت مبدا (درهم)', clean(event.amountAed, 80)], ['پیام', clean(event.message, 700)],
-    ['منبع', clean(event.source, 160)], ['زمان', clean(event.createdAt, 80)],
+    ['منبع', clean(event.source, 160)],
   ];
 }
 export function buildLeadTelegramMessage(event) {
-  const limits = [100, 160, 40, 320, 500, 100, 80, 80, 650, 160, 80];
+  const limits = [100, 160, 40, 320, 500, 100, 80, 80, 650, 160];
   const lines = ['🔔 <b>لید جدید دبی‌خرید</b>', ...leadFields(event).map(([k,v], i) => v ? `<b>${k}:</b> ${boundedHtml(v, limits[i])}` : '').filter(Boolean)];
+  const timestamp = formatLeadTimestamp(event.createdAt);
+  if (timestamp) lines.push('🕒 <b>زمان ثبت:</b>\n' + escapeLeadHtml(timestamp));
   const productUrl = safeUrl(event.productUrl), adminUrl = safeUrl(event.adminUrl);
   if (productUrl && escapeLeadHtml(productUrl).length <= 600) lines.push(`<a href="${escapeLeadHtml(productUrl)}">مشاهده محصول</a>`);
   if (adminUrl && escapeLeadHtml(adminUrl).length <= 600) lines.push(`<a href="${escapeLeadHtml(adminUrl)}">پیگیری در مدیریت</a>`);
