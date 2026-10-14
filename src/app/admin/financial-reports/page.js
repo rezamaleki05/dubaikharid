@@ -53,8 +53,8 @@ function FinancialReportsContent() {
     return () => controller.abort();
   }, []);
 
-  if (loading) return <div className={styles.cardPanel} style={{ padding: '24px', color: '#8b92a5' }}>در حال بارگذاری گزارش مالی...</div>;
-  if (error) return <div className={styles.cardPanel} style={{ padding: '24px', color: '#ef4444' }}>{error}</div>;
+  if (loading) return <div className={styles.cardPanel} style={{ padding: '24px', color: 'var(--admin-light-muted, #8b92a5)' }}>در حال بارگذاری گزارش مالی...</div>;
+  if (error) return <div className={styles.cardPanel} style={{ padding: '24px', color: 'var(--admin-light-danger, #ef4444)' }}>{error}</div>;
 
   return (
     <>
@@ -97,10 +97,10 @@ function FinancialReportsContent() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.chart(28)}</span>
+                    <span style={{ color: 'var(--admin-light-accent, #f87820)', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.chart(28)}</span>
                     <div>
-                      <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>گزارشات مالی</h1>
-                      <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>بررسی تراز مالی، سود ناخالص، هزینه‌های جاری و مخارج حمل و نقل</p>
+                      <h1 style={{ fontSize: '22px', fontWeight: '750', color: 'var(--admin-light-text, #fff)', margin: 0 }}>گزارشات مالی</h1>
+                      <p style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px', margin: 0 }}>بررسی تراز مالی، سود ناخالص، هزینه‌های جاری و مخارج حمل و نقل</p>
                     </div>
                   </div>
 
@@ -109,7 +109,7 @@ function FinancialReportsContent() {
                       type="button" 
                       onClick={() => window.print()} 
                       className={styles.advFilterBtn} 
-                      style={{ padding: '10px 15px', color: '#fff' }}
+                      style={{ padding: '10px 15px', color: 'var(--admin-light-text, #fff)' }}
                     >
                       {AdminIcons.download(12)} خروجی PDF گزارش
                     </button>
@@ -117,7 +117,7 @@ function FinancialReportsContent() {
                       type="button" 
                       onClick={() => window.location.assign('/admin/payments')}
                       className={styles.advFilterBtn} 
-                      style={{ padding: '10px 15px', color: '#fff' }}
+                      style={{ padding: '10px 15px', color: 'var(--admin-light-text, #fff)' }}
                     >
                       {AdminIcons.card(12)} لیست تراکنش‌ها
                     </button>
@@ -128,52 +128,52 @@ function FinancialReportsContent() {
                 <div className={styles.finReportsMetricsGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '24px' }}>
                   <div className={styles.finReportsMetricCard}>
                     <div>
-                      <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>مجموع ورودی مالی (دریافتی)</span>
-                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#10b981', fontFamily: 'var(--font-vazirmatn)' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '4px' }}>مجموع ورودی مالی (دریافتی)</span>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--admin-light-success, #10b981)', fontFamily: 'var(--font-vazirmatn)' }}>
                         {formatAmount(totalIncomes)}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#10b981', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
+                      <span style={{ fontSize: '9px', color: 'var(--admin-light-success, #10b981)', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
                         {shetabShare.toFixed(1)}٪ سهم درگاه شتاب
                       </span>
                     </div>
-                    <span style={{ fontSize: '24px', color: '#10b981' }}>{AdminIcons.trendingUp(24)}</span>
+                    <span style={{ fontSize: '24px', color: 'var(--admin-light-success, #10b981)' }}>{AdminIcons.trendingUp(24)}</span>
                   </div>
 
                   <div className={styles.finReportsMetricCard}>
                     <div>
-                      <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>کل هزینه‌های پرداختی (خروجی)</span>
-                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#ef4444', fontFamily: 'var(--font-vazirmatn)' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '4px' }}>کل هزینه‌های پرداختی (خروجی)</span>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--admin-light-danger, #ef4444)', fontFamily: 'var(--font-vazirmatn)' }}>
                         {formatAmount(totalOutgoings)}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#ef4444', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
+                      <span style={{ fontSize: '9px', color: 'var(--admin-light-danger, #ef4444)', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
                         {cargoPct.toFixed(1)}٪ بابت ترخیص و گمرک
                       </span>
                     </div>
-                    <span style={{ fontSize: '24px', color: '#ef4444' }}>{AdminIcons.trendingDown(24)}</span>
+                    <span style={{ fontSize: '24px', color: 'var(--admin-light-danger, #ef4444)' }}>{AdminIcons.trendingDown(24)}</span>
                   </div>
 
                   <div className={styles.finReportsMetricCard}>
                     <div>
-                      <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>سود خالص کل دوره</span>
-                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#3b82f6', fontFamily: 'var(--font-vazirmatn)' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '4px' }}>سود خالص کل دوره</span>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--admin-light-info, #3b82f6)', fontFamily: 'var(--font-vazirmatn)' }}>
                         {formatAmount(netProfit)}
                       </span>
-                      <span style={{ fontSize: '9px', color: BigInt(netProfit || '0') >= 0n ? '#10b981' : '#ef4444', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
+                      <span style={{ fontSize: '9px', color: BigInt(netProfit || '0') >= 0n ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-danger, #ef4444)', display: 'block', marginTop: '4px', fontWeight: 'bold' }}>
                         حاشیه سود خالص: {grossMargin.toFixed(1)}٪ {BigInt(netProfit || '0') >= 0n ? '+' : ''}
                       </span>
                     </div>
-                    <span style={{ fontSize: '24px', color: '#f59e0b' }}>{AdminIcons.dollar(24)}</span>
+                    <span style={{ fontSize: '24px', color: 'var(--admin-light-warning, #f59e0b)' }}>{AdminIcons.dollar(24)}</span>
                   </div>
 
                   <div className={styles.finReportsMetricCard}>
                     <div>
-                      <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '4px' }}>میانگین ارزش هر سفارش</span>
-                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#ff9d00', fontFamily: 'var(--font-vazirmatn)' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '4px' }}>میانگین ارزش هر سفارش</span>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--admin-light-accent, #ff9d00)', fontFamily: 'var(--font-vazirmatn)' }}>
                         {formatAmount(averageOrderVal)}
                       </span>
-                      <span style={{ fontSize: '9px', color: '#8b92a5', display: 'block', marginTop: '4px' }}>محاسبه بر اساس کل خریدارها</span>
+                      <span style={{ fontSize: '9px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginTop: '4px' }}>محاسبه بر اساس کل خریدارها</span>
                     </div>
-                    <span style={{ fontSize: '24px', color: '#3b82f6' }}>{AdminIcons.cart(24)}</span>
+                    <span style={{ fontSize: '24px', color: 'var(--admin-light-info, #3b82f6)' }}>{AdminIcons.cart(24)}</span>
                   </div>
                 </div>
 
@@ -193,10 +193,10 @@ function FinancialReportsContent() {
                         <line x1="40" y1="150" x2="390" y2="150" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
                         
                         {/* Y axis labels */}
-                        <text x="5" y="34" fill="#6c7284" fontSize="8">{(maxVal / 1000000).toFixed(0)}M</text>
-                        <text x="5" y="74" fill="#6c7284" fontSize="8">{((maxVal * 2/3) / 1000000).toFixed(0)}M</text>
-                        <text x="5" y="114" fill="#6c7284" fontSize="8">{((maxVal * 1/3) / 1000000).toFixed(0)}M</text>
-                        <text x="5" y="154" fill="#6c7284" fontSize="8">0</text>
+                        <text x="5" y="34" fill="var(--admin-light-muted, #6c7284)" fontSize="8">{(maxVal / 1000000).toFixed(0)}M</text>
+                        <text x="5" y="74" fill="var(--admin-light-muted, #6c7284)" fontSize="8">{((maxVal * 2/3) / 1000000).toFixed(0)}M</text>
+                        <text x="5" y="114" fill="var(--admin-light-muted, #6c7284)" fontSize="8">{((maxVal * 1/3) / 1000000).toFixed(0)}M</text>
+                        <text x="5" y="154" fill="var(--admin-light-muted, #6c7284)" fontSize="8">0</text>
                         
                         {/* Month 1 */}
                         <rect x="70" y={scaleY(finalMonthlyData[0].income)} width="16" height={getBarHeight(finalMonthlyData[0].income)} fill="#10b981" rx="2" />
@@ -224,7 +224,7 @@ function FinancialReportsContent() {
                     </div>
                     
                     {/* X axis labels */}
-                    <div style={{ display: 'flex', justifyContent: 'space-around', paddingLeft: '40px', marginTop: '8px', fontSize: '10px', color: '#8b92a5' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-around', paddingLeft: '40px', marginTop: '8px', fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                       <span>{finalMonthlyData[0].name}</span>
                       <span>{finalMonthlyData[1].name}</span>
                       <span>{finalMonthlyData[2].name}</span>
@@ -232,13 +232,13 @@ function FinancialReportsContent() {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '16px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#c4c8d4' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                         <span style={{ width: '10px', height: '10px', backgroundColor: '#10b981', borderRadius: '2px' }} /> دریافتی
                       </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#c4c8d4' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                         <span style={{ width: '10px', height: '10px', backgroundColor: '#ef4444', borderRadius: '2px' }} /> پرداختی
                       </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: '#c4c8d4' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '10px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                         <span style={{ width: '10px', height: '2px', backgroundColor: '#3b82f6', display: 'inline-block' }} /> خط سود خالص
                       </span>
                     </div>
@@ -306,9 +306,9 @@ function FinancialReportsContent() {
                 </div>
 
                 {/* Periodic Summary Table */}
-                <div style={{ marginTop: '24px', background: '#11131a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
-                  <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#fff' }}>تراز عملکرد دوره‌های مالی</h3>
+                <div style={{ marginTop: '24px', background: 'var(--admin-light-surface, #11131a)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '16px', overflow: 'hidden' }}>
+                  <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}>
+                    <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>تراز عملکرد دوره‌های مالی</h3>
                   </div>
                   
                   <div style={{ overflowX: 'auto' }}>
@@ -328,20 +328,20 @@ function FinancialReportsContent() {
                           const isCurrent = idx === 0;
                           return (
                             <tr key={idx}>
-                              <td style={{ fontWeight: 'bold', color: '#fff' }}>{mItem.name} {isCurrent ? '(جاری)' : ''}</td>
-                              <td style={{ color: '#10b981', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
+                              <td style={{ fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{mItem.name} {isCurrent ? '(جاری)' : ''}</td>
+                              <td style={{ color: 'var(--admin-light-success, #10b981)', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
                                 {formatAmount(mItem.netRevenue)} تومان
                               </td>
-                              <td style={{ color: '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
+                              <td style={{ color: 'var(--admin-light-danger, #ef4444)', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
                                 {formatAmount(mItem.netExpenses)} تومان
                               </td>
-                              <td style={{ color: BigInt(mItem.netCashFlow || '0') >= 0n ? '#3b82f6' : '#ef4444', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
+                              <td style={{ color: BigInt(mItem.netCashFlow || '0') >= 0n ? 'var(--admin-light-info, #3b82f6)' : 'var(--admin-light-danger, #ef4444)', fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>
                                 {formatAmount(mItem.netCashFlow)} تومان
                               </td>
                               <td>
                                 <span style={{ 
                                   backgroundColor: isCurrent ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)', 
-                                  color: isCurrent ? '#f59e0b' : '#10b981', 
+                                  color: isCurrent ? 'var(--admin-light-warning, #f59e0b)' : 'var(--admin-light-success, #10b981)',
                                   fontSize: '9px', 
                                   padding: '3px 8px', 
                                   borderRadius: '12px', 

@@ -120,7 +120,7 @@
 }
 
 .navMenuLink:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--admin-light-hover, rgba(255, 255, 255, 0.02));
   color: var(--admin-white);
 }
 
@@ -165,13 +165,13 @@
 }
 
 .badgeGrey {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.05));
   color: var(--admin-grey-text);
 }
 
 /* Sidebar profile box exactly matching Amin's card */
 .sidebarProfileCard {
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.015));
   border: 1px solid var(--admin-border);
   border-radius: 16px;
   padding: 16px;
@@ -255,7 +255,7 @@
 .searchWrapper {
   display: flex;
   align-items: center;
-  background: #121319;
+  background: var(--admin-light-control-bg, #121319);
   border: 1px solid var(--admin-border);
   border-radius: 12px;
   padding: 6px 14px;
@@ -266,7 +266,7 @@
 .searchWrapper:focus-within {
   border-color: rgba(248, 120, 32, 0.4);
   box-shadow: 0 0 10px rgba(248, 120, 32, 0.1);
-  background: #161720;
+  background: var(--admin-light-control-bg, #161720);
 }
 
 .searchInput {
@@ -295,7 +295,7 @@
 }
 
 .iconControlBtn {
-  background: #121319;
+  background: var(--admin-light-control-bg, #121319);
   border: 1px solid var(--admin-border);
   color: var(--admin-grey-text);
   width: 40px;
@@ -310,9 +310,9 @@
 }
 
 .iconControlBtn:hover {
-  background: #161720;
+  background: var(--admin-light-control-bg, #161720);
   color: var(--admin-white);
-  border-color: rgba(255,255,255,0.1);
+  border-color: var(--admin-light-border, rgba(255,255,255,0.1));
 }
 
 .bellBadge {
@@ -339,7 +339,7 @@
 .notificationList { max-height: 300px; overflow-y: auto; }
 .notificationEmpty { padding: 24px; color: var(--admin-grey-text); text-align: center; font-size: 12px; }
 .notificationItem { display: flex; padding: 11px 16px; align-items: flex-start; gap: 10px; background: rgba(248,120,32,.035); border-bottom: 1px solid var(--admin-border); cursor: pointer; transition: background-color .2s ease; }
-.notificationItem:hover { background: rgba(255,255,255,.03); }
+.notificationItem:hover { background: var(--admin-light-hover, rgba(255,255,255,.03)); }
 .notificationDot { width: 7px; height: 7px; margin-top: 5px; flex-shrink: 0; background: var(--admin-orange); border-radius: 50%; }
 .notificationBody { flex: 1; min-width: 0; }
 .notificationBody p { margin: 0; color: var(--admin-white); font-size: 11.5px; font-weight: 650; line-height: 1.5; }
@@ -354,7 +354,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #121319;
+  background: var(--admin-light-control-bg, #121319);
   border: 1px solid var(--admin-border);
   padding: 4px 12px 4px 6px;
   border-radius: 12px;
@@ -425,9 +425,9 @@
 }
 
 .cancelFormBtn:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--admin-light-hover, rgba(255, 255, 255, 0.02));
   color: var(--admin-white);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.15));
 }
 
 .saveFormBtn {
@@ -487,7 +487,7 @@
   gap: 10px;
   margin-bottom: 22px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
 }
 
 .cardHeaderIcon {
@@ -564,7 +564,7 @@
 
 .inputField:focus, .selectField:focus, .textareaField:focus {
   border-color: rgba(248, 120, 32, 0.4);
-  background-color: #1b1e28;
+  background-color: var(--admin-light-control-bg, #1b1e28);
   box-shadow: 0 0 10px rgba(248, 120, 32, 0.1);
 }
 
@@ -651,7 +651,7 @@
 
 .dragDropArea {
   border: 2px dashed #262936;
-  background: rgba(255, 255, 255, 0.005);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.005));
   border-radius: 14px;
   padding: 24px 16px;
   text-align: center;
@@ -714,7 +714,7 @@
 .imageThumbCard {
   width: 88px;
   height: 112px;
-  background: #000;
+  background: var(--admin-light-surface, #000);
   border-radius: 12px;
   border: 1px solid var(--admin-border);
   overflow: hidden;
@@ -786,7 +786,7 @@
 .thumbOrderActions button {
   width: 19px;
   height: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.16));
   border-radius: 5px;
   background: rgba(7, 8, 11, 0.82);
   color: var(--admin-white);
@@ -826,7 +826,7 @@
 .addImageCard {
   width: 88px;
   height: 112px;
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.01));
   border: 1.5px dashed #262936;
   border-radius: 12px;
   display: flex;
@@ -926,13 +926,13 @@
 
 .accessorySection {
   margin-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   padding-top: 20px;
 }
 
 .physicalStatusSection {
   margin-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   padding-top: 20px;
 }
 
@@ -1107,7 +1107,7 @@
   .mobileMenuButton:hover,
   .mobileMenuButton:focus-visible {
     border-color: var(--admin-light-accent, var(--admin-orange));
-    background: #181a22;
+    background: var(--admin-light-control-bg, #181a22);
     box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45), 0 0 18px rgba(248, 120, 32, 0.16);
     outline: none;
   }
@@ -1228,7 +1228,7 @@
 
 .unifiedStorageGroup:focus-within {
   border-color: rgba(248, 120, 32, 0.4);
-  background-color: #1b1e28;
+  background-color: var(--admin-light-control-bg, #1b1e28);
   box-shadow: 0 0 10px rgba(248, 120, 32, 0.1);
 }
 
@@ -1342,7 +1342,7 @@
 .loginInput:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
 }
 
 .loginBtn {
@@ -1414,7 +1414,7 @@
 }
 
 .statOrdersRow::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.05));
   border-radius: 3px;
 }
 
@@ -1433,8 +1433,8 @@
 }
 
 .statOrdersCard:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  background-color: rgba(255, 255, 255, 0.015);
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.12));
+  background-color: var(--admin-light-hover, rgba(255, 255, 255, 0.015));
   transform: translateY(-1px);
 }
 
@@ -1603,7 +1603,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.04));
   object-fit: cover;
 }
 
@@ -1745,8 +1745,8 @@
 }
 
 .detailsActionBtn:hover {
-  background-color: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--admin-light-hover, rgba(255, 255, 255, 0.03));
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.15));
 }
 
 .detailsActionBtnRed {
@@ -1784,7 +1784,7 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
   border: 1px solid var(--admin-border);
   color: var(--admin-grey-text);
   font-size: 12px;
@@ -1798,8 +1798,8 @@
 }
 
 .pagerBtn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
+  background-color: var(--admin-light-hover, rgba(255, 255, 255, 0.05));
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.12));
   color: var(--admin-white);
 }
 
@@ -1828,7 +1828,7 @@
   padding: 14px 12px;
   color: var(--admin-grey-text);
   font-weight: 750;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05));
   font-size: 12.5px;
   white-space: nowrap;
 }
@@ -1836,7 +1836,7 @@
 .adminTable td {
   padding: 12px 12px;
   color: var(--admin-light-text, #e5e7eb);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.03));
   vertical-align: middle;
   font-size: 13px;
   white-space: nowrap;
@@ -1887,7 +1887,7 @@
 
 .metricCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 14px;
   padding: 16px;
   display: flex;
@@ -1900,7 +1900,7 @@
 
 .metricCard:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.12));
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -1949,7 +1949,7 @@
   position: sticky;
   top: 20px;
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 24px;
   display: flex;
@@ -1965,7 +1965,7 @@
   text-align: center;
   position: relative;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
 }
 
 .detailsCloseBtn {
@@ -1989,7 +1989,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.06);
+  border: 3px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   object-fit: cover;
   margin-bottom: 12px;
 }
@@ -2035,7 +2035,7 @@
   justify-content: center;
   gap: 12px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
 }
 
 .actionButtonWrapper {
@@ -2049,8 +2049,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.08));
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
   color: var(--admin-light-text, #c4c8d4);
   display: flex;
   align-items: center;
@@ -2061,9 +2061,9 @@
 }
 
 .actionCircleBtn:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--admin-light-hover, rgba(255, 255, 255, 0.08));
   color: var(--admin-white);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.2));
 }
 
 .actionCircleBtn.delete {
@@ -2087,7 +2087,7 @@
 /* Sticky Details Tab controls */
 .detailsTabContainer {
   display: flex;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   padding-bottom: 2px;
   gap: 4px;
 }
@@ -2132,7 +2132,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.03));
 }
 
 .profileDetailField:last-child {
@@ -2153,8 +2153,8 @@
 
 /* Notes Widget */
 .notesWidget {
-  background-color: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   border-radius: 12px;
   padding: 14px;
   margin-top: 4px;
@@ -2192,7 +2192,7 @@
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.03));
   text-align: right;
   min-height: 50px;
 }
@@ -2230,10 +2230,10 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1px;
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.06));
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
 }
 
 .perfItem {
@@ -2265,7 +2265,7 @@
   align-items: center;
   gap: 12px;
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05));
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 20px;
@@ -2294,8 +2294,8 @@
 
 .searchBarInput {
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 8px;
   padding: 8px 36px 8px 12px;
   color: var(--admin-white);
@@ -2307,12 +2307,12 @@
 
 .searchBarInput:focus {
   border-color: rgba(248, 120, 32, 0.5);
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.04));
 }
 
 .filterSelect {
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 8px;
   padding: 8px 12px;
   color: var(--admin-light-text, #c4c8d4);
@@ -2337,8 +2337,8 @@
 }
 
 .advFilterBtn {
-  background-color: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 8px;
   padding: 8px 14px;
   color: var(--admin-light-text, #c4c8d4);
@@ -2351,7 +2351,7 @@
 }
 
 .advFilterBtn:hover {
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--admin-light-hover, rgba(255, 255, 255, 0.06));
   color: var(--admin-white);
 }
 
@@ -2525,7 +2525,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.025));
   filter: blur(12px);
 }
 
@@ -3007,9 +3007,9 @@
   width: 34px;
   height: 34px;
   flex: 0 0 34px;
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.32));
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.16));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   display: inline-flex;
   align-items: center;
@@ -3019,7 +3019,7 @@
 
 .leadsNewOrderBtn:hover .leadsNewOrderIcon {
   transform: rotate(90deg);
-  background: rgba(255, 255, 255, 0.24);
+  background: var(--admin-light-hover, rgba(255, 255, 255, 0.24));
 }
 
 .leadsNewOrderLabel {
@@ -3036,7 +3036,7 @@
 }
 
 .leadsNewOrderLabel small {
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--admin-light-text, rgba(255, 255, 255, 0.76));
   font-size: 9px;
   font-weight: 650;
   line-height: 1.25;
@@ -3076,7 +3076,7 @@
   width: 500px;
   max-width: 90%;
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.08));
   border-radius: 16px;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
   overflow: hidden;
@@ -3087,7 +3087,7 @@
 
 .modalHeader {
   padding: 18px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3120,7 +3120,7 @@
 
 .modalFooter {
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -3151,7 +3151,7 @@
 
 .shipmentsDoughnutCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -3162,7 +3162,7 @@
   font-weight: 800;
   color: var(--admin-white);
   margin: 0 0 16px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05));
   padding-bottom: 12px;
   display: flex;
   justify-content: space-between;
@@ -3259,7 +3259,7 @@
 /* Timeline Card */
 .shipmentsTimelineCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -3280,7 +3280,7 @@
   right: 4px;
   bottom: 6px;
   width: 1px;
-  background-color: rgba(255, 255, 255, 0.06);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.06));
 }
 
 .timelineItem {
@@ -3317,7 +3317,7 @@
 /* Tracking Boxes */
 .shipmentsTrackingCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -3341,8 +3341,8 @@
 }
 
 .trackingBoxItem {
-  background-color: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.01));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   border-radius: 10px;
   padding: 12px;
   display: flex;
@@ -3352,8 +3352,8 @@
 }
 
 .trackingBoxItem:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  background-color: rgba(255, 255, 255, 0.02);
+  border-color: var(--admin-light-border, rgba(255, 255, 255, 0.08));
+  background-color: var(--admin-light-hover, rgba(255, 255, 255, 0.02));
 }
 
 .trackingBoxHeader {
@@ -3420,7 +3420,7 @@
 /* ── INTERACTIVE SHIPMENT DETAILS CARD STYLES ── */
 .shipmentDetailsCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
@@ -3433,7 +3433,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05));
   padding-bottom: 14px;
 }
 
@@ -3481,8 +3481,8 @@
 }
 
 .productMiniSection {
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.01));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   border-radius: 12px;
   padding: 12px;
   display: flex;
@@ -3496,8 +3496,8 @@
   height: 54px;
   border-radius: 8px;
   object-fit: cover;
-  background-color: #1a1d26;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--admin-light-surface, #1a1d26);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05));
 }
 
 .productMiniInfo {
@@ -3532,8 +3532,8 @@
 }
 
 .specItem {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   border-radius: 10px;
   padding: 10px;
   display: flex;
@@ -3554,8 +3554,8 @@
 }
 
 .addressSection {
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.01));
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   border-radius: 12px;
   padding: 14px;
   margin-bottom: 20px;
@@ -3568,7 +3568,7 @@
   font-size: 12px;
   font-weight: bold;
   color: var(--admin-white);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04));
   padding-bottom: 6px;
   margin: 0;
 }
@@ -3615,7 +3615,7 @@
   right: 5px;
   bottom: 8px;
   width: 2px;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.05));
 }
 
 .timelineStage {
@@ -3631,7 +3631,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: #242834;
+  background-color: var(--admin-light-control-bg, #242834);
   border: 2px solid var(--admin-card-bg);
   z-index: 2;
   transition: all 0.3s;
@@ -3700,7 +3700,7 @@
 .progressBarTrack {
   width: 100%;
   height: 8px;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.05));
   border-radius: 4px;
   overflow: hidden;
   margin-top: 6px;
@@ -3735,7 +3735,7 @@
 
 .finReportsMetricCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -3752,7 +3752,7 @@
 
 .finChartCard {
   background-color: var(--admin-card-bg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.06));
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -3764,7 +3764,7 @@
   color: var(--admin-white);
   margin: 0 0 20px 0;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05));
 }
 
 .finBreakdownList {
@@ -4224,7 +4224,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02));
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -4269,7 +4269,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--admin-light-surface-muted, rgba(255, 255, 255, 0.01));
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
@@ -4300,16 +4300,55 @@
 }
 
 /* ── Shared light theme: same Admin structure, lighter semantic surfaces ── */
+/* Light-only roles: legacy names are retained and other Admin modules inherit
+   the same palette. Storefront tokens outside this wrapper are untouched. */
 :global(html[data-theme='light']) .pageWrapper {
-  --admin-bg: #f4f1ec;
-  --admin-card-bg: #ffffff;
-  --admin-input-bg: #faf8f5;
-  --admin-border: rgba(43, 35, 28, .1);
-  --admin-orange-glow: rgba(248, 120, 32, .085);
-  --admin-green: #167c45;
-  --admin-green-bg: #edf8f1;
-  --admin-grey-text: #645d56;
-  --admin-white: #211d19;
+  --admin-bg: #eee9e2;
+  --admin-card-bg: #fffdf9;
+  --admin-input-bg: #f7f3ed;
+  --admin-border: #d5cdc2;
+  --admin-control-border: #95897b;
+  --admin-grey-text: #62584d;
+  --admin-white: #27221d;
+  --admin-orange-glow: #fff0e3;
+  --admin-green: #176b42;
+  --admin-green-bg: #eaf4ec;
+  --admin-surface-muted: #f4efe7;
+  --admin-hover: #ebe3d8;
+  --admin-selected: #ffe8d5;
+  --admin-placeholder: #74685c;
+  --admin-disabled-bg: #e8e2d9;
+  --admin-disabled-text: #6d6358;
+  --admin-focus: #a34408;
+  --admin-shadow: 0 3px 12px rgba(62,45,31,.055);
+  --admin-light-text: var(--admin-white);
+  --admin-light-muted: var(--admin-grey-text);
+  --admin-light-accent: #a34408;
+  --admin-light-success: var(--admin-green);
+  --admin-light-danger: #a92f2f;
+  --admin-light-info: #35618f;
+  --admin-light-warning: #865007;
+  --admin-light-control-bg: var(--admin-input-bg);
+  --admin-light-surface: var(--admin-card-bg);
+  --admin-light-surface-muted: var(--admin-surface-muted);
+  --admin-light-hover: var(--admin-hover);
+  --admin-light-border: var(--admin-border);
+  --surface-primary: var(--admin-card-bg);
+  --surface-secondary: var(--admin-surface-muted);
+  --surface-elevated: var(--admin-card-bg);
+  --control-bg: var(--admin-input-bg);
+  --text-primary: var(--admin-white);
+  --text-secondary: var(--admin-grey-text);
+  --text-tertiary: var(--admin-placeholder);
+  --border-primary: var(--admin-border);
+  --border-subtle: var(--admin-border);
+  --accent-hover: var(--admin-light-accent);
+  --accent-soft: var(--admin-selected);
+  --danger: var(--admin-light-danger);
+  --success: var(--admin-green);
+  --warning: var(--admin-light-warning);
+  --info: var(--admin-light-info);
+  --overlay: rgba(43,35,28,.48);
   background-color: var(--admin-bg);
   color: var(--admin-white);
 }
@@ -4325,10 +4364,15 @@
 :global(html[data-theme='light']) .finReportsMetricCard,
 :global(html[data-theme='light']) .finChartCard,
 :global(html[data-theme='light']) .laptopsMetricCard,
-:global(html[data-theme='light']) .detailsContainer {
-  background-color: var(--admin-card-bg);
+:global(html[data-theme='light']) .detailsContainer,
+:global(html[data-theme='light']) .laptopsFormView .cardPanel,
+:global(html[data-theme='light']) .laptopsPageHeader,
+:global(html[data-theme='light']) .laptopsTableCard,
+:global(html[data-theme='light']) .laptopsDetailsCard,
+:global(html[data-theme='light']) .laptopsProfitCard {
+  background: var(--admin-card-bg);
   border-color: var(--admin-border);
-  box-shadow: 0 12px 34px rgba(62,45,31,.07);
+  box-shadow: var(--admin-shadow);
 }
 
 /* ── Orders phase 1: operational hierarchy ── */
@@ -4429,7 +4473,7 @@
 
 .ordersSummaryCard:hover {
   background: var(--orders-hover-surface);
-  border-color: rgba(255,255,255,.11);
+  border-color: var(--admin-light-border, rgba(255,255,255,.11));
   transform: translateY(-1px);
 }
 
@@ -4467,7 +4511,7 @@
   flex: 0 0 34px;
   place-items: center;
   color: var(--admin-grey-text);
-  background: rgba(255,255,255,.035);
+  background: var(--admin-light-surface-muted, rgba(255,255,255,.035));
   border: 1px solid var(--orders-soft-line);
   border-radius: 9px;
 }
@@ -4781,7 +4825,7 @@
 .ordersRowActions button:disabled { opacity: .45; cursor: wait; }
 
 .ordersSkeletonRow { pointer-events: none; }
-.ordersSkeletonRow span { display: block; width: 70%; height: 10px; background: rgba(255,255,255,.055); border-radius: 5px; animation: ordersSkeleton 1.4s ease-in-out infinite; }
+.ordersSkeletonRow span { display: block; width: 70%; height: 10px; background: var(--admin-light-surface-muted, rgba(255,255,255,.055)); border-radius: 5px; animation: ordersSkeleton 1.4s ease-in-out infinite; }
 @keyframes ordersSkeleton { 50% { opacity: .45; } }
 
 .ordersEmptyState {
@@ -5143,7 +5187,7 @@
 :global(html[data-theme='light']) .notesContentBlock,
 :global(html[data-theme='light']) .perfItem {
   color: var(--admin-white);
-  background-color: #f8f5f0;
+  background-color: var(--admin-input-bg);
   border-color: var(--admin-border);
 }
 
@@ -5151,7 +5195,7 @@
 :global(html[data-theme='light']) .iconControlBtn:hover,
 :global(html[data-theme='light']) .pagerBtn:hover,
 :global(html[data-theme='light']) .actionCircleBtn:hover,
-:global(html[data-theme='light']) .advFilterBtn:hover { color: var(--admin-white); background-color: #f1ece6; border-color: rgba(43,35,28,.18); }
+:global(html[data-theme='light']) .advFilterBtn:hover { color: var(--admin-white); background-color: var(--admin-hover); border-color: rgba(43,35,28,.18); }
 :global(html[data-theme='light']) .inputField,
 :global(html[data-theme='light']) .selectField,
 :global(html[data-theme='light']) .textareaField,
@@ -5165,7 +5209,7 @@
 }
 :global(html[data-theme='light']) .inputField:focus,
 :global(html[data-theme='light']) .selectField:focus,
-:global(html[data-theme='light']) .textareaField:focus { background-color: #fffdfa; }
+:global(html[data-theme='light']) .textareaField:focus { background-color: var(--admin-card-bg); }
 :global(html[data-theme='light']) .pageWrapper option { color: var(--admin-white); background: var(--admin-card-bg); }
 :global(html[data-theme='light']) .adminTable th,
 :global(html[data-theme='light']) .adminTable td,
@@ -5204,8 +5248,8 @@
 :global(html[data-theme='light']) .modalOverlay,
 :global(html[data-theme='light']) .mobileMenuBackdrop { background-color: rgba(43,35,28,.48); }
 :global(html[data-theme='light']) .dragDropArea,
-:global(html[data-theme='light']) .addImageCard { background: #faf8f5; border-color: rgba(43,35,28,.17); }
-:global(html[data-theme='light']) .imageThumbCard { background: #eee9e2; }
+:global(html[data-theme='light']) .addImageCard { background: var(--admin-input-bg); border-color: rgba(43,35,28,.17); }
+:global(html[data-theme='light']) .imageThumbCard { background: var(--admin-surface-muted); }
 
 /* Laptop identity form uses the same semantic surfaces in both Admin themes. */
 :global(html[data-theme='light']) .laptopsFormView .pageTitleSection,
@@ -5227,23 +5271,10 @@
   .laptopsFormView .formFieldsGrid4 > * { grid-column: auto !important; }
 }
 
-/* Legacy Admin text consumes light-theme roles without altering dark colors. */
-:global(html[data-theme='light']) .pageWrapper {
-  --admin-light-text: var(--admin-white);
-  --admin-light-muted: var(--admin-grey-text);
-}
 
-:global(html[data-theme='light']) .pageWrapper { --admin-control-border: #8a8178; --admin-light-control-bg: var(--admin-input-bg); }
-:global(html[data-theme='light']) .pageWrapper input:not([type='checkbox']):not([type='radio']),
-:global(html[data-theme='light']) .pageWrapper select,
-:global(html[data-theme='light']) .pageWrapper textarea { border-color: var(--admin-control-border); }
+/* Legacy inline form styles share a single control boundary and state palette. */
+:global(html[data-theme='light']) .pageWrapper :is(input, select, textarea):where(:not([type='checkbox']):not([type='radio'])) { border-color: var(--admin-control-border) !important; }
 
-:global(html[data-theme='light']) .pageWrapper {
-  --admin-light-accent: #a34408;
-  --admin-light-success: #116c3e;
-  --admin-light-danger: #a92f2f;
-  --admin-light-info: #356aa8;
-}
 
 /* Laptop surfaces follow the existing light Admin palette. */
 :global(html[data-theme='light']) .laptopsModernPage {
@@ -5262,3 +5293,77 @@
 :global(html[data-theme='light']) .laptopsFormView .selectField,
 :global(html[data-theme='light']) .laptopsFormView .textareaField,
 :global(html[data-theme='light']) .laptopsFormView .unifiedStorageGroup { background-color: var(--admin-input-bg) !important; }
+
+/* Shared interaction states apply to every Admin route and editor. */
+.settingsNavItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  margin-bottom: 2px;
+  border: 0;
+  border-right: 3px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--admin-grey-text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: right;
+  cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.settingsNavItem:hover { background: var(--admin-light-hover, rgba(255,255,255,.04)); }
+.settingsNavActive {
+  color: var(--admin-light-accent, #f87820);
+  background: var(--admin-orange-glow);
+  border-right-color: var(--admin-orange);
+  font-weight: 700;
+}
+:global(html[data-theme='light']) .settingsNavActive,
+:global(html[data-theme='light']) .navMenuLinkActive { background: var(--admin-selected); border-color: var(--admin-light-accent); }
+:global(html[data-theme='light']) .pageWrapper :is(input, textarea)::placeholder { color: var(--admin-placeholder); opacity: 1; }
+:global(html[data-theme='light']) .pageWrapper :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--admin-focus);
+  outline-offset: 2px;
+  border-color: var(--admin-focus) !important;
+}
+:global(html[data-theme='light']) .pageWrapper :is(button, a, [role='combobox']):focus-visible {
+  outline: 2px solid var(--admin-focus);
+  outline-offset: 3px;
+}
+:global(html[data-theme='light']) .pageWrapper :is(input, select, textarea, button):disabled {
+  background-color: var(--admin-disabled-bg) !important;
+  color: var(--admin-disabled-text) !important;
+  border-color: var(--admin-border) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+:global(html[data-theme='light']) .pageWrapper :is(input, select, textarea)[aria-invalid='true'] {
+  border-color: var(--admin-light-danger) !important;
+  outline-color: var(--admin-light-danger);
+}
+:global(html[data-theme='light']) .adminTable th { background: var(--admin-surface-muted); color: var(--admin-grey-text); }
+:global(html[data-theme='light']) .adminTable tbody tr:hover { background: var(--admin-hover) !important; }
+:global(html[data-theme='light']) .badgeVip { color: var(--admin-light-accent); background: var(--admin-selected); }
+:global(html[data-theme='light']) .ordersPage {
+  --orders-muted-surface: var(--admin-card-bg);
+  --orders-hover-surface: var(--admin-hover);
+  --orders-soft-line: var(--admin-border);
+}
+
+.settingsSectionGrid > * { min-width: 0; }
+.settingsSectionHeading { gap: 12px; flex-wrap: wrap; }
+@media (max-width: 768px) {
+  .settingsSectionGrid { grid-template-columns: minmax(0, 1fr) !important; gap: 14px !important; }
+  .settingsSectionGrid > * { grid-column: auto !important; }
+  .settingsSectionHeading > select { width: 100%; }
+}
+
+:global(html[data-theme='light']) .pagerBtnActive {
+  background-color: var(--admin-selected) !important;
+  border-color: var(--admin-light-accent) !important;
+  color: var(--admin-light-accent) !important;
+}

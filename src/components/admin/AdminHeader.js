@@ -72,7 +72,7 @@ export default function AdminHeader({
         </div>
         
         <div className={styles.headerProfileBadge}>
-          <div style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(248,120,32,0.15)', color: '#f87820' }}>{AdminIcons.user(16)}</div>
+          <div style={{ width: '28px', height: '28px', borderRadius: '50%', marginLeft: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(248,120,32,0.15)', color: 'var(--admin-light-accent, #f87820)' }}>{AdminIcons.user(16)}</div>
           <span>مدیر سایت</span>
         </div>
       </div>

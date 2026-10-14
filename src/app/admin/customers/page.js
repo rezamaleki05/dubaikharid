@@ -153,11 +153,11 @@ function CustomersContent() {
   const vipCustomerGrowth = stats.growth?.vip || 0;
   const renderGrowth = (growth) => {
     if (growth === 0) {
-      return <span className={styles.metricSubText} style={{ color: '#8b92a5', marginTop: '2px' }}>بدون تغییر</span>;
+      return <span className={styles.metricSubText} style={{ color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>بدون تغییر</span>;
     }
     const isUp = growth > 0;
     return (
-      <span className={`${styles.metricSubText} ${isUp ? styles.up : ''}`} style={{ color: isUp ? '#10b981' : '#ef4444', marginTop: '2px' }}>
+      <span className={`${styles.metricSubText} ${isUp ? styles.up : ''}`} style={{ color: isUp ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-danger, #ef4444)', marginTop: '2px' }}>
         {isUp ? '+' : ''}{growth.toFixed(1)}% نسبت به ماه قبل
       </span>
     );
@@ -191,10 +191,10 @@ function CustomersContent() {
     <div>
       <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
         <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.users(28)}</span>
+          <span style={{ color: 'var(--admin-light-accent, #f87820)', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.users(28)}</span>
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>مشتریان</h1>
-            <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت و بررسی اطلاعات مشتریان</p>
+            <h1 style={{ fontSize: '22px', fontWeight: '750', color: 'var(--admin-light-text, #fff)', margin: 0 }}>مشتریان</h1>
+            <p style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px', margin: 0 }}>مدیریت و بررسی اطلاعات مشتریان</p>
           </div>
         </div>
 
@@ -236,7 +236,7 @@ function CustomersContent() {
             <span className={styles.metricValue}>{activeCount.toLocaleString()}</span>
             {renderGrowth(activeCustomerGrowth)}
           </div>
-          <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>{AdminIcons.user(18)}</div>
+          <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--admin-light-success, #10b981)' }}>{AdminIcons.user(18)}</div>
         </div>
         <div className={styles.metricCard}>
           <div className={styles.metricContent}>
@@ -244,7 +244,7 @@ function CustomersContent() {
             <span className={styles.metricValue}>{newCount.toLocaleString()}</span>
             {renderGrowth(newCustomerGrowth)}
           </div>
-          <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>{AdminIcons.lock(18)}</div>
+          <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--admin-light-info, #3b82f6)' }}>{AdminIcons.lock(18)}</div>
         </div>
         <div className={styles.metricCard}>
           <div className={styles.metricContent}>
@@ -252,13 +252,13 @@ function CustomersContent() {
             <span className={styles.metricValue}>{vipCount.toLocaleString()}</span>
             {renderGrowth(vipCustomerGrowth)}
           </div>
-          <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>{AdminIcons.crown(18)}</div>
+          <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--admin-light-warning, #f59e0b)' }}>{AdminIcons.crown(18)}</div>
         </div>
         <div className={styles.metricCard}>
           <div className={styles.metricContent}>
             <span className={styles.metricLabel}>میانگین خرید</span>
             <span className={styles.metricValue}>{averagePurchase.toLocaleString()}</span>
-            <span style={{ fontSize: '10px', color: '#8b92a5', marginTop: '2px' }}>تومان</span>
+            <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>تومان</span>
           </div>
           <div className={styles.metricIconContainer} style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4' }}>{AdminIcons.card(18)}</div>
         </div>
@@ -299,7 +299,7 @@ function CustomersContent() {
       </div>
 
       <div className={styles.customerSplitGrid}>
-        <div style={{ background: '#11131a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--admin-light-surface, #11131a)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '16px', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table className={styles.adminTable}>
               <thead>
@@ -314,10 +314,10 @@ function CustomersContent() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan="6" style={{ textAlign: 'center', color: '#8b92a5', padding: '50px 0' }}>در حال دریافت مشتریان...</td></tr>
+                  <tr><td colSpan="6" style={{ textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', padding: '50px 0' }}>در حال دریافت مشتریان...</td></tr>
                 ) : filteredCustomers.length === 0 ? (
                   <tr key="empty-customers">
-                    <td colSpan="6" style={{ textAlign: 'center', color: '#8b92a5', padding: '50px 0' }}>مشتری منطبق با فیلترهای جستجو یافت نشد.</td>
+                    <td colSpan="6" style={{ textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', padding: '50px 0' }}>مشتری منطبق با فیلترهای جستجو یافت نشد.</td>
                   </tr>
                 ) : filteredCustomers.map(customer => {
                   const isSelected = selectedCustomer?.id === customer.id;
@@ -334,14 +334,14 @@ function CustomersContent() {
                         borderLeft: isSelected ? '3px solid #f87820' : 'none'
                       }}
                     >
-                      <td><span style={{ fontWeight: '800', color: '#fff', fontSize: '13px' }}>{customer.name}</span></td>
+                      <td><span style={{ fontWeight: '800', color: 'var(--admin-light-text, #fff)', fontSize: '13px' }}>{customer.name}</span></td>
                       <td style={{ fontFamily: 'var(--font-vazirmatn), Inter, system-ui', fontSize: '12px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                           <span>{customer.phone}</span>
-                          <span style={{ color: '#8b92a5', fontSize: '10.5px', marginTop: '2px' }}>{customer.email}</span>
+                          <span style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '10.5px', marginTop: '2px' }}>{customer.email}</span>
                         </div>
                       </td>
-                      <td style={{ fontFamily: 'var(--font-vazirmatn), system-ui', fontWeight: '850', color: '#fff' }}>
+                      <td style={{ fontFamily: 'var(--font-vazirmatn), system-ui', fontWeight: '850', color: 'var(--admin-light-text, #fff)' }}>
                         {customer.totalToman.toLocaleString('fa-IR')} تومان
                       </td>
                       <td>
@@ -355,20 +355,20 @@ function CustomersContent() {
                         <div style={{ position: 'relative', display: 'inline-block' }}>
                           <button
                             onClick={() => openEditCustomer(customer)}
-                            style={{ background: 'none', border: 'none', color: '#8b92a5', cursor: 'pointer', fontSize: '16px', padding: '6px', display: 'inline-flex', alignItems: 'center' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--admin-light-muted, #8b92a5)', cursor: 'pointer', fontSize: '16px', padding: '6px', display: 'inline-flex', alignItems: 'center' }}
                             title="ویرایش سریع"
                           >
                             {AdminIcons.edit(13)}
                           </button>
                           <button
                             onClick={() => handleDeleteCustomer(customer.id)}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '14px', padding: '6px', marginRight: '6px' }}
+                            style={{ background: 'none', border: 'none', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', fontSize: '14px', padding: '6px', marginRight: '6px' }}
                             title="غیرفعال‌سازی"
                           >
                             {AdminIcons.trash(13)}
                           </button>
                         </div>
-                        ) : <span style={{ color: '#6b7280' }}>فقط مشاهده</span>}
+                        ) : <span style={{ color: 'var(--admin-light-muted, #6b7280)' }}>فقط مشاهده</span>}
                       </td>
                     </tr>
                   );
@@ -377,17 +377,17 @@ function CustomersContent() {
             </table>
           </div>
 
-          <div className={styles.customerPager} style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className={styles.customerPager} style={{ padding: '16px 24px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '6px' }}>
               <button type="button" disabled={page <= 1} onClick={() => setPage(value => Math.max(1, value - 1))} className={styles.advFilterBtn} style={{ padding: '4px 8px', fontSize: '11px' }}>&lt;</button>
               {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, index) => {
                 const target = Math.min(Math.max(1, page - 2), Math.max(1, pagination.totalPages - 4)) + index;
-                return <button type="button" key={target} onClick={() => setPage(target)} className={styles.advFilterBtn} style={{ padding: '4px 10px', fontSize: '11px', ...(target === page ? { backgroundColor: '#f87820', color: '#fff', borderColor: '#f87820' } : {}) }}>{target.toLocaleString('fa-IR')}</button>;
+                return <button type="button" key={target} onClick={() => setPage(target)} className={styles.advFilterBtn} style={{ padding: '4px 10px', fontSize: '11px', ...(target === page ? { backgroundColor: '#f87820', color: 'var(--admin-light-text, #fff)', borderColor: '#f87820' } : {}) }}>{target.toLocaleString('fa-IR')}</button>;
               })}
               <button type="button" disabled={page >= pagination.totalPages} onClick={() => setPage(value => Math.min(pagination.totalPages, value + 1))} className={styles.advFilterBtn} style={{ padding: '4px 8px', fontSize: '11px' }}>&gt;</button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '11.5px', color: '#8b92a5' }}>
+              <span style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                 نمایش {pagination.total ? ((page - 1) * limit + 1).toLocaleString('fa-IR') : '۰'} تا {Math.min(page * limit, pagination.total).toLocaleString('fa-IR')} از {pagination.total.toLocaleString('fa-IR')} نتیجه
               </span>
               <select value={limit} onChange={event => { setLimit(Number(event.target.value)); setPage(1); }} className={styles.filterSelect} style={{ padding: '4px 8px', minWidth: '55px', height: '28px', fontSize: '11px' }}>
@@ -473,27 +473,27 @@ function CustomersContent() {
 
                 {customerDetailsTab === 'payments' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {(selectedCustomer.recentOrders || []).flatMap(order => order.payments || []).length === 0 && <div style={{ color: '#8b92a5', fontSize: '11.5px', padding: '14px 0' }}>پرداخت ثبت‌شده‌ای برای این مشتری وجود ندارد.</div>}
+                    {(selectedCustomer.recentOrders || []).flatMap(order => order.payments || []).length === 0 && <div style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11.5px', padding: '14px 0' }}>پرداخت ثبت‌شده‌ای برای این مشتری وجود ندارد.</div>}
                     {(selectedCustomer.recentOrders || []).flatMap(order => (order.payments || []).map(payment => ({ ...payment, orderCode: order.orderCode }))).map(payment => (
-                      <div key={payment.id} style={{ padding: '8px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#8b92a5' }}><span>{payment.method || 'روش پرداخت ثبت نشده'}</span><span>{formatApiDate(payment.createdAt)}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#fff', fontWeight: 'bold', marginTop: '4px' }}><span>{payment.reference || payment.orderCode}</span><span style={{ color: payment.status === 'paid' ? '#10b981' : '#f59e0b' }}>{Number(payment.amount || 0).toLocaleString('fa-IR')} تومان</span></div>
+                      <div key={payment.id} style={{ padding: '8px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}><span>{payment.method || 'روش پرداخت ثبت نشده'}</span><span>{formatApiDate(payment.createdAt)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--admin-light-text, #fff)', fontWeight: 'bold', marginTop: '4px' }}><span>{payment.reference || payment.orderCode}</span><span style={{ color: payment.status === 'paid' ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-warning, #f59e0b)' }}>{Number(payment.amount || 0).toLocaleString('fa-IR')} تومان</span></div>
                       </div>
                     ))}
                   </div>
                 )}
 
                 {customerDetailsTab === 'history' && (
-                  <div style={{ fontSize: '11.5px', color: '#c4c8d4', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '8px', borderRight: '2px solid rgba(255,255,255,0.06)' }}>
-                    {(selectedCustomer.recentOrders || []).map(order => <div key={order.id}><span style={{ color: '#f87820', fontWeight: 'bold' }}>• {formatApiDate(order.createdAt)}</span><p style={{ margin: '2px 0 0 0', color: '#8b92a5' }}>سفارش {order.orderCode} — {Number(order.totalToman || 0).toLocaleString('fa-IR')} تومان</p></div>)}
-                    <div><span style={{ color: '#f87820', fontWeight: 'bold' }}>• {selectedCustomer.dateReg}</span><p style={{ margin: '2px 0 0 0', color: '#8b92a5' }}>ثبت‌نام اولیه در وب‌سایت دبی خرید</p></div>
+                  <div style={{ fontSize: '11.5px', color: 'var(--admin-light-text, #c4c8d4)', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '8px', borderRight: '2px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}>
+                    {(selectedCustomer.recentOrders || []).map(order => <div key={order.id}><span style={{ color: 'var(--admin-light-accent, #f87820)', fontWeight: 'bold' }}>• {formatApiDate(order.createdAt)}</span><p style={{ margin: '2px 0 0 0', color: 'var(--admin-light-muted, #8b92a5)' }}>سفارش {order.orderCode} — {Number(order.totalToman || 0).toLocaleString('fa-IR')} تومان</p></div>)}
+                    <div><span style={{ color: 'var(--admin-light-accent, #f87820)', fontWeight: 'bold' }}>• {selectedCustomer.dateReg}</span><p style={{ margin: '2px 0 0 0', color: 'var(--admin-light-muted, #8b92a5)' }}>ثبت‌نام اولیه در وب‌سایت دبی خرید</p></div>
                   </div>
                 )}
 
                 {customerDetailsTab === 'notes' && (
-                  <div style={{ fontSize: '11.5px', color: '#c4c8d4', lineHeight: '1.6' }}>
+                  <div style={{ fontSize: '11.5px', color: 'var(--admin-light-text, #c4c8d4)', lineHeight: '1.6' }}>
                     <p style={{ margin: 0 }}>مجموعه یادداشت‌های ثبت‌شده برای پشتیبانی و تعامل با مشتری:</p>
-                    <div style={{ padding: '8px', background: 'rgba(0,0,0,0.15)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.03)', marginTop: '8px' }}>{selectedCustomer.notes}</div>
+                    <div style={{ padding: '8px', background: 'rgba(0,0,0,0.15)', borderRadius: '6px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.03))', marginTop: '8px' }}>{selectedCustomer.notes}</div>
                   </div>
                 )}
               </div>
@@ -504,9 +504,9 @@ function CustomersContent() {
                   {!isEditingNotes ? (
                     canEditCustomers ?
                     <button onClick={() => triggerEditNotes(selectedCustomer)} className={styles.notesEditBtn}>{AdminIcons.edit(12)} ویرایش</button>
-                    : <span style={{ color: '#6b7280', fontSize: '11px' }}>فقط مشاهده</span>
+                    : <span style={{ color: 'var(--admin-light-muted, #6b7280)', fontSize: '11px' }}>فقط مشاهده</span>
                   ) : (
-                    <button disabled={isSaving} onClick={() => triggerSaveNotes(selectedCustomer.id)} className={styles.notesEditBtn} style={{ color: '#10b981', fontWeight: 'bold' }}>{AdminIcons.check(12)} ذخیره</button>
+                    <button disabled={isSaving} onClick={() => triggerSaveNotes(selectedCustomer.id)} className={styles.notesEditBtn} style={{ color: 'var(--admin-light-success, #10b981)', fontWeight: 'bold' }}>{AdminIcons.check(12)} ذخیره</button>
                   )}
                 </div>
                 {!isEditingNotes ? (
@@ -534,9 +534,9 @@ function CustomersContent() {
               </div>
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px', background: '#11131a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <span style={{ color: '#8b92a5', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{AdminIcons.users(32)}</span>
-              <p style={{ color: '#8b92a5', fontSize: '12px', marginTop: '10px' }}>جهت مشاهده جزئیات کامل، روی ردیف یکی از مشتریان کلیک کنید.</p>
+            <div style={{ textAlign: 'center', padding: '40px', background: 'var(--admin-light-surface, #11131a)', borderRadius: '16px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}>
+              <span style={{ color: 'var(--admin-light-muted, #8b92a5)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{AdminIcons.users(32)}</span>
+              <p style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '12px', marginTop: '10px' }}>جهت مشاهده جزئیات کامل، روی ردیف یکی از مشتریان کلیک کنید.</p>
             </div>
           )}
         </div>

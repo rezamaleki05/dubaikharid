@@ -101,7 +101,7 @@ function DashboardContent() {
                         padding: '5px 14px', borderRadius: '20px', cursor: 'pointer',
                         background: item.urgent ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.04)',
                         border: `1px solid ${item.urgent ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.07)'}`,
-                        color: item.urgent ? 'var(--admin-light-danger, #ef4444)' : '#c0c8d8',
+                        color: item.urgent ? 'var(--admin-light-danger, #ef4444)' : 'var(--admin-light-text, #c0c8d8)',
                         fontSize: '11.5px', fontWeight: '600', transition: 'opacity 0.2s'
                       }}
                       onMouseOver={e => e.currentTarget.style.opacity = '0.75'}
@@ -155,9 +155,9 @@ function DashboardContent() {
                     { label: 'به‌روزرسانی نرخ درهم', onClick: () => setActiveTab('settings') },
                   ].map((btn, i) => (
                     <button key={i} onClick={btn.onClick}
-                      style={{ padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: '600', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--admin-light-text, #c0c8d8)', transition: 'all 0.2s' }}
+                      style={{ padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: '600', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', color: 'var(--admin-light-text, #c0c8d8)', transition: 'all 0.2s' }}
                       onMouseOver={e => { e.currentTarget.style.background = 'rgba(248,120,32,0.1)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.3)'; e.currentTarget.style.color = '#f87820'; }}
-                      onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#c0c8d8'; }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'var(--admin-light-hover, rgba(255,255,255,0.04))'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#c0c8d8'; }}
                     >{btn.label}</button>
                   ))}
                 </div>
@@ -223,7 +223,7 @@ function DashboardContent() {
                       const st = stMap[order.status] || { label: order.status, color: 'var(--admin-light-muted, #8b92a5)', bg: 'rgba(139,146,165,0.1)' };
                       return (
                         <div key={order.id} onClick={() => window.location.assign('/admin/orders')}
-                          style={{ display: 'grid', gridTemplateColumns: '90px 1fr 130px 110px 90px 80px', gap: '8px', alignItems: 'center', padding: '10px 8px', borderRadius: '10px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
+                          style={{ display: 'grid', gridTemplateColumns: '90px 1fr 130px 110px 90px 80px', gap: '8px', alignItems: 'center', padding: '10px 8px', borderRadius: '10px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.015))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.03))', cursor: 'pointer', transition: 'all 0.2s' }}
                           onMouseOver={e => { e.currentTarget.style.backgroundColor = 'rgba(248,120,32,0.04)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.15)'; }}
                           onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
                         >
@@ -259,7 +259,7 @@ function DashboardContent() {
                     { label: 'تبدیل به سفارش', count: dashboard.purchaseRequests.converted, color: 'var(--admin-light-success, #2ecc71)', desc: 'پرداخت شده و در جریان', onClick: () => window.location.assign('/admin/leads') },
                   ].map((stage, i) => (
                     <div key={i} onClick={stage.onClick}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', marginBottom: '8px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'all 0.2s' }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', marginBottom: '8px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.015))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', cursor: 'pointer', transition: 'all 0.2s' }}
                       onMouseOver={e => { e.currentTarget.style.backgroundColor = `${stage.color}10`; e.currentTarget.style.borderColor = `${stage.color}30`; }}
                       onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'; }}
                     >
@@ -292,7 +292,7 @@ function DashboardContent() {
 
                       return (
                         <div key={tx.id || i} onClick={() => { window.location.assign('/admin/payments'); }}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.2s' }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.015))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.03))', cursor: 'pointer', transition: 'all 0.2s' }}
                           onMouseOver={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(248,120,32,0.15)'; }}
                           onMouseOut={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.015)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; }}
                         >

@@ -358,7 +358,7 @@ function StockLaptopsContent() {
                   type="button" 
                   onClick={handleExportLaptopsExcel} 
                   className={styles.laptopsExportButton}
-                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.03))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', height: '28px' }}
                 >
                   <span style={{ fontSize: '10px' }}>{AdminIcons.chart(10)}</span>
                   <span>خروجی اکسل</span>
@@ -445,7 +445,7 @@ function StockLaptopsContent() {
               <div className={`${styles.cardPanel} ${styles.laptopsTableCard}`} style={{ padding: '0', overflow: 'hidden' }}>
                 
                 {/* Filter Area */}
-                <div className={styles.laptopsFilterBar} style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', background: 'rgba(255, 255, 255, 0.01)' }}>
+                <div className={styles.laptopsFilterBar} style={{ padding: '10px 16px', borderBottom: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04))', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', background: 'var(--admin-light-surface-muted, rgba(255, 255, 255, 0.01))' }}>
                   <span style={{ fontSize: '13px', fontWeight: '750', color: 'var(--admin-white)', marginLeft: 'auto' }}>لیست لپ‌تاپ‌ها</span>
                   
                   {/* Search keyword */}
@@ -457,7 +457,7 @@ function StockLaptopsContent() {
                       value={laptopSearchQuery}
                       onChange={(e) => { setLaptopSearchQuery(e.target.value); setLaptopsPage(1); }}
                       className={styles.searchInput}
-                      style={{ width: '100%', padding: '5px 26px 5px 10px', fontSize: '11px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', border: '1px solid rgba(255,255,255,0.06)' }}
+                      style={{ width: '100%', padding: '5px 26px 5px 10px', fontSize: '11px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}
                     />
                   </div>
 
@@ -534,7 +534,7 @@ function StockLaptopsContent() {
                 <div className={styles.laptopsTableScroller} style={{ overflowX: 'auto' }}>
                   <table className={styles.adminTable} style={{ borderCollapse: 'collapse', width: '100%' }}>
                     <thead>
-                      <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                      <tr style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.01))', borderBottom: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04))' }}>
                         <th style={{ padding: '12px 15px', textAlign: 'center', width: '60px' }}>تصویر</th>
                         <th style={{ textAlign: 'right', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>مدل</th>
                         <th style={{ textAlign: 'right', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>پردازنده</th>
@@ -588,7 +588,7 @@ function StockLaptopsContent() {
                             onClick={() => setSelectedLaptopId(laptop.id)}
                             className={styles.tableRow} 
                             style={{ 
-                              borderBottom: '1px solid rgba(255, 255, 255, 0.03)', 
+                              borderBottom: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.03))',
                               cursor: 'pointer',
                               background: isSelected ? 'rgba(248,120,32,0.03)' : 'transparent',
                               borderLeft: isSelected ? '2px solid #f87820' : 'none'
@@ -597,8 +597,8 @@ function StockLaptopsContent() {
                             <td style={{ padding: '18px 15px', textAlign: 'center' }}>
                               {laptop.image ? <img 
                                 src={laptop.image} alt={laptop.name}
-                                style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.08)' }}
-                              /> : <span style={{ width: '40px', height: '40px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', color: 'var(--admin-light-muted, #8b92a5)' }}>{AdminIcons.laptop(18)}</span>}
+                                style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.08))' }}
+                              /> : <span style={{ width: '40px', height: '40px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.04))', color: 'var(--admin-light-muted, #8b92a5)' }}>{AdminIcons.laptop(18)}</span>}
                             </td>
                             <td style={{ padding: '18px 10px', fontSize: '12px' }}>
                               <div style={{ fontWeight: '700', color: 'var(--admin-white)' }}>{laptopDisplayName(parsedSpecs)}</div>
@@ -668,16 +668,16 @@ function StockLaptopsContent() {
                 </div>
 
                 {/* Pagination Footer */}
-                <div className={styles.laptopsPagination} style={{ padding: '15px 20px', borderTop: '1px solid rgba(255, 255, 255, 0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                <div className={styles.laptopsPagination} style={{ padding: '15px 20px', borderTop: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.04))', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.01))' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                     <span>نمایش {laptopsPagination.total === 0 ? 0 : ((laptopsPagination.page - 1) * laptopsPagination.limit) + 1} تا {Math.min(laptopsPagination.page * laptopsPagination.limit, laptopsPagination.total)} از {laptopsPagination.total} نتیجه</span>
                   </div>
 
                   {/* Page Numbers */}
                   <div style={{ display: 'flex', gap: '6px', direction: 'ltr' }}>
-                    <button disabled={laptopsPage <= 1 || laptopsLoading} onClick={() => setLaptopsPage(page => Math.max(1, page - 1))} style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', cursor: laptopsPage <= 1 ? 'not-allowed' : 'pointer', opacity: laptopsPage <= 1 ? 0.4 : 1 }}>&lt;</button>
+                    <button disabled={laptopsPage <= 1 || laptopsLoading} onClick={() => setLaptopsPage(page => Math.max(1, page - 1))} style={{ border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', cursor: laptopsPage <= 1 ? 'not-allowed' : 'pointer', opacity: laptopsPage <= 1 ? 0.4 : 1 }}>&lt;</button>
                     <button style={{ border: 'none', background: '#f87820', minWidth: '26px', height: '26px', padding: '0 7px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', fontWeight: 'bold' }}>{laptopsPagination.page}</button>
-                    <button disabled={laptopsPage >= laptopsPagination.totalPages || laptopsLoading} onClick={() => setLaptopsPage(page => Math.min(laptopsPagination.totalPages, page + 1))} style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', cursor: laptopsPage >= laptopsPagination.totalPages ? 'not-allowed' : 'pointer', opacity: laptopsPage >= laptopsPagination.totalPages ? 0.4 : 1 }}>&gt;</button>
+                    <button disabled={laptopsPage >= laptopsPagination.totalPages || laptopsLoading} onClick={() => setLaptopsPage(page => Math.min(laptopsPagination.totalPages, page + 1))} style={{ border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', background: 'transparent', width: '26px', height: '26px', borderRadius: '4px', color: 'var(--admin-white)', fontSize: '10px', cursor: laptopsPage >= laptopsPagination.totalPages ? 'not-allowed' : 'pointer', opacity: laptopsPage >= laptopsPagination.totalPages ? 0.4 : 1 }}>&gt;</button>
                   </div>
                 </div>
 
@@ -722,7 +722,7 @@ function StockLaptopsContent() {
                   : (selectedLaptop.image ? [selectedLaptop.image] : []);
 
                 return (
-                  <div className={`${styles.cardPanel} ${styles.laptopsDetailsCard}`} style={{ padding: '20px', position: 'sticky', top: '80px', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px' }}>
+                  <div className={`${styles.cardPanel} ${styles.laptopsDetailsCard}`} style={{ padding: '20px', position: 'sticky', top: '80px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '16px' }}>
                     {/* Details Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                       <span style={{ fontSize: '13px', fontWeight: '750', color: 'var(--admin-white)' }}>جزئیات لپ‌تاپ</span>
@@ -739,18 +739,18 @@ function StockLaptopsContent() {
                     {/* Gallery Split Grid */}
                     <div style={{ display: 'grid', gridTemplateColumns: '4fr 1.2fr', gap: '10px', marginBottom: '15px' }}>
                       {/* Main Active Picture */}
-                      <div style={{ background: '#000', borderRadius: '10px', overflow: 'hidden', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ background: 'var(--admin-light-surface, #000)', borderRadius: '10px', overflow: 'hidden', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}>
                         {imagesToUse[0] ? <img src={imagesToUse[0]} alt="Laptop main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>{AdminIcons.laptop(30)}</span>}
                       </div>
                       {/* Thumbnails vertical stack */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {imagesToUse.slice(1, 4).map((img, index) => (
-                          <div key={index} style={{ height: '42px', borderRadius: '6px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <div key={index} style={{ height: '42px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))' }}>
                             <img src={img} alt="thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
                         ))}
                         {imagesToUse.length > 4 && (
-                          <div style={{ height: '42px', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: 'var(--admin-white)' }}>
+                          <div style={{ height: '42px', borderRadius: '6px', background: 'rgba(0,0,0,0.5)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold', color: 'var(--admin-white)' }}>
                             +{imagesToUse.length - 4}
                           </div>
                         )}
@@ -764,14 +764,14 @@ function StockLaptopsContent() {
                     </div>
 
                     {/* Financial Specs Box */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', padding: '10px 6px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '15px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', padding: '10px 6px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', marginBottom: '15px' }}>
                       <div style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '2px' }}>قیمت خرید</span>
                         <strong style={{ fontSize: '11px', color: 'var(--admin-white)', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {Math.round(costToman).toLocaleString('fa-IR')}
                         </strong>
                       </div>
-                      <div style={{ textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.06)', borderLeft: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div style={{ textAlign: 'center', borderRight: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderLeft: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}>
                         <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '2px' }}>قیمت فروش</span>
                         <strong style={{ fontSize: '11px', color: 'var(--admin-light-accent, var(--admin-orange))', fontFamily: 'var(--font-vazirmatn)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {Math.round(priceToman).toLocaleString('fa-IR')}
@@ -786,7 +786,7 @@ function StockLaptopsContent() {
                     </div>
 
                     {/* Detail Tabs selector */}
-                    <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.04)', marginBottom: '15px', paddingBottom: '2px', direction: 'rtl' }}>
+                    <div style={{ display: 'flex', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', marginBottom: '15px', paddingBottom: '2px', direction: 'rtl' }}>
                       {[
                         { id: 'specs', name: 'مشخصات' },
                         { id: 'tests', name: 'تست‌ها' },
@@ -838,7 +838,7 @@ function StockLaptopsContent() {
                               { label: 'قیمت فروش (تومان)', value: Math.round(priceToman).toLocaleString('fa-IR') },
                               { label: 'سود (تومان)', value: Math.round(profitToman).toLocaleString('fa-IR'), isProfit: true }
                             ].map((row, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px dashed rgba(255,255,255,0.03)' }}>
+                              <tr key={idx} style={{ borderBottom: '1px dashed var(--admin-light-border, rgba(255,255,255,0.03))' }}>
                                 <td style={{ padding: '6px 0', color: 'var(--admin-light-muted, #8b92a5)' }}>{row.label}</td>
                                 <td style={{ 
                                   padding: '6px 0', 
@@ -869,7 +869,7 @@ function StockLaptopsContent() {
                               charge: 'سیستم تغذیه و آداپتور'
                             };
                             return (
-                              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'rgba(255,255,255,0.01)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                              <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.01))', borderRadius: '6px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.02))' }}>
                                 <span style={{ color: 'var(--admin-light-text, #c4c8d4)' }}>{labelMap[key] || key}</span>
                                 <span style={{ color: passed ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-danger, #ff4d4d)', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>{passed ? <>{AdminIcons.check(12)} تایید شده</> : <>{AdminIcons.close(12)} خطا</>}</span>
                               </div>
@@ -881,7 +881,7 @@ function StockLaptopsContent() {
                       {/* TAB: ACCESSORIES */}
                       {activeDetailTab === 'accessories' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                          <div style={{ padding: '12px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.01))', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.02))' }}>
                             <h4 style={{ color: 'var(--admin-light-accent, #f87820)', margin: '0 0 8px 0', fontSize: '12px' }}>اقلام همراه لپ‌تاپ</h4>
                             <div style={{ display: 'flex', gap: '15px' }}>
                               <span style={{ color: parsed.accessories?.charger ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-muted, #8b92a5)' }}>
@@ -892,7 +892,7 @@ function StockLaptopsContent() {
                               </span>
                             </div>
                           </div>
-                          <div style={{ padding: '12px', background: 'rgba(255,255,255,0.01)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                          <div style={{ padding: '12px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.01))', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.02))' }}>
                             <h4 style={{ color: 'var(--admin-white)', margin: '0 0 8px 0', fontSize: '12px' }}>وضعیت ظاهری و بدنه</h4>
                             <span style={{ color: 'var(--admin-light-accent, #ffd073)' }}>
                               وضعیت بدنه: {
@@ -925,11 +925,11 @@ function StockLaptopsContent() {
                     </div>
 
                     {/* Footer action buttons */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: '8px', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '15px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: '8px', marginTop: '20px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', paddingTop: '15px' }}>
                       <button 
                         onClick={() => alert('دستور چاپ برچسب بارکد برای پرینتر انبار ارسال شد.')}
                         className={styles.cancelFormBtn}
-                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', justifyContent: 'center' }}
+                        style={{ padding: '8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', justifyContent: 'center' }}
                       >
                         {AdminIcons.printer(12)} چاپ برچسب
                       </button>
@@ -1026,8 +1026,8 @@ function StockLaptopsContent() {
                     <line x1="40" y1="100" x2="480" y2="100" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
                     <line x1="40" y1="130" x2="480" y2="130" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
 
-                    <text x="6" y="14" fill="#8b92a5" fontSize="8" textAnchor="start">{Math.round(monthlyProfitPeak).toLocaleString('fa-IR')}</text>
-                    <text x="10" y="134" fill="#8b92a5" fontSize="8" textAnchor="start">۰</text>
+                    <text x="6" y="14" fill="var(--admin-light-muted, #8b92a5)" fontSize="8" textAnchor="start">{Math.round(monthlyProfitPeak).toLocaleString('fa-IR')}</text>
+                    <text x="10" y="134" fill="var(--admin-light-muted, #8b92a5)" fontSize="8" textAnchor="start">۰</text>
 
                     <path 
                       d={monthlyProfitArea}
@@ -1046,7 +1046,7 @@ function StockLaptopsContent() {
                     {monthlyProfitPoints.map(point => (
                       <React.Fragment key={point.key}>
                         <circle cx={point.x} cy={point.y} r="4.5" fill="#f87820" stroke="#fff" strokeWidth="1.5" />
-                        <text x={point.x} y="146" fill="#8b92a5" fontSize="9" textAnchor="middle">{point.label}</text>
+                        <text x={point.x} y="146" fill="var(--admin-light-muted, #8b92a5)" fontSize="9" textAnchor="middle">{point.label}</text>
                       </React.Fragment>
                     ))}
                   </svg>

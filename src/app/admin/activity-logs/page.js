@@ -36,18 +36,18 @@ export default function ActivityLogsPage() {
     <AdminShell activeTab="activity_logs">
       <div style={{ direction: 'rtl' }}>
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: '0 0 6px' }}>{AdminIcons.chart(20)} گزارش فعالیت مدیران</h1>
-          <p style={{ fontSize: '12px', color: '#8b92a5', margin: 0 }}>۱۰۰ رویداد اخیر امنیتی و مدیریتی</p>
+          <h1 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-light-text, #fff)', margin: '0 0 6px' }}>{AdminIcons.chart(20)} گزارش فعالیت مدیران</h1>
+          <p style={{ fontSize: '12px', color: 'var(--admin-light-muted, #8b92a5)', margin: 0 }}>۱۰۰ رویداد اخیر امنیتی و مدیریتی</p>
         </div>
 
         <div className={`${styles.cardPanel} ${styles.adminManagementFormGrid}`} style={{ padding: '16px', marginBottom: '18px' }}>
-          <label style={{ fontSize: '11px', color: '#8b92a5' }}>نوع فعالیت
+          <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>نوع فعالیت
             <input value={filters.action} onChange={event => setFilters(value => ({ ...value, action: event.target.value }))} placeholder="مثال: ADMIN_LOGIN" className={styles.loginInput} style={{ marginTop: '6px' }} />
           </label>
-          <label style={{ fontSize: '11px', color: '#8b92a5' }}>از تاریخ
+          <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>از تاریخ
             <input type="date" value={filters.dateFrom} onChange={event => setFilters(value => ({ ...value, dateFrom: event.target.value }))} className={styles.loginInput} style={{ marginTop: '6px' }} />
           </label>
-          <label style={{ fontSize: '11px', color: '#8b92a5' }}>تا تاریخ
+          <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>تا تاریخ
             <input type="date" value={filters.dateTo} onChange={event => setFilters(value => ({ ...value, dateTo: event.target.value }))} className={styles.loginInput} style={{ marginTop: '6px' }} />
           </label>
           <button type="button" onClick={loadLogs} className={styles.advFilterBtn}>بروزرسانی</button>
@@ -55,21 +55,21 @@ export default function ActivityLogsPage() {
 
         {error && <div className={styles.loginError}>{error}</div>}
         <div className={styles.cardPanel} style={{ padding: '10px 18px', overflowX: 'auto' }}>
-          {loading ? <p style={{ color: '#8b92a5' }}>در حال دریافت گزارش...</p> : (
+          {loading ? <p style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>در حال دریافت گزارش...</p> : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-              <thead><tr style={{ color: '#8b92a5', textAlign: 'right' }}><th style={{ padding: '12px' }}>تاریخ</th><th>مدیر</th><th>فعالیت</th><th>موجودیت</th><th>جزئیات</th><th>IP</th></tr></thead>
+              <thead><tr style={{ color: 'var(--admin-light-muted, #8b92a5)', textAlign: 'right' }}><th style={{ padding: '12px' }}>تاریخ</th><th>مدیر</th><th>فعالیت</th><th>موجودیت</th><th>جزئیات</th><th>IP</th></tr></thead>
               <tbody>
                 {logs.map(log => (
-                  <tr key={log.id} style={{ borderTop: '1px solid rgba(255,255,255,.06)', color: '#fff' }}>
+                  <tr key={log.id} style={{ borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,.06))', color: 'var(--admin-light-text, #fff)' }}>
                     <td style={{ padding: '13px 12px', whiteSpace: 'nowrap' }}>{new Date(log.createdAt).toLocaleString('fa-IR')}</td>
                     <td style={{ direction: 'ltr', textAlign: 'right' }}>{log.admin?.email || 'سیستم'}</td>
-                    <td style={{ color: '#f87820', fontWeight: '700' }}>{log.action}</td>
+                    <td style={{ color: 'var(--admin-light-accent, #f87820)', fontWeight: '700' }}>{log.action}</td>
                     <td>{log.entityType ? `${log.entityType}${log.entityId ? ` / ${log.entityId}` : ''}` : '—'}</td>
-                    <td style={{ maxWidth: '280px', color: '#c0c8d8' }}>{log.metadata ? JSON.stringify(log.metadata) : '—'}</td>
+                    <td style={{ maxWidth: '280px', color: 'var(--admin-light-text, #c0c8d8)' }}>{log.metadata ? JSON.stringify(log.metadata) : '—'}</td>
                     <td style={{ direction: 'ltr', textAlign: 'right' }}>{log.ipAddress || '—'}</td>
                   </tr>
                 ))}
-                {!logs.length && <tr><td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: '#8b92a5' }}>فعالیتی ثبت نشده است.</td></tr>}
+                {!logs.length && <tr><td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)' }}>فعالیتی ثبت نشده است.</td></tr>}
               </tbody>
             </table>
           )}

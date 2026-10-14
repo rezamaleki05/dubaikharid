@@ -13,3 +13,7 @@
 .dropdown .create { color: var(--admin-light-accent, #f87820); border-top: 1px solid var(--admin-control-border, var(--admin-border, #353a45)); }
 .dropdown button:disabled { opacity: .5; cursor: default; }
 .empty { font-size: 12px; padding: 10px; color: var(--admin-grey-text, #b7bfce); }
+
+:global(html[data-theme='light']) .control input { background: transparent; }
+:global(html[data-theme='light']) .dropdown button.active,
+:global(html[data-theme='light']) .dropdown button:hover { background: var(--admin-selected); }

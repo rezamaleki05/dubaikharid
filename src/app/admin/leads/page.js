@@ -21,9 +21,9 @@ const getStatusStyle = (status) => {
   const stylesMap = {
     pending: { label: 'در انتظار بررسی', color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
     price_tagged: { label: 'قیمت‌گذاری شده', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)' },
-    approved: { label: 'تایید شده', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
-    converted: { label: 'تبدیل‌شده به سفارش', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-    cancelled: { label: 'لغو شده', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
+    approved: { label: 'تایید شده', color: 'var(--admin-light-success, #10b981)', bg: 'rgba(16, 185, 129, 0.1)' },
+    converted: { label: 'تبدیل‌شده به سفارش', color: 'var(--admin-light-info, #3b82f6)', bg: 'rgba(59, 130, 246, 0.1)' },
+    cancelled: { label: 'لغو شده', color: 'var(--admin-light-danger, #ef4444)', bg: 'rgba(239, 68, 68, 0.1)' }
   };
   return stylesMap[status] || stylesMap.pending;
 };
@@ -221,19 +221,19 @@ function LeadsContent() {
 
   const selectedLead = filteredLeads.find(lead => lead?.id === selectedOrderId) || filteredLeads[0];
   const statCards = [
-    { key: 'approved', label: 'تایید شده', count: leads.filter(lead => lead?.status === 'approved').length, icon: AdminIcons.check(18), color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' },
+    { key: 'approved', label: 'تایید شده', count: leads.filter(lead => lead?.status === 'approved').length, icon: AdminIcons.check(18), color: 'var(--admin-light-success, #10b981)', bg: 'rgba(16, 185, 129, 0.1)' },
     { key: 'price_tagged', label: 'قیمت‌گذاری شده', count: leads.filter(lead => lead?.status === 'price_tagged').length, icon: AdminIcons.tag(18), color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' },
     { key: 'pending', label: 'در انتظار بررسی', count: leads.filter(lead => lead?.status === 'pending').length, icon: AdminIcons.clock(18), color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
-    { key: 'converted', label: 'تبدیل‌شده', count: leads.filter(lead => lead?.status === 'converted').length, icon: AdminIcons.download(18), color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-    { key: 'all', label: 'همه درخواست‌ها', count: leads.filter(lead => REQUEST_STATUSES.includes(lead?.status)).length, icon: AdminIcons.clipboard(18), color: '#9ca3af', bg: 'rgba(156, 163, 175, 0.1)' }
+    { key: 'converted', label: 'تبدیل‌شده', count: leads.filter(lead => lead?.status === 'converted').length, icon: AdminIcons.download(18), color: 'var(--admin-light-info, #3b82f6)', bg: 'rgba(59, 130, 246, 0.1)' },
+    { key: 'all', label: 'همه درخواست‌ها', count: leads.filter(lead => REQUEST_STATUSES.includes(lead?.status)).length, icon: AdminIcons.clipboard(18), color: 'var(--admin-light-muted, #9ca3af)', bg: 'rgba(156, 163, 175, 0.1)' }
   ];
 
   const compactInputStyle = {
     width: '100%',
-    background: 'rgba(255, 255, 255, 0.03)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'var(--admin-light-surface-muted, rgba(255, 255, 255, 0.03))',
+    border: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.08))',
     borderRadius: '8px',
-    color: '#fff',
+    color: 'var(--admin-light-text, #fff)',
     padding: '8px 10px',
     fontSize: '12px',
     fontWeight: 'bold',
@@ -244,9 +244,9 @@ function LeadsContent() {
   };
 
   const filterSelectStyle = {
-    background: '#1a1d26',
-    border: '1px solid rgba(255,255,255,0.08)',
-    color: '#e5e7eb',
+    background: 'var(--admin-light-control-bg, #1a1d26)',
+    border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))',
+    color: 'var(--admin-light-text, #e5e7eb)',
     padding: '8px 12px',
     borderRadius: '10px',
     fontSize: '11.5px',
@@ -260,10 +260,10 @@ function LeadsContent() {
     <div>
       <div className={styles.sectionHeader} style={{ marginBottom: '20px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', marginBottom: '4px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-light-text, #fff)', marginBottom: '4px' }}>
             {AdminIcons.download(22)} درخواست‌های خرید از دبی
           </h1>
-          <p className={styles.sectionDesc} style={{ fontSize: '12px', color: '#8b92a5' }}>
+          <p className={styles.sectionDesc} style={{ fontSize: '12px', color: 'var(--admin-light-muted, #8b92a5)' }}>
             بررسی پیش‌فاکتورها، اعلام قیمت و مدیریت درخواست‌های اولیه خرید
           </p>
         </div>
@@ -334,14 +334,14 @@ function LeadsContent() {
               justifyContent: 'space-between',
               alignItems: 'center',
               gap: '12px',
-              background: 'rgba(255, 255, 255, 0.02)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
+              background: 'var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02))',
+              border: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.05))',
               borderRadius: '14px',
               padding: '12px 16px'
             }}
           >
             <div style={{ position: 'relative', flexGrow: 1, maxWidth: '350px' }}>
-              <span style={{ position: 'absolute', right: '12px', top: '10px', color: '#8b92a5' }}>
+              <span style={{ position: 'absolute', right: '12px', top: '10px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                 {AdminIcons.search(12)}
               </span>
               <input
@@ -351,11 +351,11 @@ function LeadsContent() {
                 onChange={event => setLeadSearch(event.target.value)}
                 style={{
                   width: '100%',
-                  background: '#11131a',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  background: 'var(--admin-light-surface, #11131a)',
+                  border: '1px solid var(--admin-light-border, rgba(255, 255, 255, 0.08))',
                   borderRadius: '10px',
                   padding: '8px 34px 8px 12px',
-                  color: '#fff',
+                  color: 'var(--admin-light-text, #fff)',
                   fontSize: '12px',
                   fontFamily: 'inherit',
                   outline: 'none'
@@ -399,7 +399,7 @@ function LeadsContent() {
               <tbody>
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: 'center', color: '#8b92a5', padding: '50px 0' }}>
+                    <td colSpan="7" style={{ textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', padding: '50px 0' }}>
                       هیچ موردی با فیلترهای کنونی یافت نشد.
                     </td>
                   </tr>
@@ -416,11 +416,11 @@ function LeadsContent() {
                         borderRight: isSelected ? '3px solid #f87820' : '3px solid transparent'
                       }}
                     >
-                      <td style={{ fontWeight: '800', fontFamily: 'monospace', color: '#ff9d00', fontSize: '12px' }}>{String(lead.requestCode || lead.id || '')}</td>
+                      <td style={{ fontWeight: '800', fontFamily: 'monospace', color: 'var(--admin-light-accent, #ff9d00)', fontSize: '12px' }}>{String(lead.requestCode || lead.id || '')}</td>
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                          <span style={{ fontWeight: '750', color: '#fff', fontSize: '12.5px' }}>{String(lead.customerName ?? '')}</span>
-                          <span style={{ fontSize: '10.5px', color: '#8b92a5', direction: 'ltr', textAlign: 'right', fontFamily: 'monospace' }}>{String(lead.phone ?? '')}</span>
+                          <span style={{ fontWeight: '750', color: 'var(--admin-light-text, #fff)', fontSize: '12.5px' }}>{String(lead.customerName ?? '')}</span>
+                          <span style={{ fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', direction: 'ltr', textAlign: 'right', fontFamily: 'monospace' }}>{String(lead.phone ?? '')}</span>
                         </div>
                       </td>
                       <td>
@@ -428,8 +428,8 @@ function LeadsContent() {
                           {statusSpec.label}
                         </span>
                       </td>
-                      <td style={{ fontWeight: '850', color: '#fff', fontSize: '13px' }}>
-                        {fmtToman(lead.totalToman)} <span style={{ fontSize: '10px', color: '#8b92a5', fontWeight: 'normal' }}>T</span>
+                      <td style={{ fontWeight: '850', color: 'var(--admin-light-text, #fff)', fontSize: '13px' }}>
+                        {fmtToman(lead.totalToman)} <span style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', fontWeight: 'normal' }}>T</span>
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -437,20 +437,20 @@ function LeadsContent() {
                           <span style={{ fontSize: '11px', fontWeight: '700' }}>{lead.paymentMethod === 'gateway' ? 'درگاه بانکی' : 'کارت به کارت'}</span>
                         </div>
                       </td>
-                      <td style={{ fontSize: '11px', color: '#8b92a5' }}>{getSafeDateLabel(lead.date)}</td>
+                      <td style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>{getSafeDateLabel(lead.date)}</td>
                       <td style={{ textAlign: 'left', paddingLeft: '20px' }} onClick={event => event.stopPropagation()}>
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                           <a
                             href={getWhatsAppLink(lead)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ background: 'rgba(16, 185, 129, 0.08)', color: '#10b981', borderRadius: '6px', padding: '5px 8px', textDecoration: 'none', display: 'inline-flex' }}
+                            style={{ background: 'rgba(16, 185, 129, 0.08)', color: 'var(--admin-light-success, #10b981)', borderRadius: '6px', padding: '5px 8px', textDecoration: 'none', display: 'inline-flex' }}
                           >
                             {AdminIcons.whatsapp(12)}
                           </a>
                           <button
                             onClick={() => handleDeleteLead(lead.id)}
-                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px 8px', display: 'inline-flex' }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', padding: '4px 8px', display: 'inline-flex' }}
                             title="حذف سفارش"
                           >
                             {AdminIcons.trash(12)}
@@ -472,7 +472,7 @@ function LeadsContent() {
               <button className={styles.pagerBtn}>4</button>
               <button className={styles.pagerBtn}>...</button>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: '#8b92a5' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
               <span>نمایش 1 تا {filteredLeads.length} از {248 + leads.length} نتیجه</span>
               <select defaultValue="8" style={{ ...filterSelectStyle, padding: '4px 8px' }}>
                 <option value="8">۸ ردیف</option>
@@ -508,7 +508,7 @@ function LeadsContent() {
                     navigator.clipboard.writeText(String(selectedLead.requestCode || selectedLead.id || ''));
                     alert('کد سفارش کپی شد!');
                   }}
-                  style={{ fontSize: '12px', color: '#8b92a5', cursor: 'pointer', userSelect: 'none' }}
+                  style={{ fontSize: '12px', color: 'var(--admin-light-muted, #8b92a5)', cursor: 'pointer', userSelect: 'none' }}
                   title="کپی شناسه"
                 >
                   {AdminIcons.clipboard(18)}
@@ -536,26 +536,26 @@ function LeadsContent() {
                   <div className={styles.customerDetailsList}>
                     <div className={styles.customerDetailItem}>
                       <span className={styles.customerDetailLabel}>آدرس تحویل:</span>
-                      <span className={styles.customerDetailValue} style={{ maxWidth: '170px', textAlign: 'left', wordBreak: 'break-word', whiteSpace: 'normal', color: '#f3f4f6' }}>
+                      <span className={styles.customerDetailValue} style={{ maxWidth: '170px', textAlign: 'left', wordBreak: 'break-word', whiteSpace: 'normal', color: 'var(--admin-light-text, #f3f4f6)' }}>
                         {String(selectedLead.address ?? '')}
                       </span>
                     </div>
                     <div className={styles.customerDetailItem}>
                       <span className={styles.customerDetailLabel}>ایمیل:</span>
-                      <span className={styles.customerDetailValue} style={{ fontFamily: 'monospace', color: '#d1d5db' }}>
+                      <span className={styles.customerDetailValue} style={{ fontFamily: 'monospace', color: 'var(--admin-light-text, #d1d5db)' }}>
                         {String(selectedLead.email || 'ثبت نشده')}
                       </span>
                     </div>
                     <div className={styles.customerDetailItem}>
                       <span className={styles.customerDetailLabel}>وضعیت خریدار:</span>
-                      <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold', background: selectedLead.isRequest ? 'rgba(248,120,32,0.1)' : 'rgba(16, 185, 129, 0.1)', color: selectedLead.isRequest ? '#f87820' : '#10b981' }}>
+                      <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: 'bold', background: selectedLead.isRequest ? 'rgba(248,120,32,0.1)' : 'rgba(16, 185, 129, 0.1)', color: selectedLead.isRequest ? '#f87820' : 'var(--admin-light-success, #10b981)' }}>
                         {selectedLead.isRequest ? 'سفارش آنلاین سایت' : 'تایید شده'}
                       </span>
                     </div>
                     {selectedLead.notes && (
-                      <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.06)', borderRadius: '8px' }}>
-                        <span style={{ display: 'block', fontSize: '9.5px', color: '#f87820', fontWeight: 'bold', marginBottom: '2px' }}>{AdminIcons.edit(13)} توضیحات مشتری:</span>
-                        <p style={{ margin: 0, fontSize: '10.5px', color: '#d1d5db', lineHeight: '1.4' }}>{String(selectedLead.notes)}</p>
+                      <div style={{ marginTop: '8px', padding: '8px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', border: '1px dashed var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '8px' }}>
+                        <span style={{ display: 'block', fontSize: '9.5px', color: 'var(--admin-light-accent, #f87820)', fontWeight: 'bold', marginBottom: '2px' }}>{AdminIcons.edit(13)} توضیحات مشتری:</span>
+                        <p style={{ margin: 0, fontSize: '10.5px', color: 'var(--admin-light-text, #d1d5db)', lineHeight: '1.4' }}>{String(selectedLead.notes)}</p>
                       </div>
                     )}
                   </div>
@@ -587,7 +587,7 @@ function LeadsContent() {
                     <div className={styles.detailsProductInfo}>
                       <h4 className={styles.detailsProductTitle}>{String(selectedLead.productName ?? '')}</h4>
                       <span className={styles.detailsProductDesc}>{String(selectedLead.store || 'فروشگاه ثبت نشده')}{selectedLead.brand ? ` | برند ${String(selectedLead.brand)}` : ''}</span>
-                      {selectedLead.originalUrl && <a href={String(selectedLead.originalUrl)} target="_blank" rel="noopener noreferrer" style={{ color: '#f87820', fontSize: '10px', marginTop: '4px' }}>مشاهده لینک محصول خارجی</a>}
+                      {selectedLead.originalUrl && <a href={String(selectedLead.originalUrl)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--admin-light-accent, #f87820)', fontSize: '10px', marginTop: '4px' }}>مشاهده لینک محصول خارجی</a>}
                     </div>
                     <span className={styles.detailsProductQty}>۱ عدد</span>
                   </div>
@@ -602,12 +602,12 @@ function LeadsContent() {
               <div className={styles.detailsCollapsibleBody}>
                 {selectedLead.isRequest === true && ['pending', 'price_tagged'].includes(selectedLead.status) ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ fontSize: '11px', color: '#8b92a5' }}>
-                      قیمت استخراج‌شده/پیشنهادی: <strong style={{ color: '#fff' }}>{Number(selectedLead.priceAed || 0).toLocaleString('fa-IR')} درهم</strong>
+                    <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
+                      قیمت استخراج‌شده/پیشنهادی: <strong style={{ color: 'var(--admin-light-text, #fff)' }}>{Number(selectedLead.priceAed || 0).toLocaleString('fa-IR')} درهم</strong>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>قیمت خرید (درهم):</label>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>قیمت خرید (درهم):</label>
                         <input
                           type="number"
                           value={calcPriceAed ?? 0}
@@ -620,7 +620,7 @@ function LeadsContent() {
                         />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>وزن واقعی (کیلو):</label>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>وزن واقعی (کیلو):</label>
                         <input
                           type="number"
                           step="0.01"
@@ -642,21 +642,21 @@ function LeadsContent() {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>هزینه ارسال (درهم):</label>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>هزینه ارسال (درهم):</label>
                         <input type="number" value={calcShippingAed ?? 0} readOnly style={{ ...compactInputStyle, opacity: 0.75 }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>کارمزد دبی‌خرید (درهم):</label>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>کارمزد دبی‌خرید (درهم):</label>
                         <input type="number" value={calcCommissionAed ?? 0} readOnly style={{ ...compactInputStyle, opacity: 0.75 }} />
                       </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>نرخ درهم (تومان):</label>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>نرخ درهم (تومان):</label>
                         <input type="number" value={calcAedRate ?? 0} readOnly style={{ ...compactInputStyle, opacity: 0.75 }} />
                       </div>
                       <div>
-                        <label style={{ display: 'block', fontSize: '10.5px', color: '#8b92a5', marginBottom: '4px' }}>قیمت نهایی دستی (اختیاری، تومان):</label>
+                        <label style={{ display: 'block', fontSize: '10.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>قیمت نهایی دستی (اختیاری، تومان):</label>
                         <input type="number" value={manualFinalToman} onChange={event => setManualFinalToman(event.target.value)} placeholder={String(calcTotalToman)} style={compactInputStyle} />
                       </div>
                     </div>
@@ -666,41 +666,41 @@ function LeadsContent() {
                       <button type="button" onClick={handleSaveFinalPrice} disabled={pricingBusy} className={styles.addOrderBtn}>{AdminIcons.tag(13)} {selectedLead.status === 'price_tagged' ? 'ویرایش قیمت' : 'ثبت قیمت نهایی'}</button>
                     </div>
                     <div style={{ background: 'rgba(248, 120, 32, 0.04)', border: '1px dashed rgba(248, 120, 32, 0.2)', borderRadius: '8px', padding: '10px', marginTop: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#8b92a5', marginBottom: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '4px' }}>
                         <span>مجموع درهم (AED):</span>
-                        <span style={{ color: '#fff', fontWeight: 'bold' }}>{calcTotalAed} درهم</span>
+                        <span style={{ color: 'var(--admin-light-text, #fff)', fontWeight: 'bold' }}>{calcTotalAed} درهم</span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold', borderTop: '1px dashed rgba(255,255,255,0.05)', paddingTop: '4px' }}>
-                        <span style={{ color: '#fff' }}>مبلغ کل به تومان:</span>
-                        <span style={{ color: '#f87820' }}>{calcTotalToman.toLocaleString('fa-IR')} تومان</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 'bold', borderTop: '1px dashed var(--admin-light-border, rgba(255,255,255,0.05))', paddingTop: '4px' }}>
+                        <span style={{ color: 'var(--admin-light-text, #fff)' }}>مبلغ کل به تومان:</span>
+                        <span style={{ color: 'var(--admin-light-accent, #f87820)' }}>{calcTotalToman.toLocaleString('fa-IR')} تومان</span>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <table className={styles.nestedPriceTable}>
                     <tbody>
-                      <tr><td>قیمت خالص محصول (دبی)</td><td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>{fmtToman(selectedLead.priceDetails?.product ?? 0)} تومان</td></tr>
-                      <tr><td>هزینه ارسال هوایی به ایران</td><td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>{fmtToman(selectedLead.priceDetails?.shipping ?? 0)} تومان</td></tr>
-                      <tr><td>کارمزد سرویس دبی‌خرید</td><td style={{ textAlign: 'left', fontWeight: 'bold', color: '#fff' }}>{fmtToman(selectedLead.priceDetails?.commission ?? 0)} تومان</td></tr>
-                      <tr><td style={{ fontSize: '12px', fontWeight: '900', color: '#fff', paddingTop: '8px' }}>مبلغ کل سفارش</td><td style={{ textAlign: 'left', fontSize: '13px', fontWeight: '900', color: '#f87820', paddingTop: '8px' }}>{fmtToman(selectedLead.totalToman)} تومان</td></tr>
+                      <tr><td>قیمت خالص محصول (دبی)</td><td style={{ textAlign: 'left', fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{fmtToman(selectedLead.priceDetails?.product ?? 0)} تومان</td></tr>
+                      <tr><td>هزینه ارسال هوایی به ایران</td><td style={{ textAlign: 'left', fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{fmtToman(selectedLead.priceDetails?.shipping ?? 0)} تومان</td></tr>
+                      <tr><td>کارمزد سرویس دبی‌خرید</td><td style={{ textAlign: 'left', fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{fmtToman(selectedLead.priceDetails?.commission ?? 0)} تومان</td></tr>
+                      <tr><td style={{ fontSize: '12px', fontWeight: '900', color: 'var(--admin-light-text, #fff)', paddingTop: '8px' }}>مبلغ کل سفارش</td><td style={{ textAlign: 'left', fontSize: '13px', fontWeight: '900', color: 'var(--admin-light-accent, #f87820)', paddingTop: '8px' }}>{fmtToman(selectedLead.totalToman)} تومان</td></tr>
                     </tbody>
                   </table>
                 )}
               </div>
             </div>
 
-            <div style={{ marginTop: '12px', background: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.06)', borderRadius: '12px', padding: '12px', textAlign: 'right' }}>
+            <div style={{ marginTop: '12px', background: 'var(--admin-light-surface-muted, rgba(255, 255, 255, 0.02))', border: '1px dashed var(--admin-light-border, rgba(255, 255, 255, 0.06))', borderRadius: '12px', padding: '12px', textAlign: 'right' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#8b92a5' }}>روش پرداخت:</span>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff' }}>{selectedLead.paymentMethod === 'gateway' ? '💳 درگاه بانکی مستقیم' : '💳 کارت به کارت شتابی'}</span>
+                <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>روش پرداخت:</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{selectedLead.paymentMethod === 'gateway' ? '💳 درگاه بانکی مستقیم' : '💳 کارت به کارت شتابی'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', color: '#8b92a5' }}>کد پیگیری تراکنش:</span>
-                <span style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace', color: '#ff9d00' }}>{String(selectedLead.trackingNum || 'ثبت نشده')}</span>
+                <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>کد پیگیری تراکنش:</span>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace', color: 'var(--admin-light-accent, #ff9d00)' }}>{String(selectedLead.trackingNum || 'ثبت نشده')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '11px', color: '#8b92a5' }}>وضعیت مالی:</span>
-                <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '9.5px', fontWeight: 'bold', background: selectedLead.paymentStatus === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(249, 115, 22, 0.1)', color: selectedLead.paymentStatus === 'paid' ? '#10b981' : '#f97316' }}>
+                <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>وضعیت مالی:</span>
+                <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '9.5px', fontWeight: 'bold', background: selectedLead.paymentStatus === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(249, 115, 22, 0.1)', color: selectedLead.paymentStatus === 'paid' ? 'var(--admin-light-success, #10b981)' : '#f97316' }}>
                   {selectedLead.paymentStatus === 'paid' ? 'تایید و پرداخت شده' : 'در انتظار تایید فیش'}
                 </span>
               </div>
@@ -710,8 +710,8 @@ function LeadsContent() {
               {selectedLead.isRequest === true && selectedLead.status === 'price_tagged' ? (
                 <>
                   <div className={styles.detailsActionsRow}>
-                    <button className={styles.detailsActionBtn} style={{ borderColor: '#10b981', color: '#10b981' }} onClick={() => handleSendPaymentLink(selectedLead)}>💬 ارسال لینک پرداخت (واتساپ)</button>
-                    <button className={styles.detailsActionBtn} style={{ borderColor: '#f87820', color: '#f87820' }} onClick={() => handleConvertToOrder(selectedLead.id)}>✅ تبدیل به سفارش</button>
+                    <button className={styles.detailsActionBtn} style={{ borderColor: '#10b981', color: 'var(--admin-light-success, #10b981)' }} onClick={() => handleSendPaymentLink(selectedLead)}>💬 ارسال لینک پرداخت (واتساپ)</button>
+                    <button className={styles.detailsActionBtn} style={{ borderColor: '#f87820', color: 'var(--admin-light-accent, #f87820)' }} onClick={() => handleConvertToOrder(selectedLead.id)}>✅ تبدیل به سفارش</button>
                   </div>
                   <div className={styles.detailsActionsRow} style={{ marginTop: '8px' }}>
                     <button className={styles.detailsActionBtn} onClick={() => handleManualPayment(selectedLead.id)}>💳 ثبت پرداخت دستی</button>
@@ -740,7 +740,7 @@ function LeadsContent() {
             </div>
           </div>
         ) : (
-          <div className={styles.detailsContainer} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#8b92a5' }}>
+          <div className={styles.detailsContainer} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: 'var(--admin-light-muted, #8b92a5)' }}>
             سفارشی جهت نمایش انتخاب نشده است.
           </div>
         )}

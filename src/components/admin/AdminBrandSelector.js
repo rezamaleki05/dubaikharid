@@ -112,7 +112,7 @@ export default function AdminBrandSelector({
             setFeedback('');
           }}
           disabled={selectorDisabled}
-          style={{ flex: '1 1 150px', minWidth: 0, padding: '8px 12px', background: 'var(--admin-light-control-bg, #1c1f2a)', border: '1px solid var(--admin-control-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none' }}
+          style={{ flex: '1 1 150px', minWidth: 0, padding: '8px 12px', background: 'var(--admin-light-control-bg, #1c1f2a)', border: '1px solid var(--admin-control-border, var(--admin-light-border, rgba(255,255,255,0.08)))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none' }}
         >
           {!categoryId ? (
             <option value="">ابتدا دسته‌بندی را انتخاب کنید</option>
@@ -156,7 +156,7 @@ export default function AdminBrandSelector({
         </p>
       )}
       {isCreating && categoryId && (
-        <div style={{ display: 'flex', gap: '8px', padding: '10px', borderRadius: '8px', border: '1px solid var(--admin-control-border, rgba(255,255,255,0.08))', background: 'rgba(255,255,255,0.025)' }}>
+        <div style={{ display: 'flex', gap: '8px', padding: '10px', borderRadius: '8px', border: '1px solid var(--admin-control-border, var(--admin-light-border, rgba(255,255,255,0.08)))', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.025))' }}>
           <input
             autoFocus
             required
@@ -171,7 +171,7 @@ export default function AdminBrandSelector({
             }}
             placeholder="نام برند *"
             disabled={isSaving}
-            style={{ minWidth: 0, flex: 1, padding: '8px 10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-control-border, rgba(255,255,255,0.08))', borderRadius: '7px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none' }}
+            style={{ minWidth: 0, flex: 1, padding: '8px 10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-control-border, var(--admin-light-border, rgba(255,255,255,0.08)))', borderRadius: '7px', color: 'var(--admin-white)', fontSize: '12px', outline: 'none' }}
           />
           <button type="button" onClick={handleCreate} disabled={isSaving} style={{ padding: '8px 12px', border: 0, borderRadius: '7px', background: '#f87820', color: 'var(--admin-white)', fontSize: '11px', fontWeight: '700', cursor: isSaving ? 'wait' : 'pointer' }}>
             {isSaving ? 'در حال ثبت…' : 'ثبت برند'}

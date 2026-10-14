@@ -1,20 +1,23 @@
 .categoryField, .logoField { margin-bottom: 16px; }
-.categoryField > label, .label { display: block; margin-bottom: 7px; color: #9aa1b2; font-size: 11.5px; }
-.categoryField > input { width: 100%; padding: 10px 12px; border: 1px solid rgba(255,255,255,.09); background: #181b24; color: #fff; }
+.categoryField > label, .label { display: block; margin-bottom: 7px; color: var(--admin-light-muted, #9aa1b2); font-size: 11.5px; }
+.categoryField > input { width: 100%; padding: 10px 12px; border: 1px solid var(--admin-light-border, rgba(255,255,255,.09)); background: var(--admin-light-control-bg, #181b24); color: var(--admin-light-text, #fff); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.chips button { border: 1px solid rgba(248,120,32,.28); background: rgba(248,120,32,.1); color: #ffd7bd; padding: 5px 8px; font-size: 10px; cursor: pointer; }
+.chips button { border: 1px solid rgba(248,120,32,.28); background: rgba(248,120,32,.1); color: var(--admin-light-accent, #ffd7bd); padding: 5px 8px; font-size: 10px; cursor: pointer; }
 .chips span { margin-right: 5px; }
-.results { max-height: 150px; overflow-y: auto; border: 1px solid rgba(255,255,255,.07); border-top: 0; background: #12151d; }
-.results > button { display: grid; grid-template-columns: 1fr 1fr 20px; gap: 8px; width: 100%; padding: 8px 10px; border: 0; border-bottom: 1px solid rgba(255,255,255,.04); background: transparent; color: #e6e8ee; text-align: right; cursor: pointer; }
+.results { max-height: 150px; overflow-y: auto; border: 1px solid var(--admin-light-border, rgba(255,255,255,.07)); border-top: 0; background: var(--admin-light-surface, #12151d); }
+.results > button { display: grid; grid-template-columns: 1fr 1fr 20px; gap: 8px; width: 100%; padding: 8px 10px; border: 0; border-bottom: 1px solid var(--admin-light-border, rgba(255,255,255,.04)); background: transparent; color: var(--admin-light-text, #e6e8ee); text-align: right; cursor: pointer; }
 .results > button[aria-selected='true'] { background: rgba(248,120,32,.08); }
-.results small { color: #7d8495; text-align: left; }
-.results b { color: #f87820; }
-.results p { padding: 10px; color: #7d8495; font-size: 11px; }
-.logoPreview { display: grid; place-items: center; height: 112px; border: 1px solid rgba(255,255,255,.08); background: #11131a; overflow: hidden; }
+.results small { color: var(--admin-light-muted, #7d8495); text-align: left; }
+.results b { color: var(--admin-light-accent, #f87820); }
+.results p { padding: 10px; color: var(--admin-light-muted, #7d8495); font-size: 11px; }
+.logoPreview { display: grid; place-items: center; height: 112px; border: 1px solid var(--admin-light-border, rgba(255,255,255,.08)); background: var(--admin-light-surface, #11131a); overflow: hidden; }
 .logoPreview img { max-width: min(220px, 80%); max-height: 72px; width: auto; height: auto; object-fit: contain; }
-.logoPreview strong { color: #c8cbd5; }
-.logoField p { color: #72798a; font-size: 10px; line-height: 1.7; }
+.logoPreview strong { color: var(--admin-light-text, #c8cbd5); }
+.logoField p { color: var(--admin-light-muted, #72798a); font-size: 10px; line-height: 1.7; }
 .logoActions { display: flex; gap: 8px; }
-.logoActions button { padding: 8px 14px; border: 1px solid rgba(255,255,255,.1); background: #20232e; color: #fff; cursor: pointer; }
-.logoActions .remove { color: #fb7185; border-color: rgba(251,113,133,.25); background: transparent; }
-.error { display: block; margin-top: 7px; color: #fb7185; }
+.logoActions button { padding: 8px 14px; border: 1px solid var(--admin-light-border, rgba(255,255,255,.1)); background: var(--admin-light-control-bg, #20232e); color: var(--admin-light-text, #fff); cursor: pointer; }
+.logoActions .remove { color: var(--admin-light-danger, #fb7185); border-color: rgba(251,113,133,.25); background: transparent; }
+.error { display: block; margin-top: 7px; color: var(--admin-light-danger, #fb7185); }
+
+:global(html[data-theme='light']) .results > button:hover { background: var(--admin-hover); }
+:global(html[data-theme='light']) .results > button[aria-selected='true'] { background: var(--admin-selected); box-shadow: inset 3px 0 var(--admin-light-accent); }

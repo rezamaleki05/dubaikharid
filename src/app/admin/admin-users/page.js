@@ -106,25 +106,25 @@ export default function AdminUsersPage() {
     <AdminShell activeTab="admin_users">
       <div style={{ direction: 'rtl' }}>
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: '0 0 6px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-light-text, #fff)', margin: '0 0 6px' }}>
             {AdminIcons.user(20)} مدیریت مدیران سیستم
           </h1>
-          <p style={{ fontSize: '12px', color: '#8b92a5', margin: 0 }}>ایجاد حساب، تعیین نقش و مدیریت وضعیت دسترسی مدیران</p>
+          <p style={{ fontSize: '12px', color: 'var(--admin-light-muted, #8b92a5)', margin: 0 }}>ایجاد حساب، تعیین نقش و مدیریت وضعیت دسترسی مدیران</p>
         </div>
 
         {error && <div className={styles.loginError}>{error}</div>}
-        {message && <div style={{ padding: '10px 14px', marginBottom: '18px', color: '#2ecc71', border: '1px solid rgba(46,204,113,.25)', background: 'rgba(46,204,113,.08)', borderRadius: '8px', fontSize: '12px' }}>{message}</div>}
+        {message && <div style={{ padding: '10px 14px', marginBottom: '18px', color: 'var(--admin-light-success, #2ecc71)', border: '1px solid rgba(46,204,113,.25)', background: 'rgba(46,204,113,.08)', borderRadius: '8px', fontSize: '12px' }}>{message}</div>}
 
         <form onSubmit={handleCreate} className={styles.cardPanel} style={{ padding: '20px', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '14px', color: '#fff', margin: '0 0 16px' }}>افزودن مدیر جدید</h2>
+          <h2 style={{ fontSize: '14px', color: 'var(--admin-light-text, #fff)', margin: '0 0 16px' }}>افزودن مدیر جدید</h2>
           <div className={styles.adminManagementFormGrid}>
-            <label style={{ fontSize: '11px', color: '#8b92a5' }}>ایمیل
+            <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>ایمیل
               <input type="email" required value={form.email} onChange={event => setForm(value => ({ ...value, email: event.target.value }))} className={styles.loginInput} style={{ marginTop: '6px' }} />
             </label>
-            <label style={{ fontSize: '11px', color: '#8b92a5' }}>رمز عبور
+            <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>رمز عبور
               <input type="password" required minLength="10" value={form.password} onChange={event => setForm(value => ({ ...value, password: event.target.value }))} className={styles.loginInput} style={{ marginTop: '6px' }} />
             </label>
-            <label style={{ fontSize: '11px', color: '#8b92a5' }}>نقش
+            <label style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>نقش
               <select value={form.role} onChange={event => setForm(value => ({ ...value, role: event.target.value }))} className={styles.loginInput} style={{ marginTop: '6px' }}>
                 {ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
               </select>
@@ -134,20 +134,20 @@ export default function AdminUsersPage() {
         </form>
 
         <div className={styles.cardPanel} style={{ padding: '10px 18px' }}>
-          {loading ? <p style={{ color: '#8b92a5' }}>در حال دریافت اطلاعات...</p> : (
+          {loading ? <p style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>در حال دریافت اطلاعات...</p> : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                <thead><tr style={{ color: '#8b92a5', textAlign: 'right' }}><th style={{ padding: '12px' }}>ایمیل</th><th>نقش</th><th>وضعیت</th><th>تاریخ ایجاد</th><th>عملیات</th></tr></thead>
+                <thead><tr style={{ color: 'var(--admin-light-muted, #8b92a5)', textAlign: 'right' }}><th style={{ padding: '12px' }}>ایمیل</th><th>نقش</th><th>وضعیت</th><th>تاریخ ایجاد</th><th>عملیات</th></tr></thead>
                 <tbody>
                   {admins.map(item => (
-                    <tr key={item.id} style={{ borderTop: '1px solid rgba(255,255,255,.06)', color: '#fff' }}>
+                    <tr key={item.id} style={{ borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,.06))', color: 'var(--admin-light-text, #fff)' }}>
                       <td style={{ padding: '14px 12px', direction: 'ltr', textAlign: 'right' }}>{item.email}{item.id === currentAdmin?.id ? ' (شما)' : ''}</td>
                       <td>
                         <select value={item.role} disabled={item.id === currentAdmin?.id} onChange={event => sendUpdate(item.id, { role: event.target.value })} className={styles.loginInput} style={{ width: '140px', padding: '7px 9px' }}>
                           {ROLES.map(role => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
                         </select>
                       </td>
-                      <td style={{ color: item.status === 'ACTIVE' ? '#2ecc71' : '#ef4444' }}>{item.status === 'ACTIVE' ? 'فعال' : 'غیرفعال'}</td>
+                      <td style={{ color: item.status === 'ACTIVE' ? 'var(--admin-light-success, #2ecc71)' : 'var(--admin-light-danger, #ef4444)' }}>{item.status === 'ACTIVE' ? 'فعال' : 'غیرفعال'}</td>
                       <td>{new Date(item.createdAt).toLocaleDateString('fa-IR')}</td>
                       <td style={{ display: 'flex', gap: '8px', padding: '10px 0' }}>
                         <button type="button" disabled={item.id === currentAdmin?.id} onClick={() => sendUpdate(item.id, { status: item.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE' })} className={styles.advFilterBtn}>{item.status === 'ACTIVE' ? 'غیرفعال‌سازی' : 'فعال‌سازی'}</button>
@@ -172,7 +172,7 @@ export default function AdminUsersPage() {
         {resetTargetId && (
           <div className={styles.modalOverlay} onClick={() => setResetTargetId('')}>
             <form onSubmit={handleResetPassword} className={styles.loginCard} onClick={event => event.stopPropagation()}>
-              <h2 style={{ color: '#fff', fontSize: '16px' }}>تغییر رمز عبور مدیر</h2>
+              <h2 style={{ color: 'var(--admin-light-text, #fff)', fontSize: '16px' }}>تغییر رمز عبور مدیر</h2>
               <p>رمز جدید نمایش داده یا در گزارش فعالیت ذخیره نخواهد شد.</p>
               <input type="password" minLength="10" required autoFocus value={resetPassword} onChange={event => setResetPassword(event.target.value)} className={styles.loginInput} />
               <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>

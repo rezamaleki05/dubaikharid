@@ -143,10 +143,10 @@ export default function AdminCategoriesPage() {
           </div>
           
           <div className={styles.cardPanel} style={{ padding: '24px', borderRadius: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px' }}>
-              <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', paddingBottom: '14px' }}>
+              <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-light-text, #fff)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 🏷️ دسته‌بندی‌های سایت
-                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: '#f87820', fontWeight: '700' }}>{categories.length} دسته</span>
+                <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: 'var(--admin-light-accent, #f87820)', fontWeight: '700' }}>{categories.length} دسته</span>
               </h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'flex-end' }}>
                 <Link href="/admin/attributes" className={attributeUi.secondaryButton} style={{ textDecoration: 'none' }}>
@@ -172,9 +172,9 @@ export default function AdminCategoriesPage() {
                 value={categorySearchQuery || ""}
                 onChange={e => setCategorySearchQuery(e.target.value)}
                 style={{
-                  width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px',
-                  color: '#fff', fontSize: '12.5px', outline: 'none'
+                  width: '100%', padding: '10px 14px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.03))',
+                  border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '10px',
+                  color: 'var(--admin-light-text, #fff)', fontSize: '12.5px', outline: 'none'
                 }}
               />
             </div>
@@ -184,14 +184,14 @@ export default function AdminCategoriesPage() {
                 (c.name || "").toLowerCase().includes((categorySearchQuery || "").toLowerCase()) || 
                 (c.query && c.query.includes(categorySearchQuery || ""))
               ).map(category => (
-                <div key={category.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div key={category.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.015))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.03))' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '18px', overflow: 'hidden' }}>
                       <span>{category.icon || '🏷️'}</span>
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{category.name}</div>
-                      <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px' }}>{category.count} • {category.query}</div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-text, #fff)' }}>{category.name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>{category.count} • {category.query}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
@@ -206,13 +206,13 @@ export default function AdminCategoriesPage() {
                         setEditCategoryForm(category);
                         setIsEditCategoryOpen(true);
                       }}
-                      style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#c0c8d8', cursor: 'pointer' }}
+                      style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', background: 'transparent', color: 'var(--admin-light-text, #c0c8d8)', cursor: 'pointer' }}
                     >
                       ویرایش
                     </button>
                     <button
                       onClick={() => handleDeleteCategory(category.id)}
-                      style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                      style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer' }}
                     >
                       حذف
                     </button>
@@ -220,7 +220,7 @@ export default function AdminCategoriesPage() {
                 </div>
               ))}
               {categories.length === 0 && (
-                <div style={{ padding: '30px', textAlign: 'center', color: '#8b92a5', fontSize: '12px' }}>دسته‌بندی تعریف نشده است.</div>
+                <div style={{ padding: '30px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '12px' }}>دسته‌بندی تعریف نشده است.</div>
               )}
             </div>
           </div>
@@ -229,28 +229,28 @@ export default function AdminCategoriesPage() {
       {/* 5. Add Category Modal */}
       {isAddCategoryOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
-          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)', direction: 'rtl' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>➕ افزودن دسته‌بندی جدید</h3>
+          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', direction: 'rtl' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--admin-light-text, #fff)', marginBottom: '20px' }}>➕ افزودن دسته‌بندی جدید</h3>
             <form onSubmit={handleAddCategory}>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام دسته‌بندی *</label>
-                <input type="text" required value={addCategoryForm.name || ""} onChange={e => setAddCategoryForm({...addCategoryForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نام دسته‌بندی *</label>
+                <input type="text" required value={addCategoryForm.name || ""} onChange={e => setAddCategoryForm({...addCategoryForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>ایموجی / آیکون دسته‌بندی</label>
-                <input type="text" value={addCategoryForm.icon || ""} onChange={e => setAddCategoryForm({...addCategoryForm, icon: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="🏷️ یا 👟" />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>ایموجی / آیکون دسته‌بندی</label>
+                <input type="text" value={addCategoryForm.icon || ""} onChange={e => setAddCategoryForm({...addCategoryForm, icon: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} placeholder="🏷️ یا 👟" />
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>توضیحات / تعداد (مثلا: ۱۲ مدل پرفروش)</label>
-                <input type="text" value={addCategoryForm.count || ""} onChange={e => setAddCategoryForm({...addCategoryForm, count: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="۰ مدل پرفروش" />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>توضیحات / تعداد (مثلا: ۱۲ مدل پرفروش)</label>
+                <input type="text" value={addCategoryForm.count || ""} onChange={e => setAddCategoryForm({...addCategoryForm, count: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} placeholder="۰ مدل پرفروش" />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>فیلتر کوئری جستجو در آمازون/سایت (نام انگلیسی دسته)</label>
-                <input type="text" value={addCategoryForm.query || ""} onChange={e => setAddCategoryForm({...addCategoryForm, query: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="shoes" />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>فیلتر کوئری جستجو در آمازون/سایت (نام انگلیسی دسته)</label>
+                <input type="text" value={addCategoryForm.query || ""} onChange={e => setAddCategoryForm({...addCategoryForm, query: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} placeholder="shoes" />
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setIsAddCategoryOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
-                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره دسته‌بندی</button>
+                <button type="button" onClick={() => setIsAddCategoryOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', background: 'transparent', color: 'var(--admin-light-text, #fff)', cursor: 'pointer' }}>انصراف</button>
+                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: 'var(--admin-light-text, #fff)', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره دسته‌بندی</button>
               </div>
             </form>
           </div>
@@ -260,28 +260,28 @@ export default function AdminCategoriesPage() {
       {/* 6. Edit Category Modal */}
       {isEditCategoryOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
-          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid rgba(255,255,255,0.1)', direction: 'rtl' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>✏️ ویرایش دسته‌بندی {editCategoryForm.name}</h3>
+          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', direction: 'rtl' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--admin-light-text, #fff)', marginBottom: '20px' }}>✏️ ویرایش دسته‌بندی {editCategoryForm.name}</h3>
             <form onSubmit={handleEditCategory}>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام دسته‌بندی *</label>
-                <input type="text" required value={editCategoryForm.name || ""} onChange={e => setEditCategoryForm({...editCategoryForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نام دسته‌بندی *</label>
+                <input type="text" required value={editCategoryForm.name || ""} onChange={e => setEditCategoryForm({...editCategoryForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>ایموجی / آیکون دسته‌بندی</label>
-                <input type="text" value={editCategoryForm.icon || ""} onChange={e => setEditCategoryForm({...editCategoryForm, icon: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>ایموجی / آیکون دسته‌بندی</label>
+                <input type="text" value={editCategoryForm.icon || ""} onChange={e => setEditCategoryForm({...editCategoryForm, icon: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>توضیحات / تعداد (مثلا: ۱۲ مدل پرفروش)</label>
-                <input type="text" value={editCategoryForm.count || ""} onChange={e => setEditCategoryForm({...editCategoryForm, count: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>توضیحات / تعداد (مثلا: ۱۲ مدل پرفروش)</label>
+                <input type="text" value={editCategoryForm.count || ""} onChange={e => setEditCategoryForm({...editCategoryForm, count: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>فیلتر کوئری جستجو در آمازون/سایت (نام انگلیسی دسته)</label>
-                <input type="text" value={editCategoryForm.query || ""} onChange={e => setEditCategoryForm({...editCategoryForm, query: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>فیلتر کوئری جستجو در آمازون/سایت (نام انگلیسی دسته)</label>
+                <input type="text" value={editCategoryForm.query || ""} onChange={e => setEditCategoryForm({...editCategoryForm, query: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => setIsEditCategoryOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
-                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
+                <button type="button" onClick={() => setIsEditCategoryOpen(false)} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', background: 'transparent', color: 'var(--admin-light-text, #fff)', cursor: 'pointer' }}>انصراف</button>
+                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: 'var(--admin-light-text, #fff)', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
               </div>
             </form>
           </div>

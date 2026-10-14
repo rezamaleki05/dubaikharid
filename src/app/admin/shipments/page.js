@@ -274,7 +274,7 @@ function ShipmentsContent() {
 
             const renderGrowthSub = (growthVal) => {
               if (growthVal === 0) {
-                return <span className={styles.metricSubText} style={{ color: '#8b92a5', marginTop: '2px' }}>بدون تغییر</span>;
+                return <span className={styles.metricSubText} style={{ color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>بدون تغییر</span>;
               }
               const isUp = growthVal > 0;
               const color = isUp ? '#10b981' : '#ef4444';
@@ -305,10 +305,10 @@ function ShipmentsContent() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.truck(28)}</span>
+                    <span style={{ color: 'var(--admin-light-accent, #f87820)', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.truck(28)}</span>
                     <div>
-                      <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>ارسال ها</h1>
-                      <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت و پیگیری تمام ارسالی های کالا</p>
+                      <h1 style={{ fontSize: '22px', fontWeight: '750', color: 'var(--admin-light-text, #fff)', margin: 0 }}>ارسال ها</h1>
+                      <p style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px', margin: 0 }}>مدیریت و پیگیری تمام ارسالی های کالا</p>
                     </div>
                   </div>
 
@@ -343,10 +343,10 @@ function ShipmentsContent() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>کل ارسال ها</span>
                       <span className={styles.metricValue}>{totalCount.toLocaleString()}</span>
-                      <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>در این ماه</span>
+                      <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>در این ماه</span>
                       {renderGrowthSub(totalGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--admin-light-info, #3b82f6)' }}>
                       {AdminIcons.chart(18)}
                     </div>
                   </div>
@@ -356,10 +356,10 @@ function ShipmentsContent() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>در حال ارسال</span>
                       <span className={styles.metricValue}>{transitCount}</span>
-                      <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
+                      <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>سفارش</span>
                       {renderGrowthSub(transitGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--admin-light-success, #10b981)' }}>
                       {AdminIcons.truck(18)}
                     </div>
                   </div>
@@ -369,10 +369,10 @@ function ShipmentsContent() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>رسیده به گمرک</span>
                       <span className={styles.metricValue}>{customsCount}</span>
-                      <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
+                      <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>سفارش</span>
                       {renderGrowthSub(customsGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--admin-light-warning, #f59e0b)' }}>
                       {AdminIcons.settings(18)}
                     </div>
                   </div>
@@ -382,7 +382,7 @@ function ShipmentsContent() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>در ایران</span>
                       <span className={styles.metricValue}>{iranCount}</span>
-                      <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
+                      <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>سفارش</span>
                       {renderGrowthSub(iranGrowth)}
                     </div>
                     <div className={styles.metricIconContainer} style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7' }}>
@@ -395,10 +395,10 @@ function ShipmentsContent() {
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>تحویل شده</span>
                       <span className={styles.metricValue}>{deliveredCount.toLocaleString()}</span>
-                      <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '2px' }}>سفارش</span>
+                      <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>سفارش</span>
                       {renderGrowthSub(deliveredGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--admin-light-success, #10b981)' }}>
                       {AdminIcons.check(18)}
                     </div>
                   </div>
@@ -505,7 +505,7 @@ function ShipmentsContent() {
                 <div className={styles.customerSplitGrid}>
                   
                   {/* LEFT SPLIT COLUMN: Main Shipments Table */}
-                  <div style={{ background: '#11131a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--admin-light-surface, #11131a)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '16px', overflow: 'hidden' }}>
                     <div style={{ overflowX: 'auto' }}>
                       <table className={styles.adminTable}>
                         <thead>
@@ -522,15 +522,15 @@ function ShipmentsContent() {
                         <tbody>
                           {isLoading ? (
                             <tr key="loading-shipments">
-                              <td colSpan="7" style={{ textAlign: 'center', color: '#8b92a5', padding: '50px 0' }}>در حال دریافت ارسال‌ها...</td>
+                              <td colSpan="7" style={{ textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', padding: '50px 0' }}>در حال دریافت ارسال‌ها...</td>
                             </tr>
                           ) : errorMessage ? (
                             <tr key="error-shipments">
-                              <td colSpan="7" style={{ textAlign: 'center', color: '#ef4444', padding: '50px 0' }}>{errorMessage}</td>
+                              <td colSpan="7" style={{ textAlign: 'center', color: 'var(--admin-light-danger, #ef4444)', padding: '50px 0' }}>{errorMessage}</td>
                             </tr>
                           ) : filteredShips.length === 0 ? (
                             <tr key="empty-shipments">
-                              <td colSpan="7" style={{ textAlign: 'center', color: '#8b92a5', padding: '50px 0' }}>مرسوله‌ای یافت نشد.</td>
+                              <td colSpan="7" style={{ textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', padding: '50px 0' }}>مرسوله‌ای یافت نشد.</td>
                             </tr>
                           ) : (
                             filteredShips.map(ship => {
@@ -548,24 +548,24 @@ function ShipmentsContent() {
                                   }}
                                 >
                                   {/* Shipment Code */}
-                                  <td style={{ fontWeight: '850', color: '#ff9d00', fontFamily: 'monospace', fontSize: '12px' }}>
+                                  <td style={{ fontWeight: '850', color: 'var(--admin-light-accent, #ff9d00)', fontFamily: 'monospace', fontSize: '12px' }}>
                                     {ship.id}
                                   </td>
 
                                   {/* Recipient Name */}
-                                  <td style={{ fontWeight: 'bold', color: '#fff' }}>{ship.recipient}</td>
+                                  <td style={{ fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{ship.recipient}</td>
 
                                   {/* Shipping Method airplane/truck icons */}
                                   <td>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                       {ship.method === 'هوایی' ? (
                                         <>
-                                          <span style={{ color: '#3b82f6', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.plane(14)}</span>
+                                          <span style={{ color: 'var(--admin-light-info, #3b82f6)', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.plane(14)}</span>
                                           <span>هوایی</span>
                                         </>
                                       ) : (
                                         <>
-                                          <span style={{ color: '#10b981', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.truck(14)}</span>
+                                          <span style={{ color: 'var(--admin-light-success, #10b981)', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.truck(14)}</span>
                                           <span>زمینی</span>
                                         </>
                                       )}
@@ -577,7 +577,7 @@ function ShipmentsContent() {
                                     {ship.status === 'SHIPPED' && <span className={styles.badgeActive} style={{ fontSize: '10px' }}>در حال ارسال</span>}
                                     {ship.status === 'IN_TRANSIT' && <span className={styles.badgeCustoms}>رسیده به گمرک</span>}
                                     {ship.status === 'OUT_FOR_DELIVERY' && <span className={styles.badgeIran}>در ایران</span>}
-                                    {ship.status === 'DELIVERED' && <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '10px' }}>تحویل شده</span>}
+                                    {ship.status === 'DELIVERED' && <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: 'var(--admin-light-success, #10b981)', fontSize: '10px' }}>تحویل شده</span>}
                                     {ship.status === 'FAILED' && <span className={styles.badgeProblem}>مشکل در ارسال</span>}
                                     {['PENDING', 'READY', 'CANCELLED'].includes(ship.status) && <span className={styles.badgeIran}>{statusLabel(ship.status)}</span>}
                                   </td>
@@ -606,7 +606,7 @@ function ShipmentsContent() {
                                       <button 
                                         onClick={() => handleDeleteShipment(ship.id)}
                                         disabled={!canEditShipments || updatingShipmentId === ship.id || !ship.allowedTransitions.includes('CANCELLED')}
-                                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
+                                        style={{ background: 'none', border: 'none', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
                                         title="حذف مرسوله"
                                       >
                                         {AdminIcons.trash(13)}
@@ -622,7 +622,7 @@ function ShipmentsContent() {
                     </div>
 
                     {/* Farsi Pagination Controls */}
-                    <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '16px 24px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       {/* Left Page selection numbers in English */}
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button
@@ -631,7 +631,7 @@ function ShipmentsContent() {
                           disabled={pagination.page <= 1 || isLoading}
                           onClick={() => setPagination(previous => ({ ...previous, page: Math.max(1, previous.page - 1) }))}
                         >&lt;</button>
-                        <button className={styles.advFilterBtn} style={{ padding: '4px 10px', fontSize: '11px', backgroundColor: '#f87820', color: '#fff', borderColor: '#f87820' }}>{pagination.page}</button>
+                        <button className={styles.advFilterBtn} style={{ padding: '4px 10px', fontSize: '11px', backgroundColor: '#f87820', color: 'var(--admin-light-text, #fff)', borderColor: '#f87820' }}>{pagination.page}</button>
                         <button
                           className={styles.advFilterBtn}
                           style={{ padding: '4px 8px', fontSize: '11px' }}
@@ -642,7 +642,7 @@ function ShipmentsContent() {
 
                       {/* Right Results Count */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '11.5px', color: '#8b92a5' }}>
+                        <span style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                           نمایش {pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1} تا {Math.min(pagination.page * pagination.limit, pagination.total)} از {pagination.total} نتیجه
                         </span>
                         <select
@@ -816,7 +816,7 @@ function ShipmentsContent() {
                               );
                             })}
                             {allShips.length === 0 && (
-                              <p style={{ color: '#8b92a5', fontSize: '11px', textAlign: 'center', padding: '10px' }}>به‌روزرسانی جدیدی ثبت نشده است.</p>
+                              <p style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11px', textAlign: 'center', padding: '10px' }}>به‌روزرسانی جدیدی ثبت نشده است.</p>
                             )}
                           </div>
                         </div>
@@ -833,12 +833,12 @@ function ShipmentsContent() {
                               <div key={ship.id || idx} className={styles.trackingBoxItem}>
                                 <div className={styles.trackingBoxHeader}>
                                   <span className={styles.trackingBoxCode}>{ship.awbCode || 'کد رهگیری ثبت نشده'}</span>
-                                  <span className={styles.badgeActive} style={{ fontSize: '8.5px', padding: '1px 6px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>در حال ارسال</span>
+                                  <span className={styles.badgeActive} style={{ fontSize: '8.5px', padding: '1px 6px', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--admin-light-info, #3b82f6)' }}>در حال ارسال</span>
                                 </div>
                                 <div className={styles.trackingBoxRoute}>
                                   <div className={styles.trackingBoxRouteDetails}>
                                     <span>دبی</span>
-                                    <span style={{ fontSize: '10px', color: '#f87820' }}>↔</span>
+                                    <span style={{ fontSize: '10px', color: 'var(--admin-light-accent, #f87820)' }}>↔</span>
                                     <span>{ship.recipient || 'ایران'}</span>
                                   </div>
                                   <span className={styles.trackingBoxRouteEst}>تاریخ: {ship.dateUpdated}</span>
@@ -846,14 +846,14 @@ function ShipmentsContent() {
                               </div>
                             ))}
                             {allShips.filter(s => s.status === 'SHIPPED').length === 0 && (
-                              <p style={{ color: '#8b92a5', fontSize: '11px', textAlign: 'center', padding: '10px' }}>مرسوله در حال ارسالی وجود ندارد.</p>
+                              <p style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11px', textAlign: 'center', padding: '10px' }}>مرسوله در حال ارسالی وجود ندارد.</p>
                             )}
                           </div>
                         </div>
                       </>
                     ) : (() => {
                       const selectedShipmentData = selectedShipment || allShips.find(s => s.id === selectedShipmentId);
-                      if (!selectedShipmentData) return <p style={{ color: '#8b92a5', textAlign: 'center', padding: '20px' }}>در حال دریافت جزئیات مرسوله...</p>;
+                      if (!selectedShipmentData) return <p style={{ color: 'var(--admin-light-muted, #8b92a5)', textAlign: 'center', padding: '20px' }}>در حال دریافت جزئیات مرسوله...</p>;
                       const selectedShip = createShipmentView(selectedShipmentData);
                       
                       // Format price to Persian Currency
@@ -905,7 +905,7 @@ function ShipmentsContent() {
                               {selectedShip.status === 'SHIPPED' && <span className={styles.badgeActive} style={{ fontSize: '10px' }}>در حال ارسال</span>}
                               {selectedShip.status === 'IN_TRANSIT' && <span className={styles.badgeCustoms}>رسیده به گمرک</span>}
                               {selectedShip.status === 'OUT_FOR_DELIVERY' && <span className={styles.badgeIran}>در انبار ایران</span>}
-                              {selectedShip.status === 'DELIVERED' && <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '10px' }}>تحویل شده</span>}
+                              {selectedShip.status === 'DELIVERED' && <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: 'var(--admin-light-success, #10b981)', fontSize: '10px' }}>تحویل شده</span>}
                               {selectedShip.status === 'FAILED' && <span className={styles.badgeProblem}>دارای مشکل</span>}
                               {['PENDING', 'READY', 'CANCELLED'].includes(selectedShip.status) && <span className={styles.badgeIran}>{statusLabel(selectedShip.status)}</span>}
                             </div>
@@ -917,7 +917,7 @@ function ShipmentsContent() {
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={selectedShip.productImg} alt={selectedShip.productName} className={styles.productMiniImg} />
                             ) : (
-                              <span className={styles.productMiniImg} style={{ display: 'grid', placeItems: 'center', color: '#8b92a5' }}>{AdminIcons.package(20)}</span>
+                              <span className={styles.productMiniImg} style={{ display: 'grid', placeItems: 'center', color: 'var(--admin-light-muted, #8b92a5)' }}>{AdminIcons.package(20)}</span>
                             )}
                             <div className={styles.productMiniInfo}>
                               <span className={styles.productMiniName}>{selectedShip.productName || 'ثبت نشده'}</span>
@@ -940,7 +940,7 @@ function ShipmentsContent() {
                             </div>
                             <div className={styles.specItem}>
                               <span className={styles.specLabel}>{AdminIcons.card(12)} هزینه ارسال کالا</span>
-                              <span className={styles.specValue} style={{ color: '#ff9d00' }}>
+                              <span className={styles.specValue} style={{ color: 'var(--admin-light-accent, #ff9d00)' }}>
                                 {selectedShip.shippingCost ? formatToman(selectedShip.shippingCost) : 'ثبت نشده'}
                               </span>
                             </div>
@@ -967,7 +967,7 @@ function ShipmentsContent() {
                             </div>
                             <div className={styles.addressRow} style={{ marginTop: '4px' }}>
                               <span className={styles.addressLabel}>کد بارنامه بین‌المللی:</span>
-                              <span className={styles.addressVal} style={{ fontFamily: 'monospace', color: '#ff9d00', fontSize: '11.5px' }}>
+                              <span className={styles.addressVal} style={{ fontFamily: 'monospace', color: 'var(--admin-light-accent, #ff9d00)', fontSize: '11.5px' }}>
                                 {selectedShip.awbCode || 'کد رهگیری ثبت نشده'}
                               </span>
                             </div>
@@ -984,9 +984,9 @@ function ShipmentsContent() {
                               <span className={styles.addressLabel}>شماره تماس:</span>
                               <span className={styles.addressVal} dir="ltr">{selectedShip.phone || 'ثبت نشده'}</span>
                             </div>
-                            <div style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '8px' }}>
+                            <div style={{ marginTop: '8px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', paddingTop: '8px' }}>
                               <span className={styles.addressLabel} style={{ display: 'block', marginBottom: '4px' }}>آدرس ارسال:</span>
-                              <span style={{ fontSize: '11px', color: '#c4c8d4', lineHeight: '1.5', display: 'block' }}>{selectedShip.address || 'ثبت نشده'}</span>
+                              <span style={{ fontSize: '11px', color: 'var(--admin-light-text, #c4c8d4)', lineHeight: '1.5', display: 'block' }}>{selectedShip.address || 'ثبت نشده'}</span>
                             </div>
                           </div>
 
@@ -1014,9 +1014,9 @@ function ShipmentsContent() {
                                     />
                                     <div className={styles.stageInfo}>
                                       <span className={`${styles.stageTitle} ${isCompleted ? styles.stageTitleCompleted : ''} ${isActive ? styles.stageTitleActive : ''}`}
-                                        style={{ color: activeIndex === -1 && idx === 1 ? '#ef4444' : undefined }}
+                                        style={{ color: activeIndex === -1 && idx === 1 ? 'var(--admin-light-danger, #ef4444)' : undefined }}
                                       >
-                                        {stage.label} {activeIndex === -1 && idx === 1 && <span style={{ color: '#ef4444', display: 'inline-flex', alignItems: 'center', marginRight: '4px' }}>{AdminIcons.alert(12)}</span>}
+                                        {stage.label} {activeIndex === -1 && idx === 1 && <span style={{ color: 'var(--admin-light-danger, #ef4444)', display: 'inline-flex', alignItems: 'center', marginRight: '4px' }}>{AdminIcons.alert(12)}</span>}
                                       </span>
                                       <span className={styles.stageSubtext}>
                                         {activeIndex === -1 && idx === 1 ? 'توقف مرسوله به دلیل بازرسی گمرکی یا نقض مدارک' : stage.desc}
@@ -1147,7 +1147,7 @@ function ShipmentsContent() {
                             </div>
                           </div>
 
-                          <p style={{ fontSize: '11px', color: '#8b92a5', lineHeight: '1.5', margin: '10px 0 0 0' }}>
+                          <p style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', lineHeight: '1.5', margin: '10px 0 0 0' }}>
                             توجه: اگر کد رهگیری شرکت حمل هنوز صادر نشده است، این فیلد را خالی بگذارید؛ سیستم کد ساختگی تولید نمی‌کند.
                           </p>
 

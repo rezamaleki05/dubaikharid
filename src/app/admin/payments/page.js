@@ -207,7 +207,7 @@ function PaymentsContent() {
             const txnGrowth = stats.growth?.count || 0;
 
             const payRenderGrowth = (gVal) => {
-              if (gVal === 0) return <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '4px' }}>بدون تغییر</span>;
+              if (gVal === 0) return <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>بدون تغییر</span>;
               const isUp = gVal > 0;
               const color = isUp ? '#10b981' : '#ef4444';
               return (
@@ -273,10 +273,10 @@ function PaymentsContent() {
                 {/* Header Title Row */}
                 <div className={styles.pageTitleSection} style={{ marginBottom: '24px' }}>
                   <div className={styles.titleArea} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ color: '#f87820', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.card(28)}</span>
+                    <span style={{ color: 'var(--admin-light-accent, #f87820)', display: 'inline-flex', alignItems: 'center' }}>{AdminIcons.card(28)}</span>
                     <div>
-                      <h1 style={{ fontSize: '22px', fontWeight: '750', color: '#fff', margin: 0 }}>پرداخت‌ها</h1>
-                      <p style={{ fontSize: '11.5px', color: '#8b92a5', marginTop: '2px', margin: 0 }}>مدیریت تمامی پرداخت‌های دریافتی و هزینه‌ها</p>
+                      <h1 style={{ fontSize: '22px', fontWeight: '750', color: 'var(--admin-light-text, #fff)', margin: 0 }}>پرداخت‌ها</h1>
+                      <p style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px', margin: 0 }}>مدیریت تمامی پرداخت‌های دریافتی و هزینه‌ها</p>
                     </div>
                   </div>
 
@@ -285,7 +285,7 @@ function PaymentsContent() {
                       type="button" 
                       onClick={() => navigateToAdminSection('financial_reports')} 
                       className={styles.advFilterBtn} 
-                      style={{ padding: '10px 15px', color: '#fff' }}
+                      style={{ padding: '10px 15px', color: 'var(--admin-light-text, #fff)' }}
                       title="گزارشات جامع مالی"
                     >
                       {AdminIcons.chart(12)} گزارش مالی
@@ -294,7 +294,7 @@ function PaymentsContent() {
                       type="button" 
                       onClick={handleExportExcel} 
                       className={styles.advFilterBtn} 
-                      style={{ padding: '10px 15px', color: '#fff' }}
+                      style={{ padding: '10px 15px', color: 'var(--admin-light-text, #fff)' }}
                       title="دریافت فایل اکسل"
                     >
                       {AdminIcons.download(12)} اکسل
@@ -303,7 +303,7 @@ function PaymentsContent() {
                       type="button" 
                       onClick={() => setPaymentStatusFilter(paymentStatusFilter === 'همه' ? 'pending' : 'همه')} 
                       className={styles.advFilterBtn} 
-                      style={{ padding: '10px 15px', color: '#fff' }}
+                      style={{ padding: '10px 15px', color: 'var(--admin-light-text, #fff)' }}
                       title="تغییر نمایش فیلترها"
                     >
                       {AdminIcons.sliders(12)} فیلتر
@@ -339,7 +339,7 @@ function PaymentsContent() {
                       </span>
                       {payRenderGrowth(incomeGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '50%' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--admin-light-success, #10b981)', borderRadius: '50%' }}>
                       {AdminIcons.download(18)}
                     </div>
                   </div>
@@ -362,7 +362,7 @@ function PaymentsContent() {
                       </span>
                       {payRenderGrowth(expenseGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '50%' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--admin-light-danger, #ef4444)', borderRadius: '50%' }}>
                       {AdminIcons.upload(18)}
                     </div>
                   </div>
@@ -376,12 +376,12 @@ function PaymentsContent() {
                   >
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>سود خالص</span>
-                      <span className={styles.metricValue} style={{ fontSize: '15px', color: '#10b981', fontFamily: 'var(--font-vazirmatn)' }}>
+                      <span className={styles.metricValue} style={{ fontSize: '15px', color: 'var(--admin-light-success, #10b981)', fontFamily: 'var(--font-vazirmatn)' }}>
                         {displayProfit.toLocaleString('fa-IR')}
                       </span>
                       {payRenderGrowth(profitGrowth)}
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', borderRadius: '50%' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--admin-light-info, #3b82f6)', borderRadius: '50%' }}>
                       {AdminIcons.bank(18)}
                     </div>
                   </div>
@@ -419,14 +419,14 @@ function PaymentsContent() {
                   >
                     <div className={styles.metricContent}>
                       <span className={styles.metricLabel}>مانده حساب</span>
-                      <span className={styles.metricValue} style={{ fontSize: '15px', color: '#ff9d00', fontFamily: 'var(--font-vazirmatn)' }}>
+                      <span className={styles.metricValue} style={{ fontSize: '15px', color: 'var(--admin-light-accent, #ff9d00)', fontFamily: 'var(--font-vazirmatn)' }}>
                         {displayBalance.toLocaleString('fa-IR')}
                       </span>
-                      <span style={{ fontSize: '9.5px', color: '#8b92a5', marginTop: '4px' }}>
+                      <span style={{ fontSize: '9.5px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>
                         موجودی در حال گردش
                       </span>
                     </div>
-                    <div className={styles.metricIconContainer} style={{ background: 'rgba(251, 191, 36, 0.1)', color: '#f59e0b', borderRadius: '50%' }}>
+                    <div className={styles.metricIconContainer} style={{ background: 'rgba(251, 191, 36, 0.1)', color: 'var(--admin-light-warning, #f59e0b)', borderRadius: '50%' }}>
                       {AdminIcons.lock(18)}
                     </div>
                   </div>
@@ -483,27 +483,27 @@ function PaymentsContent() {
                     </select>
 
                     {/* Date filter inputs */}
-                    <div className={styles.paymentDateFilters} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#11131a', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '4px 10px', minHeight: '38px' }}>
-                      <span style={{ color: '#8b92a5', fontSize: '11.5px', display: 'flex', alignItems: 'center' }}>{AdminIcons.calendar(12)}</span>
+                    <div className={styles.paymentDateFilters} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--admin-light-surface, #11131a)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '10px', padding: '4px 10px', minHeight: '38px' }}>
+                      <span style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11.5px', display: 'flex', alignItems: 'center' }}>{AdminIcons.calendar(12)}</span>
                       <input 
                         type="date" 
                         value={paymentStartDate} 
                         onChange={(e) => setPaymentStartDate(e.target.value)} 
-                        style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '11px', outline: 'none', fontFamily: 'inherit', colorScheme: 'dark' }} 
+                        style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-text, #fff)', fontSize: '11px', outline: 'none', fontFamily: 'inherit', colorScheme: 'dark' }}
                         title="تاریخ شروع"
                       />
-                      <span style={{ color: '#8b92a5', fontSize: '10px' }}>تا</span>
+                      <span style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '10px' }}>تا</span>
                       <input 
                         type="date" 
                         value={paymentEndDate} 
                         onChange={(e) => setPaymentEndDate(e.target.value)} 
-                        style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '11px', outline: 'none', fontFamily: 'inherit', colorScheme: 'dark' }} 
+                        style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-text, #fff)', fontSize: '11px', outline: 'none', fontFamily: 'inherit', colorScheme: 'dark' }}
                         title="تاریخ پایان"
                       />
                       {(paymentStartDate || paymentEndDate) && (
                         <button 
                           onClick={() => { setPaymentStartDate(''); setPaymentEndDate(''); }}
-                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '11px', padding: '0 4px', fontWeight: 'bold' }}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer', fontSize: '11px', padding: '0 4px', fontWeight: 'bold' }}
                           title="حذف فیلتر تاریخ"
                         >
                           ✕
@@ -517,7 +517,7 @@ function PaymentsContent() {
                 <div className={styles.customerSplitGrid}>
                   
                   {/* LEFT COLUMN: Payments Table */}
-                  <div style={{ background: '#11131a', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden' }}>
+                  <div style={{ background: 'var(--admin-light-surface, #11131a)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '16px', overflow: 'hidden' }}>
                     <div style={{ overflowX: 'auto' }}>
                       <table className={styles.adminTable}>
                         <thead>
@@ -535,7 +535,7 @@ function PaymentsContent() {
                         <tbody>
                           {filteredPayments.length === 0 ? (
                             <tr key="empty-payments">
-                              <td colSpan="8" style={{ textAlign: 'center', color: paymentsError ? '#ef4444' : '#8b92a5', padding: '50px 0' }}>{isPaymentsLoading ? 'در حال دریافت تراکنش‌ها...' : paymentsError || 'هیچ تراکنش مالی یافت نشد.'}</td>
+                              <td colSpan="8" style={{ textAlign: 'center', color: paymentsError ? 'var(--admin-light-danger, #ef4444)' : 'var(--admin-light-muted, #8b92a5)', padding: '50px 0' }}>{isPaymentsLoading ? 'در حال دریافت تراکنش‌ها...' : paymentsError || 'هیچ تراکنش مالی یافت نشد.'}</td>
                             </tr>
                           ) : (
                             filteredPayments.map(txn => {
@@ -566,23 +566,23 @@ function PaymentsContent() {
                                   }}
                                 >
                                   {/* Transaction ID */}
-                                  <td style={{ fontWeight: '850', color: '#ff9d00', fontFamily: 'monospace', fontSize: '11.5px' }}>
+                                  <td style={{ fontWeight: '850', color: 'var(--admin-light-accent, #ff9d00)', fontFamily: 'monospace', fontSize: '11.5px' }}>
                                     {txn.id}
                                   </td>
 
                                   {/* Date */}
-                                  <td style={{ fontSize: '11.5px', color: '#c4c8d4', fontFamily: 'var(--font-vazirmatn)' }}>
+                                  <td style={{ fontSize: '11.5px', color: 'var(--admin-light-text, #c4c8d4)', fontFamily: 'var(--font-vazirmatn)' }}>
                                     {new Intl.DateTimeFormat('fa-IR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(txn.date))}
                                   </td>
 
                                   {/* Type */}
                                   <td>
                                     {isPositive ? (
-                                      <span style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '10px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                      <span style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: 'var(--admin-light-success, #10b981)', fontSize: '10px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
                                         دریافتی
                                       </span>
                                     ) : (
-                                      <span style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '10px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                      <span style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--admin-light-danger, #ef4444)', fontSize: '10px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
                                         پرداختی
                                       </span>
                                     )}
@@ -592,7 +592,7 @@ function PaymentsContent() {
                                   <td style={{ 
                                     fontFamily: 'var(--font-vazirmatn)', 
                                     fontWeight: '800', 
-                                    color: isPositive ? '#10b981' : '#ef4444', 
+                                    color: isPositive ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-danger, #ef4444)',
                                     fontSize: '12.5px',
                                     direction: 'ltr',
                                     textAlign: 'right'
@@ -609,22 +609,22 @@ function PaymentsContent() {
                                   </td>
 
                                   {/* Category */}
-                                  <td style={{ fontSize: '12px', color: '#fff', fontWeight: 'bold' }}>
+                                  <td style={{ fontSize: '12px', color: 'var(--admin-light-text, #fff)', fontWeight: 'bold' }}>
                                     {txn.category || (isPositive ? 'سفارشات' : 'هزینه ها')}
                                   </td>
 
                                   {/* Status */}
                                   <td>
                                     {txn.status === 'success' ? (
-                                      <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '9.5px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                      <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: 'var(--admin-light-success, #10b981)', fontSize: '9.5px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
                                         تسویه شده
                                       </span>
                                     ) : txn.status === 'failed' || txn.status === 'refunded' ? (
-                                      <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444', fontSize: '9.5px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                      <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: 'var(--admin-light-danger, #ef4444)', fontSize: '9.5px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
                                         {txn.status === 'refunded' ? 'بازپرداخت شده' : 'ناموفق'}
                                       </span>
                                     ) : (
-                                      <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontSize: '9.5px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                      <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: 'var(--admin-light-warning, #f59e0b)', fontSize: '9.5px', padding: '3px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
                                         در انتظار
                                       </span>
                                     )}
@@ -632,7 +632,7 @@ function PaymentsContent() {
 
                                   {/* Action */}
                                   <td>
-                                    <button onClick={(e) => { e.stopPropagation(); setSelectedPaymentId(txn.id); }} style={{ background: 'none', border: 'none', color: '#f87820', cursor: 'pointer', fontSize: '13px', padding: '4px' }} title="مشاهده تراکنش">
+                                    <button onClick={(e) => { e.stopPropagation(); setSelectedPaymentId(txn.id); }} style={{ background: 'none', border: 'none', color: 'var(--admin-light-accent, #f87820)', cursor: 'pointer', fontSize: '13px', padding: '4px' }} title="مشاهده تراکنش">
                                       {AdminIcons.eye(13)}
                                     </button>
                                   </td>
@@ -645,13 +645,13 @@ function PaymentsContent() {
                     </div>
 
                     {/* Pagination Bar */}
-                    <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '16px 24px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', gap: '6px' }}>
                         <button disabled={pagination.page <= 1} onClick={() => setPagination(current => ({ ...current, page: current.page - 1 }))} className={styles.advFilterBtn} style={{ padding: '4px 8px', fontSize: '11px' }}>&lt;</button>
-                        <button className={styles.advFilterBtn} style={{ padding: '4px 10px', fontSize: '11px', backgroundColor: '#f87820', color: '#fff', borderColor: '#f87820' }}>{pagination.page.toLocaleString('fa-IR')}</button>
+                        <button className={styles.advFilterBtn} style={{ padding: '4px 10px', fontSize: '11px', backgroundColor: '#f87820', color: 'var(--admin-light-text, #fff)', borderColor: '#f87820' }}>{pagination.page.toLocaleString('fa-IR')}</button>
                         <button disabled={pagination.page >= pagination.totalPages} onClick={() => setPagination(current => ({ ...current, page: current.page + 1 }))} className={styles.advFilterBtn} style={{ padding: '4px 8px', fontSize: '11px' }}>&gt;</button>
                       </div>
-                      <span style={{ fontSize: '11.5px', color: '#8b92a5' }}>
+                      <span style={{ fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                         نمایش {filteredPayments.length ? ((pagination.page - 1) * pagination.limit + 1).toLocaleString('fa-IR') : '۰'} تا {Math.min(pagination.page * pagination.limit, pagination.total).toLocaleString('fa-IR')} از {pagination.total.toLocaleString('fa-IR')} نتیجه
                       </span>
                     </div>
@@ -691,7 +691,7 @@ function PaymentsContent() {
                               
                               {/* Y-Axis Labels */}
                               {flowYLabels.map((v, i) => (
-                                <text key={i} x="0" y={24 + i * 30} fill="#6c7284" fontSize="8" textAnchor="start">{flowFormatLabel(v)}</text>
+                                <text key={i} x="0" y={24 + i * 30} fill="var(--admin-light-muted, #6c7284)" fontSize="8" textAnchor="start">{flowFormatLabel(v)}</text>
                               ))}
                               
                               {/* Income Line - Green */}
@@ -715,20 +715,20 @@ function PaymentsContent() {
                           </div>
                           
                           {/* Legend / Axis - Dynamic week labels */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 30px 0', fontSize: '9px', color: '#8b92a5', borderBottom: '1px solid rgba(255,255,255,0.05)', pb: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 30px 0', fontSize: '9px', color: 'var(--admin-light-muted, #8b92a5)', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', pb: '8px' }}>
                             {flowWeeks.map((w, i) => (
                               <span key={i}>{w.label}</span>
                             ))}
                           </div>
                           
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '10px' }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '9.5px', color: '#c4c8d4' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '9.5px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                               <span style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '2px' }} /> دریافتی ها
                             </span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '9.5px', color: '#c4c8d4' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '9.5px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                               <span style={{ width: '8px', height: '8px', backgroundColor: '#ef4444', borderRadius: '2px' }} /> پرداختی ها
                             </span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '9.5px', color: '#c4c8d4' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '9.5px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                               <span style={{ width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '2px' }} strokeDasharray="2,2" /> سود خالص
                             </span>
                           </div>
@@ -829,11 +829,11 @@ function PaymentsContent() {
                                   title={`فیلتر ${m}`}
                                 >
                                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                                       <span>{AdminIcons[mIcon] ? AdminIcons[mIcon](12) : AdminIcons.card(12)}</span> {m}
                                     </span>
                                     <span style={{ fontWeight: 'bold' }}>
-                                      {formatted} <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>({pctStr}٪)</span>
+                                      {formatted} <span style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '9px', marginRight: '6px' }}>({pctStr}٪)</span>
                                     </span>
                                   </div>
                                   <div className={styles.progressBarTrack}>
@@ -855,11 +855,11 @@ function PaymentsContent() {
                                   title="حذف فیلتر روش"
                                 >
                                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#c4c8d4' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--admin-light-text, #c4c8d4)' }}>
                                       {AdminIcons.folder(12)} سایر روش‌ها
                                     </span>
                                     <span style={{ fontWeight: 'bold' }}>
-                                      {oFormatted} <span style={{ color: '#8b92a5', fontSize: '9px', marginRight: '6px' }}>({oPctStr}٪)</span>
+                                      {oFormatted} <span style={{ color: 'var(--admin-light-muted, #8b92a5)', fontSize: '9px', marginRight: '6px' }}>({oPctStr}٪)</span>
                                     </span>
                                   </div>
                                   <div className={styles.progressBarTrack}>
@@ -873,7 +873,7 @@ function PaymentsContent() {
                       </>
                     ) : (() => {
                       const selectedTxn = getMergedPayments().find(p => p.id === selectedPaymentId);
-                      if (!selectedTxn) return <p style={{ color: '#8b92a5', textAlign: 'center', padding: '20px' }}>تراکنش یافت نشد.</p>;
+                      if (!selectedTxn) return <p style={{ color: 'var(--admin-light-muted, #8b92a5)', textAlign: 'center', padding: '20px' }}>تراکنش یافت نشد.</p>;
 
                       return (
                         <div className={styles.shipmentDetailsCard} style={{ animation: 'fadeIn 0.25s ease' }}>
@@ -893,7 +893,7 @@ function PaymentsContent() {
                             <span className={styles.shipmentMainCode}>{selectedTxn.id}</span>
                             <div>
                               {selectedTxn.status === 'success' ? (
-                                <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '10px' }}>
+                                <span className={styles.badgeActive} style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: 'var(--admin-light-success, #10b981)', fontSize: '10px' }}>
                                   تراکنش موفق
                                 </span>
                               ) : selectedTxn.status === 'failed' ? (
@@ -901,7 +901,7 @@ function PaymentsContent() {
                                   رسید رد شده
                                 </span>
                               ) : (
-                                <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontSize: '10px' }}>
+                                <span className={styles.badgeCustoms} style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: 'var(--admin-light-warning, #f59e0b)', fontSize: '10px' }}>
                                   در انتظار بررسی
                                 </span>
                               )}
@@ -920,7 +920,7 @@ function PaymentsContent() {
                                   onClick={() => {
                                     navigateToAdminSection('leads');
                                   }}
-                                  style={{ cursor: 'pointer', textDecoration: 'underline', color: '#f87820' }}
+                                  style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--admin-light-accent, #f87820)' }}
                                 >
                                   شماره سفارش مرجع: {selectedTxn.orderId}
                                 </span>
@@ -930,8 +930,8 @@ function PaymentsContent() {
 
                           {/* Amount Card */}
                           <div style={{ background: 'rgba(74, 222, 128, 0.05)', border: '1px solid rgba(74, 222, 128, 0.1)', borderRadius: '12px', padding: '16px', textAlign: 'center', marginBottom: '20px' }}>
-                            <span style={{ fontSize: '11px', color: '#8b92a5', display: 'block', marginBottom: '6px', fontWeight: 'bold' }}>مبلغ کل واریزی:</span>
-                            <span style={{ fontSize: '20px', fontWeight: '900', color: selectedTxn.amount > 0 ? '#10b981' : '#ef4444' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', display: 'block', marginBottom: '6px', fontWeight: 'bold' }}>مبلغ کل واریزی:</span>
+                            <span style={{ fontSize: '20px', fontWeight: '900', color: selectedTxn.amount > 0 ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-danger, #ef4444)' }}>
                               {selectedTxn.amount.toLocaleString('fa-IR')} تومان
                             </span>
                           </div>
@@ -942,13 +942,13 @@ function PaymentsContent() {
                             
                             <div className={styles.addressRow}>
                               <span className={styles.addressLabel}>روش واریز:</span>
-                              <span className={styles.addressVal} style={{ fontWeight: 'bold', color: '#fff' }}>{selectedTxn.method}</span>
+                              <span className={styles.addressVal} style={{ fontWeight: 'bold', color: 'var(--admin-light-text, #fff)' }}>{selectedTxn.method}</span>
                             </div>
                             
                             {selectedTxn.reference && (
                               <div className={styles.addressRow} style={{ marginTop: '6px' }}>
                                 <span className={styles.addressLabel}>شماره مرجع بانکی:</span>
-                                <span className={styles.addressVal} style={{ fontFamily: 'monospace', color: '#ff9d00' }}>{selectedTxn.reference}</span>
+                                <span className={styles.addressVal} style={{ fontFamily: 'monospace', color: 'var(--admin-light-accent, #ff9d00)' }}>{selectedTxn.reference}</span>
                               </div>
                             )}
 
@@ -972,13 +972,13 @@ function PaymentsContent() {
                           {selectedTxn.hasReceipt ? (
                             <div className={styles.addressSection} style={{ marginBottom: '20px' }}>
                               <h4 className={styles.addressTitle}>{AdminIcons.receipt(16)} تصویر رسید پرداخت</h4>
-                              <img src={selectedTxn.receiptUrl} alt="رسید خصوصی پرداخت مشتری" style={{ display: 'block', width: '100%', maxHeight: '430px', objectFit: 'contain', background: '#090b0f', border: '1px solid rgba(255,255,255,.07)' }} />
+                              <img src={selectedTxn.receiptUrl} alt="رسید خصوصی پرداخت مشتری" style={{ display: 'block', width: '100%', maxHeight: '430px', objectFit: 'contain', background: '#090b0f', border: '1px solid var(--admin-light-border, rgba(255,255,255,.07))' }} />
                               <div className={styles.addressRow} style={{ marginTop: '10px' }}><span className={styles.addressLabel}>نام فایل:</span><span className={styles.addressVal}>{selectedTxn.receiptOriginalName || 'ثبت نشده'}</span></div>
                               <div className={styles.addressRow} style={{ marginTop: '6px' }}><span className={styles.addressLabel}>نوع / حجم:</span><span className={styles.addressVal} dir="ltr">{selectedTxn.receiptMimeType || '-'} · {selectedTxn.receiptSizeBytes ? `${Math.ceil(selectedTxn.receiptSizeBytes / 1024).toLocaleString('fa-IR')} KB` : '-'}</span></div>
                             </div>
-                          ) : selectedTxn.methodCode === 'CARD' ? <div className={styles.addressSection} style={{ marginBottom: '20px', color: '#8b92a5' }}><strong style={{ color: '#fff' }}>رسیدی برای این پرداخت ارسال نشده است.</strong><p style={{ margin: '8px 0 0', lineHeight: '1.8' }}>تأیید دستی فقط پس از بررسی مستقل حساب بانکی و اطمینان از واریز وجه انجام شود.</p></div> : null}
+                          ) : selectedTxn.methodCode === 'CARD' ? <div className={styles.addressSection} style={{ marginBottom: '20px', color: 'var(--admin-light-muted, #8b92a5)' }}><strong style={{ color: 'var(--admin-light-text, #fff)' }}>رسیدی برای این پرداخت ارسال نشده است.</strong><p style={{ margin: '8px 0 0', lineHeight: '1.8' }}>تأیید دستی فقط پس از بررسی مستقل حساب بانکی و اطمینان از واریز وجه انجام شود.</p></div> : null}
 
-                          {selectedTxn.rejectionReason && <div className={styles.addressSection} style={{ marginBottom: '20px', borderColor: 'rgba(239,68,68,.25)', color: '#efaaaa' }}><strong>دلیل رد ثبت‌شده برای مشتری:</strong><p style={{ margin: '8px 0 0' }}>{selectedTxn.rejectionReason}</p></div>}
+                          {selectedTxn.rejectionReason && <div className={styles.addressSection} style={{ marginBottom: '20px', borderColor: 'rgba(239,68,68,.25)', color: 'var(--admin-light-danger, #efaaaa)' }}><strong>دلیل رد ثبت‌شده برای مشتری:</strong><p style={{ margin: '8px 0 0' }}>{selectedTxn.rejectionReason}</p></div>}
 
                           {/* Client profiles */}
                           {selectedTxn.recipient && (
@@ -988,7 +988,7 @@ function PaymentsContent() {
                                 <span className={styles.addressLabel}>نام و نام‌خانوادگی:</span>
                                 <span 
                                   className={styles.addressVal} 
-                                  style={{ cursor: 'pointer', textDecoration: 'underline', color: '#f87820', fontWeight: 'bold' }}
+                                  style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--admin-light-accent, #f87820)', fontWeight: 'bold' }}
                                   onClick={() => {
                                     const customerQuery = selectedTxn.customerId
                                       ? `?customer=${encodeURIComponent(selectedTxn.customerId)}`
@@ -1006,9 +1006,9 @@ function PaymentsContent() {
                                 </div>
                               )}
                               {selectedTxn.address && selectedTxn.address !== '-' && (
-                                <div style={{ marginTop: '8px', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '8px' }}>
+                                <div style={{ marginTop: '8px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', paddingTop: '8px' }}>
                                   <span className={styles.addressLabel} style={{ display: 'block', marginBottom: '4px' }}>آدرس تحویل کالا:</span>
-                                  <span style={{ fontSize: '11px', color: '#c4c8d4', lineHeight: '1.5' }}>{selectedTxn.address}</span>
+                                  <span style={{ fontSize: '11px', color: 'var(--admin-light-text, #c4c8d4)', lineHeight: '1.5' }}>{selectedTxn.address}</span>
                                 </div>
                               )}
                             </div>
@@ -1017,8 +1017,8 @@ function PaymentsContent() {
                           {/* System Internal Notes */}
                           {selectedTxn.notes && (
                             <div className={styles.addressSection} style={{ background: 'rgba(248, 120, 32, 0.02)', borderColor: 'rgba(248, 120, 32, 0.1)', marginBottom: '20px' }}>
-                              <h4 className={styles.addressTitle} style={{ color: '#f87820', borderBottomColor: 'rgba(248, 120, 32, 0.1)' }}>{AdminIcons.edit(13)} یادداشت تراکنش سیستم</h4>
-                              <p style={{ fontSize: '11px', color: '#c4c8d4', margin: '4px 0 0 0', lineHeight: '1.6' }}>
+                              <h4 className={styles.addressTitle} style={{ color: 'var(--admin-light-accent, #f87820)', borderBottomColor: 'rgba(248, 120, 32, 0.1)' }}>{AdminIcons.edit(13)} یادداشت تراکنش سیستم</h4>
+                              <p style={{ fontSize: '11px', color: 'var(--admin-light-text, #c4c8d4)', margin: '4px 0 0 0', lineHeight: '1.6' }}>
                                 {selectedTxn.notes}
                               </p>
                             </div>
@@ -1030,7 +1030,7 @@ function PaymentsContent() {
                               <button type="button" onClick={() => handleApprovePayment(selectedTxn.id, 'receipt')} className={styles.printLabelActionBtn} style={{ flexGrow: 2, height: '42px', padding: 0 }}>
                                 {AdminIcons.check(12)} تأیید رسید
                               </button>
-                              <button type="button" onClick={() => handleRejectPayment(selectedTxn.id)} style={{ flexGrow: 1, background: 'none', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                              <button type="button" onClick={() => handleRejectPayment(selectedTxn.id)} style={{ flexGrow: 1, background: 'none', border: '1px solid #ef4444', color: 'var(--admin-light-danger, #ef4444)', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
                                 {AdminIcons.close(12)} رد رسید
                               </button>
                             </div>
@@ -1039,7 +1039,7 @@ function PaymentsContent() {
                               {AdminIcons.check(12)} تأیید دستی پرداخت
                             </button>
                           ) : selectedTxn.methodCode === 'ONLINE' ? (
-                            <div className={styles.addressSection} style={{ color: '#8b92a5' }}>پرداخت آنلاین فقط با پاسخ معتبر درگاه قابل تأیید است.</div>
+                            <div className={styles.addressSection} style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>پرداخت آنلاین فقط با پاسخ معتبر درگاه قابل تأیید است.</div>
                           ) : (
                             <button type="button" onClick={() => handleApprovePayment(selectedTxn.id)} className={styles.printLabelActionBtn} style={{ width: '100%', height: '42px', padding: 0 }}>
                               {AdminIcons.check(12)} تأیید پرداخت
@@ -1214,7 +1214,7 @@ function PaymentsContent() {
                           <label htmlFor="manual-verification-note">یادداشت بررسی بانکی</label>
                           <textarea id="manual-verification-note" rows="4" maxLength="1000" required value={manualVerificationNote} onChange={(event) => setManualVerificationNote(event.target.value)} placeholder="مثلاً: واریز در حساب بانکی بررسی و تأیید شد" className={styles.inputField} style={{ resize: 'vertical' }} />
                         </div>
-                        {manualConfirmationError && <div role="alert" style={{ color: '#efaaaa', fontSize: '11px' }}>{manualConfirmationError}</div>}
+                        {manualConfirmationError && <div role="alert" style={{ color: 'var(--admin-light-danger, #efaaaa)', fontSize: '11px' }}>{manualConfirmationError}</div>}
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button type="submit" className={styles.addOrderBtn} disabled={isManualConfirmationPending || !manualVerificationNote.trim()} style={{ flexGrow: 2 }}>
                             {isManualConfirmationPending ? 'در حال تأیید...' : 'تأیید نهایی پرداخت'}
@@ -1237,15 +1237,15 @@ function PaymentsContent() {
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
                         {(stats.balances?.length ? stats.balances : [{ account: 'بدون تراکنش ثبت‌شده', amount: 0 }]).map(balance => (
-                          <div key={balance.account} style={{ background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div key={balance.account} style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', padding: '12px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>{AdminIcons.bank(14)} {balance.account}</span>
                             <span style={{ fontWeight: 'bold', fontFamily: 'var(--font-vazirmatn)' }}>{Number(balance.amount).toLocaleString('fa-IR')} تومان</span>
                           </div>
                         ))}
 
-                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '13px', fontWeight: 'bold' }}>مجموع موجودی صندوق‌ها:</span>
-                          <span style={{ fontSize: '16px', fontWeight: '900', color: '#ff9d00', fontFamily: 'var(--font-vazirmatn)' }}>
+                          <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--admin-light-accent, #ff9d00)', fontFamily: 'var(--font-vazirmatn)' }}>
                             {displayBalance.toLocaleString('fa-IR')} تومان
                           </span>
                         </div>

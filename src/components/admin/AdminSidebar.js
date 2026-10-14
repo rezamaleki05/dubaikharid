@@ -184,7 +184,7 @@ export default function AdminSidebar({
 
       <div className={styles.sidebarProfileCard}>
         <div className={styles.profileInfoRow}>
-          <div className={styles.profileAvatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(248,120,32,0.15)', color: '#f87820' }}>{AdminIcons.user(20)}</div>
+          <div className={styles.profileAvatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(248,120,32,0.15)', color: 'var(--admin-light-accent, #f87820)' }}>{AdminIcons.user(20)}</div>
           <div className={styles.profileMeta}>
             <h3>{admin?.email || 'مدیر سایت'}</h3>
             <span>{admin?.role || 'مدیر سیستم'}</span>

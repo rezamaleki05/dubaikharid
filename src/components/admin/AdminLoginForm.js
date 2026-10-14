@@ -81,8 +81,8 @@ export default function AdminLoginForm() {
           {isSubmitting ? 'در حال ورود...' : 'ورود به داشبورد مدیریت'}
         </button>
 
-        <div style={{ marginTop: '20px', fontSize: '11px', color: '#8b92a5' }}>
-          <Link href="/" style={{ color: '#f87820', textDecoration: 'none', fontWeight: 'bold' }}>
+        <div style={{ marginTop: '20px', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
+          <Link href="/" style={{ color: 'var(--admin-light-accent, #f87820)', textDecoration: 'none', fontWeight: 'bold' }}>
             بازگشت به صفحه اصلی فروشگاه
           </Link>
         </div>

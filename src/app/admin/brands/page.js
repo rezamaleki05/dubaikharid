@@ -13,7 +13,7 @@ function BrandCategoryFields({ form, setForm, categories }) {
   return (
     <>
       <BrandCategoryMultiSelect categories={categories} value={form.categoryIds} onChange={categoryIds => setForm(previous => ({ ...previous, categoryIds }))} />
-      <label style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '16px', color: '#d4d8e8', fontSize: '12px', cursor: 'pointer' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '16px', color: 'var(--admin-light-text, #d4d8e8)', fontSize: '12px', cursor: 'pointer' }}>
         <input
           type="checkbox"
           checked={form.showInBrandDirectory}
@@ -21,7 +21,7 @@ function BrandCategoryFields({ form, setForm, categories }) {
         />
         نمایش در صفحه برندها
       </label>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '16px', color: '#d4d8e8', fontSize: '12px', cursor: 'pointer' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '16px', color: 'var(--admin-light-text, #d4d8e8)', fontSize: '12px', cursor: 'pointer' }}>
         <input type="checkbox" checked={Boolean(form.supportsLaptop)} onChange={event => setForm(previous => ({ ...previous, supportsLaptop: event.target.checked }))} />
         قابل استفاده در بخش Laptop Stock
       </label>
@@ -189,25 +189,25 @@ export default function AdminBrandsPage() {
       <div style={{ direction: 'rtl' }}>
         {/* Page Title */}
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: '900', color: '#fff', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '24px', color: '#f87820' }}>{AdminIcons.tag(24)}</span>
+          <h1 style={{ fontSize: '22px', fontWeight: '900', color: 'var(--admin-light-text, #fff)', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '24px', color: 'var(--admin-light-accent, #f87820)' }}>{AdminIcons.tag(24)}</span>
             مدیریت برندها
           </h1>
-          <p style={{ fontSize: '12px', color: '#8b92a5', margin: 0 }}>افزودن، ویرایش و حذف برندهای رسمی کالا</p>
+          <p style={{ fontSize: '12px', color: 'var(--admin-light-muted, #8b92a5)', margin: 0 }}>افزودن، ویرایش و حذف برندهای رسمی کالا</p>
         </div>
 
         <div className={styles.cardPanel} style={{ padding: '24px', borderRadius: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '14px' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', paddingBottom: '14px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--admin-light-text, #fff)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               👟 برندهای تعریف‌شده
-              <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: '#f87820', fontWeight: '700' }}>{filteredBrands.length} برند</span>
+              <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '8px', background: 'rgba(248,120,32,0.1)', color: 'var(--admin-light-accent, #f87820)', fontWeight: '700' }}>{filteredBrands.length} برند</span>
             </h2>
             <button
               onClick={() => {
                 setAddBrandForm({ name: '', faName: '', cat: '', url: '', img: '', fallback: '🏷️', hasImage: false, categoryIds: [], showInBrandDirectory: true, supportsLaptop: false, pendingLogoPathname: null });
                 setIsAddBrandOpen(true);
               }}
-              style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}
+              style={{ padding: '6px 14px', fontSize: '11px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: 'var(--admin-light-text, #fff)', cursor: 'pointer', fontWeight: '700' }}
             >
               + افزودن برند جدید
             </button>
@@ -221,16 +221,16 @@ export default function AdminBrandsPage() {
               value={brandSearchQuery || ''}
               onChange={e => setBrandSearchQuery(e.target.value)}
               style={{
-                width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px',
-                color: '#fff', fontSize: '12.5px', outline: 'none'
+                width: '100%', padding: '10px 14px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.03))',
+                border: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))', borderRadius: '10px',
+                color: 'var(--admin-light-text, #fff)', fontSize: '12.5px', outline: 'none'
               }}
             />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', maxHeight: '600px', overflowY: 'auto', paddingLeft: '4px' }}>
             {filteredBrands.map(brand => (
-              <div key={brand.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.03)' }}>
+              <div key={brand.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '12px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.015))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.03))' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center', fontSize: '18px', overflow: 'hidden' }}>
                     {brand.img && brand.img.startsWith('http') ? (
@@ -240,11 +240,11 @@ export default function AdminBrandsPage() {
                     )}
                   </div>
                   <div>
-                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff' }}>{brand.name}</div>
-                    <div style={{ fontSize: '11px', color: '#8b92a5', marginTop: '2px' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--admin-light-text, #fff)' }}>{brand.name}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '2px' }}>
                       {brand.faName} • {brand.categories?.map(category => category.name).join('، ') || brand.cat || 'بدون دسته‌بندی'}
                     </div>
-                    <div style={{ fontSize: '10px', color: brand.showInBrandDirectory ? '#10b981' : '#f59e0b', marginTop: '3px' }}>
+                    <div style={{ fontSize: '10px', color: brand.showInBrandDirectory ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-warning, #f59e0b)', marginTop: '3px' }}>
                       {brand.showInBrandDirectory ? 'نمایش در صفحه برندها' : 'مخفی از صفحه برندها'}
                     </div>
                   </div>
@@ -260,13 +260,13 @@ export default function AdminBrandsPage() {
                       });
                       setIsEditBrandOpen(true);
                     }}
-                    style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)', background: 'transparent', color: '#c0c8d8', cursor: 'pointer' }}
+                    style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', background: 'transparent', color: 'var(--admin-light-text, #c0c8d8)', cursor: 'pointer' }}
                   >
                     ویرایش
                   </button>
                   <button
                     onClick={() => handleDeleteBrand(brand.id)}
-                    style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: '#ef4444', cursor: 'pointer' }}
+                    style={{ padding: '6px 10px', fontSize: '11px', borderRadius: '6px', border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', color: 'var(--admin-light-danger, #ef4444)', cursor: 'pointer' }}
                   >
                     حذف
                   </button>
@@ -274,7 +274,7 @@ export default function AdminBrandsPage() {
               </div>
             ))}
             {filteredBrands.length === 0 && (
-              <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: '#8b92a5', fontSize: '13px' }}>برندی تعریف نشده است.</div>
+              <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '13px' }}>برندی تعریف نشده است.</div>
             )}
           </div>
         </div>
@@ -283,26 +283,26 @@ export default function AdminBrandsPage() {
       {/* Add Brand Modal */}
       {isAddBrandOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
-          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>➕ افزودن برند جدید</h3>
+          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--admin-light-text, #fff)', marginBottom: '20px' }}>➕ افزودن برند جدید</h3>
             <form onSubmit={handleAddBrand}>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام انگلیسی برند *</label>
-                <input type="text" required value={addBrandForm.name || ''} onChange={e => setAddBrandForm({...addBrandForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نام انگلیسی برند *</label>
+                <input type="text" required value={addBrandForm.name || ''} onChange={e => setAddBrandForm({...addBrandForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام فارسی برند</label>
-                <input type="text" value={addBrandForm.faName || ''} onChange={e => setAddBrandForm({...addBrandForm, faName: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نام فارسی برند</label>
+                <input type="text" value={addBrandForm.faName || ''} onChange={e => setAddBrandForm({...addBrandForm, faName: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <BrandCategoryFields form={addBrandForm} setForm={setAddBrandForm} categories={categories} />
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
-                <input type="url" value={addBrandForm.url || ''} onChange={e => setAddBrandForm({...addBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} placeholder="https://www.nike.com/ae/" />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
+                <input type="url" value={addBrandForm.url || ''} onChange={e => setAddBrandForm({...addBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} placeholder="https://www.nike.com/ae/" />
               </div>
               <BrandLogoField value={addBrandForm.img} fallback={addBrandForm.faName || addBrandForm.name} onChange={img => setAddBrandForm(previous => ({ ...previous, img, hasImage: Boolean(img) }))} onUploaded={pathname => setUploadedLogo(setAddBrandForm, pathname)} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => { void cleanupLogo(addBrandForm.pendingLogoPathname); setIsAddBrandOpen(false); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
-                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره برند</button>
+                <button type="button" onClick={() => { void cleanupLogo(addBrandForm.pendingLogoPathname); setIsAddBrandOpen(false); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', background: 'transparent', color: 'var(--admin-light-text, #fff)', cursor: 'pointer' }}>انصراف</button>
+                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: 'var(--admin-light-text, #fff)', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره برند</button>
               </div>
             </form>
           </div>
@@ -312,26 +312,26 @@ export default function AdminBrandsPage() {
       {/* Edit Brand Modal */}
       {isEditBrandOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999 }}>
-          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '20px' }}>✏️ ویرایش برند {editBrandForm.name}</h3>
+          <div className={styles.cardPanel} style={{ padding: '30px', borderRadius: '16px', width: '450px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--admin-light-text, #fff)', marginBottom: '20px' }}>✏️ ویرایش برند {editBrandForm.name}</h3>
             <form onSubmit={handleEditBrand}>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام انگلیسی برند *</label>
-                <input type="text" required value={editBrandForm.name || ''} onChange={e => setEditBrandForm({...editBrandForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نام انگلیسی برند *</label>
+                <input type="text" required value={editBrandForm.name || ''} onChange={e => setEditBrandForm({...editBrandForm, name: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>نام فارسی برند</label>
-                <input type="text" value={editBrandForm.faName || ''} onChange={e => setEditBrandForm({...editBrandForm, faName: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نام فارسی برند</label>
+                <input type="text" value={editBrandForm.faName || ''} onChange={e => setEditBrandForm({...editBrandForm, faName: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <BrandCategoryFields form={editBrandForm} setForm={setEditBrandForm} categories={categories} />
               <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '11.5px', color: '#8b92a5', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
-                <input type="url" value={editBrandForm.url || ''} onChange={e => setEditBrandForm({...editBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: '#181b24', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }} />
+                <label style={{ display: 'block', fontSize: '11.5px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>آدرس سایت برند (مستقیم امارات)</label>
+                <input type="url" value={editBrandForm.url || ''} onChange={e => setEditBrandForm({...editBrandForm, url: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--admin-light-control-bg, #181b24)', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-light-text, #fff)' }} />
               </div>
               <BrandLogoField value={editBrandForm.img} fallback={editBrandForm.faName || editBrandForm.name} onChange={img => setEditBrandForm(previous => ({ ...previous, img, hasImage: Boolean(img) }))} onUploaded={pathname => setUploadedLogo(setEditBrandForm, pathname)} />
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button type="button" onClick={() => { void cleanupLogo(editBrandForm.pendingLogoPathname); setIsEditBrandOpen(false); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#fff', cursor: 'pointer' }}>انصراف</button>
-                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
+                <button type="button" onClick={() => { void cleanupLogo(editBrandForm.pendingLogoPathname); setIsEditBrandOpen(false); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', background: 'transparent', color: 'var(--admin-light-text, #fff)', cursor: 'pointer' }}>انصراف</button>
+                <button type="submit" style={{ padding: '8px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', border: 'none', color: 'var(--admin-light-text, #fff)', fontWeight: 'bold', cursor: 'pointer' }}>ذخیره تغییرات</button>
               </div>
             </form>
           </div>

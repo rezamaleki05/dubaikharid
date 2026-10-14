@@ -243,27 +243,27 @@ export default function AdminProductsPage() {
 
           {/* 5 Stats Cards */}
           <div className={styles.summary}>
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+            <div style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
               <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>کل محصولات خارجی</div>
               <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--admin-white)' }}>{totalForeignProducts} محصول</div>
               <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>در کل آرشیو کاتالوگ</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+            <div style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
               <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>محصولات فعال</div>
               <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--admin-light-success, #10b981)' }}>{activeProducts} کالا</div>
               <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>نمایش فعال روی وبسایت</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+            <div style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
               <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>لینک‌های خراب</div>
               <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--admin-light-danger, #ef4444)' }}>{brokenLinks} مورد</div>
               <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>خطای ۴۰۴ مبدا امارات</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+            <div style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
               <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>نیاز به بروزرسانی قیمت</div>
               <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--admin-light-accent, #f59e0b)' }}>{needsUpdate} کالا</div>
               <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>تغییر قیمت در سایت مبدا</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
+            <div style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.02))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', borderRadius: '12px', padding: '16px', textAlign: 'right' }}>
               <div style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)', marginBottom: '6px' }}>تعداد فروش این ماه</div>
               <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--admin-light-accent, #f87820)' }}><ProductSalesCount /></div>
               <div style={{ fontSize: '10px', color: 'var(--admin-light-muted, #8b92a5)', marginTop: '4px' }}>ثبت و نهایی شده در سیستم</div>
@@ -282,46 +282,46 @@ export default function AdminProductsPage() {
                   placeholder="جستجو در نام، برند یا فروشگاه..."
                   value={productSearchQuery || ""}
                   onChange={(e) => setProductSearchQuery(e.target.value)}
-                  style={{ flex: 1, padding: '8px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12.5px', outline: 'none' }}
+                  style={{ flex: 1, padding: '8px 14px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12.5px', outline: 'none' }}
                 />
                 
                 <select
                   value={productStatusFilter || ""}
                   onChange={e => setProductStatusFilter(e.target.value)}
-                  style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                  style={{ padding: '8px 12px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
                 >
-                  <option value="همه" style={{ background: '#1c1d24' }}>همه وضعیت‌ها</option>
-                  <option value="active" style={{ background: '#1c1d24' }}>🟢 فعال</option>
-                  <option value="needs_update" style={{ background: '#1c1d24' }}>🟡 نیاز به بروزرسانی قیمت</option>
-                  <option value="broken_link" style={{ background: '#1c1d24' }}>🔴 لینک خراب</option>
-                  <option value="hidden" style={{ background: '#1c1d24' }}>⚫ مخفی</option>
+                  <option value="همه" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>همه وضعیت‌ها</option>
+                  <option value="active" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>🟢 فعال</option>
+                  <option value="needs_update" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>🟡 نیاز به بروزرسانی قیمت</option>
+                  <option value="broken_link" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>🔴 لینک خراب</option>
+                  <option value="hidden" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>⚫ مخفی</option>
                 </select>
 
                 <select
                   value={productBrandFilter || ""}
                   onChange={e => setProductBrandFilter(e.target.value)}
-                  style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                  style={{ padding: '8px 12px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
                 >
-                  <option value="همه" style={{ background: '#1c1d24' }}>همه برندها</option>
-                  {brands.map(brand => <option key={brand.id} value={brand.id} style={{ background: '#1c1d24' }}>{brand.name}</option>)}
+                  <option value="همه" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>همه برندها</option>
+                  {brands.map(brand => <option key={brand.id} value={brand.id} style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>{brand.name}</option>)}
                 </select>
 
                 <select
                   value={productCategoryFilter}
                   onChange={e => setProductCategoryFilter(e.target.value)}
-                  style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                  style={{ padding: '8px 12px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
                 >
-                  <option value="همه" style={{ background: '#1c1d24' }}>همه دسته‌بندی‌ها</option>
-                  {categories.map(category => <option key={category.id} value={category.id} style={{ background: '#1c1d24' }}>{category.name}</option>)}
+                  <option value="همه" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>همه دسته‌بندی‌ها</option>
+                  {categories.map(category => <option key={category.id} value={category.id} style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>{category.name}</option>)}
                 </select>
 
                 <select
                   value={productStoreFilter}
                   onChange={e => setProductStoreFilter(e.target.value)}
-                  style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
+                  style={{ padding: '8px 12px', background: 'var(--admin-light-control-bg, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '12px', cursor: 'pointer', outline: 'none' }}
                 >
-                  <option value="همه" style={{ background: '#1c1d24' }}>همه فروشگاه‌ها</option>
-                  {stores.map(store => <option key={store.id} value={store.id} style={{ background: '#1c1d24' }}>{store.name}</option>)}
+                  <option value="همه" style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>همه فروشگاه‌ها</option>
+                  {stores.map(store => <option key={store.id} value={store.id} style={{ background: 'var(--admin-light-surface, #1c1d24)' }}>{store.name}</option>)}
                 </select>
               </div>
 
@@ -329,7 +329,7 @@ export default function AdminProductsPage() {
               <div className={styles.tableScroller} tabIndex={0} role="region" aria-label="فهرست محصولات">
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', textAlign: 'right' }}>
                   <thead>
-                    <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <tr style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.03))', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.06))' }}>
                       <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>تصویر</th>
                       <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>نام محصول</th>
                       <th style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>برند</th>
@@ -363,21 +363,21 @@ export default function AdminProductsPage() {
                             key={p.id}
                             onClick={() => setSelectedAdminProductId(p.id)}
                             style={{ 
-                              borderBottom: '1px solid rgba(255,255,255,0.04)', 
+                              borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))',
                               cursor: 'pointer', 
                               background: isSelected ? 'rgba(248,120,32,0.06)' : 'transparent',
                               transition: 'background 0.15s'
                             }}
-                            onMouseOver={e => { if(!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                            onMouseOver={e => { if(!isSelected) e.currentTarget.style.background = 'var(--admin-light-hover, rgba(255,255,255,0.02))'; }}
                             onMouseOut={e => { if(!isSelected) e.currentTarget.style.background = 'transparent'; }}
                           >
                             <td style={{ padding: '12px 16px' }}>
-                              <img src={p.image} alt={p.name} style={{ width: '38px', height: '38px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }} />
+                              <img src={p.image} alt={p.name} style={{ width: '38px', height: '38px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))' }} />
                             </td>
                             <td style={{ padding: '12px 16px', fontWeight: '700', color: 'var(--admin-white)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</td>
                             <td style={{ padding: '12px 16px', color: 'var(--admin-light-text, #c0c8d8)' }}>{p.brand}</td>
                             <td style={{ padding: '12px 16px', color: 'var(--admin-light-muted, #8b92a5)' }}>
-                              <span style={{ background: 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{store}</span>
+                              <span style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.03))', padding: '2px 6px', borderRadius: '4px', fontSize: '10px' }}>{store}</span>
                             </td>
                             <td style={{ padding: '12px 16px', color: 'var(--admin-white)', fontWeight: 'bold' }}>{priceAed} AED</td>
                             <td style={{ padding: '12px 16px', color: 'var(--admin-light-text, #c0c8d8)' }}>{weight} kg</td>
@@ -395,7 +395,7 @@ export default function AdminProductsPage() {
                               <div style={{ display: 'flex', gap: '8px' }} onClick={e => e.stopPropagation()}>
                                 {can(ADMIN_PERMISSIONS.PRODUCTS_EDIT) && <button 
                                   onClick={() => handleEditClick(p)} 
-                                  style={{ padding: '4px 8px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', color: 'var(--admin-light-text, #c0c8d8)', cursor: 'pointer', fontSize: '10px' }}
+                                  style={{ padding: '4px 8px', background: 'transparent', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.1))', borderRadius: '4px', color: 'var(--admin-light-text, #c0c8d8)', cursor: 'pointer', fontSize: '10px' }}
                                   title="ویرایش محصول"
                                 >
                                   ویرایش
@@ -419,8 +419,8 @@ export default function AdminProductsPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '11px' }}>
                 <span>صفحه {pagination.page} از {pagination.totalPages} — {pagination.total} محصول</span>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="button" disabled={pagination.page <= 1 || isLoadingProducts} onClick={() => loadProducts(pagination.page - 1)} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', opacity: pagination.page <= 1 ? 0.45 : 1 }}>قبلی</button>
-                  <button type="button" disabled={pagination.page >= pagination.totalPages || isLoadingProducts} onClick={() => loadProducts(pagination.page + 1)} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', opacity: pagination.page >= pagination.totalPages ? 0.45 : 1 }}>بعدی</button>
+                  <button type="button" disabled={pagination.page <= 1 || isLoadingProducts} onClick={() => loadProducts(pagination.page - 1)} style={{ padding: '6px 12px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '6px', color: 'var(--admin-white)', opacity: pagination.page <= 1 ? 0.45 : 1 }}>قبلی</button>
+                  <button type="button" disabled={pagination.page >= pagination.totalPages || isLoadingProducts} onClick={() => loadProducts(pagination.page + 1)} style={{ padding: '6px 12px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.04))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '6px', color: 'var(--admin-white)', opacity: pagination.page >= pagination.totalPages ? 0.45 : 1 }}>بعدی</button>
                 </div>
               </div>
             </div>
@@ -440,7 +440,7 @@ export default function AdminProductsPage() {
                     value={productLinkInput || ""}
                     onChange={e => setProductLinkInput(e.target.value)}
                     placeholder="لینک کالا از Amazon.ae یا Noon یا Namshi..." 
-                    style={{ width: '100%', padding: '8px 12px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '11px', outline: 'none' }}
+                    style={{ width: '100%', padding: '8px 12px', background: 'var(--admin-light-control-bg, rgba(0,0,0,0.2))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '8px', color: 'var(--admin-white)', fontSize: '11px', outline: 'none' }}
                   />
                   <button 
                     onClick={handleFetchProductFromLink}
@@ -472,14 +472,14 @@ export default function AdminProductsPage() {
 
               {/* Details Panel Sidebar */}
               {selectedProduct ? (
-                <div style={{ background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '16px' }}>
-                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--admin-white)', margin: '0 0 14px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
+                <div style={{ background: 'var(--admin-light-surface, rgba(255,255,255,0.015))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', borderRadius: '12px', padding: '16px' }}>
+                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: 'var(--admin-white)', margin: '0 0 14px 0', borderBottom: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', paddingBottom: '8px' }}>
                     📋 جزئیات محصول خارجی
                   </h3>
                   
                   {/* Img and name header */}
                   <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                    <img src={selectedProduct.image} alt={selectedProduct.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }} />
+                    <img src={selectedProduct.image} alt={selectedProduct.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))' }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--admin-white)', lineHeight: '1.4' }}>{selectedProduct.name}</span>
                       <span style={{ fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>برند: {selectedProduct.brand}</span>
@@ -500,7 +500,7 @@ export default function AdminProductsPage() {
                       <span style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>وزن محصول:</span>
                       <span style={{ color: 'var(--admin-white)', fontWeight: 'bold' }}>{selectedBreakdown?.weight} KG</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', paddingTop: '8px' }}>
                       <span style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>هزینه ارسال مبدا تا تهران:</span>
                       <span style={{ color: 'var(--admin-light-accent, #f59e0b)', fontWeight: 'bold' }}>{selectedBreakdown?.shippingCost.toFixed(0)} AED</span>
                     </div>
@@ -512,14 +512,14 @@ export default function AdminProductsPage() {
                       <span style={{ color: 'var(--admin-light-muted, #8b92a5)' }}>نرخ فعلی درهم (تومان):</span>
                       <span style={{ color: 'var(--admin-light-success, #10b981)', fontWeight: 'bold' }}>{selectedBreakdown?.aedRateValue.toLocaleString()} تومان</span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', fontSize: '13px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', paddingTop: '8px', fontSize: '13px' }}>
                       <span style={{ color: 'var(--admin-light-accent, var(--admin-orange))', fontWeight: 'bold' }}>قیمت نهایی مصرف‌کننده:</span>
                       <span style={{ color: 'var(--admin-light-accent, var(--admin-orange))', fontWeight: '900' }}>{selectedBreakdown?.finalPriceToman.toLocaleString()} تومان</span>
                     </div>
                   </div>
 
                   {/* Order stats */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px', marginBottom: '16px', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: '1px solid var(--admin-light-border, rgba(255,255,255,0.05))', paddingTop: '12px', marginBottom: '16px', fontSize: '11px', color: 'var(--admin-light-muted, #8b92a5)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span>تعداد سفارش ثبت شده:</span>
                       <span style={{ color: 'var(--admin-white)' }}>—</span>
@@ -539,13 +539,13 @@ export default function AdminProductsPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       {can(ADMIN_PERMISSIONS.PRODUCTS_EDIT) && <button 
                         onClick={() => handleEditClick(selectedProduct)}
-                        style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                        style={{ padding: '8px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.03))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
                       >
                         ✏️ ویرایش محصول
                       </button>}
                       {can(ADMIN_PERMISSIONS.PRODUCTS_EDIT) && selectedProduct.supplyMode === 'EXTERNAL_DUBAI' && <button
                         onClick={() => handlePromptUpdatePrice(selectedProduct)}
-                        style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                        style={{ padding: '8px', background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.03))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.08))', borderRadius: '6px', color: 'var(--admin-white)', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
                       >
                         💰 بروزرسانی قیمت
                       </button>}
@@ -562,7 +562,7 @@ export default function AdminProductsPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                       {can(ADMIN_PERMISSIONS.PRODUCTS_EDIT) && <button 
                         onClick={() => handleToggleHide(selectedProduct.id)}
-                        style={{ padding: '8px', background: getProductForeignStatus(selectedProduct) === 'hidden' ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.03)', border: getProductForeignStatus(selectedProduct) === 'hidden' ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: getProductForeignStatus(selectedProduct) === 'hidden' ? 'var(--admin-light-success, #10b981)' : '#c0c8d8', fontSize: '11px', cursor: 'pointer' }}
+                        style={{ padding: '8px', background: getProductForeignStatus(selectedProduct) === 'hidden' ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.03)', border: getProductForeignStatus(selectedProduct) === 'hidden' ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: getProductForeignStatus(selectedProduct) === 'hidden' ? 'var(--admin-light-success, #10b981)' : 'var(--admin-light-text, #c0c8d8)', fontSize: '11px', cursor: 'pointer' }}
                       >
                         {getProductForeignStatus(selectedProduct) === 'hidden' ? '👁️ نمایش مجدد' : '👁️‍🗨️ مخفی کردن'}
                       </button>}
@@ -576,7 +576,7 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
               ) : (
-                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '24px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '12px' }}>
+                <div style={{ background: 'var(--admin-light-surface-muted, rgba(255,255,255,0.01))', border: '1px solid var(--admin-light-border, rgba(255,255,255,0.04))', borderRadius: '12px', padding: '24px', textAlign: 'center', color: 'var(--admin-light-muted, #8b92a5)', fontSize: '12px' }}>
                   محصولی جهت نمایش انتخاب نشده است.
                 </div>
               )}
