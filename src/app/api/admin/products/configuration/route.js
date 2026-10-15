@@ -26,6 +26,7 @@ export async function POST(request) {
     const configured = await saveAdminProductConfiguration(prisma, {
       productData: product.data,
       images: normalized.data.images,
+      colorGalleries: normalized.data.colorGalleries,
       attributeValues: normalized.data.attributeValues,
       variants: normalized.data.variants,
       adminId: admin.id,

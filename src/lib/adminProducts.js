@@ -21,7 +21,7 @@ export const adminProductInclude = Object.freeze({
   brand: { select: { id: true, name: true, faName: true } },
   category: { select: { id: true, name: true, query: true } },
   store: { select: { id: true, name: true, url: true } },
-  images: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
+  images: { where: { colorOptionId: null }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
 });
 
 const EDITABLE_FIELDS = new Set([

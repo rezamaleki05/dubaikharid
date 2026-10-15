@@ -92,8 +92,9 @@ export function normalizeProductImagesInput(value) {
   return { data: images };
 }
 
-export function serializeProductImages(product) {
+export function serializeProductImages(product, { colorOptionId = null } = {}) {
   return [...(Array.isArray(product?.images) ? product.images : [])]
+    .filter(image => (image.colorOptionId || null) === colorOptionId)
     .sort((left, right) => (
       Number(left.sortOrder || 0) - Number(right.sortOrder || 0)
       || String(left.id).localeCompare(String(right.id))

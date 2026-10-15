@@ -228,6 +228,7 @@ model Product {
 
 model ProductImage {
   id           String   @id @default(cuid())
+  colorOptionId String?
   productId    String
   url          String
   blobPathname String?
@@ -239,10 +240,12 @@ model ProductImage {
   updatedAt    DateTime @updatedAt
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  colorOption AttributeOption? @relation(fields: [colorOptionId], references: [id], onDelete: Restrict)
 
   @@index([productId, sortOrder])
   @@index([productId, isPrimary])
   @@index([blobPathname])
+  @@index([productId, colorOptionId, sortOrder])
 }
 
 model WarehouseItem {
@@ -700,6 +703,7 @@ model AttributeOption {
   attribute      CatalogAttribute        @relation(fields: [attributeId], references: [id], onDelete: Restrict)
   productValues  ProductAttributeValue[]
   variantOptions ProductVariantOption[]
+  productImages  ProductImage[]
 
   @@unique([attributeId, code])
   @@unique([id, attributeId])

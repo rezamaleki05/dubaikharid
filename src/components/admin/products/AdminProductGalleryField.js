@@ -40,6 +40,8 @@ export default function AdminProductGalleryField({
   legacyImage = '',
   onLegacyImageChange,
   disabled = false,
+  title = 'گالری عمومی محصول',
+  description = 'تصویر اصلی روی کارت‌ها نمایش داده می‌شود.',
 }) {
   const images = Array.isArray(value) ? value : [];
   const [url, setUrl] = useState('');
@@ -142,7 +144,7 @@ export default function AdminProductGalleryField({
   return (
     <div className={styles.gallery}>
       <div className={styles.galleryHeader}>
-        <div><strong>گالری تصاویر محصول</strong><span>تصویر اصلی روی کارت‌ها نمایش داده می‌شود.</span></div>
+        <div><strong>{title}</strong><span>{description}</span></div>
         <output aria-label="تعداد تصاویر">{images.length} / {MAX_PRODUCT_IMAGES}</output>
       </div>
 

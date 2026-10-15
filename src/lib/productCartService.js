@@ -19,6 +19,7 @@ const productCartSelect = Object.freeze({
   discountPercent: true,
   image: true,
   images: {
+        where: { colorOptionId: null },
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     select: { id: true, url: true, sortOrder: true, isPrimary: true, altFa: true, altEn: true },
   },

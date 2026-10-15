@@ -368,6 +368,8 @@ export default function AdminProductConfigurator({
 }) {
   const [form, setForm] = useState(() => initialForm(null, seed));
   const [images, setImages] = useState(() => createProductGalleryState(seed?.image ? [{ url: seed.image, isPrimary: true }] : []));
+  const [colorGalleries, setColorGalleries] = useState([]);
+  const [activeGallery, setActiveGallery] = useState('shared');
   const [legacyImage, setLegacyImage] = useState('');
   const [detail, setDetail] = useState(null);
   const [categoryConfig, setCategoryConfig] = useState(null);
@@ -395,6 +397,7 @@ export default function AdminProductConfigurator({
         setDetail(payload);
         setForm(initialForm(payload.product));
         setImages(createProductGalleryState(payload.product.images));
+        setColorGalleries((payload.product.colorGalleries || []).map(gallery => ({ ...gallery, images: createProductGalleryState(gallery.images) })));
         setLegacyImage(payload.product.legacyImage || '');
       })
       .catch(fetchError => !cancelled && setError(fetchError.message))
@@ -445,6 +448,21 @@ export default function AdminProductConfigurator({
     () => categoryConfig?.attributes.filter(item => item.isVariantDefining) || [],
     [categoryConfig],
   );
+  const colorAxis = axes.find(axis => axis.attribute.inputType === 'COLOR');
+  const activeColorOptions = (colorAxis?.attribute.options || []).filter(option => (axisSelections[colorAxis.attributeId] || []).includes(option.id));
+  const galleryOptions = [
+    ...activeColorOptions,
+    ...colorGalleries.filter(gallery => !activeColorOptions.some(option => option.id === gallery.colorOptionId))
+      .map(gallery => ({ id: gallery.colorOptionId, labelFa: gallery.labelFa || gallery.colorOptionId, retired: true })),
+  ];
+  const activeColor = galleryOptions.find(option => option.id === activeGallery);
+  const activeColorImages = colorGalleries.find(gallery => gallery.colorOptionId === activeGallery)?.images || [];
+  const updateColorGallery = value => setColorGalleries(previous => {
+    const gallery = previous.find(item => item.colorOptionId === activeGallery);
+    return gallery
+      ? previous.map(item => item === gallery ? { ...item, images: value } : item)
+      : [...previous, { colorOptionId: activeGallery, labelFa: activeColor?.labelFa, images: value }];
+  });
   const informational = useMemo(
     () => categoryConfig?.attributes.filter(item => !item.isVariantDefining) || [],
     [categoryConfig],
@@ -524,6 +542,12 @@ export default function AdminProductConfigurator({
     try {
       const galleryResult = await uploadProductGallery(images);
       uploadedPathnames = galleryResult.uploadedPathnames;
+      const preparedColors = [];
+      for (const gallery of colorGalleries) {
+        const uploaded = await uploadProductGallery(gallery.images);
+        uploadedPathnames.push(...uploaded.uploadedPathnames);
+        preparedColors.push({ colorOptionId: gallery.colorOptionId, images: uploaded.images });
+      }
       const rows = combinations.filter(row => effectiveSelectedKeys.includes(row.key));
       const variants = rows.map((row, index) => {
         const draft = ensureDraft(row.key);
@@ -582,6 +606,7 @@ export default function AdminProductConfigurator({
         body: JSON.stringify({
           product,
           images: galleryResult.images,
+          colorGalleries: preparedColors,
           attributeValues: buildAttributeValues(),
           variants,
         }),
@@ -720,13 +745,26 @@ export default function AdminProductConfigurator({
 
           <section className={styles.section}>
             <div className={styles.sectionHeading}><span>۰۵</span><div><h3>انتشار و منبع</h3><p>تصویر، لینک اصلی و وضعیت نمایش محصول حفظ می‌شوند.</p></div></div>
-            <AdminProductGalleryField
+            <div className={styles.galleryTabs} role="group" aria-label="انتخاب گالری تصاویر">
+              <button type="button" aria-pressed={!activeColor} onClick={() => setActiveGallery('shared')}>گالری عمومی</button>
+              {galleryOptions.map(option => <button key={option.id} type="button" aria-pressed={activeGallery === option.id} onClick={() => setActiveGallery(option.id)}>{option.labelFa}{option.retired ? ' · برای بازبینی' : ''}</button>)}
+            </div>
+            {galleryOptions.length > 0 && <p className={styles.galleryNote}>تصاویر هر رنگ مستقل‌اند؛ رنگ بدون تصویر از گالری عمومی استفاده می‌کند. با حذف رنگ، تصاویر برای بازبینی نگه داشته می‌شوند. حذف تصویر رنگ فقط ارتباط را حذف می‌کند و فایل ذخیره‌شده باقی می‌ماند.</p>}
+            {activeColor ? <AdminProductGalleryField
+              key={activeColor.id}
+              title={`تصاویر رنگ ${activeColor.labelFa}`}
+              description={activeColor.retired ? 'رنگ حذف‌شده؛ تصاویر نگهداری شده‌اند و در صفحه محصول نمایش داده نمی‌شوند.' : 'تصویر اصلی این رنگ با انتخاب رنگ نمایش داده می‌شود؛ خالی = گالری عمومی.'}
+              value={activeColorImages}
+              onChange={updateColorGallery}
+              disabled={saving}
+            /> : <AdminProductGalleryField
+              key="shared"
               value={images}
               onChange={setImages}
               legacyImage={legacyImage}
               onLegacyImageChange={setLegacyImage}
               disabled={saving}
-            />
+            />}
             <ProductSourceField form={form} setForm={setForm} brands={brands} stores={stores} />
             <div className={styles.twoColumns}>
               <label><span>وضعیت محصول</span><select className={styles.input} value={form.status} onChange={event => setForm({ ...form, status: event.target.value })}><option value="active">فعال</option><option value="needs_update">نیاز به بروزرسانی</option><option value="broken_link">لینک خراب</option><option value="hidden">مخفی</option></select></label>

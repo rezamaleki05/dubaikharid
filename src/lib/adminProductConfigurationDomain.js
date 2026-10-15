@@ -1,3 +1,4 @@
+import { normalizeProductColorGalleries } from './productColorGallery.js';
 import { normalizeProductAttributeValueInputs } from './catalogAttributeDomain.js';
 import { normalizeProductImagesInput } from './productGallery.js';
 import { validateInitializeProductInventoryPayload } from './productInventoryDomain.js';
@@ -16,7 +17,7 @@ function strictObject(value, allowed, message = 'فیلد غیرمجاز در د
 }
 
 export function normalizeAdminProductConfigurationPayload(body) {
-  const shapeError = strictObject(body, new Set(['product', 'images', 'attributeValues', 'variants']));
+  const shapeError = strictObject(body, new Set(['product', 'images', 'colorGalleries', 'attributeValues', 'variants']));
   if (shapeError) return shapeError;
   if (!isObject(body.product)) return { error: 'اطلاعات پایه محصول معتبر نیست.' };
 
@@ -24,6 +25,12 @@ export function normalizeAdminProductConfigurationPayload(body) {
   if (attributeValues.error) return attributeValues;
   const images = normalizeProductImagesInput(body.images ?? []);
   if (images.error) return images;
+  const colorGalleries = normalizeProductColorGalleries(body.colorGalleries);
+  if (colorGalleries.error) return colorGalleries;
+  const sharedIds = new Set(images.data.map(image => image.id).filter(Boolean));
+  if (colorGalleries.data?.some(gallery => gallery.images.some(image => image.id && sharedIds.has(image.id)))) {
+    return { error: 'تصویر عمومی نمی‌تواند هم‌زمان به رنگ اختصاص یابد.' };
+  }
 
   if (!Array.isArray(body.variants) || body.variants.length < 1
     || body.variants.length > MAX_PRODUCT_VARIANT_COMBINATIONS) {
@@ -68,6 +75,7 @@ export function normalizeAdminProductConfigurationPayload(body) {
     data: {
       product: body.product,
       images: images.data,
+      colorGalleries: colorGalleries.data,
       attributeValues: attributeValues.data,
       variants,
     },

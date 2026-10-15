@@ -18,6 +18,7 @@ export const getSeoProduct = cache(async id => {
       priceAed: true, priceToman: true, supplyMode: true, weight: true,
       discountPercent: true, hasDiscount: true, updatedAt: true,
       images: {
+        where: { colorOptionId: null },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
         select: { id: true, url: true, sortOrder: true, isPrimary: true },
       },

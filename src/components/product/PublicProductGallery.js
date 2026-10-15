@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './PublicProductGallery.module.css';
 
 function galleryItems(images, legacyImage, coverImage) {
@@ -16,6 +16,16 @@ export default function PublicProductGallery({ images, legacyImage, coverImage, 
   );
   const initial = items.find(image => image.isPrimary) || items[0] || null;
   const [selectedId, setSelectedId] = useState(initial?.id || null);
+  const dialogRef = useRef(null);
+  const openerRef = useRef(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    return () => { if (dialog?.open) dialog.close(); };
+  }, []);
+  const move = offset => {
+    const index = items.findIndex(image => image.id === (selectedId || initial?.id));
+    setSelectedId(items[(index + offset + items.length) % items.length]?.id || null);
+  };
 
   const selected = items.find(image => image.id === selectedId) || initial;
   if (!selected) return null;
@@ -23,11 +33,31 @@ export default function PublicProductGallery({ images, legacyImage, coverImage, 
 
   return (
     <div className={styles.gallery}>
-      <div className={styles.mainStage}>
+      <button type="button" ref={openerRef} className={styles.mainStage} aria-label="بزرگ‌نمایی تصویر محصول" onClick={() => dialogRef.current?.showModal()}>
         {/* Product URLs can come from multiple approved external stores, so a broad next/image allowlist is avoided. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={selected.url} alt={selectedAlt} className={styles.mainImage} />
-      </div>
+        <span className={styles.zoomHint}>بزرگ‌نمایی ↗</span>
+      </button>
+      <dialog ref={dialogRef} className={styles.lightbox} aria-label="گالری بزرگ تصاویر محصول"
+        onClose={() => openerRef.current?.focus()}
+        onClick={event => { if (event.target === event.currentTarget) dialogRef.current.close(); }}
+        onKeyDown={event => {
+          if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+            event.preventDefault(); move(event.key === 'ArrowRight' ? 1 : -1);
+          }
+        }}>
+        <div className={styles.lightboxContent}>
+          <button type="button" className={styles.close} autoFocus onClick={() => dialogRef.current.close()} aria-label="بستن گالری">×</button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={selected.url} alt={selectedAlt} />
+          <div className={styles.lightboxNav}>
+            <button type="button" disabled={items.length < 2} onClick={() => move(-1)} aria-label="تصویر قبلی">→</button>
+            <output dir="ltr" aria-live="polite">{items.findIndex(image => image.id === selected.id) + 1} / {items.length}</output>
+            <button type="button" disabled={items.length < 2} onClick={() => move(1)} aria-label="تصویر بعدی">←</button>
+          </div>
+        </div>
+      </dialog>
       {items.length > 1 && (
         <div className={styles.thumbnails} role="group" aria-label="تصاویر محصول">
           {items.map((image, index) => {

@@ -25,6 +25,7 @@ const variantInclude = Object.freeze({
       brand: { select: { id: true, name: true, faName: true } },
       category: { select: { id: true, name: true, query: true } },
       images: {
+        where: { colorOptionId: null },
         select: { id: true, url: true, sortOrder: true, isPrimary: true, altFa: true, altEn: true },
         orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }, { id: 'asc' }],
         take: 1,

@@ -47,6 +47,7 @@ test('reconciliation runs after every existing release migration', () => {
   assert.deepEqual(migrations.filter(name => name > migrationName), [
     '20261005000100_telegram_publication_foundation',
     '20261009000100_laptop_model_identity',
+    '20261015000100_product_color_image_galleries',
   ]);
   for (const releaseMigration of [
     '20260902000100_category_attribute_foundation',

@@ -333,3 +333,9 @@
 :global(html[data-theme='light']) .variantSelected { background: var(--admin-selected); border-color: var(--admin-light-accent); box-shadow: inset 3px 0 var(--admin-light-accent); }
 :global(html[data-theme='light']) .footer { border-top-color: var(--admin-border); }
 :global(html[data-theme='light']) .form { scrollbar-color: var(--admin-control-border) var(--admin-input-bg); }
+
+.galleryTabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 12px; }
+.galleryTabs button { font: inherit; color: var(--admin-light-muted, #9aa1b2); background: var(--admin-light-control-bg, #171a22); border: 1px solid var(--admin-light-border, rgba(255,255,255,.09)); padding: 10px 14px; cursor: pointer; min-height: 44px; }
+.galleryTabs button[aria-pressed="true"] { color: var(--admin-light-text, #f8fafc); border-color: var(--admin-light-accent, #f87820); box-shadow: inset 0 -2px var(--admin-light-accent, #f87820); }
+.galleryTabs button:focus-visible { outline: 2px solid #f87820; outline-offset: 3px; }
+.galleryNote { font-size: 12px; line-height: 1.9; color: var(--admin-light-muted, #9aa1b2); margin-bottom: 18px; }

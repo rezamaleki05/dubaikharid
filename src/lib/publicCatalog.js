@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { serializeProductColorGalleries } from '@/lib/productColorGallery';
+
 import { prisma } from '@/lib/prisma';
 import { productNameApiFields } from '@/lib/productNames';
 import {
@@ -33,10 +35,12 @@ export const PUBLIC_PRODUCT_SELECT = Object.freeze({
   originalLink: true,
   image: true,
   images: {
+    where: { colorOptionId: null },
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
     select: {
       id: true,
       url: true,
+      colorOptionId: true,
       sortOrder: true,
       isPrimary: true,
       altFa: true,
@@ -441,6 +445,7 @@ export async function getPublicProduct(identifier) {
     where: { OR: [{ id: identifier }, { slug: identifier }], ...PUBLIC_PRODUCT_VISIBILITY },
     select: {
       ...PUBLIC_PRODUCT_SELECT,
+      images: { orderBy: PUBLIC_PRODUCT_SELECT.images.orderBy, select: PUBLIC_PRODUCT_SELECT.images.select },
       brand: { select: { id: true, name: true, faName: true, url: true, showInBrandDirectory: true } },
       category: {
         select: {
@@ -570,6 +575,7 @@ export async function getPublicProduct(identifier) {
     brandVisible: product.brand?.showInBrandDirectory === true,
     informationalAttributes: serializeInformationalAttributes(product.attributeValues),
     variantAxes,
+    colorGalleries: serializeProductColorGalleries(product).filter(gallery => variantAxes.find(axis => axis.inputType === 'COLOR')?.options.some(option => option.id === gallery.colorOptionId)),
     variants,
     requiresVariantSelection: variantAxisCount > 0 || variantAxes.length > 0,
     productVariantId: defaultVariant?.id || null,

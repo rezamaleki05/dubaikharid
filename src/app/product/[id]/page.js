@@ -10,6 +10,7 @@ import CheckoutModal from '@/components/CheckoutModal';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import PublicProductVariantSelector from '@/components/product/PublicProductVariantSelector';
 import PublicProductGallery from '@/components/product/PublicProductGallery';
+import { resolveProductColorGallery } from '@/lib/productColorGallery';
 import { trackViewItem } from '@/lib/analytics';
 import {
   formatPublicAttributeValues,
@@ -87,6 +88,7 @@ export default function ProductPage({ params }) {
       })
     : { status: 'resolved', variant: isCatalogProduct ? product?.variant || null : null };
   const selectedProductVariant = variantResolution.status === 'resolved' ? variantResolution.variant : null;
+  const activeGallery = resolveProductColorGallery(product, variantSelection);
   const selectedVariantSummary = selectedPublicVariantSummary(product?.variantAxes, variantSelection);
   const activeProductPricing = selectedProductVariant?.pricing || null;
   const catalogProductPurchasable = Boolean(selectedProductVariant?.available);
@@ -388,7 +390,8 @@ export default function ProductPage({ params }) {
           <div className={`${styles.imageSection} ${isCatalogProduct ? styles.catalogImageSection : ''}`} style={{ position: 'relative' }}>
             {isCatalogProduct ? (
               <PublicProductGallery
-                images={product.images}
+                key={activeGallery.key}
+                images={activeGallery.images}
                 legacyImage={product.legacyImage}
                 coverImage={product.image}
                 productName={product.name}

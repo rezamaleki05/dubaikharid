@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { serializeProductColorGalleries } from '@/lib/productColorGallery';
+
 import { randomUUID } from 'node:crypto';
 import { adminProductInclude, serializeAdminProduct } from '@/lib/adminProducts';
 import {
@@ -33,6 +35,7 @@ export class AdminProductConfigurationError extends Error {
 
 const configurationInclude = Object.freeze({
   ...adminProductInclude,
+  images: { include: { colorOption: true }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
   attributeValues: {
     include: {
       categoryAttribute: { include: { attribute: true } },
@@ -125,7 +128,14 @@ function serializeVariant(variant) {
 
 export function serializeAdminProductConfiguration(product) {
   return {
-    product: serializeAdminProduct(product),
+    product: {
+      ...serializeAdminProduct(product),
+      colorGalleries: serializeProductColorGalleries(product).map(gallery => ({
+        ...gallery,
+        labelFa: product.images.find(image => image.colorOptionId === gallery.colorOptionId)?.colorOption?.labelFa || gallery.colorOptionId,
+        images: gallery.images.map(image => ({ ...image, blobPathname: product.images.find(row => row.id === image.id)?.blobPathname || null })),
+      })),
+    },
     attributeValues: product.attributeValues.map(serializeAttributeValue),
     variants: product.variants.map(serializeVariant),
   };
@@ -346,9 +356,9 @@ async function assertSkuSafety(tx, rows, productId) {
   if (duplicate) throw configurationError('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
 }
 
-async function synchronizeProductImages(tx, productId, images) {
+async function synchronizeProductImages(tx, productId, images, colorOptionId = null) {
   const existing = await tx.productImage.findMany({
-    where: { productId },
+    where: { productId, colorOptionId },
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
   });
   const existingById = new Map(existing.map(image => [image.id, image]));
@@ -364,7 +374,7 @@ async function synchronizeProductImages(tx, productId, images) {
     }
   }
 
-  await tx.productImage.updateMany({ where: { productId }, data: { isPrimary: false } });
+  await tx.productImage.updateMany({ where: { productId, colorOptionId }, data: { isPrimary: false } });
   for (const image of images) {
     const data = {
       sortOrder: image.sortOrder,
@@ -378,6 +388,7 @@ async function synchronizeProductImages(tx, productId, images) {
       await tx.productImage.create({
         data: {
           productId,
+          colorOptionId,
           url: image.url,
           blobPathname: image.blobPathname,
           ...data,
@@ -390,12 +401,13 @@ async function synchronizeProductImages(tx, productId, images) {
   if (stale.length) {
     await tx.productImage.deleteMany({ where: { id: { in: stale.map(image => image.id) }, productId } });
   }
-  return stale.map(image => image.blobPathname).filter(Boolean);
+  // Removing a color image is association-only; its storage object is retained.
+  return colorOptionId ? [] : stale.map(image => image.blobPathname).filter(Boolean);
 }
 
 export async function saveAdminProductConfiguration(
   client,
-  { productId = null, productData, images = [], attributeValues, variants, adminId = null },
+  { productId = null, productData, images = [], colorGalleries, attributeValues, variants, adminId = null },
 ) {
   try {
     const result = await runSerializableWithRetry(client, async tx => {
@@ -421,6 +433,21 @@ export async function saveAdminProductConfiguration(
       if (validatedValues.error) throw new CatalogAttributeDomainError(validatedValues.error);
 
       const resolvedVariants = resolveVariantRows(variants, assignments);
+      if (colorGalleries !== undefined) {
+        const colorAxis = assignments.find(assignment => assignment.isVariantDefining && assignment.attribute.inputType === 'COLOR');
+        // A newly added color can be removed again before the first save. Retain
+        // that gallery for review too, provided it is a real option of this color axis.
+        const categoryColorIds = new Set((colorAxis?.attribute.options || []).map(option => option.id));
+        const previousColors = current ? await tx.productImage.findMany({
+          where: { productId, colorOptionId: { not: null } }, select: { colorOptionId: true },
+        }) : [];
+        const retainedColorIds = new Set(previousColors.map(image => image.colorOptionId));
+        for (const gallery of colorGalleries) {
+          if (!categoryColorIds.has(gallery.colorOptionId) && !retainedColorIds.has(gallery.colorOptionId)) {
+            throw configurationError('گالری باید به یکی از گزینه‌های رنگ دسته‌بندی محصول تعلق داشته باشد.', 'INVALID_PRODUCT_COLOR', 400);
+          }
+        }
+      }
       const hasAxes = assignments.some(assignment => assignment.isVariantDefining);
       if (!hasAxes && (resolvedVariants.length !== 1 || !resolvedVariants[0].isDefault)) {
         throw configurationError('محصول ساده باید دقیقاً یک تنوع پیش‌فرض داشته باشد.', 'DEFAULT_VARIANT_REQUIRED', 400);
@@ -440,6 +467,10 @@ export async function saveAdminProductConfiguration(
         : await tx.product.create({ data });
 
       const removedBlobPathnames = await synchronizeProductImages(tx, product.id, images);
+      // Galleries absent from the payload are retained for review (including removed colors).
+      for (const gallery of colorGalleries || []) {
+        await synchronizeProductImages(tx, product.id, gallery.images, gallery.colorOptionId);
+      }
 
       await tx.productAttributeValue.deleteMany({ where: { productId: product.id } });
       if (validatedValues.data.length) {

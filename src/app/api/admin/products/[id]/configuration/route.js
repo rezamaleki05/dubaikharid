@@ -53,6 +53,7 @@ export async function PATCH(request, { params }) {
       productId: id.value,
       productData: product.data,
       images: normalized.data.images,
+      colorGalleries: normalized.data.colorGalleries,
       attributeValues: normalized.data.attributeValues,
       variants: normalized.data.variants,
       adminId: admin.id,

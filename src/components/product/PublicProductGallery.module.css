@@ -76,3 +76,18 @@
 @media (max-width: 390px) {
   .mainStage { min-height: 250px; }
 }
+
+.mainStage { position: relative; padding: 0; border: 0; font: inherit; cursor: zoom-in; width: 100%; }
+.mainStage:focus-visible { outline: 2px solid #f87820; outline-offset: 3px; }
+.zoomHint { position: absolute; bottom: 12px; right: 12px; padding: 5px 8px; background: #ffffffed; color: #343a40; font-size: 11px; }
+.lightbox { position: fixed; inset: 0; width: min(1000px, calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 0; border: 0; background: #fff; color: #1c232c; overflow: auto; }
+.lightbox::backdrop { background: rgb(12 17 24 / .85); }
+.lightboxContent { position: relative; padding: 52px 12px 12px; }
+.lightboxContent > img { display: block; width: 100%; height: min(65dvh, 700px); object-fit: contain; }
+.close { position: absolute; right: 8px; top: 4px; }
+.close, .lightboxNav button { width: 44px; height: 44px; background: #fff; border: 1px solid #d9dcdf; font-size: 24px; color: #1c232c; cursor: pointer; }
+.lightboxNav { display: flex; align-items: center; justify-content: center; gap: 20px; padding-top: 12px; }
+.lightboxNav output { font-variant-numeric: tabular-nums; }
+.lightbox button:focus-visible { outline: 2px solid #f87820; outline-offset: 2px; }
+@media (prefers-reduced-motion: no-preference) { .mainImage { animation: galleryReveal 140ms ease-out; } }
+@keyframes galleryReveal { from { opacity: .65; } to { opacity: 1; } }
