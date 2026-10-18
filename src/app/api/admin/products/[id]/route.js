@@ -4,6 +4,7 @@ import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import {
   adminProductInclude,
+  prepareProductSourceData,
   serializeAdminProduct,
   validateProductPayload,
   validateProductRelations,
@@ -54,7 +55,7 @@ export async function PATCH(request, { params }) {
 
     const previous = await prisma.product.findUnique({
       where: { id },
-      select: { id: true, status: true, categoryId: true },
+      select: { id: true, status: true, categoryId: true, brandId: true, storeId: true, originalLink: true },
     });
     if (!previous) return NextResponse.json({ error: 'محصول پیدا نشد.' }, { status: 404 });
 
@@ -78,6 +79,7 @@ export async function PATCH(request, { params }) {
       }
     }
 
+    await prepareProductSourceData(prisma, validated.data, previous);
     const product = await prisma.product.update({ where: { id }, data: validated.data, include: adminProductInclude });
     const changedFields = Object.keys(validated.data).filter(key => key !== 'sourceUrlKey');
     const deactivated = validated.data.status === 'hidden' && previous.status !== 'hidden';

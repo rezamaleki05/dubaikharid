@@ -4,6 +4,7 @@ import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
 import {
   adminProductInclude,
+  prepareProductSourceData,
   PRODUCT_STATUS_SET,
   serializeAdminProduct,
   slugifyProductName,
@@ -121,6 +122,7 @@ export async function POST(request) {
     }
 
     const product = await prisma.$transaction(async tx => {
+      await prepareProductSourceData(tx, validated.data);
       const created = await tx.product.create({ data: validated.data, include: adminProductInclude });
       await ensureDefaultProductVariant(tx, created.id);
       return created;

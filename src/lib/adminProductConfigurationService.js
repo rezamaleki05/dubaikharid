@@ -3,7 +3,7 @@ import 'server-only';
 import { serializeProductColorGalleries } from '@/lib/productColorGallery';
 
 import { randomUUID } from 'node:crypto';
-import { adminProductInclude, serializeAdminProduct } from '@/lib/adminProducts';
+import { adminProductInclude, serializeAdminProduct, prepareProductSourceData } from '@/lib/adminProducts';
 import {
   CatalogAttributeDomainError,
   categoryAttributeInclude,
@@ -414,7 +414,7 @@ export async function saveAdminProductConfiguration(
       await validateRelations(tx, productData);
       const current = productId ? await tx.product.findUnique({
         where: { id: productId },
-        select: { id: true, categoryId: true, supplyMode: true },
+        select: { id: true, categoryId: true, supplyMode: true, originalLink: true, brandId: true, storeId: true },
       }) : null;
       if (productId && !current) throw configurationError('محصول پیدا نشد.', 'PRODUCT_NOT_FOUND', 404);
       if (current) await assertEditSafety(tx, current, productData);
@@ -459,6 +459,7 @@ export async function saveAdminProductConfiguration(
       await assertSkuSafety(tx, resolvedVariants, productId);
 
       const data = { ...productData };
+      await prepareProductSourceData(tx, data, current || {});
       if (data.slug !== undefined) {
         data.slug = await uniqueSlug(tx, data.slug, productId);
       }
@@ -588,7 +589,13 @@ export async function saveAdminProductConfiguration(
       || error instanceof ProductInventoryError
       || error instanceof ProductSupplyPricingError) throw error;
     if (error?.code === 'P2002') {
-      const target = String(error.meta?.target || '');
+      const target = [error.meta?.target, ...(error.meta?.driverAdapterError?.cause?.constraint?.fields || [])].flat().filter(Boolean).join(',');
+      if (target.includes('sourceUrlKey')) {
+        throw configurationError('محصولی با این لینک دقیق قبلاً ثبت شده است.', 'PRODUCT_SOURCE_URL_EXISTS');
+      }
+      if (target.includes('slug') || target.includes('code')) {
+        throw configurationError('اسلاگ یا کد محصول قبلاً ثبت شده است.', 'PRODUCT_IDENTITY_EXISTS');
+      }
       if (target.includes('sku')) {
         throw configurationError('این SKU قبلاً برای تنوع دیگری ثبت شده است.', 'VARIANT_SKU_EXISTS');
       }

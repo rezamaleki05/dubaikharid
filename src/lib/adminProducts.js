@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { sameSourceHomepage } from './productSourceDomain.js';
 import { randomUUID } from 'node:crypto';
 import { normalizeProductSourceUrl, parseExternalHttpUrl } from '@/lib/externalUrls';
 import { productNameApiFields, validateProductNames } from '@/lib/productNames';
@@ -18,7 +19,7 @@ export const PRODUCT_STATUSES = Object.freeze(['active', 'hidden', 'needs_update
 export const PRODUCT_STATUS_SET = new Set(PRODUCT_STATUSES);
 
 export const adminProductInclude = Object.freeze({
-  brand: { select: { id: true, name: true, faName: true } },
+  brand: { select: { id: true, name: true, faName: true, url: true } },
   category: { select: { id: true, name: true, query: true } },
   store: { select: { id: true, name: true, url: true } },
   images: { where: { colorOptionId: null }, orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
@@ -162,7 +163,7 @@ export function validateProductPayload(body, { partial = false, allowSupplyPrici
     } else {
       const normalized = normalizeProductSourceUrl(body.originalLink);
       if (!normalized) return { error: 'لینک اصلی محصول معتبر نیست.' };
-      data.originalLink = normalized;
+      data.originalLink = parseExternalHttpUrl(body.originalLink).toString();
       data.sourceUrlKey = normalized;
     }
   }
@@ -216,6 +217,21 @@ export function validateProductPayload(body, { partial = false, allowSupplyPrici
 
   if (partial && Object.keys(data).length === 0) return { error: 'تغییری ارسال نشده است.' };
   return { data, relationIds };
+}
+
+// Homepages are shared fallback metadata, not unique Product listing identities.
+// Keep sourceUrlKey deduplication for actual listing URLs, independently of variants.
+export async function prepareProductSourceData(client, data, current = {}) {
+  if (!['originalLink', 'brandId', 'storeId'].some(key => Object.hasOwn(data, key))) return;
+  const merged = { ...current, ...data };
+  const url = merged.originalLink;
+  if (!url) { data.sourceUrlKey = null; return; }
+  const [brand, store] = await Promise.all([
+    merged.brandId ? client.brand.findUnique({ where: { id: merged.brandId }, select: { url: true } }) : null,
+    merged.storeId ? client.store.findUnique({ where: { id: merged.storeId }, select: { url: true } }) : null,
+  ]);
+  const homepage = merged.storeId ? store?.url : brand?.url;
+  data.sourceUrlKey = sameSourceHomepage(normalizeProductSourceUrl(url), normalizeProductSourceUrl(homepage)) ? null : normalizeProductSourceUrl(url);
 }
 
 export async function validateProductRelations(prisma, relationIds) {

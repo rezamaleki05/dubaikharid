@@ -1,4 +1,5 @@
 'use client';
+import { exactProductSourceInput, productSourceLink, officialSourceDomainWarning } from '@/lib/productSourceDomain';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ProductTelegramStatus from '@/components/admin/telegram/ProductTelegramStatus';
@@ -140,7 +141,7 @@ function initialForm(product, seed) {
       priceAed: product.priceAed ?? '',
       priceToman: product.priceToman ?? '',
       weight: String(product.weight ?? 1),
-      originalLink: product.originalLink || '',
+      originalLink: exactProductSourceInput(product),
       gender: product.gender || '',
       discountPercent: String(product.discountPercent ?? 0),
       hasDiscount: Boolean(product.hasDiscount),
@@ -210,7 +211,26 @@ function ProductSourceField({ form, setForm, brands, stores }) {
         <datalist id="product-source-stores">{stores.map(store => <option key={store.id} value={store.name} />)}</datalist>
         <input dir="ltr" className={styles.input} value={form.originalLink} onChange={event => setForm(previous => ({ ...previous, originalLink: event.target.value }))} placeholder={selectedStore?.url || 'لینک اختصاصی محصول (اختیاری)'} />
       </> : null}
-      {form.sourceType === 'brand' ? <p className={styles.sourceNote}>{selectedBrand?.url ? `لینک رسمی ${selectedBrand.faName || selectedBrand.name}: ${selectedBrand.url}` : 'برند انتخاب‌شده وب‌سایت رسمی معتبر ندارد.'}</p> : null}
+      {form.sourceType === 'brand' ? <>
+        <label>
+          <span>لینک دقیق محصول <small>Exact Product URL</small></span>
+          <input
+            dir="ltr"
+            type="url"
+            className={styles.input}
+            value={form.originalLink}
+            onChange={event => setForm(previous => ({ ...previous, originalLink: event.target.value }))}
+            placeholder="https://www.adidas.ae/en/galaxy-6-shoes/GW3848.html"
+          />
+          <small>لینک دقیق صفحه همین محصول در وب‌سایت رسمی برند؛ در صورت خالی بودن، وب‌سایت برند به‌عنوان جایگزین استفاده می‌شود.</small>
+        </label>
+        {officialSourceDomainWarning(form.originalLink, selectedBrand?.url) ? (
+          <p role="status" className={styles.sourceNote}>دامنه لینک محصول با وب‌سایت ثبت‌شده برند متفاوت است؛ دامنه رسمی منطقه‌ای یا کشوری را بررسی کنید.</p>
+        ) : null}
+        <p className={styles.sourceNote}>
+          {selectedBrand?.url ? `لینک رسمی ${selectedBrand.faName || selectedBrand.name}: ${selectedBrand.url}` : 'وب‌سایت برند ثبت نشده است؛ لینک دقیق محصول را وارد کنید.'}
+        </p>
+      </> : null}
     </div>
   );
 }
@@ -532,7 +552,7 @@ export default function AdminProductConfigurator({
     setError('');
     if (!categoryConfig) return setError('ابتدا دسته‌بندی محصول را انتخاب کنید.');
     if (form.sourceType === 'store' && !form.storeId) return setError('یک فروشگاه معتبر از فهرست انتخاب کنید یا منبع را بدون منبع بگذارید.');
-    if (form.sourceType === 'brand' && !brands.find(brand => brand.id === form.brandId)?.url) return setError('برای این برند وب‌سایت رسمی معتبر ثبت نشده است.');
+    if (form.sourceType === 'brand' && (!form.brandId || (!form.originalLink.trim() && !brands.find(brand => brand.id === form.brandId)?.url))) return setError('برای این برند وب‌سایت رسمی معتبر ثبت نشده است.');
     if (combinations.length > (categoryConfig.hardLimit || 200)) {
       return setError('تعداد ترکیب‌ها از سقف مجاز عبور کرده است.');
     }
@@ -587,9 +607,7 @@ export default function AdminProductConfigurator({
         priceAed: form.supplyMode === 'EXTERNAL_DUBAI' ? form.priceAed : null,
         priceToman: form.supplyMode === 'IRAN_STOCK' ? form.priceToman : null,
         weight: form.weight,
-        originalLink: form.sourceType === 'brand'
-          ? (brands.find(brand => brand.id === form.brandId)?.url || null)
-          : (form.sourceType === 'store' ? (form.originalLink || null) : null),
+        originalLink: productSourceLink(form, brands.find(brand => brand.id === form.brandId)),
         image: legacyImage || null,
         gender: form.gender || null,
         discountPercent: form.hasDiscount ? Number(form.discountPercent) : 0,
