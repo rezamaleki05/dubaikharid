@@ -1,5 +1,5 @@
 import { productPath } from '@/lib/productUrl';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import JsonLd from '@/components/seo/JsonLd';
 import { getSeoProduct } from '@/lib/publicSeoData';
 import { absoluteUrl, breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
@@ -35,6 +35,8 @@ export default async function ProductSeoLayout({ children, params }) {
   const { id } = await params;
   const item = await getSeoProduct(id);
   if (!item) notFound();
+
+  if (item.kind === 'laptop' && item.canonicalPath?.startsWith('/laptops/')) permanentRedirect(item.canonicalPath);
 
   const brandName = item.kind === 'product' ? item.brand?.faName || item.brand?.name : item.brand;
   const crumbs = [

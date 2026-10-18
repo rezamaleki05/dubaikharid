@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { laptopPath } from './laptopUrl';
 import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
 import { buildLaptopModelGroups, searchLaptopModelGroups, resolveLaptopModelSlug } from '@/lib/laptopSeoDomain';
@@ -19,6 +20,8 @@ const PUBLIC_LAPTOP_MODEL_SELECT = Object.freeze({
   secondaryStorage: true,
   gpu: true,
   screen: true,
+  isTouchscreen: true,
+  displayResolution: true,
   manufactureYear: true,
   batteryHealth: true,
   color: true,
@@ -69,7 +72,7 @@ export async function searchPublicLaptopModels(query, limit = 24) {
   return searchLaptopModelGroups(groups, query, limit).map(group => ({
     id: group.slug,
     slug: group.slug,
-    href: `/laptops/${group.slug}`,
+    href: laptopPath(group),
     name: group.name,
     brand: group.brand,
     model: group.model,

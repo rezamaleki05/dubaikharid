@@ -360,6 +360,10 @@ model Laptop {
   secondaryStorage String?
   gpu              String?
   screen           String?
+  isTouchscreen    Boolean?
+  displayResolution String?
+  telegramFirstPublishedAt DateTime?
+  telegramPublication LaptopTelegramPublication?
   manufactureYear  Int?
   color            String?
   batteryHealth    Int?
@@ -903,6 +907,28 @@ model TelegramPublication {
   updatedAt         DateTime @updatedAt
   sentAt            DateTime?
   product           Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([status, lockedAt])
+}
+
+
+model LaptopTelegramPublication {
+  id                String @id @default(cuid())
+  laptopId         String @unique
+  destination       String
+  status            TelegramPublicationStatus @default(PENDING)
+  telegramMessageId String?
+  telegramChatId    String?
+  attemptCount      Int @default(0)
+  lastError         String?
+  lockedAt          DateTime?
+  claimToken        String?
+  retryAfter        DateTime?
+  uncertain         Boolean @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  sentAt            DateTime?
+  laptop            Laptop @relation(fields: [laptopId], references: [id], onDelete: Cascade)
 
   @@index([status, lockedAt])
 }

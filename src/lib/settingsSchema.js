@@ -7,6 +7,7 @@ export const SETTING_DEFINITIONS = Object.freeze({
   telegramLeadEnabled: { dbKey: 'telegramLeadEnabled', type: 'boolean', defaultValue: false },
   telegramLeadChatId: { dbKey: 'telegramLeadChatId', type: 'leadGroupId', defaultValue: '' },
   telegramEnabled: { dbKey: 'telegramEnabled', type: 'boolean', defaultValue: false },
+  telegramAutoPublishLaptops: { dbKey: 'telegramAutoPublishLaptops', type: 'boolean', defaultValue: false },
   telegramAutoPublishProducts: { dbKey: 'telegramAutoPublishProducts', type: 'boolean', defaultValue: false },
   telegramChannel: { dbKey: 'telegramChannel', type: 'telegramChannel', max: 40, defaultValue: '' },
   siteName: { dbKey: 'siteName', type: 'text', max: 120, defaultValue: 'دبی خرید' },

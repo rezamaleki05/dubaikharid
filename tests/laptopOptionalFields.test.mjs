@@ -112,3 +112,15 @@ test('Public Laptop detail hides absent year and battery health without misleadi
   assert.match(productDetailPage, /prod\.manufactureYear \?\? null/);
   assert.match(productDetailPage, /prod\.batteryHealth == null \? null/);
 });
+
+for (const value of [true, false, null]) test(`Laptop touchscreen round trip validation: ${value}`, () => {
+ assert.deepEqual(adminLaptops.validateLaptopPayload({ isTouchscreen: value }, { partial: true }), { data: { isTouchscreen: value } });
+});
+test('Laptop touchscreen rejects free text and omission preserves historical unknown', () => {
+ assert.ok(adminLaptops.validateLaptopPayload({ isTouchscreen: 'false' }, { partial: true }).error);
+ assert.ok(adminLaptops.validateLaptopPayload({}, { partial: true }).error);
+});
+test('Laptop display resolution is independent of screen size and supports arbitrary resolution', () => {
+ assert.deepEqual(adminLaptops.validateLaptopPayload({ displayResolution: '2560×1600 WQXGA', isTouchscreen: false }, { partial: true }), { data: { displayResolution: '2560×1600 WQXGA', isTouchscreen: false } });
+ assert.deepEqual(adminLaptops.validateLaptopPayload({ displayResolution: '' }, { partial: true }), { data: { displayResolution: null } });
+});

@@ -153,6 +153,11 @@ export function validateLaptopPayload(body, { partial = false } = {}) {
     assignText('ram', 'ram', 'رم', 64, true);
     assignText('gpu', 'gpu', 'کارت گرافیک', 180);
     assignText('screenSize', 'screen', 'اندازه نمایشگر', 64, !partial);
+    assignText('displayResolution', 'displayResolution', 'کیفیت / رزولوشن نمایشگر', 120);
+    if (hasOwn(body, 'isTouchscreen')) {
+      if (body.isTouchscreen !== null && typeof body.isTouchscreen !== 'boolean') throw new LaptopDomainError('صفحه لمسی معتبر نیست.');
+      data.isTouchscreen = body.isTouchscreen;
+    }
     assignText('color', 'color', 'رنگ', 80);
     assignText('physicalStatus', 'condition', 'وضعیت ظاهری', 32);
     assignText('customerNotes', 'description', 'توضیحات مشتری', 4000);
@@ -253,6 +258,7 @@ export function serializeLaptop(laptop) {
     cpu: laptop.cpu || '', ram: String(laptop.ram || '').replace(/\s*GB$/i, ''),
     storageSize: primaryStorage.size, storageType: primaryStorage.type,
     storage2Size: secondaryStorage.size || '', storage2Type: secondaryStorage.type || 'none',
+    isTouchscreen: laptop.isTouchscreen ?? null, displayResolution: laptop.displayResolution || '',
     gpu: laptop.gpu || '', screenSize: String(laptop.screen || '').replace(/[^\d.]/g, ''),
     manufactureYear: laptop.manufactureYear == null ? '' : String(laptop.manufactureYear), color: laptop.color || '',
     batteryHealth: laptop.batteryHealth == null ? '' : String(laptop.batteryHealth),
@@ -267,6 +273,7 @@ export function serializeLaptop(laptop) {
   return {
     id: laptop.id, name: laptopDisplayName(laptop), series: laptop.series || null, displayNameFa: laptop.displayNameFa || null, displayNameEn: laptop.displayNameEn || null, brand: laptop.brand || '', model: laptop.model || '', serial: laptop.serialNumber,
     cpu: laptop.cpu, ram: laptop.ram, storage: laptop.storage, gpu: laptop.gpu, screen: laptop.screen,
+    isTouchscreen: laptop.isTouchscreen ?? null, displayResolution: laptop.displayResolution || null,
     condition: laptop.condition, priceToman: sellingPrice, status: laptop.status, stockStatus: statusToClient(laptop.status),
     image, images, description: laptop.description, internalSku: laptop.internalSku, soldAt: laptop.soldAt,
     archivedAt: laptop.archivedAt, createdAt: laptop.createdAt, updatedAt: laptop.updatedAt,
@@ -293,6 +300,8 @@ export function serializePublicLaptop(laptop) {
     storage: serialized.storage,
     gpu: serialized.gpu,
     screen: serialized.screen,
+    isTouchscreen: serialized.isTouchscreen,
+    displayResolution: serialized.displayResolution,
     manufactureYear: laptop.manufactureYear ?? null,
     batteryHealth: laptop.batteryHealth ?? null,
     condition: serialized.condition,

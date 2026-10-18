@@ -1,4 +1,5 @@
 'use client';
+import { laptopPath } from '@/lib/laptopUrl';
 import { useSiteSettings, getProductTomanPrice, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect } from 'react';
@@ -42,7 +43,7 @@ export default function ProductSlider({ onSelectProduct }) {
   // Replaced hardcoded exchange rate
 
   const handleSelect = (product) => {
-    router.push(`/product/${product.id}`);
+    router.push(product.product_type === 'laptop_stock' ? laptopPath(product) : `/product/${product.id}`);
   };
 
   const fmtAed = (n) => n.toLocaleString('en-US');
@@ -79,7 +80,7 @@ export default function ProductSlider({ onSelectProduct }) {
         </div>
         <div className={styles.cardBody}>
           <div className={styles.brandName}>{product.brand}</div>
-          <div className={styles.productName}>{product.name}</div>
+          <div className={styles.productName}>{product.name}</div>{!isCatalogProduct && product.displayNameEn && <small lang="en" dir="ltr">{product.displayNameEn}</small>}
           <div className={styles.priceRow} style={{justifyContent: 'flex-start'}}>
             <span className={styles.priceToman} style={{color: '#fff', fontSize: '1.1rem'}}>{cardPricing?.varies ? 'از ' : ''}{fmtToman(tomanPrice)} تومان</span>
           </div>

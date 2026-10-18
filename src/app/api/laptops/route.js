@@ -1,3 +1,4 @@
+import { getPublicLaptopModelGroups } from '@/lib/publicLaptopSeo';
 import { NextResponse } from 'next/server';
 import { serializePublicLaptop } from '@/lib/adminLaptops';
 import { prisma } from '@/lib/prisma';
@@ -15,7 +16,7 @@ export async function GET(request) {
   const page = positiveInteger(searchParams.get('page'), 1, 1_000_000);
   const limit = positiveInteger(searchParams.get('limit'), 24, 60);
   if (!page || !limit) return NextResponse.json({ error: 'پارامترهای صفحه‌بندی معتبر نیستند.' }, { status: 400 });
-  const where = { status: 'AVAILABLE', archivedAt: null };
+  const where = { status: 'AVAILABLE', archivedAt: null, reservedOrderId: null, priceToman: { gt: 0 }, brand: { not: null }, model: { not: null }, AND: [{ brand: { not: '' } }, { model: { not: '' } }] };
   try {
     const [laptops, total, availableUnits] = await Promise.all([
       prisma.laptop.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }),
@@ -25,9 +26,10 @@ export async function GET(request) {
         select: { brand: true, model: true, series: true, cpu: true, ram: true, storage: true, secondaryStorage: true, gpu: true, screen: true, condition: true, priceToman: true, status: true, archivedAt: true, reservedOrderId: true },
       }),
     ]);
+    const canonicalGroups = await getPublicLaptopModelGroups();
     const groupCounts = countAvailableLaptopGroups(availableUnits);
     return NextResponse.json({
-      data: laptops.map(laptop => ({ ...serializePublicLaptop(laptop), availableCount: groupCounts.get(laptopSpecGroupKey(laptop)) || 0 })),
+      data: laptops.map(laptop => ({ ...serializePublicLaptop(laptop), canonicalSlug: canonicalGroups.find(group => group.units.some(unit => unit.id === laptop.id))?.slug, image: canonicalGroups.find(group => group.units.some(unit => unit.id === laptop.id))?.image || serializePublicLaptop(laptop).image, availableCount: groupCounts.get(laptopSpecGroupKey(laptop)) || 0 })),
       pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
     });
   } catch (error) {

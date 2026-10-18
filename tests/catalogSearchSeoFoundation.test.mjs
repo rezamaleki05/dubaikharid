@@ -125,7 +125,7 @@ test('Laptop filter permutations canonicalize to the landing and become noindex'
 
 test('Laptop model metadata and H1 use the resolved display name', () => {
   const source = read('src/app/laptops/[slug]/page.js');
-  assert.match(source, /title: `\$\{group\.name\} \| قیمت و خرید`/);
+  assert.match(source, /title: `خرید لپ تاپ استوک \$\{group\.nameEn\} \| قیمت و مشخصات`/);
   assert.match(source, /<h1>\{group\.name\}<\/h1>/);
   assert.doesNotMatch(source, /مناسب Premiere|مناسب AutoCAD/);
 });

@@ -275,19 +275,9 @@ export default function ProductPage({ params }) {
     const loadProduct = async () => {
       let found = null;
       try {
-        const response = await fetch(`/api/laptops/${encodeURIComponent(id)}`, { cache: 'no-store', signal: controller.signal });
+        const response = await fetch(`/api/products/${encodeURIComponent(id)}`, { cache: 'no-store', signal: controller.signal });
         if (response.ok) found = await response.json();
-      } catch (error) {
-        if (error.name === 'AbortError') return;
-      }
-      if (!found) {
-        try {
-          const response = await fetch(`/api/products/${encodeURIComponent(id)}`, { cache: 'no-store', signal: controller.signal });
-          if (response.ok) found = await response.json();
-        } catch (error) {
-          if (error.name === 'AbortError') return;
-        }
-      }
+      } catch (error) { if (error.name === 'AbortError') return; }
       if (!controller.signal.aborted) {
         setProduct(found || null);
         setVariantSelection({});

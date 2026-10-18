@@ -1,4 +1,5 @@
 'use client';
+import LaptopTelegramStatus from '@/components/admin/telegram/LaptopTelegramStatus';
 
 import React, { useCallback, useEffect, useState } from 'react';
 import LaptopCombobox from '@/components/admin/laptops/LaptopCombobox';
@@ -68,6 +69,7 @@ function StockLaptopsContent() {
       brand: product.brand || '', model: product.model || '', series: product.series || '',
       displayNameFa: product.displayNameFa || '', displayNameEn: product.displayNameEn || '', serial: product.serial || '', cpu: product.cpu || '',
       ram: String(product.ram || '').replace(/\s*GB$/i, ''), gpu: product.gpu || '',
+      isTouchscreen: product.isTouchscreen ?? null, displayResolution: product.displayResolution || '',
       screenSize: String(product.screen || '').replace(/[^\d.]/g, ''), weight: product.weight ? String(product.weight) : '',
       sellingPrice: product.priceToman ? String(product.priceToman) : '', customerNotes: product.description || '',
       stockStatus: product.stockStatus || 'available', internalSku: product.internalSku || '',
@@ -1223,6 +1225,16 @@ function StockLaptopsContent() {
                   onChange={gpu => setLaptopForm(previous => ({ ...previous, gpu }))} createLabel="+ افزودن کارت گرافیک جدید"
                   onCreate={async gpu => { setGpuOptions(current => [...new Set([...current, gpu])]); return gpu; }} />
 
+                <div className={styles.inputGroup}>
+                  <label htmlFor="laptop-touch">صفحه نمایش لمسی</label>
+                  <select id="laptop-touch" className={styles.selectField} value={laptopForm.isTouchscreen === null ? '' : String(laptopForm.isTouchscreen)} onChange={e => setLaptopForm(prev => ({ ...prev, isTouchscreen: e.target.value === '' ? null : e.target.value === 'true' }))}>
+                    <option value="">نامشخص</option><option value="true">دارد</option><option value="false">ندارد</option>
+                  </select>
+                </div>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="laptop-resolution">کیفیت / رزولوشن نمایشگر</label>
+                  <input id="laptop-resolution" className={styles.inputField} dir="ltr" maxLength={120} placeholder="3840×2160 4K UHD" value={laptopForm.displayResolution || ''} onChange={e => setLaptopForm(prev => ({ ...prev, displayResolution: e.target.value }))} />
+                </div>
                 <div className={styles.formGroup}>
                   <label htmlFor="laptop-screenSize">اندازه صفحه نمایش - اینچ <span className={styles.requiredStar}>*</span></label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1344,7 +1356,8 @@ function StockLaptopsContent() {
                 <h2>تصاویر محصول</h2>
               </div>
 
-              <LaptopImageUploader
+              {editingLaptopId && <LaptopTelegramStatus laptopId={editingLaptopId} />}
+                <LaptopImageUploader
                 value={laptopImages}
                 onChange={setLaptopImages}
                 disabled={isLaptopSaving}

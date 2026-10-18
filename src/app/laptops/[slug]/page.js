@@ -2,6 +2,8 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import JsonLd from '@/components/seo/JsonLd';
+import { laptopPath, LAPTOP_ORIGIN } from '@/lib/laptopUrl';
+import LaptopGallery from '@/components/laptop/LaptopGallery';
 import LaptopModelUnits from '@/components/laptop/LaptopModelUnits';
 import { getPublicLaptopModelBySlug } from '@/lib/publicLaptopSeo';
 import { absoluteUrl, breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
@@ -10,20 +12,23 @@ import styles from './LaptopModel.module.css';
 function descriptionFor(group) {
   const availableSpecs = [...new Set(group.units.flatMap(unit => [unit.cpu, unit.ram, unit.storage, unit.gpu]).filter(Boolean))];
   const specSummary = availableSpecs.length ? ` مشخصات موجود شامل ${availableSpecs.slice(0, 4).join('، ')} است.` : '';
-  return `خرید ${group.name} با مشخصات پردازنده، رم، حافظه، کارت گرافیک، وضعیت دستگاه و قیمت به‌روز.${specSummary}`;
+  return `خرید لپ تاپ استوک ${group.nameEn} (${group.name}). مشاهده قیمت، وضعیت دستگاه و مشخصات کامل در دبی خرید.${specSummary}`;
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const group = await getPublicLaptopModelBySlug(slug);
   if (!group) return { title: 'مدل لپ تاپ پیدا نشد', robots: { index: false, follow: true } };
-  return publicPageMetadata({
-    title: `${group.name} | قیمت و خرید`,
+  const metadata = publicPageMetadata({
+    title: `خرید لپ تاپ استوک ${group.nameEn} | قیمت و مشخصات`,
+    robots: { index: true, follow: true },
     description: descriptionFor(group),
-    path: `/laptops/${group.slug}`,
+    path: laptopPath(group),
     image: group.image,
     type: 'website',
   });
+  const canonical = LAPTOP_ORIGIN + laptopPath(group);
+  return { ...metadata, alternates: { canonical }, openGraph: { ...metadata.openGraph, url: canonical } };
 }
 
 export default async function LaptopModelPage({ params }) {
@@ -31,25 +36,25 @@ export default async function LaptopModelPage({ params }) {
   const group = await getPublicLaptopModelBySlug(slug);
   if (!group) notFound();
 
-  if (group.slug !== slug) permanentRedirect(`/laptops/${group.slug}`);
+  if (group.slug !== slug) permanentRedirect(laptopPath(group));
 
-  const canonicalPath = `/laptops/${group.slug}`;
+  const canonicalPath = laptopPath(group);
   const lowPriceIrr = (BigInt(group.lowPriceToman) * 10n).toString();
   const highPriceIrr = (BigInt(group.highPriceToman) * 10n).toString();
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    '@id': `${absoluteUrl(canonicalPath)}#product`,
+    '@id': `${(LAPTOP_ORIGIN + canonicalPath)}#product`,
     name: group.name,
     alternateName: group.nameEn,
-    url: absoluteUrl(canonicalPath),
+    url: (LAPTOP_ORIGIN + canonicalPath),
     description: descriptionFor(group),
     image: group.images.length ? group.images.map(absoluteUrl) : [absoluteUrl(group.image)],
     brand: { '@type': 'Brand', name: group.brand },
     itemCondition: 'https://schema.org/UsedCondition',
     offers: {
       '@type': 'AggregateOffer',
-      url: absoluteUrl(canonicalPath),
+      url: (LAPTOP_ORIGIN + canonicalPath),
       priceCurrency: 'IRR',
       lowPrice: lowPriceIrr,
       highPrice: highPriceIrr,
@@ -71,11 +76,12 @@ export default async function LaptopModelPage({ params }) {
       <main className={styles.main} dir="rtl">
         <section className={styles.hero}>
           <div className={styles.imageStage}>
-            <img src={group.image} alt={group.name} />
+            <LaptopGallery images={group.images} cover={group.image} name={group.name} />
           </div>
           <div className={styles.summary}>
             <span className={styles.eyebrow}>{group.brand}</span>
             <h1>{group.name}</h1>
+            <p lang="en" dir="ltr">{group.nameEn}</p>
             <p>{descriptionFor(group)}</p>
             <dl className={styles.summaryFacts}>
               <div><dt>موجودی</dt><dd>موجود</dd></div>

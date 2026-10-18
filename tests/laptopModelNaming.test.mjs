@@ -48,7 +48,7 @@ test('Series change clears Model without erasing generic manual hardware fields'
   assert.equal(changed.model, ''); assert.equal(changed.weight, '1.75'); assert.equal(changed.cpu, base.cpu);
 });
 test('automatic suggestions include optional Series and localized Brand without duplicate text', () => {
-  assert.equal(suggestedLaptopNames({ brand: 'Dell', series: 'Precision', model: '5570' }, 'دل').displayNameFa, 'لپ تاپ استوک دل Precision 5570');
+  assert.equal(suggestedLaptopNames({ brand: 'Dell', series: 'Precision', model: '5570' }, 'دل').displayNameFa, 'لپ تاپ استوک دل پرسیژن 5570');
   assert.equal(laptopIdentityName({ brand: 'Dell', series: 'Precision', model: 'Dell Precision 5570' }), 'Dell Precision 5570');
 });
 test('catalog separates legacy families from exact models and scopes exact models to Series', () => {

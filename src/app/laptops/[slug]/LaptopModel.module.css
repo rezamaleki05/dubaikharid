@@ -75,3 +75,16 @@
   .unitFooter { align-items: flex-start; flex-direction: column; }
   .buyButton { width: 100%; }
 }
+
+/* The same image DTO drives model and unit galleries; do not crop thumbnails. */
+.imageStage { aspect-ratio: auto; display: block; background: transparent; border: 0; overflow: visible; }
+.imageStage img { width: 100%; height: 100%; filter: none; }
+.unitMedia { display: block; padding: 22px; min-width: 0; }
+.unitMedia > span { position: static; display: inline-block; margin-bottom: 12px; }
+.summary > p[lang='en'] { text-align: right; font-size: 18px; margin-bottom: 18px; }
+@media(max-width:600px) { .unitCard { grid-template-columns: minmax(0,1fr); } .unitBody { padding:20px; } .summaryFacts { grid-template-columns:1fr; } }
+
+.unitMedia[hidden] { display:none; }
+.unitCard:has(.unitMedia[hidden]) { grid-template-columns:1fr; }
+
+@media(max-width:900px) { .imageStage { max-height:none; } }

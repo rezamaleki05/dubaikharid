@@ -1,3 +1,5 @@
+const PERSIAN_IDENTITY = { dell: 'دل', precision: 'پرسیژن', latitude: 'لتیتود', lenovo: 'لنوو', thinkpad: 'تینک پد', hp: 'اچ پی', msi: 'ام اس آی', katana: 'کاتانا' };
+const persianPart = value => PERSIAN_IDENTITY[String(value || '').trim().toLowerCase()] || value;
 const clean = value => String(value || '').trim().replace(/\s+/g, ' ');
 
 // Join overlapping commercial labels without repeating Brand or Series.
@@ -30,7 +32,7 @@ export function suggestedLaptopNames(form, brandFa = '') {
   if (!clean(form.brand) || !clean(form.model)) return { displayNameFa: '', displayNameEn: '' };
   return {
     displayNameEn: laptopIdentityName(form),
-    displayNameFa: `لپ تاپ استوک ${laptopIdentityName({ ...form, brand: brandFa || form.brand })}`,
+    displayNameFa: `لپ تاپ استوک ${laptopIdentityName({ ...form, brand: brandFa || persianPart(form.brand), series: persianPart(form.series) })}`,
   };
 }
 

@@ -1,3 +1,4 @@
+import { scheduleLaptopTelegramPublication } from '@/lib/telegram/laptopService';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -54,6 +55,7 @@ export async function GET(request) {
       { serialNumber: { contains: search, mode: 'insensitive' } },
       { internalSku: { contains: search, mode: 'insensitive' } },
       { cpu: { contains: search, mode: 'insensitive' } },
+      { gpu: { contains: search, mode: 'insensitive' } },
     ];
   }
 
@@ -143,6 +145,7 @@ export async function POST(request) {
         ...(validated.data.status === 'SOLD' ? { soldAt: new Date() } : {}),
       },
     });
+    scheduleLaptopTelegramPublication(laptop.id);
     await logAdminActivity({
       adminId: admin.id, action: 'LAPTOP_CREATED', entityType: 'Laptop', entityId: laptop.id,
       metadata: { status: laptop.status, brand: laptop.brand, model: laptop.model, serialNumber: laptop.serialNumber }, request,

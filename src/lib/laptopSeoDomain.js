@@ -45,14 +45,14 @@ export function isSellableLaptopUnit(laptop) {
     && Boolean(laptopModelIdentity(laptop.brand, laptop.model, laptop.series));
 }
 
-function publicImageList(laptop) {
+export function publicImageList(laptop) {
   const images = Array.isArray(laptop.images)
     ? laptop.images.filter(image => typeof image === 'string' && image.trim())
     : [];
   if (typeof laptop.image === 'string' && laptop.image.trim() && !images.includes(laptop.image)) {
     images.unshift(laptop.image);
   }
-  return images;
+  return [...new Set(images)];
 }
 
 function serializeUnit(laptop) {
@@ -73,6 +73,8 @@ function serializeUnit(laptop) {
     secondaryStorage: laptop.secondaryStorage || null,
     gpu: laptop.gpu || null,
     screen: laptop.screen || null,
+    isTouchscreen: laptop.isTouchscreen ?? null,
+    displayResolution: laptop.displayResolution || null,
     manufactureYear: laptop.manufactureYear ?? null,
     batteryHealth: laptop.batteryHealth ?? null,
     color: laptop.color || null,
@@ -156,6 +158,7 @@ export function searchLaptopModelGroups(groups, query, limit = 24) {
       group.series,
       group.nameEn,
       group.name,
+      [group.brand, group.series].map(value => ({ dell: 'دل', precision: 'پرسیژن', lenovo: 'لنوو', thinkpad: 'تینک پد', hp: 'اچ پی' }[String(value || '').toLowerCase()] || value)).join(' '),
       ...group.units.flatMap(unit => [unit.cpu, unit.ram, unit.storage, unit.secondaryStorage, unit.gpu, unit.screen]),
     ].filter(Boolean).join(' ')).toLocaleLowerCase('fa-IR');
     return tokens.every(token => haystack.includes(token));

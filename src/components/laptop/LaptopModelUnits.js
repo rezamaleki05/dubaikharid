@@ -1,5 +1,6 @@
 'use client';
 
+import LaptopGallery from './LaptopGallery';
 import { useCart } from '@/context/CartContext';
 import { laptopConditionLabel } from '@/lib/laptopSeoDomain';
 import styles from '@/app/laptops/[slug]/LaptopModel.module.css';
@@ -13,8 +14,8 @@ export default function LaptopModelUnits({ units }) {
     <div className={styles.unitsGrid}>
       {units.map((unit, index) => {
         const specs = [
-          ['پردازنده', unit.cpu], ['رم', unit.ram], ['حافظه اصلی', unit.storage],
-          ['حافظه دوم', unit.secondaryStorage], ['گرافیک', unit.gpu], ['نمایشگر', unit.screen],
+          ['برند', unit.brand], ['سری', unit.series], ['مدل', unit.model], ['پردازنده', unit.cpu], ['رم', unit.ram], ['حافظه اصلی', unit.storage],
+          ['حافظه دوم', unit.secondaryStorage], ['کیفیت نمایشگر', unit.displayResolution], ['صفحه لمسی', unit.isTouchscreen == null ? null : unit.isTouchscreen ? 'دارد' : 'ندارد'], ['گرافیک', unit.gpu], ['نمایشگر', unit.screen],
           ['سال ساخت', unit.manufactureYear], ['رنگ', unit.color],
           ['وضعیت ظاهری', laptopConditionLabel(unit.condition)],
           ['سلامت باتری', unit.batteryHealth != null ? `${unit.batteryHealth}٪` : null],
@@ -23,9 +24,9 @@ export default function LaptopModelUnits({ units }) {
         const passedTests = Object.entries(unit.hardwareTests || {}).filter(([, passed]) => passed).map(([key]) => TEST_LABELS[key]).filter(Boolean);
         return (
           <article key={unit.id} className={styles.unitCard}>
-            <div className={styles.unitMedia}><span>موجود و آماده ارسال</span><img className={styles.unitImage} src={unit.image} alt={`${unit.name} - گزینه ${index + 1}`} /></div>
+            <div className={styles.unitMedia} hidden={units.length === 1}><span>موجود و آماده ارسال</span><LaptopGallery images={unit.images} cover={unit.image} name={unit.name} /></div>
             <div className={styles.unitBody}>
-              <div className={styles.unitTitle}><div><small>دستگاه {Number(index + 1).toLocaleString('fa-IR')}</small><h3>{unit.name}</h3></div><span>{laptopConditionLabel(unit.condition)}</span></div>
+              <div className={styles.unitTitle}><div><small>دستگاه {Number(index + 1).toLocaleString('fa-IR')}</small><h3>{unit.name}</h3><p lang="en" dir="ltr">{unit.nameEn}</p></div><span>{laptopConditionLabel(unit.condition)}</span></div>
               <dl className={styles.specList}>{specs.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
               {passedTests.length ? <div className={styles.tests}><strong>تست‌شده:</strong> {passedTests.join('، ')}</div> : null}
               <div className={styles.unitFooter}>

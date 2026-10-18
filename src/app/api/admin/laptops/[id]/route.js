@@ -1,3 +1,4 @@
+import { scheduleLaptopTelegramPublication } from '@/lib/telegram/laptopService';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -82,6 +83,7 @@ export async function PATCH(request, { params }) {
       }
       return { previous, laptop: await tx.laptop.findUnique({ where: { id } }) };
     }, { isolationLevel: 'Serializable' });
+    scheduleLaptopTelegramPublication(id);
     const statusChanged = result.previous.status !== result.laptop.status;
     await logAdminActivity({
       adminId: admin.id,
