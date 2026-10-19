@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const origin=process.env.LAPTOP_HTTP_TEST_ORIGIN;
 const request=async path=>{assert.equal(new URL(origin).hostname,'localhost');assert.equal(new URL(origin).port,'3108');return fetch(origin+path,{redirect:'manual'})};
 for(const model of ['5530','7510']) test(`Laptop canonical ${model}: one H1, bilingual metadata, gallery and display specs`,{skip:!origin},async()=>{
- const response=await request('/laptops/dell-precision-'+model);assert.equal(response.status,200);const html=await response.text();assert.equal((html.match(/<h1[ >]/g)||[]).length,1);assert.match(html,new RegExp('Dell Precision '+model));assert.ok(html.includes('https://www.dubaikharid.shop/laptops/dell-precision-'+model));assert.match(html,/index, follow/);assert.match(html,/application\/ld\+json/);assert.match(html,/صفحه لمسی/);assert.match(html,/کیفیت نمایشگر/);
+ const response=await request('/laptops/dell-precision-'+model);assert.equal(response.status,200);const html=await response.text();assert.equal((html.match(/<h1[ >]/g)||[]).length,1);assert.match(html,new RegExp('Dell Precision '+model));assert.ok(html.includes('https://dubaikharid.shop/laptops/dell-precision-'+model));assert.match(html,/index, follow/);assert.match(html,/application\/ld\+json/);assert.match(html,/صفحه لمسی/);assert.match(html,/کیفیت نمایشگر/);
  const api=await request('/api/laptops/qa-laptop-'+model);const body=await api.json();assert.equal(body.images.length,4);assert.equal(body.image,body.images[0]);assert.ok(!('serial' in body));
 });
 test('Laptop legacy Product path and previous model slug return permanent redirects; normal Products do not',{skip:!origin},async()=>{

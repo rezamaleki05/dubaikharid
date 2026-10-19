@@ -65,7 +65,7 @@ test('hidden product blocked, destination changes blocked automatically and retr
 
 test('Laptop Telegram uses bilingual identity, canonical URL, exact Toman, cover and optional display specs',()=>{
  const p=buildTelegramLaptopPost({...product,images:['https://example.com/cover.jpg','https://example.com/other.jpg'],isTouchscreen:false,displayResolution:'2560×1600'});
- assert.equal(p.url,'https://www.dubaikharid.shop/laptops/dell-precision-5530');
+ assert.equal(p.url,'https://dubaikharid.shop/laptops/dell-precision-5530');
  assert.ok(p.text.includes('\n'));assert.ok(!p.text.includes('\\n'));assert.equal(p.photo,'https://example.com/cover.jpg');assert.match(p.text,/Dell Precision 5530/);assert.match(p.text,/۱۱۰٬۰۰۰٬۰۰۰/);assert.match(p.text,/صفحه لمسی: ندارد/);assert.match(p.text,/2560×1600/);
  const unknown=buildTelegramLaptopPost(product);assert.doesNotMatch(unknown.text,/صفحه لمسی|undefined|null/);
 });
