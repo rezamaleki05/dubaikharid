@@ -802,7 +802,7 @@ export default function ProductClient({ params, initialProduct }) {
               </div>
             </div>
 
-            <form onSubmit={handleInquirySubmit}>
+            <form data-clarity-mask="true" onSubmit={handleInquirySubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>نام و نام خانوادگی:</label>
@@ -1117,7 +1117,7 @@ function ReviewsSection({ productId, productName }) {
       {showForm && (
         <div className={styles.reviewFormCard}>
           <h3 className={styles.formTitle}>ثبت دیدگاه جدید</h3>
-          <form onSubmit={handleSubmitReview}>
+          <form data-clarity-mask="true" onSubmit={handleSubmitReview}>
             <div className={styles.formGrid}>
               <div className={styles.formGroup}>
                 <label>نام و نام خانوادگی:</label>

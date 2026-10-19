@@ -10,8 +10,13 @@ test('Homepage design, content, H1, metadata, canonical and shared dependencies 
  const manifest = JSON.parse(read('docs/seo/homepage-freeze.json'));
  for (const [path, expected] of Object.entries(manifest)) {
    let source = read(path);
-   // Phase 3C explicitly authorizes nonvisual analytics wiring, never root metadata/copy.
+   // Phases 3C/3F authorize these exact nonvisual analytics additions only.
+   // Keep the original content/metadata digest; do not re-baseline the Homepage.
    if (path === 'src/app/layout.js') source = source
+     .replace("import PublicClarity from '@/components/analytics/PublicClarity';\n", '')
+     .replace("import { isClarityEnvironment, clarityProjectId } from '@/lib/clarityPolicy';\n", '')
+     .replace('      <PublicClarity enabled={isClarityEnvironment(process.env)} projectId={clarityProjectId(process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID)} />\n', '')
+     .replace('<body data-clarity-mask="true"', '<body')
      .replace("import PublicAnalytics from '@/components/analytics/PublicAnalytics';", "import { GoogleAnalytics } from '@next/third-parties/google';")
      .replace('<PublicAnalytics enabled={googleAnalyticsEnabled} gaId={googleAnalyticsId} />', '{googleAnalyticsEnabled && googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}');
    assert.equal(crypto.createHash('sha256').update(source).digest('hex'), expected, path);

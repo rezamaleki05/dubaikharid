@@ -122,7 +122,7 @@ export default function QuickPurchaseRequestModal({ isOpen, requestData, onClose
   };
 
   return (
-    <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-label="ثبت درخواست خرید خارجی">
+    <div data-clarity-mask="true" data-dk-clarity-sensitive="true" className={styles.modalOverlay} role="dialog" aria-modal="true" aria-label="ثبت درخواست خرید خارجی">
       <div className={styles.modalContainer}>
         <button type="button" onClick={handleClose} className={styles.closeBtn} aria-label="بستن">
           <MinimalIcon name="x" size={19} />

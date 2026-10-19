@@ -200,7 +200,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
   };
 
   return (
-    <div className={styles.modalOverlay}>
+    <div data-clarity-mask="true" data-dk-clarity-sensitive="true" className={styles.modalOverlay}>
       <div className={`${styles.modalContainer} ${step === 4 && resultKind === 'order' && manualPayment ? styles.manualPaymentModal : ''}`}>
         {/* Close Button */}
         <button onClick={handleClose} className={styles.closeBtn} aria-label="بستن">

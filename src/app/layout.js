@@ -1,5 +1,7 @@
 import { Vazirmatn } from "next/font/google";
 import PublicAnalytics from '@/components/analytics/PublicAnalytics';
+import PublicClarity from '@/components/analytics/PublicClarity';
+import { isClarityEnvironment, clarityProjectId } from '@/lib/clarityPolicy';
 import Script from 'next/script';
 import "./globals.css";
 import JsonLd from '@/components/seo/JsonLd';
@@ -96,7 +98,7 @@ export default async function RootLayout({ children }) {
   };
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
+      <body data-clarity-mask="true" style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
         <Script id="dubai-kharid-theme" strategy="beforeInteractive">
           {THEME_BOOTSTRAP_SCRIPT}
         </Script>
@@ -114,6 +116,7 @@ export default async function RootLayout({ children }) {
         </ThemeProvider>
       </body>
       <PublicAnalytics enabled={googleAnalyticsEnabled} gaId={googleAnalyticsId} />
+      <PublicClarity enabled={isClarityEnvironment(process.env)} projectId={clarityProjectId(process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID)} />
     </html>
   );
 }

@@ -1206,7 +1206,7 @@ function ProfileContent() {
                       </div>
                     ) : (
                       /* Form to submit request */
-                      <form className={styles.requestSubmitForm} onSubmit={handleSubmitRequest} style={{ background: 'rgba(13, 8, 28, 0.4)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '30px' }}>
+                      <form data-clarity-mask="true" className={styles.requestSubmitForm} onSubmit={handleSubmitRequest} style={{ background: 'rgba(13, 8, 28, 0.4)', borderRadius: '20px', padding: '28px', border: '1px solid rgba(255,255,255,0.04)', marginBottom: '30px' }}>
                         <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#fff', marginBottom: '20px', textAlign: 'right' }}>
                           درخواست جدید
                         </h3>
