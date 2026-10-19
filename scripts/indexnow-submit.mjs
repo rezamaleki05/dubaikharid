@@ -2,12 +2,12 @@
 import fs from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { loadEnvConfig } from '@next/env';
+import nextEnv from '@next/env';
 import { INDEXNOW_ORIGIN, canonicalIndexNowUrl, createIndexNowClient, indexNowConfiguration } from '../src/lib/indexnowDomain.js';
 import { guides, brandGuides, storeAnswers } from '../src/lib/commerceGuides.js';
 import { changedIndexNowContent } from '../src/lib/indexnowContent.js';
 
-loadEnvConfig(process.cwd(), false, { info() {}, error() {} });
+nextEnv.loadEnvConfig(process.cwd(), false, { info() {}, error() {} });
 const args = process.argv.slice(2), option = name => args[args.indexOf(name) + 1];
 const category = url => {
   const path = new URL(url).pathname;
