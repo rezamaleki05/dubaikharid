@@ -1,3 +1,6 @@
+import AnswerSections from '@/components/seo/AnswerSections';
+import { storeAnswers } from '@/lib/commerceGuides';
+import { collectionSeoState, collectionPageExists } from '@/lib/collectionSeoDomain';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Header from '@/components/Header';
@@ -18,15 +21,17 @@ const STORE_INTENTS = {
   modanisa: { fa: 'مودانیسا', title: 'خرید از مودانیسا', common: 'پوشاک و اکسسوری بانوان' },
 };
 
-export async function generateMetadata({ params }) {
+export async function generateMetadata({ params, searchParams }) {
   const { slug } = await params;
   const store = await getSeoStore(slug);
+  const seo = collectionSeoState(`/stores/${store?.id || slug}`, await searchParams);
   if (!store) return { title: 'فروشگاه پیدا نشد', robots: { index: false, follow: false } };
   const intent = STORE_INTENTS[store.id] || { fa: store.name, title: `خرید از ${store.name}`, common: store.desc || 'کالاهای موجود در فروشگاه' };
   return publicPageMetadata({
     title: intent.title,
     description: `راهنمای ثبت سفارش از ${intent.fa} با دبی خرید؛ ارسال لینک محصول، برآورد قیمت به درهم و هماهنگی ارسال کالا از دبی به ایران.`,
-    path: `/stores/${store.id}`,
+    path: seo.path,
+    robots: seo.noindex ? { index: false, follow: true } : undefined,
     image: store.img || undefined,
   });
 }
@@ -36,11 +41,11 @@ export default async function StorePage({ params, searchParams }) {
   const query = await searchParams;
   const store = await getSeoStore(slug);
   if (!store) notFound();
-  const requestedPage = /^\d+$/.test(query?.page || '') ? Number(query.page) : 1;
-  const page = Number.isSafeInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 1_000_000
-    ? requestedPage
-    : 1;
+  const seo = collectionSeoState(`/stores/${store.id}`, query);
+  if (seo.page === null) notFound();
+  const page = seo.page;
   const catalog = await getPublicCatalog({ store: store.id, page, limit: 24 });
+  if (!collectionPageExists(page, catalog.pagination.totalPages)) notFound();
   const intent = STORE_INTENTS[store.id] || { fa: store.name, title: `خرید از ${store.name}`, common: store.desc || 'کالاهای موجود در فروشگاه' };
   const crumbs = [{ name: 'صفحه اصلی', path: '/' }, { name: 'برندها و فروشگاه‌ها', path: '/brands' }, { name: intent.fa, path: `/stores/${store.id}` }];
 
@@ -51,7 +56,7 @@ export default async function StorePage({ params, searchParams }) {
       <main className={styles.main}>
         <Breadcrumbs items={crumbs} />
         <header className={styles.header}>
-          {store.img && <img src={store.img} alt={`لوگوی ${store.name}`} className={styles.logo} />}
+          {store.img && <img src={store.img} alt={`لوگوی ${store.name}`} className={styles.logo} width={96} height={72} />}
           <div><p className={styles.eyebrow}>فروشگاه آنلاین امارات</p><h1>{intent.title}</h1></div>
         </header>
         <section className={styles.intro}>
@@ -64,6 +69,7 @@ export default async function StorePage({ params, searchParams }) {
           <ol><li>محصول و گزینه‌های موردنظر را در صفحه فروشگاه انتخاب کنید.</li><li>لینک مستقیم محصول را کپی کنید.</li><li>لینک را در فرم استعلام وارد کنید تا برآورد اولیه محاسبه شود.</li><li>پس از بررسی قیمت، موجودی و وزن واقعی، ادامه سفارش هماهنگ می‌شود.</li></ol>
           <Link href="/#calculator" className={styles.cta}>ثبت سفارش از {intent.fa}</Link>
         </section>
+        {storeAnswers[store.id] && <AnswerSections answers={storeAnswers[store.id]} links={[[ '/guides/uae-store-comparison', 'مقایسه مبدأ سفارش' ], [ '/guides/shoe-sizing', 'راهنمای سایز کفش' ]]} />}
         {catalog.data.length > 0 && <section className={styles.products}><h2>محصولات ثبت‌شده از {store.name}</h2><div className={styles.grid}>{catalog.data.map(product => <Link key={product.id} href={`/product/${product.id}`}><span>{product.name}</span></Link>)}</div>{catalog.pagination.totalPages > 1 && <nav aria-label="صفحه‌بندی محصولات" style={{display:'flex',justifyContent:'center',gap:'18px',marginTop:'24px'}}>{page > 1 && <Link href={`?page=${page - 1}`}>صفحه قبل</Link>}{page < catalog.pagination.totalPages && <Link href={`?page=${page + 1}`}>صفحه بعد</Link>}</nav>}</section>}
         <section className={styles.related}><Link href="/buy-from-dubai">راهنمای کامل خرید مستقیم از دبی</Link><Link href="/brands">مشاهده برندها و فروشگاه‌های دیگر</Link></section>
       </main>

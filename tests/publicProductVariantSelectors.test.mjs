@@ -122,7 +122,7 @@ test('informational values cover option, number, boolean false, and text values'
 
 test('authoritative pricing carries original and final Toman values without client recomputation', () => {
   const catalog = readFileSync('src/lib/publicCatalog.js', 'utf8');
-  const page = readFileSync('src/app/product/[id]/page.js', 'utf8');
+  const page = readFileSync('src/app/product/[id]/ProductClient.js', 'utf8');
   assert.match(catalog, /originalFinalPriceToman/);
   assert.match(catalog, /resolveProductVariantPriceFromData/);
   assert.match(page, /activeProductPricing\.finalPriceToman/);
@@ -135,7 +135,7 @@ test('explicit zero percent Variant discount hides public discount UI', () => {
 });
 
 test('Add to Cart sends the exact ProductVariant identity and no client price authority', () => {
-  const page = readFileSync('src/app/product/[id]/page.js', 'utf8');
+  const page = readFileSync('src/app/product/[id]/ProductClient.js', 'utf8');
   const cartPage = readFileSync('src/app/cart/page.js', 'utf8');
   const cartState = readFileSync('src/lib/clientCollectionState.js', 'utf8');
   assert.match(page, /productVariantId: selectedProductVariant\.id/);
@@ -157,7 +157,7 @@ test('public Product imagery is white, square/contained, centered, and does not 
 });
 
 test('Best Seller and accessible selector states are wired to real Product flags/options', () => {
-  const page = readFileSync('src/app/product/[id]/page.js', 'utf8');
+  const page = readFileSync('src/app/product/[id]/ProductClient.js', 'utf8');
   const selector = readFileSync('src/components/product/PublicProductVariantSelector.js', 'utf8');
   assert.match(page, /product\.isBestSeller/);
   assert.match(selector, /option\.swatchHex/);

@@ -37,7 +37,7 @@ const adminLaptops = await importLaptopValidation();
 const schema = await source('../prisma/schema.prisma');
 const laptopMigration = await source('../prisma/migrations/20260819000100_laptops_database/migration.sql');
 const adminLaptopPage = await source('../src/app/admin/laptops/page.js');
-const productDetailPage = await source('../src/app/product/[id]/page.js');
+const productDetailPage = await source('../src/app/product/[id]/ProductClient.js');
 
 const requiredLaptopFields = Object.freeze({
   brand: 'Dell',

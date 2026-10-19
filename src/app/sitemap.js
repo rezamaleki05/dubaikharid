@@ -1,3 +1,4 @@
+import { brandGuides, guides } from '@/lib/commerceGuides';
 import { prisma } from '@/lib/prisma';
 import { absoluteUrl } from '@/lib/seo';
 import { isPreviewDeployment } from '@/lib/env';
@@ -10,6 +11,7 @@ export default async function sitemap() {
   if (isPreviewDeployment()) return [];
 
   const staticEntries = [
+    ...Object.keys(guides).map(slug => ({ url: absoluteUrl(`/guides/${slug}`), changeFrequency: 'monthly', priority: 0.6 })),
     { url: absoluteUrl('/'), changeFrequency: 'weekly', priority: 1 },
     { url: absoluteUrl('/buy-from-dubai'), changeFrequency: 'monthly', priority: 0.95 },
     { url: absoluteUrl('/about'), changeFrequency: 'yearly', priority: 0.55 },
@@ -31,11 +33,11 @@ export default async function sitemap() {
       prisma.product.findMany({ where: PUBLIC_PRODUCT_VISIBILITY, select: { id: true, updatedAt: true } }),
       getPublicLaptopModelGroups(),
       prisma.store.findMany({
-        where: { products: { some: PUBLIC_PRODUCT_VISIBILITY } },
+        where: { OR: [{ id: { in: ['amazon', 'noon', 'namshi'] } }, { products: { some: PUBLIC_PRODUCT_VISIBILITY } }] },
         select: { id: true },
       }),
       prisma.brand.findMany({
-        where: { showInBrandDirectory: true, products: { some: PUBLIC_PRODUCT_VISIBILITY } },
+        where: { showInBrandDirectory: true, OR: [{ id: { in: Object.keys(brandGuides) } }, { products: { some: PUBLIC_PRODUCT_VISIBILITY } }] },
         select: { id: true },
       }),
     ]);

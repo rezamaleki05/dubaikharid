@@ -24,7 +24,15 @@ const nextConfig = {
       headers.push({ key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' });
     }
 
-    return [{ source: '/:path*', headers }];
+    // Facets on catalog pages are navigation states, not new search intents.
+    // Deliberately excludes Homepage, Product details and paginated Store/Brand collections.
+    const catalogPaths = ['/men', '/women', '/kids', '/sports-shoes', '/clothing', '/bags-accessories', '/beauty-health', '/watches', '/electronics', '/mobile', '/sale', '/best-sellers'];
+    const facetHeaders = catalogPaths.flatMap(source => ['sub', 'sort', 'brand', 'brands', 'category', 'q'].map(key => ({
+      source,
+      has: [{ type: 'query', key }],
+      headers: [{ key: 'X-Robots-Tag', value: 'noindex, follow' }],
+    })));
+    return [{ source: '/:path*', headers }, ...facetHeaders];
   },
 };
 

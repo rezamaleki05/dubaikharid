@@ -1,0 +1,1211 @@
+'use client';
+import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
+
+import { use, useState, useEffect, useRef } from 'react';
+import Header from '@/components/Header';
+import Breadcrumbs from '@/components/seo/Breadcrumbs';
+import Footer from '@/components/Footer';
+import { inferCollectionItemType } from '@/lib/clientCollectionState';
+import { useCart } from '@/context/CartContext';
+import CheckoutModal from '@/components/CheckoutModal';
+import MinimalIcon from '@/components/ui/MinimalIcon';
+import PublicProductVariantSelector from '@/components/product/PublicProductVariantSelector';
+import PublicProductGallery from '@/components/product/PublicProductGallery';
+import { resolveProductColorGallery } from '@/lib/productColorGallery';
+import { trackViewItem } from '@/lib/analytics';
+import {
+  formatPublicAttributeValues,
+  resolveExactPublicVariant,
+  selectedPublicVariantSummary,
+} from '@/lib/publicProductVariantSelection';
+import styles from './Product.module.css';
+
+// Replaced hardcoded exchange rate
+const fmtToman = (n) => Math.round(n).toLocaleString('fa-IR');
+
+// Colors to Hex mapping for circular swatches
+const colorMap = {
+  'مشکی': '#000000',
+  'سفید': '#ffffff',
+  'طوسی': '#808080',
+  'سرمه‌ای': '#0c2340',
+  'کرم': '#e6d7c3',
+  'خردلی': '#e1ad01',
+  'زیتونی': '#556b2f',
+  'آبی تیره': '#000080',
+  'ذغالی': '#36454f',
+  'آبی روشن': '#add8e6',
+  'طوسی ملانژ': '#a9a9a9',
+  'طوسی روشن': '#d3d3d3',
+  'سبز یشمی': '#1e4620',
+  'آبی-طوسی': '#708090',
+  'سفید-قرمز': 'linear-gradient(135deg, #ffffff 50%, #ff0000 50%)',
+  'مشکی-سفید': 'linear-gradient(135deg, #000000 50%, #ffffff 50%)',
+  'طوسی-نارنجی': 'linear-gradient(135deg, #808080 50%, #f87820 50%)',
+  'مولتی‌کالر گل‌دار': 'linear-gradient(45deg, #ff007f, #ff8c00, #00ffc4, #0077ff)',
+  'قهوه‌ای': '#5c4033',
+  'سبز نعنایی': '#a3e4d7',
+  'صورتی': '#ffb6c1',
+  'سبز': '#008000',
+  'صورتی ملایم': '#ffc0cb',
+  'مشکی-طلایی': 'linear-gradient(135deg, #000000 50%, #ffd700 50%)'
+};
+
+export default function ProductClient({ params, initialProduct }) {
+  const { settings } = useSiteSettings();
+  // Unwrap params using React.use() to avoid Next.js sync params warning
+  const unwrappedParams = use(params);
+  const { id } = unwrappedParams;
+  const { addToCart } = useCart();
+
+  const [product, setProduct] = useState(initialProduct);
+  const [loading, setLoading] = useState(false);
+  const viewedProductRef = useRef(null);
+
+  // Selector states
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [variantSelection, setVariantSelection] = useState({});
+
+  // Validation state
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+
+  // Direct checkout and inquiry modal states
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [directOrderData, setDirectOrderData] = useState(null);
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
+  const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', notes: '' });
+  const [inquiryQty, setInquiryQty] = useState(1);
+  const [inquiryColor, setInquiryColor] = useState('');
+  const [inquirySize, setInquirySize] = useState('');
+
+  const isCatalogProduct = inferCollectionItemType(product || {}) === 'PRODUCT';
+  const variantResolution = isCatalogProduct && product?.requiresVariantSelection
+    ? resolveExactPublicVariant({
+        axes: product.variantAxes,
+        variants: product.variants,
+        selection: variantSelection,
+      })
+    : { status: 'resolved', variant: isCatalogProduct ? product?.variant || null : null };
+  const selectedProductVariant = variantResolution.status === 'resolved' ? variantResolution.variant : null;
+  const activeGallery = resolveProductColorGallery(product, variantSelection);
+  const selectedVariantSummary = selectedPublicVariantSummary(product?.variantAxes, variantSelection);
+  const activeProductPricing = selectedProductVariant?.pricing || null;
+  const catalogProductPurchasable = Boolean(selectedProductVariant?.available);
+
+  const openInquiry = () => {
+    setInquiryColor(selectedColor || product?.colors?.[0] || '');
+    setInquirySize(selectedSize || product?.sizes?.[0] || '');
+    setIsInquiryOpen(true);
+  };
+
+  const handleDirectPayment = () => {
+    if (isCatalogProduct && !selectedProductVariant) {
+      setWarningMessage('لطفاً همه مشخصات تنوع محصول را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+    if (isCatalogProduct && !catalogProductPurchasable) {
+      setWarningMessage('این تنوع در حال حاضر موجود نیست.');
+      setShowWarning(true);
+      return;
+    }
+    if (!isCatalogProduct && product?.inStock === false) return;
+    if (!isCatalogProduct && product.colors && !selectedColor) {
+      setWarningMessage('لطفاً رنگ مورد نظر خود را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+    if (!isCatalogProduct && product.sizes && !selectedSize) {
+      setWarningMessage('لطفاً سایز مورد نظر خود را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+
+    setShowWarning(false);
+
+    const finalTomanPrice = isCatalogProduct
+      ? Number(activeProductPricing.finalPriceToman)
+      : (product.discountPercent && product.discountPercent > 0
+          ? tomanPrice * (1 - product.discountPercent / 100)
+          : tomanPrice);
+
+    const orderData = {
+      link: product.originalLink || product.link || '',
+      price: product.priceAed,
+      weight: product.weight || 0.5,
+      category: product.category,
+      name: product.name,
+      brand: product.brand,
+      totalToman: finalTomanPrice,
+      productName: product.name,
+      items: [{
+        id: product.id,
+        ...(product.product_type === 'laptop_stock' ? { laptopId: product.id } : {}),
+        ...(isCatalogProduct ? { productId: product.id } : {}),
+        ...(selectedProductVariant?.id ? { productVariantId: selectedProductVariant.id } : {}),
+        product_type: product.product_type,
+        link: product.originalLink || product.link || '',
+        name: product.name,
+        brand: product.brand,
+        quantity: 1,
+        color: selectedColor || '',
+        size: selectedSize || '',
+        priceAed: product.priceAed,
+        discountPercent: product.discountPercent || 0
+      }]
+    };
+
+    setDirectOrderData(orderData);
+    setIsCheckoutOpen(true);
+  };
+
+  const handleInquirySubmit = async (e) => {
+    e.preventDefault();
+    if (!inquiryForm.name.trim() || !inquiryForm.phone.trim()) {
+      alert('لطفاً نام و شماره تماس خود را وارد کنید.');
+      return;
+    }
+
+    // Convert to english digits
+    const toEnglishDigits = (str) => {
+      const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+      return str
+        .replace(/[۰-۹]/g, (w) => farsiDigits.indexOf(w))
+        .replace(/[٠-٩]/g, (w) => arabicDigits.indexOf(w));
+    };
+
+    const cleanPhone = toEnglishDigits(inquiryForm.phone.trim().replace(/\s+/g, ''));
+    if (!/^(?:09|\+989|989|00989)\d{9}$/.test(cleanPhone)) {
+      alert('شماره موبایل وارد شده معتبر نیست. (نمونه: ۰۹۱۲۳۴۵۶۷۸۹)');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/purchase-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
+        body: JSON.stringify({
+          customer: { name: inquiryForm.name.trim(), phone: cleanPhone, address: 'استعلام قیمت (بدون آدرس اولیه)' },
+          productUrl: product.originalLink || product.link || window.location.href,
+          productName: product.name,
+          sourceStore: product.store || product.brand || '',
+          priceAed: Number(product.priceAed || 0),
+          weight: Number(product.weight || 0.5),
+          quantity: inquiryQty,
+          notes: [inquiryForm.notes.trim(), inquiryColor ? `رنگ: ${inquiryColor}` : '', inquirySize ? `سایز: ${inquirySize}` : ''].filter(Boolean).join('\n'),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'خطا در ثبت درخواست.');
+      setIsInquiryOpen(false);
+      setInquiryForm({ name: '', phone: '', notes: '' });
+      setInquiryQty(1);
+      alert(`درخواست شما ثبت شد. پس از بررسی قیمت نهایی، وزن واقعی، هزینه ارسال و نرخ روز درهم، قیمت دقیق از طریق واتساپ یا تماس به شما اعلام میشود.\nشناسه درخواست: ${payload.data.requestCode}`);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'خطا در ثبت درخواست. لطفاً مجدداً تلاش کنید.');
+    }
+  };
+
+  // Extract uploader or static technical specs
+  const getLaptopSpecs = (prod) => {
+    if (!prod) return null;
+    if (prod.rawSpecs) {
+      const rs = prod.rawSpecs;
+      let storageCombined = `${rs.storageSize}${rs.storageType}`;
+      if (rs.storage2Type !== 'none' && parseFloat(rs.storage2Size) > 0) {
+        storageCombined += ` + ${rs.storage2Size}${rs.storage2Type}`;
+      }
+      return {
+        model: rs.model,
+        cpu: rs.cpu,
+        ram: `${rs.ram}GB`,
+        storage: storageCombined,
+        gpu: rs.gpu,
+        screenSize: `${rs.screenSize} اینچ`,
+        manufactureYear:
+          rs.manufactureYear === '' || rs.manufactureYear == null
+            ? null
+            : String(rs.manufactureYear),
+        batteryHealth:
+          rs.batteryHealth === '' || rs.batteryHealth == null
+            ? null
+            : `${rs.batteryHealth}%`,
+        physicalStatus: rs.physicalStatus === 'excellent' ? 'عالی (در حد نو)' :
+                        rs.physicalStatus === 'very_good' ? 'خیلی خوب' :
+                        rs.physicalStatus === 'good' ? 'خوب' : 'متوسط',
+        serial: rs.serial && rs.serial !== 'نامشخص' ? rs.serial : null,
+        warranty: rs.warrantyDays ? `${rs.warrantyDays} روز مهلت تست و گارانتی` : null,
+        accessories: rs.accessories ? Object.entries(rs.accessories)
+          .filter(([_, checked]) => checked)
+          .map(([key]) => key === 'charger' ? 'شارژر اصلی' : 'کارتن اصلی')
+          .join(' + ') : null,
+        tests: rs.hardwareTests ? rs.hardwareTests : null
+      };
+    }
+
+    // Only render technical specifications that came from a real product record.
+    if (prod.model || prod.cpu || prod.ram || prod.storage || prod.gpu || prod.screen || prod.screenSize) {
+      return {
+        model: prod.model || null,
+        cpu: prod.cpu || null,
+        ram: prod.ram || null,
+        storage: prod.storage || null,
+        gpu: prod.gpu || null,
+        screenSize: prod.screenSize || prod.screen || null,
+        manufactureYear: prod.manufactureYear ?? null,
+        batteryHealth: prod.batteryHealth == null ? null : `${prod.batteryHealth}%`,
+        physicalStatus: prod.physicalStatus || prod.condition || null,
+        serial: prod.serial || null,
+        warranty: prod.warranty || null,
+        accessories: prod.accessories || null,
+        tests: prod.hardwareTests || null
+      };
+    }
+
+    return null;
+  };
+
+  const laptopSpecs = (product && (product.category === 'electronics' || product.id.startsWith('lap') || product.id.startsWith('uploaded'))) ? getLaptopSpecs(product) : null;
+
+  useEffect(() => {
+    // This keyed client already has the current server-authoritative public snapshot.
+    if (initialProduct?.id === id) return;
+    const controller = new AbortController();
+    const loadProduct = async () => {
+      let found = null;
+      try {
+        const response = await fetch(`/api/products/${encodeURIComponent(id)}`, { cache: 'no-store', signal: controller.signal });
+        if (response.ok) found = await response.json();
+      } catch (error) { if (error.name === 'AbortError') return; }
+      if (!controller.signal.aborted) {
+        setProduct(found || null);
+        setVariantSelection({});
+        setSelectedColor(null);
+        setSelectedSize(null);
+        setShowWarning(false);
+        setLoading(false);
+      }
+    };
+    loadProduct();
+    return () => controller.abort();
+  }, [id, initialProduct]);
+
+  useEffect(() => {
+    if (!loading && product && viewedProductRef.current !== product.id && trackViewItem(product)) {
+      viewedProductRef.current = product.id;
+    }
+  }, [loading, product]);
+
+  if (loading) {
+    return (
+      <div className={styles.pageWrapper}>
+        <Header />
+        <div className={styles.notFound} style={{ color: '#8b92a5', padding: '100px', textAlign: 'center' }}>در حال بارگذاری مشخصات محصول...</div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className={styles.pageWrapper}>
+        <Header />
+        <div className={styles.notFound}>محصول مورد نظر یافت نشد.</div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const handleAddToCart = () => {
+    if (isCatalogProduct) {
+      if (!selectedProductVariant) {
+        setWarningMessage('لطفاً همه مشخصات تنوع محصول را انتخاب کنید.');
+        setShowWarning(true);
+        return;
+      }
+      if (!catalogProductPurchasable) {
+        setWarningMessage('این تنوع در حال حاضر موجود نیست.');
+        setShowWarning(true);
+        return;
+      }
+      setShowWarning(false);
+      addToCart({
+        ...product,
+        productVariantId: selectedProductVariant.id,
+        discountPercent: activeProductPricing.discountPercent,
+        priceToman: product.supplyMode === 'IRAN_STOCK' ? activeProductPricing.basePrice : null,
+        priceAed: product.supplyMode === 'EXTERNAL_DUBAI' ? Number(activeProductPricing.basePrice) : null,
+      });
+      const summary = selectedVariantSummary.map(item => `${item.attributeNameFa}: ${item.labelFa}`).join(' | ');
+      alert(`«${product.name}» با موفقیت به سبد خرید افزوده شد.${summary ? `\n${summary}` : ''}`);
+      return;
+    }
+    if (product?.inStock === false) return;
+    // Validate selections if color/size options are present
+    if (product.colors && !selectedColor) {
+      setWarningMessage('لطفاً رنگ مورد نظر خود را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+    if (product.sizes && !selectedSize) {
+      setWarningMessage('لطفاً سایز مورد نظر خود را انتخاب کنید.');
+      setShowWarning(true);
+      return;
+    }
+
+    setShowWarning(false);
+    addToCart(product, selectedSize, selectedColor);
+
+    // Custom Farsi alert confirmation
+    alert(`«${product.name}» با موفقیت به سبد خرید افزوده شد.\n${selectedColor ? `رنگ: ${selectedColor}` : ''} ${selectedSize ? `| سایز: ${selectedSize}` : ''}`);
+  };
+
+  const tomanPrice = getProductTomanPrice(product, settings);
+  const purchaseDisabled = isCatalogProduct ? !catalogProductPurchasable : product.inStock === false;
+  const purchaseButtonLabel = isCatalogProduct
+    ? (!selectedProductVariant ? 'ابتدا مشخصات را انتخاب کنید' : (purchaseDisabled ? 'ناموجود' : 'افزودن به سبد خرید'))
+    : (product.inStock === false ? 'ناموجود' : 'افزودن به سبد خرید');
+  const brandName = typeof product.brand === 'string' ? product.brand.trim() : '';
+  const showBrandBadge = Boolean(brandName)
+    && (product.product_type !== 'iran_inventory' || product.brandVisible === true);
+
+  return (
+    <div className={styles.pageWrapper}>
+      <Header />
+
+      <main className={styles.mainContainer}>
+        <Breadcrumbs items={[{ name: 'صفحه اصلی', path: '/' }, ...(showBrandBadge && product.brandId ? [{ name: brandName, path: `/brands/${product.brandId}` }] : []), { name: product.name, path: `/product/${product.id}` }]} />
+        <div className={styles.productGrid}>
+          {/* Image Section */}
+          <div className={`${styles.imageSection} ${isCatalogProduct ? styles.catalogImageSection : ''}`} style={{ position: 'relative' }}>
+            {isCatalogProduct ? (
+              <PublicProductGallery
+                key={activeGallery.key}
+                images={activeGallery.images}
+                legacyImage={product.legacyImage}
+                coverImage={product.image}
+                productName={product.name}
+                productNameEn={product.nameEn}
+              />
+            ) : (
+              <img src={product.image} alt={product.name} className={styles.mainImage} />
+            )}
+            {activeProductPricing?.discountPercent > 0 ? (
+              <span className={styles.detailDiscountBadge}>{activeProductPricing.discountPercent}% تخفیف</span>
+            ) : null}
+            {isCatalogProduct && product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}
+          </div>
+
+          {/* Info Section */}
+          <div className={styles.infoSection} dir="rtl">
+            {showBrandBadge ? <div className={styles.brandBadge}>{brandName}</div> : null}
+            <h1 className={styles.productName}>{product.name}</h1>
+            {product.product_type === 'iran_inventory' && product.nameEn ? (
+              <p className={styles.productNameEn} dir="ltr" lang="en">{product.nameEn}</p>
+            ) : null}
+
+            {/* dynamic Specs */}
+            {laptopSpecs ? (
+              <div className={styles.specsGrid}>
+                <div className={styles.specItem}>
+                  <span className={styles.specLabel}>مدل:</span>
+                  <span className={styles.specValue}>{laptopSpecs.model}</span>
+                </div>
+                <div className={styles.specItem}>
+                  <span className={styles.specLabel}>پردازنده (CPU):</span>
+                  <span className={styles.specValue}>{laptopSpecs.cpu}</span>
+                </div>
+                <div className={styles.specItem}>
+                  <span className={styles.specLabel}>رم (RAM):</span>
+                  <span className={styles.specValue}>{laptopSpecs.ram}</span>
+                </div>
+                <div className={styles.specItem}>
+                  <span className={styles.specLabel}>حافظه داخلی:</span>
+                  <span className={styles.specValue}>{laptopSpecs.storage}</span>
+                </div>
+                <div className={styles.specItem}>
+                  <span className={styles.specLabel}>کارت گرافیک (GPU):</span>
+                  <span className={styles.specValue}>{laptopSpecs.gpu}</span>
+                </div>
+                <div className={styles.specItem}>
+                  <span className={styles.specLabel}>اندازه صفحه:</span>
+                  <span className={styles.specValue}>{laptopSpecs.screenSize}</span>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.productSpec}>{product.spec}</div>
+            )}
+
+            {isCatalogProduct && product.informationalAttributes?.length > 0 ? (
+              <section className={styles.publicSpecs} aria-labelledby="product-specifications-title">
+                <h2 id="product-specifications-title" className={styles.publicSpecsTitle}>مشخصات محصول</h2>
+                <dl className={styles.publicSpecsList}>
+                  {product.informationalAttributes.map(attribute => (
+                    <div className={styles.publicSpecRow} key={attribute.code}>
+                      <dt>{attribute.nameFa}</dt>
+                      <dd>{formatPublicAttributeValues(attribute)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
+
+            {isCatalogProduct ? (
+              <PublicProductVariantSelector
+                product={product}
+                selection={variantSelection}
+                onChange={next => { setVariantSelection(next); setShowWarning(false); }}
+                resolutionStatus={variantResolution.status}
+              />
+            ) : null}
+
+            {/* Interactive Color Selector */}
+            {!isCatalogProduct && product.colors && (
+              <div className={styles.attributeBlock}>
+                <span className={styles.attributeLabel}>انتخاب رنگ:</span>
+                <div className={styles.colorSwatches}>
+                  {product.colors.map((color, idx) => {
+                    const colorBg = colorMap[color] || '#808080';
+                    const isSelected = selectedColor === color;
+                    return (
+                      <div
+                        key={idx}
+                        className={styles.colorSwatchWrap}
+                        onClick={() => { setSelectedColor(color); setShowWarning(false); }}
+                      >
+                        <div
+                          className={`${styles.colorSwatch} ${isSelected ? styles.colorSwatchSelected : ''}`}
+                          style={{ background: colorBg }}
+                          title={color}
+                        />
+                        <span className={styles.colorName}>{color}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Interactive Size Selector */}
+            {!isCatalogProduct && product.sizes && (
+              <div className={styles.attributeBlock}>
+                <span className={styles.attributeLabel}>انتخاب سایز:</span>
+                <div className={styles.sizeGrid}>
+                  {product.sizes.map((size, idx) => {
+                    const isSelected = selectedSize === size;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`${styles.sizeOption} ${isSelected ? styles.sizeOptionSelected : ''}`}
+                        onClick={() => { setSelectedSize(size); setShowWarning(false); }}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Validation warning */}
+            {showWarning && (
+              <div className={styles.validationWarning}>
+                {warningMessage}
+              </div>
+            )}
+
+            {product.description?.trim() ? <div className={styles.productDescription} style={{ whiteSpace: 'pre-wrap' }}>{product.description}</div> : null}
+
+            <div className={styles.priceSection}>
+              {isCatalogProduct ? (
+                activeProductPricing ? (
+                  <div aria-live="polite">
+                    <div className={styles.priceLabel}>قیمت نهایی این تنوع:</div>
+                    {activeProductPricing.discountPercent > 0 ? (
+                      <div className={styles.discountPriceBlock}>
+                        <div className={styles.originalPriceRow}>
+                          <span className={styles.originalPrice}>{fmtToman(Number(activeProductPricing.originalFinalPriceToman))} تومان</span>
+                          <span className={styles.discountPercent}>{activeProductPricing.discountPercent}% تخفیف</span>
+                        </div>
+                        <div className={`${styles.priceValue} ${styles.discountedPrice}`}>
+                          {fmtToman(Number(activeProductPricing.finalPriceToman))}
+                          <span className={styles.priceUnit}>تومان</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className={styles.priceValue}>
+                        {fmtToman(Number(activeProductPricing.finalPriceToman))}
+                        <span className={styles.priceUnit}>تومان</span>
+                      </div>
+                    )}
+                  </div>
+                ) : product.priceRange ? (
+                  <div aria-live="polite">
+                    <div className={styles.priceLabel}>پس از انتخاب مشخصات، قیمت دقیق نمایش داده می‌شود.</div>
+                    <div className={styles.priceValue}>
+                      {product.priceRange.varies ? <span className={styles.startingPriceLabel}>از</span> : null}
+                      {fmtToman(Number(product.priceRange.minimumFinalPriceToman))}
+                      <span className={styles.priceUnit}>تومان</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.unavailablePrice}>قیمت این محصول در حال حاضر قابل نمایش نیست.</div>
+                )
+              ) : inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
+                <div>
+                  <div className={styles.priceLabel}>قیمت نهایی محصول:</div>
+                  <div className={styles.priceValue} style={{ fontSize: '20px', color: '#f87820', fontWeight: 'bold' }}>
+                    قیمت نهایی پس از بررسی اعلام می‌شود
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#8b92a5', marginTop: '6px' }}>
+                    {product.product_type === 'laptop_stock' ? 'قیمت قطعی موجودی ایران' : `(قیمت تقریبی مبدا: ${product.priceAed} درهم)`}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.priceLabel}>قیمت نهایی با احتساب هزینه‌های ارسال:</div>
+                  {product.discountPercent && product.discountPercent > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span style={{ fontSize: '18px', textDecoration: 'line-through', color: '#8b92a5' }}>
+                          {fmtToman(tomanPrice)} تومان
+                        </span>
+                        <span style={{ background: '#ff3333', color: '#fff', fontSize: '14px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '4px', boxShadow: '0 0 10px #ff3333' }}>
+                          {product.discountPercent}% تخفیف
+                        </span>
+                      </div>
+                      <div className={styles.priceValue} style={{ color: '#ff3333' }}>
+                        {fmtToman(tomanPrice * (1 - product.discountPercent / 100))}
+                        <span className={styles.priceUnit} style={{ color: '#ff3333' }}>تومان</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.priceValue}>
+                      {fmtToman(tomanPrice)}
+                      <span className={styles.priceUnit}>تومان</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className={styles.actionSection}>
+              {inferCollectionItemType(product) === 'EXTERNAL_PRODUCT' ? (
+                <div style={{ display: 'flex', gap: '12px', width: '100%', flexDirection: 'column' }}>
+                  <div className={styles.purchaseButtons}>
+                    <button
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={openInquiry}
+                      style={{ background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)', flex: 1 }}
+                    >
+                      ثبت درخواست خرید
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={openInquiry}
+                      style={{ background: 'transparent', border: '1.5px solid #f87820', color: '#f87820', flex: 1 }}
+                    >
+                      استعلام قیمت
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+                  <div className={styles.purchaseButtons}>
+                    <button
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={handleAddToCart}
+                      disabled={purchaseDisabled}
+                      style={{ flex: 1, opacity: purchaseDisabled ? 0.55 : 1, cursor: purchaseDisabled ? 'not-allowed' : 'pointer' }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                      {purchaseButtonLabel}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.addToCartBtn}
+                      onClick={handleDirectPayment}
+                      disabled={purchaseDisabled}
+                      style={{ background: '#2ecc71', color: '#fff', flex: 1, opacity: purchaseDisabled ? 0.55 : 1, cursor: purchaseDisabled ? 'not-allowed' : 'pointer' }}
+                    >
+                      <MinimalIcon name="creditCard" size={20} /> پرداخت آنلاین
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className={styles.storeInfo}>
+                <span className={styles.storeLabel}>{isCatalogProduct ? 'روش تأمین:' : 'فروشگاه مبدا (دبی):'}</span>
+                <span className={styles.storeName}>{isCatalogProduct
+                  ? (product.supplyMode === 'IRAN_STOCK' ? 'موجود در ایران' : 'سفارش از دبی')
+                  : product.store}</span>
+              </div>
+              {product.sourceUrl ? <a className={styles.sourceLink} href={product.sourceUrl} target="_blank" rel="noopener noreferrer">
+                {product.sourceType === 'OFFICIAL_BRAND_WEBSITE' ? 'مشاهده سایت رسمی برند' : `مشاهده منبع${product.sourceName ? `: ${product.sourceName}` : ''}`}
+              </a> : null}
+            </div>
+          </div>
+        </div>
+
+        {/* Structured Specifications & Tests Dashboard */}
+        {laptopSpecs && (
+          <div className={styles.technicalPanel} dir="rtl" style={{ marginBottom: '30px' }}>
+            <h2 className={styles.technicalTitle}><MinimalIcon name="clipboard" size={23} /> وضعیت سلامت فیزیکی و تست‌های سخت‌افزاری</h2>
+
+            <div className={styles.technicalGrid}>
+
+              {/* Left Column: Health and Warranty Stats */}
+              <div className={styles.techCard}>
+                <h3><MinimalIcon name="gear" size={20} /> اصالت و سلامت فنی دستگاه</h3>
+                <ul className={styles.techList}>
+                  {laptopSpecs.manufactureYear && (
+                    <li>
+                      <span>سال ساخت:</span>
+                      <strong>{laptopSpecs.manufactureYear}</strong>
+                    </li>
+                  )}
+                  {laptopSpecs.batteryHealth !== null && laptopSpecs.batteryHealth !== undefined && laptopSpecs.batteryHealth !== '' && (
+                    <li>
+                      <span>سلامت باتری:</span>
+                      <strong style={{ color: '#2ecc71' }}>{laptopSpecs.batteryHealth}</strong>
+                    </li>
+                  )}
+                  <li>
+                    <span>وضعیت ظاهری:</span>
+                    <strong style={{ color: '#ff9d00' }}>{laptopSpecs.physicalStatus || 'عالی'}</strong>
+                  </li>
+                  {laptopSpecs.warranty && (
+                    <li>
+                      <span>ضمانت و گارانتی:</span>
+                      <strong style={{ color: '#ffd073' }}>{laptopSpecs.warranty}</strong>
+                    </li>
+                  )}
+                  {laptopSpecs.accessories && (
+                    <li>
+                      <span>اقلام همراه لپ‌تاپ:</span>
+                      <strong style={{ color: '#fff' }}>{laptopSpecs.accessories}</strong>
+                    </li>
+                  )}
+                  {laptopSpecs.serial && (
+                    <li>
+                      <span>شماره سریال (S/N):</span>
+                      <span style={{ fontFamily: 'monospace', color: '#8b92a5', fontSize: '12px' }}>{laptopSpecs.serial}</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              {/* Right Column: Hardware Checklist Tests */}
+              {laptopSpecs.tests && (
+                <div className={styles.techCard}>
+                  <h3><MinimalIcon name="search" size={20} /> چک‌لیست تست‌های سخت‌افزاری (پاس شده)</h3>
+                  <div className={styles.checklistGrid}>
+                    {Object.entries(laptopSpecs.tests).map(([testKey, passed]) => {
+                      const testLabels = {
+                        keyboard: 'تست کیبورد و تاچ‌پد',
+                        speaker: 'تست اسپیکر و خروجی صدا',
+                        display: 'تست صفحه نمایش و پیکسل',
+                        usb: 'تست پورت‌های USB/Type-C',
+                        battery: 'تست شارژدهی باتری',
+                        wifi: 'تست اتصال Wi-Fi و بلوتوث',
+                        camera: 'تست وب‌کم و میکروفون',
+                        charge: 'تست اتصال شارژر و آداپتور'
+                      };
+                      return (
+                        <div key={testKey} className={styles.checkItem}>
+                          <span style={{ color: passed ? '#2ecc71' : '#ff4d4d', fontSize: '16px', marginLeft: '6px' }}>
+                            <MinimalIcon name={passed ? 'check' : 'x'} size={16} weight="bold" />
+                          </span>
+                          <span style={{ color: passed ? '#fff' : '#8b92a5', fontSize: '13px' }}>
+                            {testLabels[testKey] || testKey}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* Customer Reviews Section */}
+        <ReviewsSection productId={product.id} productName={product.name} />
+      </main>
+
+      <CheckoutModal
+        isOpen={isCheckoutOpen}
+        orderData={directOrderData}
+        onClose={() => setIsCheckoutOpen(false)}
+        onCartIncrement={() => {
+          setIsCheckoutOpen(false);
+        }}
+      />
+
+      {isInquiryOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0, 0, 0, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#11131a',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '100%',
+            color: '#fff',
+            direction: 'rtl',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#f87820' }}>استعلام قیمت و ثبت درخواست خرید</h2>
+              <button
+                onClick={() => setIsInquiryOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#8b92a5', fontSize: '18px', cursor: 'pointer' }}
+              >
+                <MinimalIcon name="x" size={18} />
+              </button>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: '12px',
+              padding: '12px',
+              marginBottom: '20px'
+            }}>
+              <img src={product.image} alt={product.name} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+              <div>
+                <h4 style={{ fontSize: '13px', fontWeight: 'bold', margin: '0 0 4px 0' }}>{product.name}</h4>
+                <p style={{ fontSize: '11px', color: '#8b92a5', margin: 0 }}>{product.store ? `فروشگاه مبدا: ${product.store}` : 'منبع خرید ثبت نشده'}{product.product_type === 'laptop_stock' ? '' : ` | قیمت تقریبی: ${product.priceAed} درهم`}</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleInquirySubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>نام و نام خانوادگی:</label>
+                  <input
+                    type="text"
+                    required
+                    value={inquiryForm.name}
+                    onChange={(e) => setInquiryForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="مثال: رضا محمدی"
+                    style={{
+                      width: '100%',
+                      background: '#1a1d26',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>شماره تماس (جهت هماهنگی):</label>
+                  <input
+                    type="text"
+                    required
+                    value={inquiryForm.phone}
+                    onChange={(e) => setInquiryForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="مثال: ۰۹۱۲۳۴۵۶۷۸۹"
+                    style={{
+                      width: '100%',
+                      background: '#1a1d26',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      direction: 'ltr',
+                      textAlign: 'right'
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>تعداد:</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={inquiryQty}
+                      onChange={(e) => setInquiryQty(parseInt(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        background: '#1a1d26',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>رنگ:</label>
+                    <input
+                      type="text"
+                      value={inquiryColor}
+                      onChange={(e) => setInquiryColor(e.target.value)}
+                      placeholder="اختیاری"
+                      style={{
+                        width: '100%',
+                        background: '#1a1d26',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>سایز:</label>
+                    <input
+                      type="text"
+                      value={inquirySize}
+                      onChange={(e) => setInquirySize(e.target.value)}
+                      placeholder="اختیاری"
+                      style={{
+                        width: '100%',
+                        background: '#1a1d26',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        padding: '10px 12px',
+                        color: '#fff',
+                        fontSize: '13px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#8b92a5', marginBottom: '6px' }}>توضیحات مشتری:</label>
+                  <textarea
+                    rows="3"
+                    value={inquiryForm.notes}
+                    onChange={(e) => setInquiryForm(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="توضیحات رنگ، سایز یا مشخصات مورد نظر خود را بنویسید..."
+                    style={{
+                      width: '100%',
+                      background: '#1a1d26',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#fff',
+                      fontSize: '13px',
+                      fontFamily: 'inherit',
+                      outline: 'none',
+                      resize: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1,
+                    background: 'linear-gradient(135deg, #f87820 0%, #ff5e00 100%)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  ثبت درخواست استعلام
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsInquiryOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '8px',
+                    padding: '12px 20px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit'
+                  }}
+                >
+                  انصراف
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ==========================================================================
+// CUSTOMER REVIEWS LOGIC
+// ==========================================================================
+function ReviewsSection({ productId, productName }) {
+  const [reviews, setReviews] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ name: '', rating: 5, comment: '' });
+  const [hoverRating, setHoverRating] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('dubaiKharidReviews');
+      const parsed = saved ? JSON.parse(saved) : [];
+      const allReviews = Array.isArray(parsed)
+        ? parsed.filter(review => !String(review?.id || '').startsWith('seed-'))
+        : [];
+      if (saved && allReviews.length !== parsed.length) {
+        localStorage.setItem('dubaiKharidReviews', JSON.stringify(allReviews));
+      }
+
+      const filtered = allReviews.filter(r => r.productId === productId);
+      Promise.resolve().then(() => setReviews(filtered));
+    } catch (e) {
+      console.error('Error loading reviews:', e);
+    }
+  }, [productId]);
+
+  const handleSubmitReview = (e) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.comment.trim()) {
+      alert('لطفاً نام و متن نظر خود را وارد کنید.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setTimeout(() => {
+      try {
+        const newReview = {
+          id: crypto.randomUUID(),
+          productId,
+          productName,
+          userName: formData.name.trim(),
+          rating: formData.rating,
+          comment: formData.comment.trim(),
+          date: new Date().toISOString(),
+          isVerified: false
+        };
+
+        const saved = localStorage.getItem('dubaiKharidReviews');
+        const parsed = saved ? JSON.parse(saved) : [];
+        const allReviews = Array.isArray(parsed) ? parsed : [];
+        allReviews.unshift(newReview);
+        localStorage.setItem('dubaiKharidReviews', JSON.stringify(allReviews));
+
+        setReviews(prev => [newReview, ...prev]);
+        setFormData({ name: '', rating: 5, comment: '' });
+        setShowForm(false);
+        alert('دیدگاه شما با موفقیت ثبت شد و انتشار یافت!');
+      } catch (err) {
+        console.error('Error saving review:', err);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, 800);
+  };
+
+  const totalCount = reviews.length;
+  const avgScore = totalCount > 0
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalCount).toFixed(1)
+    : '—';
+
+  const starDistribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  reviews.forEach(r => {
+    const star = Math.round(r.rating);
+    if (starDistribution[star] !== undefined) {
+      starDistribution[star]++;
+    }
+  });
+
+  const getPercent = (star) => {
+    if (totalCount === 0) return 0;
+    return Math.round((starDistribution[star] / totalCount) * 100);
+  };
+
+  const formatDate = (isoString) => {
+    const d = new Date(isoString);
+    return d.toLocaleDateString('fa-IR');
+  };
+
+  return (
+    <section className={styles.reviewsSection}>
+      <div className={styles.reviewsHeader}>
+        <h2 className={styles.reviewsTitle}>
+          <MinimalIcon name="paperPlane" size={23} style={{ marginLeft: '10px' }} /> نظرات خریداران ({totalCount})
+        </h2>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)} className={styles.writeReviewBtn}>
+            <MinimalIcon name="pencil" size={17} /> ثبت دیدگاه جدید
+          </button>
+        )}
+      </div>
+
+      <div className={styles.ratingSummary}>
+        <div className={styles.ratingAverage}>
+          <div className={styles.averageScore}>{avgScore}</div>
+          <div className={styles.averageStars}>
+            {Array.from({ length: 5 }, (_, index) => (
+              <MinimalIcon key={index} name="star" size={17} weight={index < Math.round(parseFloat(avgScore)) ? 'fill' : 'regular'} />
+            ))}
+          </div>
+          <div className={styles.totalReviewsText}>بر اساس {totalCount} نظر</div>
+        </div>
+
+        <div className={styles.distributionBars}>
+          {[5, 4, 3, 2, 1].map(star => {
+            const pct = getPercent(star);
+            return (
+              <div key={star} className={styles.distributionRow}>
+                <span className={styles.barLabel}>{star} ستاره</span>
+                <div className={styles.progressBarContainer}>
+                  <div className={styles.progressBarFill} style={{ width: `${pct}%` }} />
+                </div>
+                <span className={styles.barPercent}>{pct}%</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {showForm && (
+        <div className={styles.reviewFormCard}>
+          <h3 className={styles.formTitle}>ثبت دیدگاه جدید</h3>
+          <form onSubmit={handleSubmitReview}>
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>نام و نام خانوادگی:</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="مثال: رضا احمدی"
+                  className={styles.reviewInput}
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>امتیاز شما به محصول:</label>
+                <div className={styles.starRatingSelector}>
+                  {[1, 2, 3, 4, 5].map(star => {
+                    const isActive = hoverRating ? star <= hoverRating : star <= formData.rating;
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        className={`${styles.selectorStarBtn} ${isActive ? styles.selectorStarBtnActive : ''}`}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                        aria-label={`امتیاز ${star} ستاره`}
+                      >
+                        <MinimalIcon name="star" size={22} weight={isActive ? 'fill' : 'regular'} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className={styles.formGroupFull}>
+                <label>متن دیدگاه:</label>
+                <textarea
+                  rows="3"
+                  value={formData.comment}
+                  onChange={e => setFormData(prev => ({ ...prev, comment: e.target.value }))}
+                  placeholder="نظرات خود درباره محصول را وارد کنید..."
+                  className={styles.reviewInput}
+                  required
+                />
+              </div>
+            </div>
+            <div className={styles.formActions}>
+              <button type="submit" className={styles.submitReviewBtn} disabled={isSubmitting}>
+                {isSubmitting ? 'در حال ثبت...' : 'ثبت و انتشار نظر'}
+              </button>
+              <button type="button" onClick={() => setShowForm(false)} className={styles.cancelReviewBtn}>
+                انصراف
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <div className={styles.reviewsList}>
+        {reviews.length === 0 ? (
+          <div className={styles.emptyReviews}>
+            <div className={styles.emptyIcon}><MinimalIcon name="package" size={50} weight="thin" /></div>
+            <p>هنوز هیچ دیدگاهی ثبت نشده است.</p>
+            <p style={{ fontSize: '12px', color: '#8b92a5', marginTop: '6px' }}>اولین کسی باشید که برای این محصول نظر ثبت می‌کند!</p>
+          </div>
+        ) : (
+          reviews.map(rev => (
+            <div key={rev.id} className={styles.reviewCard}>
+              <div className={styles.reviewUserRow}>
+                <div className={styles.userNameWrap}>
+                  <span className={styles.userName}>{rev.userName}</span>
+                  {rev.isVerified && (
+                    <span className={styles.verifiedBadge}><MinimalIcon name="check" size={12} weight="bold" /> خریدار تأیید شده</span>
+                  )}
+                </div>
+                <div className={styles.reviewStars}>
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <MinimalIcon key={index} name="star" size={15} weight={index < rev.rating ? 'fill' : 'regular'} />
+                  ))}
+                </div>
+              </div>
+              <p className={styles.reviewText}>{rev.comment}</p>
+              <div className={styles.reviewMeta}>
+                <span>مرجع: دبی خرید</span>
+                <span>{formatDate(rev.date)}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}

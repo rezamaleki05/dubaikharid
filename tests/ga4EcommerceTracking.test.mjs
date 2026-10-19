@@ -127,7 +127,7 @@ test('WhatsApp event sends placement only and no destination or customer data', 
 test('real UI triggers use the centralized helper without adding another GA tag', async () => {
   const [layout, product, cart, checkout, cartContext, profile, footer, manualPayment] = await Promise.all([
     source('../src/app/layout.js'),
-    source('../src/app/product/[id]/page.js'),
+    source('../src/app/product/[id]/ProductClient.js'),
     source('../src/app/cart/page.js'),
     source('../src/components/CheckoutModal.js'),
     source('../src/context/CartContext.js'),

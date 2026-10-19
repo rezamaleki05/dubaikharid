@@ -27,7 +27,7 @@ test('isolated Admin API source round trip preserves four variants, inventory, g
  const legacy=await call('/api/admin/products','POST',{nameFa:'محصول ساده محلی',nameEn:'Legacy source fixture',brandId:'qa-adidas',categoryId:'qa-shoes',priceAed:10,originalLink:'https://www.adidas.ae/',status:'hidden'});assert.equal(legacy.status,201,JSON.stringify(legacy.body));const patched=await call('/api/admin/products/'+legacy.body.id,'PATCH',{originalLink:exact+'#reference'});assert.equal(patched.status,409,'exact URL canonical dedupe remains intact');
  assert.equal((await db.query('SELECT url FROM "Brand" WHERE id=\'qa-adidas\'')).rows[0].url,'https://www.adidas.ae/');
  // Existing SEO/Telegram links remain first-party, even when source metadata is external.
- const page=await fetch(origin+'/product/'+id);const html=await page.text();assert.ok(!html.includes('rel="canonical" href="'+exact));assert.equal(page.status,200);assert.match(html,/rel="canonical" href="https:\/\/(?:www\.)?dubaikharid\.shop\/product\//);assert.match(html,/application\/ld\+json/);
+ const page=await fetch(origin+'/product/'+id);const html=await page.text();assert.ok(!html.includes('rel="canonical" href="'+exact));assert.equal(page.status,200);assert.match(html,/<h1[^>]*>[^<]+<\/h1>/);assert.match(html,/rel="canonical" href="https:\/\/(?:www\.)?dubaikharid\.shop\/product\//);assert.match(html,/application\/ld\+json/);
  assert.equal((await db.query('SELECT count(*)::int n FROM "LaptopTelegramPublication"')).rows[0].n,0);
  }finally{await db.end();}
 });

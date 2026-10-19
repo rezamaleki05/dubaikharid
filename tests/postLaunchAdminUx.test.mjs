@@ -15,7 +15,7 @@ import { validateSettingValue } from '../src/lib/settingsSchema.js';
 
 const read = path => readFile(new URL(path, import.meta.url), 'utf8');
 const [laptopPage, laptopValidation, brandPage, brandRoute, publicBrands, productAdmin, productConfigurationService, productPage, publicCatalog, scheduler, schema, vercelConfig] = await Promise.all([
-  read('../src/app/admin/laptops/page.js'), read('../src/lib/adminLaptops.js'), read('../src/app/admin/brands/page.js'), read('../src/app/api/admin/brands/[id]/route.js'), read('../src/app/brands/page.js'), read('../src/lib/adminProducts.js'), read('../src/lib/adminProductConfigurationService.js'), read('../src/app/product/[id]/page.js'), read('../src/lib/publicCatalog.js'), read('../src/lib/aedRateService.js'), read('../prisma/schema.prisma'), read('../vercel.json'),
+  read('../src/app/admin/laptops/page.js'), read('../src/lib/adminLaptops.js'), read('../src/app/admin/brands/page.js'), read('../src/app/api/admin/brands/[id]/route.js'), read('../src/app/brands/page.js'), read('../src/lib/adminProducts.js'), read('../src/lib/adminProductConfigurationService.js'), read('../src/app/product/[id]/ProductClient.js'), read('../src/lib/publicCatalog.js'), read('../src/lib/aedRateService.js'), read('../prisma/schema.prisma'), read('../vercel.json'),
 ]);
 
 test('Jalali manual input normalizes Persian digits and rejects invalid dates', () => {

@@ -1,0 +1,23 @@
+{
+  "src/app/globals.css": "421f52516d26e48a0be812a7742bb65590392fc9422aa6b33e0f096a5f252962",
+  "src/app/layout.js": "975b5cf45f237847cb3f69c1185d2d4a832a2af22addfc35a8d6e8ed6400ccb6",
+  "src/app/page.js": "98c422bd7a961dc283738ef4258edffd0b0dfd1aee9d78660097991a3c096e1d",
+  "src/app/page.module.css": "08efa475139388a3dda6d87957cd16a1115afe7e9579816b94aff5caa6d42ecd",
+  "src/components/BrandLogosBar.js": "430641f6d03b81ae9368841f078c2ccc433b4ba129005357d6fd1247086e35cd",
+  "src/components/BrandLogosBar.module.css": "b4de5ad369a5c0e8f2db708d6ff699a1e874cdaacd900c9301c36d1d54352422",
+  "src/components/Calculator.js": "2606da74d2c734e71eae7e89a25b5d22a479ff0f32308465a58b0a1bb8356117",
+  "src/components/Calculator.module.css": "29aef831510ecb2dabe32f1a0119a6cb02c453d6211550b8999f1fa338a2da78",
+  "src/components/Footer.js": "24a82d7f8b04ed83baa140f4f62be4a4cfd052e783c5a2f7509f70da805f4361",
+  "src/components/Footer.module.css": "982d9059512f9dcae6737aa4e9fed7c20be85fe98b90880b68cd5b6792882535",
+  "src/components/Header.js": "37097716e8a70fce8dbafc065abb4cd2c3fb79fa9a7e417695746d3c9fa6d9d6",
+  "src/components/Header.module.css": "4adf397def0efcd33ddbb347c0a6e8a92eb0b8f198c5d7f076e9879d77d5a395",
+  "src/components/Hero.js": "eb2fbd513f8edd81d2224494c446d1ea5203663e44b13ea2c4357e2782ca3397",
+  "src/components/Hero.module.css": "9b800953bd8471210eb1b418daddb7855ba9e2821b96928e780adf77b50122b2",
+  "src/components/ProductSlider.js": "c144a57d95b103306897ddaffd61b915f493a0216047fe3c31e5897c3f4d7fa5",
+  "src/components/ProductSlider.module.css": "8c02c8da01fd7ca853eab04b52db94a933e6baf679c7184477a23b21d97822b8",
+  "src/context/AuthContext.js": "684cf86646799d3c2cac3957ead6123206bc6870532c6722be2c85e835cdb917",
+  "src/context/CartContext.js": "4196c80c85d35c876bed0b87f0dcf9dd3d91926d4cb9dba8b3f71c5847477606",
+  "src/context/SiteSettingsContext.js": "e75903588aeb6da71fc255267875acebd50619177ffe22fe7863a0ef8fbb2721",
+  "src/context/ThemeContext.js": "adfd9bc37e7904a40c111ad3a23681db7385d4d09716136e178375e15ec0767c",
+  "src/context/WishlistContext.js": "109d742e58cc19ec1029cfb8a43c367ecdcbf9735ce88935d8c37d5ed086b5f5"
+}

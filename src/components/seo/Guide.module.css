@@ -1,0 +1,15 @@
+.page { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+.main { max-width: 1120px; margin-inline: auto; padding: 40px 24px 96px; }
+.hero { max-width: 880px; padding-block: 48px 64px; }
+.eyebrow { color: var(--accent); font-size: 13px; font-weight: 700; }
+.hero h1 { font-size: clamp(30px, 4.8vw, 60px); line-height: 1.5; margin-block: 16px 24px; text-wrap: balance; }
+.hero p, .answer p { color: var(--text-secondary); line-height: 2.2; max-width: 72ch; }
+.answers { min-width: 0; overflow-wrap: anywhere; }
+.answer { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 28px; padding-block: 36px; border-top: 1px solid var(--border-primary); }
+.number { color: var(--accent); font-size: 14px; padding-top: 8px; font-variant-numeric: tabular-nums; }
+.answer h2 { margin: 0 0 18px; font-size: clamp(21px, 3vw, 30px); line-height: 1.7; text-wrap: balance; }
+.related { display: flex; flex-wrap: wrap; gap: 20px 32px; padding-block: 28px; border-top: 1px solid var(--border-primary); }
+.related a, .cta { color: var(--accent); text-underline-offset: 6px; line-height: 2; }
+.related a:focus-visible, .cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; }
+.cta { display: inline-block; margin-top: 24px; font-weight: 700; }
+@media (max-width: 600px) { .main { padding: 24px 20px 64px; } .hero { padding-block: 30px 42px; } .answer { grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding-block: 28px; } }

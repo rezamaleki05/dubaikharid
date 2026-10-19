@@ -46,7 +46,7 @@ test('admin create/edit forms submit both required names', async () => {
 });
 
 test('storefront detail renders Persian primary and English secondary names safely', async () => {
-  const source = await read('src/app/product/[id]/page.js');
+  const source = await read('src/app/product/[id]/ProductClient.js');
   assert.match(source, /<h1 className=\{styles\.productName\}>\{product\.name\}<\/h1>/);
   assert.match(source, /className=\{styles\.productNameEn\} dir="ltr" lang="en"/);
 });

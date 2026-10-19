@@ -7,7 +7,7 @@ import { breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
 import styles from './BuyFromDubai.module.css';
 
 export const metadata = publicPageMetadata({
-  title: 'خرید مستقیم از دبی',
+  title: 'راهنمای سفارش از سایت‌های امارات و محاسبه هزینه',
   description: 'راهنمای خرید مستقیم از دبی و امارات؛ از انتخاب کالا و ارسال لینک تا برآورد قیمت، ثبت درخواست و ارسال سفارش به ایران با دبی خرید.',
   path: '/buy-from-dubai',
 });
@@ -28,7 +28,7 @@ const faqs = [
 ];
 
 export default function BuyFromDubaiPage() {
-  const crumbs = [{ name: 'صفحه اصلی', path: '/' }, { name: 'خرید مستقیم از دبی', path: '/buy-from-dubai' }];
+  const crumbs = [{ name: 'صفحه اصلی', path: '/' }, { name: 'راهنمای سفارش از امارات', path: '/buy-from-dubai' }];
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -47,7 +47,7 @@ export default function BuyFromDubaiPage() {
         <Breadcrumbs items={crumbs} />
         <section className={styles.hero}>
           <p className={styles.eyebrow}>راهنمای سفارش کالا از امارات</p>
-          <h1>خرید مستقیم از دبی</h1>
+          <h1>راهنمای سفارش از سایت‌های امارات</h1>
           <p>دبی خرید یک سرویس فارسی‌زبان مستقل برای ثبت سفارش از فروشگاه‌های دبی و امارات و هماهنگی ارسال کالا به ایران است. دبی خرید نماینده یا مالک Amazon، Noon، Nike و سایر فروشگاه‌های مبدأ نیست.</p>
           <div className={styles.actions}>
             <Link href="/#calculator" className={styles.primary}>ارسال لینک و استعلام قیمت</Link>
@@ -72,7 +72,7 @@ export default function BuyFromDubaiPage() {
               <li><Link href="/stores/noon">خرید از نون دبی</Link></li>
               <li><Link href="/stores/namshi">خرید از نمشی امارات</Link></li>
               <li><Link href="/brands/nike">مشاهده محصولات نایک</Link></li>
-              <li><Link href="/brands/adidas">مشاهده محصولات آدیداس</Link></li>
+              <li><Link href="/guides/shoe-sizing">راهنمای انتخاب سایز کفش</Link></li>
               <li><Link href="/brands/shein">خرید محصولات شین</Link></li>
             </ul>
           </div>
@@ -102,6 +102,8 @@ export default function BuyFromDubaiPage() {
             {faqs.map(item => <details key={item.question}><summary>{item.question}</summary><p>{item.answer}</p></details>)}
           </div>
         </section>
+
+        <section className={styles.section}><h2>راهنماهای تصمیم خرید</h2><ul className={styles.links}><li><Link href="/guides/uae-store-comparison">مقایسه مبدأ سفارش در سایت‌های امارات</Link></li><li><Link href="/guides/shoe-sizing">انتخاب سایز کفش پیش از سفارش</Link></li><li><Link href="/guides/stock-laptop-checklist">چک‌لیست مقایسه لپ تاپ استوک</Link></li></ul></section>
 
         <section className={styles.cta}>
           <h2>لینک محصول را آماده دارید؟</h2>

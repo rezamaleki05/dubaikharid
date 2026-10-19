@@ -41,7 +41,7 @@ const [
   read('src/lib/publicCatalog.js'),
   read('src/components/product/PublicProductGallery.js'),
   read('src/components/product/PublicProductGallery.module.css'),
-  read('src/app/product/[id]/page.js'),
+  read('src/app/product/[id]/ProductClient.js'),
   read('src/app/product/[id]/Product.module.css'),
   read('src/lib/productCartDomain.js'),
 ]);
