@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -22,6 +23,7 @@ export async function PUT(request, { params }) {
   const validated = validateReplaceProductVariantOptionsPayload(parsedBody.body);
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('variant', id.value);
     const variant = await replaceProductVariantOptions(prisma, id.value, validated.data.optionIds);
     await logAdminActivity({
       adminId: admin.id,
@@ -32,6 +34,7 @@ export async function PUT(request, { params }) {
       request,
     });
     revalidatePublicCatalog();
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(variant);
   } catch (error) {
     return productVariantApiError(error, 'Product variant option replacement failed:');

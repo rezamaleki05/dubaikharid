@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { scheduleLaptopTelegramPublication } from '@/lib/telegram/laptopService';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -139,12 +140,14 @@ export async function POST(request) {
 
   try {
     await assertLaptopCatalogSelection(prisma, { brandName: validated.data.brand, modelName: validated.data.model, series: validated.data.series });
+    const indexNowBefore = await captureIndexNowState('laptop', null);
     const laptop = await prisma.laptop.create({
       data: {
         ...validated.data,
         ...(validated.data.status === 'SOLD' ? { soldAt: new Date() } : {}),
       },
     });
+    scheduleIndexNowChange(indexNowBefore);
     scheduleLaptopTelegramPublication(laptop.id);
     await logAdminActivity({
       adminId: admin.id, action: 'LAPTOP_CREATED', entityType: 'Laptop', entityId: laptop.id,

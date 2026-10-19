@@ -1,3 +1,4 @@
+import { scheduleIndexNowChange } from '@/lib/indexnow';
 import { scheduleTelegramPublication } from '@/lib/telegram/service';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -139,6 +140,7 @@ export async function POST(request) {
       request,
     });
     revalidatePublicCatalog(product.id);
+    scheduleIndexNowChange({ kind: 'product', id: product.id, pages: {} });
     if (product.status === 'active') scheduleTelegramPublication(product.id);
     return NextResponse.json(serializeAdminProduct(product), { status: 201 });
   } catch (error) {

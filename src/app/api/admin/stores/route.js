@@ -1,3 +1,4 @@
+import { scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -39,6 +40,7 @@ export async function POST(request) {
     });
     await logAdminActivity({ adminId: admin.id, action: 'STORE_CREATED', entityType: 'Store', entityId: newStore.id, request });
     revalidatePublicCatalog();
+    scheduleIndexNowChange({ kind: 'store', id: newStore.id, pages: {} });
     return NextResponse.json(newStore, { status: 201 });
   } catch (error) {
     console.error('Error creating store:', error);

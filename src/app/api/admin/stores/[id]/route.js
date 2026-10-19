@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -12,6 +13,7 @@ export async function PUT(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
+    const indexNowBefore = await captureIndexNowState('store', id);
     const updatedStore = await prisma.store.update({
       where: { id },
       data: {
@@ -25,6 +27,7 @@ export async function PUT(request, { params }) {
     });
     await logAdminActivity({ adminId: admin.id, action: 'STORE_UPDATED', entityType: 'Store', entityId: id, request });
     revalidatePublicCatalog();
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(updatedStore);
   } catch (error) {
     console.error('Error updating store:', error);

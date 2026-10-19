@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -23,6 +24,7 @@ export async function PATCH(request, { params }) {
   const validated = validateUpdateProductVariantPayload(parsedBody.body);
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('variant', id.value);
     const variant = await updateProductVariant(prisma, id.value, validated.data);
     await logAdminActivity({
       adminId: admin.id,
@@ -33,6 +35,7 @@ export async function PATCH(request, { params }) {
       request,
     });
     revalidatePublicCatalog();
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(variant);
   } catch (error) {
     return productVariantApiError(error, 'Product variant update failed:');
@@ -45,6 +48,7 @@ export async function DELETE(request, { params }) {
   const id = await variantId(params);
   if (id.error) return NextResponse.json({ error: id.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('variant', id.value);
     const variant = await deactivateProductVariant(prisma, id.value);
     await logAdminActivity({
       adminId: admin.id,
@@ -55,6 +59,7 @@ export async function DELETE(request, { params }) {
       request,
     });
     revalidatePublicCatalog();
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(variant);
   } catch (error) {
     return productVariantApiError(error, 'Product variant deactivation failed:');

@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -19,6 +20,7 @@ export async function POST(request, { params }) {
   const validated = validateAdminInventoryAdjustment(parsed.body);
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('variant', variantId.value);
     const result = await adjustAdminProductInventory(prisma, variantId.value, validated.data, admin.id);
     if (!result.replayed) {
       await logAdminActivity({
@@ -35,6 +37,7 @@ export async function POST(request, { params }) {
         request,
       });
     }
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(result);
   } catch (error) {
     return productInventoryApiError(error, 'Admin product inventory adjustment failed:');

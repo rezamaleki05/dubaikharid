@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -32,6 +33,7 @@ export async function PUT(request, { params }) {
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
 
   try {
+    const indexNowBefore = await captureIndexNowState('brand', id.value);
     const updatedBrand = await prisma.$transaction(async tx => {
       await tx.$queryRaw`SELECT pg_advisory_xact_lock(742193)::text AS "lockResult"`;
       const existing = await tx.brand.findUnique({ where: { id: id.value }, select: { id: true } });
@@ -64,6 +66,7 @@ export async function PUT(request, { params }) {
     }, { isolationLevel: 'Serializable' });
     await logAdminActivity({ adminId: admin.id, action: 'BRAND_UPDATED', entityType: 'Brand', entityId: id.value, request });
     revalidatePublicCatalog();
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(serializeBrand(updatedBrand));
   } catch (error) {
     if (error?.code === 'BRAND_NOT_FOUND') return NextResponse.json({ error: 'برند پیدا نشد.' }, { status: 404 });

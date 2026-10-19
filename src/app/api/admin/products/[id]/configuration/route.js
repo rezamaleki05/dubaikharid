@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { scheduleTelegramPublication } from '@/lib/telegram/service';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -49,6 +50,7 @@ export async function PATCH(request, { params }) {
   });
   if (product.error) return NextResponse.json({ error: product.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('product', id.value);
     const configured = await saveAdminProductConfiguration(prisma, {
       productId: id.value,
       productData: product.data,
@@ -71,6 +73,7 @@ export async function PATCH(request, { params }) {
       request,
     });
     revalidatePublicCatalog(configured.product.id);
+    scheduleIndexNowChange(indexNowBefore);
     if (configured.product.status === 'active') scheduleTelegramPublication(configured.product.id);
     return NextResponse.json(configured);
   } catch (error) {

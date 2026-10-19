@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { scheduleTelegramPublication } from '@/lib/telegram/service';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -53,6 +54,7 @@ export async function PATCH(request, { params }) {
     const relationError = await validateProductRelations(prisma, validated.relationIds);
     if (relationError) return NextResponse.json({ error: relationError }, { status: 404 });
 
+    const indexNowBefore = await captureIndexNowState('product', id);
     const previous = await prisma.product.findUnique({
       where: { id },
       select: { id: true, status: true, categoryId: true, brandId: true, storeId: true, originalLink: true },
@@ -95,6 +97,7 @@ export async function PATCH(request, { params }) {
       request,
     });
     revalidatePublicCatalog(product.id);
+    scheduleIndexNowChange(indexNowBefore);
     if (product.status === 'active') scheduleTelegramPublication(product.id);
     return NextResponse.json(serializeAdminProduct(product));
   } catch (error) {
@@ -113,6 +116,7 @@ export async function DELETE(request, { params }) {
   if (!isValidProductId(id)) return NextResponse.json({ error: 'شناسه محصول معتبر نیست.' }, { status: 400 });
 
   try {
+    const indexNowBefore = await captureIndexNowState('product', id);
     const previous = await prisma.product.findUnique({ where: { id }, select: { id: true, status: true } });
     if (!previous) return NextResponse.json({ error: 'محصول پیدا نشد.' }, { status: 404 });
     if (previous.status === 'hidden') {
@@ -133,6 +137,7 @@ export async function DELETE(request, { params }) {
       request,
     });
     revalidatePublicCatalog(product.id);
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(serializeAdminProduct(product));
   } catch (error) {
     console.error('Error deactivating admin product:', error);

@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { scheduleLaptopTelegramPublication } from '@/lib/telegram/laptopService';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
@@ -51,6 +52,7 @@ export async function PATCH(request, { params }) {
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
 
   try {
+    const indexNowBefore = await captureIndexNowState('laptop', id);
     const result = await prisma.$transaction(async tx => {
       const previous = await tx.laptop.findUnique({ where: { id } });
       if (!previous) throw new LaptopDomainError('لپ‌تاپ پیدا نشد.', 404, 'LAPTOP_NOT_FOUND');
@@ -83,6 +85,7 @@ export async function PATCH(request, { params }) {
       }
       return { previous, laptop: await tx.laptop.findUnique({ where: { id } }) };
     }, { isolationLevel: 'Serializable' });
+    scheduleIndexNowChange(indexNowBefore);
     scheduleLaptopTelegramPublication(id);
     const statusChanged = result.previous.status !== result.laptop.status;
     await logAdminActivity({
@@ -112,6 +115,7 @@ export async function DELETE(request, { params }) {
   const { id } = await params;
   if (!isValidLaptopId(id)) return NextResponse.json({ error: 'شناسه لپ‌تاپ معتبر نیست.' }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('laptop', id);
     const previous = await prisma.laptop.findUnique({ where: { id } });
     if (!previous) return NextResponse.json({ error: 'لپ‌تاپ پیدا نشد.' }, { status: 404 });
     if (previous.archivedAt) return NextResponse.json({ error: 'این لپ‌تاپ قبلاً بایگانی شده است.' }, { status: 409 });
@@ -123,6 +127,7 @@ export async function DELETE(request, { params }) {
       adminId: admin.id, action: 'LAPTOP_DEACTIVATED', entityType: 'Laptop', entityId: id,
       metadata: { previousStatus: previous.status, newStatus: laptop.status, archived: true }, request,
     });
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(serializeLaptop(laptop));
   } catch (error) {
     return domainError(error, 'Error archiving admin laptop:');

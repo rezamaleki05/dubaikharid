@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -61,6 +62,7 @@ export async function PATCH(request, { params }) {
   const validated = validateProductSupplyPricingPayload(body);
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('product', productId.value);
     const product = await updateProductSupplyPricing(prisma, productId.value, validated.data);
     await logAdminActivity({
       adminId: admin.id,
@@ -71,6 +73,7 @@ export async function PATCH(request, { params }) {
       request,
     });
     revalidatePublicCatalog(product.id);
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json({ product: serializeProductSupplyPricing(product) });
   } catch (error) {
     return pricingError(error, 'Product supply pricing update failed:');

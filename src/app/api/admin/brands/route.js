@@ -1,3 +1,4 @@
+import { scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { authorizeAdminApiRequestAny } from '@/lib/adminApiAuth';
@@ -70,6 +71,7 @@ export async function POST(request) {
       request,
     });
     revalidatePublicCatalog();
+    scheduleIndexNowChange({ kind: 'brand', id: brand.id, pages: {} });
     return NextResponse.json(
       serializeAdminBrand(brand),
       { status: 201 },

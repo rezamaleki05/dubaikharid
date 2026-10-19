@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -38,6 +39,7 @@ export async function POST(request, { params }) {
   const validated = validateCreateProductVariantPayload(parsedBody.body);
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('product', id.value);
     const variant = await createProductVariant(prisma, { productId: id.value, data: validated.data });
     await logAdminActivity({
       adminId: admin.id,
@@ -48,6 +50,7 @@ export async function POST(request, { params }) {
       request,
     });
     revalidatePublicCatalog(id.value);
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json(variant, { status: 201 });
   } catch (error) {
     return productVariantApiError(error, 'Product variant creation failed:');

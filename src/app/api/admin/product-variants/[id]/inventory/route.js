@@ -1,3 +1,4 @@
+import { captureIndexNowState, scheduleIndexNowChange } from '@/lib/indexnow';
 import { NextResponse } from 'next/server';
 import { authorizeAdminApiRequest } from '@/lib/adminApiAuth';
 import { logAdminActivity } from '@/lib/adminActivity';
@@ -35,6 +36,7 @@ export async function POST(request, { params }) {
   const validated = validateInitializeProductInventoryPayload(parsed.body);
   if (validated.error) return NextResponse.json({ error: validated.error }, { status: 400 });
   try {
+    const indexNowBefore = await captureIndexNowState('variant', variantId.value);
     const inventory = await initializeProductInventory(prisma, {
       variantId: variantId.value,
       ...validated.data,
@@ -48,6 +50,7 @@ export async function POST(request, { params }) {
       metadata: { variantId: variantId.value, stock: inventory.stock, minStock: inventory.minStock },
       request,
     });
+    scheduleIndexNowChange(indexNowBefore);
     return NextResponse.json({ inventory }, { status: 201 });
   } catch (error) {
     return productInventoryApiError(error, 'Product inventory initialization failed:');

@@ -5,7 +5,7 @@ import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
 import { buildLaptopModelGroups, searchLaptopModelGroups, resolveLaptopModelSlug } from '@/lib/laptopSeoDomain';
 
-const PUBLIC_LAPTOP_MODEL_SELECT = Object.freeze({
+export const PUBLIC_LAPTOP_MODEL_SELECT = Object.freeze({
   id: true,
   name: true,
   brand: true,
