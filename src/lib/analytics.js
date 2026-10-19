@@ -1,7 +1,11 @@
-import { sendGAEvent } from '@next/third-parties/google';
+import { isPublicAnalyticsLocation, analyticsPageContext, analyticsBrowserExcluded } from './analyticsPolicy.js';
 
 const GA_MEASUREMENT_ID_PATTERN = /^G-[A-Z0-9]+$/;
-const GA_CURRENCY = 'AED';
+// GA4 requires an ISO currency: customer Toman amounts are represented as Rial.
+const GA_CURRENCY = 'IRR';
+const pendingEvents = [];
+const sentLeads = new Set();
+let initialized = false;
 const PENDING_PURCHASES_KEY = 'dubaikharid_ga_pending_purchases_v1';
 const SENT_PURCHASES_KEY = 'dubaikharid_ga_sent_purchases_v1';
 const MAX_STORED_TRANSACTION_IDS = 100;
@@ -13,6 +17,7 @@ function cleanText(value, maximum = 200) {
 }
 
 function finiteNumber(value) {
+  if (value === null || value === undefined || value === '' || typeof value === 'boolean') return null;
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : null;
 }
@@ -34,14 +39,16 @@ function itemBrand(value) {
   return cleanText(value.name || value.faName);
 }
 
-function unitPriceAed(item) {
-  const source = item?.snapshot && typeof item.snapshot === 'object'
-    ? { ...item.snapshot, ...item }
-    : item;
-  const price = finiteNumber(source?.priceAed);
-  if (price === null) return null;
-  const discount = Math.min(100, Math.max(0, finiteNumber(source?.discountPercent) || 0));
-  return Number((price * (1 - (discount / 100))).toFixed(2));
+function unitPriceRial(item) {
+  const source = item?.snapshot && typeof item.snapshot === 'object' ? { ...item.snapshot, ...item } : item;
+  // Never fall back to AED acquisition cost or an unconfirmed foreign quote.
+  const exact = source?.finalUnitPriceTomanSnapshot ?? source?.pricing?.finalPriceToman ?? source?.finalPriceToman ?? source?.unitPriceToman ?? (source?.priceRange?.varies === false ? source.priceRange.minimumFinalPriceToman : null);
+  const base = source?.supplyMode === 'EXTERNAL_DUBAI' || source?.priceRange?.varies ? null : source?.priceToman;
+  const toman = finiteNumber(exact ?? base);
+  if (toman === null || (exact == null && base == null)) return null;
+  const discount = exact == null ? Math.min(100, Math.max(0, finiteNumber(source?.discountPercent) || 0)) : 0;
+  const rial = Math.round(toman * (1 - discount / 100) * 10);
+  return Number.isSafeInteger(rial) ? rial : null;
 }
 
 function toGaItem(item, quantityOverride) {
@@ -53,7 +60,7 @@ function toGaItem(item, quantityOverride) {
   const itemName = cleanText(source.name || source.productName, 300);
   if (!itemId || !itemName) return null;
 
-  const price = unitPriceAed(source);
+  const price = unitPriceRial(source);
   const brand = itemBrand(source.brand);
   const category = itemCategory(source.category || source.categoryName);
   const variant = [cleanText(source.selectedColor || source.color, 80), cleanText(source.selectedSize || source.size, 80)]
@@ -105,22 +112,54 @@ function writeStoredIds(key, values) {
   }
 }
 
-export function trackEvent(eventName, parameters = {}) {
-  if (
-    typeof window === 'undefined'
-    || !measurementId
-    || !GA_MEASUREMENT_ID_PATTERN.test(measurementId)
-    || !Array.isArray(window.dataLayer)
-    || typeof eventName !== 'string'
-    || !eventName.trim()
-  ) {
-    return false;
-  }
+function eligible() {
+  return typeof window !== 'undefined' && isPublicAnalyticsLocation(window.location, { automated: analyticsBrowserExcluded(window) })
+    && window.__dkAnalyticsEnabled !== false && measurementId && GA_MEASUREMENT_ID_PATTERN.test(measurementId);
+}
+function send() { window.dataLayer.push(arguments); }
 
-  const safeParameters = parameters && typeof parameters === 'object' && !Array.isArray(parameters)
-    ? parameters
-    : {};
-  sendGAEvent('event', eventName.trim(), safeParameters);
+export function initializePublicAnalytics(gaId) {
+  if (!eligible() || gaId !== measurementId) { pendingEvents.length = 0; return false; }
+  window.dataLayer ||= [];
+  window.gtag ||= function () { window.dataLayer.push(arguments); };
+  if (!initialized) {
+    send('js', new Date());
+    const context = analyticsPageContext(window.location);
+    let referrer = '';
+    try { referrer = new URL(window.document?.referrer || '').origin; } catch {}
+    send('config', gaId, { send_page_view: false, page_location: window.location.origin + window.location.pathname, page_title: `DubaiKharid | ${context.page_type}`, page_referrer: referrer });
+    initialized = true;
+  }
+  return true;
+}
+export function flushAnalyticsEvents() {
+  const events = pendingEvents.splice(0);
+  if (!eligible() || !initialized) return;
+  for (const event of events) send(...event);
+}
+
+export function trackEvent(eventName, parameters = {}) {
+  if (!eligible()) return false;
+  const commerce = new Set(['view_item', 'add_to_cart', 'remove_from_cart', 'view_cart', 'begin_checkout', 'purchase']);
+  let safe;
+  if (commerce.has(eventName)) {
+    // Only internal ecommerce builders may supply items; discard arbitrary top-level fields.
+    safe = { currency: GA_CURRENCY, items: (Array.isArray(parameters.items) ? parameters.items : []).filter(item => item && typeof item === 'object').map(item => Object.fromEntries(['item_id', 'item_name', 'item_brand', 'item_category', 'item_variant', 'price', 'quantity'].filter(key => item[key] !== undefined).map(key => [key, item[key]]))), ...(Number.isFinite(parameters.value) ? { value: parameters.value } : {}), ...(eventName === 'purchase' ? { transaction_id: parameters.transaction_id } : {}) };
+  } else if (eventName === 'whatsapp_click') {
+    if (!['footer', 'manual_payment', 'profile_support'].includes(parameters.link_location)) return false;
+    safe = { link_location: parameters.link_location };
+  }
+  else if (eventName === 'lead_created') {
+    if (!['quick_request', 'checkout_request', 'product_inquiry', 'profile_request'].includes(parameters.form_name)) return false;
+    safe = { lead_type: 'purchase_request', form_name: parameters.form_name };
+  }
+  else if (eventName === 'page_view') safe = { page_location: window.location.origin + window.location.pathname };
+  else return false;
+  const context = analyticsPageContext(window.location);
+  safe = { ...safe, ...context, page_location: window.location.origin + window.location.pathname, page_title: `DubaiKharid | ${context.page_type}` };
+  const event = ['event', eventName, safe];
+  if (!initialized) { if (pendingEvents.length < 20) pendingEvents.push(event); return true; }
+  send(...event);
   return true;
 }
 
@@ -175,6 +214,16 @@ export function trackPurchaseOnce(order) {
 }
 
 export function trackWhatsAppClick(placement) {
-  const linkLocation = cleanText(placement, 80);
-  return Boolean(linkLocation) && trackEvent('whatsapp_click', { link_location: linkLocation });
+  if (!['footer', 'manual_payment', 'profile_support'].includes(placement)) return false;
+  return trackEvent('whatsapp_click', { link_location: placement });
+}
+
+export function trackLeadCreated(record, formName) {
+  if (!record || typeof record.id !== 'string' || !record.id || !['quick_request', 'checkout_request', 'product_inquiry', 'profile_request'].includes(formName)) return false;
+  const key = 'dubaikharid_ga_sent_leads_v1';
+  const sent = readStoredIds(key);
+  if (sent.includes(record.id) || sentLeads.has(record.id)) return false;
+  const tracked = trackEvent('lead_created', { form_name: formName });
+  if (tracked) { sentLeads.add(record.id); writeStoredIds(key, [...sent, record.id]); }
+  return tracked;
 }

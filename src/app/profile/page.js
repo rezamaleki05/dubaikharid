@@ -10,7 +10,7 @@ import Footer from '@/components/Footer';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
 import OrderPaymentPanel from '@/components/payment/OrderPaymentPanel';
-import { trackPurchaseOnce, trackWhatsAppClick } from '@/lib/analytics';
+import { trackPurchaseOnce, trackWhatsAppClick, trackLeadCreated } from '@/lib/analytics';
 import { buildSupportWhatsappUrl } from '@/lib/supportWhatsapp';
 import styles from './Profile.module.css';
 
@@ -345,6 +345,7 @@ function ProfileContent() {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'ثبت درخواست با خطا مواجه شد.');
+      trackLeadCreated(payload.data, 'profile_request');
       setPurchaseRequests(previous => [{ id: payload.data.id, requestCode: payload.data.requestCode, productName: reqProductName, originalUrl: reqUrl, store: reqSite, qty: reqQty, details: reqNotes, status: payload.data.status, totalToman: 0, date: new Date().toISOString(), isRequest: true }, ...previous]);
 
       // Add Notification

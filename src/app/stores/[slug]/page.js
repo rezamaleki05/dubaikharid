@@ -1,3 +1,4 @@
+import MultiStoreNotice from '@/components/seo/MultiStoreNotice';
 import AnswerSections from '@/components/seo/AnswerSections';
 import { storeAnswers } from '@/lib/commerceGuides';
 import { collectionSeoState, collectionPageExists } from '@/lib/collectionSeoDomain';
@@ -71,6 +72,7 @@ export default async function StorePage({ params, searchParams }) {
         </section>
         {storeAnswers[store.id] && <AnswerSections answers={storeAnswers[store.id]} links={[[ '/guides/uae-store-comparison', 'مقایسه مبدأ سفارش' ], [ '/guides/shoe-sizing', 'راهنمای سایز کفش' ]]} />}
         {catalog.data.length > 0 && <section className={styles.products}><h2>محصولات ثبت‌شده از {store.name}</h2><div className={styles.grid}>{catalog.data.map(product => <Link key={product.id} href={`/product/${product.id}`}><span>{product.name}</span></Link>)}</div>{catalog.pagination.totalPages > 1 && <nav aria-label="صفحه‌بندی محصولات" style={{display:'flex',justifyContent:'center',gap:'18px',marginTop:'24px'}}>{page > 1 && <Link href={`?page=${page - 1}`}>صفحه قبل</Link>}{page < catalog.pagination.totalPages && <Link href={`?page=${page + 1}`}>صفحه بعد</Link>}</nav>}</section>}
+        <MultiStoreNotice />
         <section className={styles.related}><Link href="/buy-from-dubai">راهنمای کامل خرید مستقیم از دبی</Link><Link href="/brands">مشاهده برندها و فروشگاه‌های دیگر</Link></section>
       </main>
       <Footer />

@@ -1,5 +1,5 @@
 import { Vazirmatn } from "next/font/google";
-import { GoogleAnalytics } from '@next/third-parties/google';
+import PublicAnalytics from '@/components/analytics/PublicAnalytics';
 import Script from 'next/script';
 import "./globals.css";
 import JsonLd from '@/components/seo/JsonLd';
@@ -113,7 +113,7 @@ export default async function RootLayout({ children }) {
           </SiteSettingsProvider>
         </ThemeProvider>
       </body>
-      {googleAnalyticsEnabled && googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}
+      <PublicAnalytics enabled={googleAnalyticsEnabled} gaId={googleAnalyticsId} />
     </html>
   );
 }

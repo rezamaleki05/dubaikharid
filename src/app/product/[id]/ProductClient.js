@@ -12,7 +12,7 @@ import MinimalIcon from '@/components/ui/MinimalIcon';
 import PublicProductVariantSelector from '@/components/product/PublicProductVariantSelector';
 import PublicProductGallery from '@/components/product/PublicProductGallery';
 import { resolveProductColorGallery } from '@/lib/productColorGallery';
-import { trackViewItem } from '@/lib/analytics';
+import { trackViewItem, trackLeadCreated } from '@/lib/analytics';
 import {
   formatPublicAttributeValues,
   resolveExactPublicVariant,
@@ -200,6 +200,7 @@ export default function ProductClient({ params, initialProduct }) {
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'خطا در ثبت درخواست.');
+      trackLeadCreated(payload.data, 'product_inquiry');
       setIsInquiryOpen(false);
       setInquiryForm({ name: '', phone: '', notes: '' });
       setInquiryQty(1);

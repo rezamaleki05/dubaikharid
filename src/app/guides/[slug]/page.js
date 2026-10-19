@@ -1,3 +1,4 @@
+import MultiStoreNotice from '@/components/seo/MultiStoreNotice';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Header from '@/components/Header';
@@ -29,6 +30,7 @@ export default async function GuidePage({ params }) {
       <Breadcrumbs items={crumbs} />
       <header className={styles.hero}><span className={styles.eyebrow}>راهنمای تصمیم خرید · DubaiKharid</span><h1>{guide.title}</h1><p>{guide.intro}</p></header>
       <AnswerSections answers={guide.answers} links={guide.links} />
+      <MultiStoreNotice />
       <Link href="/buy-from-dubai" className={styles.cta}>مراحل ثبت درخواست و بررسی هزینه ←</Link>
     </main><Footer />
   </div>;

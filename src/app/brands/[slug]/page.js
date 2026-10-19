@@ -1,3 +1,4 @@
+import MultiStoreNotice from '@/components/seo/MultiStoreNotice';
 import AnswerSections from '@/components/seo/AnswerSections';
 import { brandGuides } from '@/lib/commerceGuides';
 import { collectionSeoState, collectionPageExists } from '@/lib/collectionSeoDomain';
@@ -60,6 +61,7 @@ export default async function BrandPage({ params, searchParams }) {
         </section>
         {guide && <AnswerSections answers={guide.answers} links={guide.links} />}
         {catalog.data.length > 0 ? <section className={styles.products}><h2>محصولات {displayName}</h2><div className={styles.grid}>{catalog.data.map(product => <Link key={product.id} href={`/product/${product.id}`}><span>{product.name}</span></Link>)}</div>{catalog.pagination.totalPages > 1 && <nav aria-label="صفحه‌بندی محصولات" style={{display:'flex',justifyContent:'center',gap:'18px',marginTop:'24px'}}>{page > 1 && <Link href={`?page=${page - 1}`}>صفحه قبل</Link>}{page < catalog.pagination.totalPages && <Link href={`?page=${page + 1}`}>صفحه بعد</Link>}</nav>}</section> : <section className={styles.notice}><h2>محصول ثبت‌شده‌ای موجود نیست</h2><p>می‌توانید لینک محصول دلخواه خود را از سایت مبدأ ارسال کنید. قیمت و موجودی هر درخواست پس از بررسی همان لینک اعلام می‌شود.</p></section>}
+        <MultiStoreNotice />
         <section className={styles.related}><Link href="/buy-from-dubai">راهنمای خرید مستقیم از دبی</Link><Link href="/brands">بازگشت به فهرست برندها</Link></section>
       </main>
       <Footer />

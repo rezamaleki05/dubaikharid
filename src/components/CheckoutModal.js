@@ -4,7 +4,7 @@ import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsCon
 import { useState, useEffect, useMemo, useRef } from 'react';
 import MinimalIcon from '@/components/ui/MinimalIcon';
 import ManualPaymentPanel from '@/components/payment/ManualPaymentPanel';
-import { markPurchasePending, trackBeginCheckout } from '@/lib/analytics';
+import { markPurchasePending, trackBeginCheckout, trackLeadCreated } from '@/lib/analytics';
 import styles from './CheckoutModal.module.css';
 
 export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrement }) {
@@ -158,6 +158,7 @@ export default function CheckoutModal({ isOpen, orderData, onClose, onCartIncrem
       const isOrder = endpoint === '/api/orders';
       const code = isOrder ? result.data.orderCode : result.data.requestCode;
       if (isOrder) markPurchasePending(code);
+      else trackLeadCreated(result.data, 'checkout_request');
       setTrackingCode(code);
       setResultKind(isOrder ? 'order' : 'request');
       setAuthoritativeTotal(isOrder ? Number(result.data.totalToman) : null);

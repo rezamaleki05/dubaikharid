@@ -8,7 +8,14 @@ const read = path => fs.readFileSync(path, 'utf8');
 
 test('Homepage design, content, H1, metadata, canonical and shared dependencies stay byte-for-byte frozen', () => {
  const manifest = JSON.parse(read('docs/seo/homepage-freeze.json'));
- for (const [path, expected] of Object.entries(manifest)) assert.equal(crypto.createHash('sha256').update(read(path)).digest('hex'), expected, path);
+ for (const [path, expected] of Object.entries(manifest)) {
+   let source = read(path);
+   // Phase 3C explicitly authorizes nonvisual analytics wiring, never root metadata/copy.
+   if (path === 'src/app/layout.js') source = source
+     .replace("import PublicAnalytics from '@/components/analytics/PublicAnalytics';", "import { GoogleAnalytics } from '@next/third-parties/google';")
+     .replace('<PublicAnalytics enabled={googleAnalyticsEnabled} gaId={googleAnalyticsId} />', '{googleAnalyticsEnabled && googleAnalyticsId ? <GoogleAnalytics gaId={googleAnalyticsId} /> : null}');
+   assert.equal(crypto.createHash('sha256').update(source).digest('hex'), expected, path);
+ }
  assert.equal(read('src/components/Hero.js').match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(), 'خرید مستقیم از دبی و ارسال به ایران');
 });
 

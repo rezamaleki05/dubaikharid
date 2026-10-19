@@ -120,3 +120,7 @@ Digital PR targets: relevant Iranian ecommerce/fashion/technology editors, legit
 18. Build a real wearable comparison only for available models.
 19. Run monthly consistent AI citation/accuracy observations.
 20. Earn relevant editorial citations with evidence-backed assets; no link buying.
+
+## Phase 3C review addendum
+
+The sections above record Phase 3B at its original evidence date. Phase 3C updates the map to 160 rows, clarifies multi-store ordering and adds a conditional Temu guide while preserving the three prior guides and all Homepage visible content/metadata. Root analytics wiring is the sole frozen-layout exception; hash tests normalize that exact replacement. See [content review](PHASE-3C-CONTENT-REVIEW.md) and [analytics owner plan](PHASE-3C-ANALYTICS-OWNER-PLAN.md) for current supplied metrics, production-only tracking guards, host audit correction, prerequisites and limitations. The current host observation supersedes the earlier audit table's both-hosts-200 observation; no host configuration was changed.

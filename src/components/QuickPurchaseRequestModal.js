@@ -1,4 +1,5 @@
 'use client';
+import { trackLeadCreated } from '@/lib/analytics';
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -94,6 +95,7 @@ export default function QuickPurchaseRequestModal({ isOpen, requestData, onClose
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'ثبت درخواست خرید با خطا مواجه شد.');
+      trackLeadCreated(payload.data, 'quick_request');
       setResult({
         requestCode: payload.data.requestCode,
         status: payload.data.status,
