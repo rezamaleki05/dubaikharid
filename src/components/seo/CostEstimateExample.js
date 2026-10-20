@@ -28,5 +28,5 @@ export default async function CostEstimateExample() {
     ],
     closing: 'این فرمول فقط اجزای محاسبه‌شده در سامانه را توضیح می‌دهد. تخفیف وابسته به حساب، هزینه احتمالی مبدأ، وزن واقعی یا شرایط خاص کالا ممکن است نیاز به بررسی جداگانه داشته باشند؛ درباره هزینه‌های نامشخص و مبلغ نهایی پیش از ادامه سفارش سؤال کنید. تغییر تنظیمات یا ورودی‌ها نتیجه مثال را تغییر می‌دهد.',
   };
-  return <div id="cost-example"><ContentEvidence evidence={evidence} /><Link className={styles.cta} href="/#calculator">برآورد کالای خودتان با لینک محصول ←</Link></div>;
+  return <div id="cost-example"><ContentEvidence evidence={evidence} mobileStacked /><Link className={styles.cta} href="/#calculator">برآورد کالای خودتان با لینک محصول ←</Link></div>;
 }

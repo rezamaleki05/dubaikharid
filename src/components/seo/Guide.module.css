@@ -22,6 +22,20 @@
 .evidenceTable th, .evidenceTable td { vertical-align: top; text-align: start; padding: 18px 12px; border-bottom: 1px solid var(--border-primary); min-width: 130px; }
 .evidenceTable td { color: var(--text-secondary); }
 .evidenceTable thead th { color: var(--accent); }
+.mobileLabel { display: none; }
+@media (max-width: 600px) {
+  .mobileStacked { overflow: visible; min-width: 0; }
+  .mobileStacked .evidenceTable,
+  .mobileStacked .evidenceTable caption,
+  .mobileStacked .evidenceTable tbody,
+  .mobileStacked .evidenceTable tr { display: block; }
+  /* Retain column headers for assistive technology while rows stack visually. */
+  .mobileStacked .evidenceTable thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); }
+  .mobileStacked .evidenceTable tbody tr { padding-block: 20px; border-block-start: 1px solid var(--border-primary); }
+  .mobileStacked .evidenceTable tbody th,
+  .mobileStacked .evidenceTable tbody td { display: block; min-width: 0; padding: 8px 0; border: 0; overflow-wrap: anywhere; unicode-bidi: isolate; }
+  .mobileStacked .mobileLabel { display: block; color: var(--accent); font-size: 13px; font-weight: 700; margin-block-end: 4px; }
+}
 .evidenceLinks { display: flex; flex-wrap: wrap; gap: 16px 28px; padding-block: 24px; line-height: 2; }
 .evidenceLinks a { color: var(--accent); text-underline-offset: 6px; }
 .evidenceLinks a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
