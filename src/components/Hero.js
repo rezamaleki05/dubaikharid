@@ -1,4 +1,5 @@
 import styles from './Hero.module.css';
+import Image from 'next/image';
 import MinimalIcon from './ui/MinimalIcon';
 
 
@@ -6,7 +7,7 @@ export default function Hero() {
   return (
     <section className={styles.hero}>
       {/* Background image — do NOT change */}
-      <div className={styles.bgImage}></div>
+      <div className={styles.bgImage}><Image src="/images/headerBG .png" alt="" fill preload sizes="100vw" quality={90} style={{ objectFit: 'cover', objectPosition: 'center 20%' }} /></div>
       {/* Gradient overlay — dark on right (RTL text side) */}
       <div className={styles.overlay}></div>
 

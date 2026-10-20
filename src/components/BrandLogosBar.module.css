@@ -125,3 +125,11 @@
   :global(html[data-theme='light']) .sectionWrapper { padding-block: 14px; }
   :global(html[data-theme='light']) .brandCard { min-width: 104px; padding: 11px 23px; }
 }
+
+/* Reserve the existing rendered strip height while discovery loads. */
+.sectionWrapper { min-height: 134px; }
+:global(html[data-theme='light']) .sectionWrapper { min-height: 104px; }
+@media (max-width: 768px) {
+  .sectionWrapper { min-height: 128px; }
+  :global(html[data-theme='light']) .sectionWrapper { min-height: 84px; }
+}

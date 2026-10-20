@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from './PublicProductGallery.module.css';
+import { publicImageDelivery } from '@/lib/publicImageDelivery';
 
 function galleryItems(images, legacyImage, coverImage) {
   if (Array.isArray(images) && images.length) return images;
@@ -16,6 +17,7 @@ export default function PublicProductGallery({ images, legacyImage, coverImage, 
   );
   const initial = items.find(image => image.isPrimary) || items[0] || null;
   const [selectedId, setSelectedId] = useState(initial?.id || null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const dialogRef = useRef(null);
   const openerRef = useRef(null);
   useEffect(() => {
@@ -33,14 +35,14 @@ export default function PublicProductGallery({ images, legacyImage, coverImage, 
 
   return (
     <div className={styles.gallery}>
-      <button type="button" ref={openerRef} className={styles.mainStage} aria-label="بزرگ‌نمایی تصویر محصول" onClick={() => dialogRef.current?.showModal()}>
+      <button type="button" ref={openerRef} className={styles.mainStage} aria-label="بزرگ‌نمایی تصویر محصول" onClick={() => { setLightboxOpen(true); dialogRef.current?.showModal(); }}>
         {/* Product URLs can come from multiple approved external stores, so a broad next/image allowlist is avoided. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={selected.url} alt={selectedAlt} className={styles.mainImage} />
+        <img {...publicImageDelivery(selected.url, '(max-width: 768px) 100vw, 50vw')} fetchPriority="high" decoding="async" alt={selectedAlt} className={styles.mainImage} />
         <span className={styles.zoomHint}>بزرگ‌نمایی ↗</span>
       </button>
       <dialog ref={dialogRef} className={styles.lightbox} aria-label="گالری بزرگ تصاویر محصول"
-        onClose={() => openerRef.current?.focus()}
+        onClose={() => { setLightboxOpen(false); openerRef.current?.focus(); }}
         onClick={event => { if (event.target === event.currentTarget) dialogRef.current.close(); }}
         onKeyDown={event => {
           if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
@@ -50,7 +52,7 @@ export default function PublicProductGallery({ images, legacyImage, coverImage, 
         <div className={styles.lightboxContent}>
           <button type="button" className={styles.close} autoFocus onClick={() => dialogRef.current.close()} aria-label="بستن گالری">×</button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={selected.url} alt={selectedAlt} />
+          {lightboxOpen && <img src={selected.url} alt={selectedAlt} />}
           <div className={styles.lightboxNav}>
             <button type="button" disabled={items.length < 2} onClick={() => move(-1)} aria-label="تصویر قبلی">→</button>
             <output dir="ltr" aria-live="polite">{items.findIndex(image => image.id === selected.id) + 1} / {items.length}</output>
@@ -73,7 +75,7 @@ export default function PublicProductGallery({ images, legacyImage, coverImage, 
                 aria-pressed={active}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={image.url} alt={alt} />
+                <img {...publicImageDelivery(image.url, '76px')} loading="lazy" decoding="async" alt={alt} />
               </button>
             );
           })}

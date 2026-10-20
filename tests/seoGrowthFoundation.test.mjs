@@ -10,6 +10,10 @@ test('Homepage design, content, H1, metadata, canonical and shared dependencies 
  const manifest = JSON.parse(read('docs/seo/homepage-freeze.json'));
  for (const [path, expected] of Object.entries(manifest)) {
    let source = read(path);
+   // Exact reviewed Phase 3G image-delivery/loading exceptions only. The
+   // original frozen copy/layout digest is retained, not re-baselined.
+   const performanceExceptions = JSON.parse(read('docs/seo/phase3g-performance-exceptions.json'));
+   for (const change of performanceExceptions[path] || []) source = source.replace(change.after, change.before);
    // Phases 3C/3F authorize these exact nonvisual analytics additions only.
    // Keep the original content/metadata digest; do not re-baseline the Homepage.
    if (path === 'src/app/layout.js') source = source

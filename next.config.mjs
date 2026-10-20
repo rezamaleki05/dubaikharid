@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  images: {
+    qualities: [75, 90],
+    remotePatterns: [{ protocol: 'https', hostname: '5pdfiowt51ljxje3.public.blob.vercel-storage.com', port: '', pathname: '/**', search: '' }],
+  },
   turbopack: {
     root: process.cwd(),
   },

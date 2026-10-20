@@ -1,5 +1,6 @@
 'use client';
 import { laptopPath } from '@/lib/laptopUrl';
+import { publicImageDelivery } from '@/lib/publicImageDelivery';
 import { useSiteSettings, getProductTomanPrice, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { useState, useEffect } from 'react';
@@ -60,7 +61,7 @@ export default function ProductSlider({ onSelectProduct }) {
       >
         <div className={`${styles.imageWrap} ${isCatalogProduct ? styles.catalogImageWrap : ''}`}>
           {product.image
-            ? <img src={product.image} alt={product.name} className={`${styles.productImg} ${isCatalogProduct ? styles.catalogProductImg : ''}`} />
+            ? <img {...publicImageDelivery(product.image, '(max-width: 768px) 50vw, 25vw')} loading="lazy" decoding="async" alt={product.name} className={`${styles.productImg} ${isCatalogProduct ? styles.catalogProductImg : ''}`} />
             : <div className={styles.productImg} role="img" aria-label={product.name} />}
           {showStore && <span className={styles.storeBadge}>{product.store}</span>}
           {isCatalogProduct && product.isBestSeller ? <span className={styles.bestSellerBadge}>پرفروش</span> : null}

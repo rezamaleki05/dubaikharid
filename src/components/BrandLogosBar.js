@@ -23,6 +23,7 @@ function BrandMark({ item }) {
 
 export default function BrandLogosBar() {
   const [items, setItems] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,11 +41,12 @@ export default function BrandLogosBar() {
       })
       .catch(error => {
         if (error.name !== 'AbortError') console.error('Error fetching homepage brand discovery:', error);
-      });
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoaded(true); });
     return () => controller.abort();
   }, []);
 
-  if (!items.length) return null;
+  if (!items.length) return loaded ? null : <section className={styles.sectionWrapper} aria-hidden="true" />;
   const repeatedItems = [...items, ...items, ...items, ...items];
   const renderItems = suffix => repeatedItems.map((item, index) => (
     <Link
