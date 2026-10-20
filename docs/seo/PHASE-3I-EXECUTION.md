@@ -55,4 +55,6 @@ No outreach, placements or backlink purchase. The improved cost methodology and 
 - Responsive browser review at390,768,1440px for service/store/shoe/inspection/list templates; no document-level horizontal overflow. Tables can scroll within keyboard-focusable labelled regions. Existing light/dark theme behavior preserved.
 - Fresh pre-release Homepage mobile LAB smoke: LCP2.279s,CLS0.00265. Prior approved run1.850s/0.0116 remains historical; compare against a fresh same-method post-release run, not field CWV.
 
-Release/source SHA and final live verification are recorded in the subsequent execution-log update; Phase3H evidence is retained unchanged except explicit status columns/append-only execution notes.
+Implementation/source SHA: `9cf087d3f28e71accae12cd2c559701827b807f5`. Final release commit adds research execution records only; its application source is identical to this tested commit. Phase3H evidence is retained with explicit status columns/append-only execution notes. CSV record values are preserved while line endings are normalized to LF for repository formatting.
+
+Measured local contextual-link additions:22 rendered link instances across9 pages, including the added shoe breadcrumb. Existing shared/header/footer links are excluded. No true orphan was identified or claimed resolved; weak contextual discovery of the stock inspection guide is improved. Store links now point to relevant category/guide/cost resources; the stock list adds5 real model links and1 inspection link.
