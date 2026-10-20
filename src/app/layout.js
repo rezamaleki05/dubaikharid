@@ -2,7 +2,6 @@ import { Vazirmatn } from "next/font/google";
 import PublicAnalytics from '@/components/analytics/PublicAnalytics';
 import PublicClarity from '@/components/analytics/PublicClarity';
 import { isClarityEnvironment, clarityProjectId } from '@/lib/clarityPolicy';
-import Script from 'next/script';
 import "./globals.css";
 import JsonLd from '@/components/seo/JsonLd';
 import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/seo';
@@ -98,10 +97,8 @@ export default async function RootLayout({ children }) {
   };
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head><script id="dubai-kharid-theme" dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>
       <body data-clarity-mask="true" style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>
-        <Script id="dubai-kharid-theme" strategy="beforeInteractive">
-          {THEME_BOOTSTRAP_SCRIPT}
-        </Script>
         <JsonLd data={[organizationSchema, websiteSchema]} />
         <ThemeProvider>
           <SiteSettingsProvider initialSettings={initialSettings}>

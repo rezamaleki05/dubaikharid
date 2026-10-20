@@ -1,13 +1,15 @@
 import styles from './Hero.module.css';
-import Image from 'next/image';
+import Image, { getImageProps } from 'next/image';
 import MinimalIcon from './ui/MinimalIcon';
 
 
 export default function Hero() {
+  const { props: heroPreload } = getImageProps({ src: '/images/headerBG .png', alt: '', fill: true, sizes: '100vw', quality: 90 });
   return (
     <section className={styles.hero}>
+      <link rel="preload" as="image" imageSrcSet={heroPreload.srcSet} imageSizes={heroPreload.sizes} fetchPriority="high" />
       {/* Background image — do NOT change */}
-      <div className={styles.bgImage}><Image src="/images/headerBG .png" alt="" fill preload sizes="100vw" quality={90} style={{ objectFit: 'cover', objectPosition: 'center 20%' }} /></div>
+      <div className={styles.bgImage}><Image src="/images/headerBG .png" alt="" fill loading="eager" fetchPriority="high" sizes="100vw" quality={90} style={{ objectFit: 'cover', objectPosition: 'center 20%' }} /></div>
       {/* Gradient overlay — dark on right (RTL text side) */}
       <div className={styles.overlay}></div>
 

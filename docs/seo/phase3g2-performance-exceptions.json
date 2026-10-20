@@ -1,0 +1,18 @@
+{
+  "src/app/layout.js": [
+    {
+      "before": "import PublicClarity from '@/components/analytics/PublicClarity';\nimport { isClarityEnvironment, clarityProjectId } from '@/lib/clarityPolicy';\nimport Script from 'next/script';\nimport \"./globals.css\";\nimport JsonLd from '@/components/seo/JsonLd';\n",
+      "after": "import PublicClarity from '@/components/analytics/PublicClarity';\nimport { isClarityEnvironment, clarityProjectId } from '@/lib/clarityPolicy';\nimport \"./globals.css\";\nimport JsonLd from '@/components/seo/JsonLd';\n"
+    },
+    {
+      "before": "  return (\n    <html lang=\"fa\" dir=\"rtl\" className={vazirmatn.variable} data-scroll-behavior=\"smooth\" suppressHydrationWarning>\n      <body data-clarity-mask=\"true\" style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>\n        <Script id=\"dubai-kharid-theme\" strategy=\"beforeInteractive\">\n          {THEME_BOOTSTRAP_SCRIPT}\n        </Script>\n        <JsonLd data={[organizationSchema, websiteSchema]} />\n        <ThemeProvider>\n",
+      "after": "  return (\n    <html lang=\"fa\" dir=\"rtl\" className={vazirmatn.variable} data-scroll-behavior=\"smooth\" suppressHydrationWarning>\n      <head><script id=\"dubai-kharid-theme\" dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} /></head>\n      <body data-clarity-mask=\"true\" style={{minHeight:'100vh', display:'flex', flexDirection:'column'}}>\n        <JsonLd data={[organizationSchema, websiteSchema]} />\n        <ThemeProvider>\n"
+    }
+  ],
+  "src/components/Hero.js": [
+    {
+      "before": "import styles from './Hero.module.css';\nimport Image from 'next/image';\nimport MinimalIcon from './ui/MinimalIcon';\n\n\nexport default function Hero() {\n  return (\n    <section className={styles.hero}>\n      {/* Background image — do NOT change */}\n      <div className={styles.bgImage}><Image src=\"/images/headerBG .png\" alt=\"\" fill preload sizes=\"100vw\" quality={90} style={{ objectFit: 'cover', objectPosition: 'center 20%' }} /></div>\n      {/* Gradient overlay — dark on right (RTL text side) */}\n      <div className={styles.overlay}></div>\n",
+      "after": "import styles from './Hero.module.css';\nimport Image, { getImageProps } from 'next/image';\nimport MinimalIcon from './ui/MinimalIcon';\n\n\nexport default function Hero() {\n  const { props: heroPreload } = getImageProps({ src: '/images/headerBG .png', alt: '', fill: true, sizes: '100vw', quality: 90 });\n  return (\n    <section className={styles.hero}>\n      <link rel=\"preload\" as=\"image\" imageSrcSet={heroPreload.srcSet} imageSizes={heroPreload.sizes} fetchPriority=\"high\" />\n      {/* Background image — do NOT change */}\n      <div className={styles.bgImage}><Image src=\"/images/headerBG .png\" alt=\"\" fill loading=\"eager\" fetchPriority=\"high\" sizes=\"100vw\" quality={90} style={{ objectFit: 'cover', objectPosition: 'center 20%' }} /></div>\n      {/* Gradient overlay — dark on right (RTL text side) */}\n      <div className={styles.overlay}></div>\n"
+    }
+  ]
+}

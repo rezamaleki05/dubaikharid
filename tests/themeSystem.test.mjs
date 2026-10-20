@@ -48,7 +48,8 @@ test('invalid persisted values safely fall back to system mode', () => {
 });
 
 test('theme is applied before hydration with a tracked Next.js script', () => {
-  assert.match(layout, /strategy="beforeInteractive"/);
+  assert.match(layout, /<head><script id="dubai-kharid-theme" dangerouslySetInnerHTML/);
+  assert.ok(layout.indexOf('<head><script') < layout.indexOf('<body'));
   assert.match(layout, /THEME_BOOTSTRAP_SCRIPT/);
   assert.match(layout, /suppressHydrationWarning/);
   assert.match(layout, /<ThemeProvider>/);

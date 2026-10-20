@@ -9,7 +9,8 @@ test('only first-party public media is eligible for server optimization', () => 
 });
 test('LCP hero uses the same decorative source/crop with responsive preload and no duplicate CSS download', async () => {
   const source=await read('../src/components/Hero.js'),css=await read('../src/components/Hero.module.css');
-  assert.match(source,/src="\/images\/headerBG \.png" alt="" fill preload sizes="100vw" quality=\{90\}/);
+  assert.match(source,/src="\/images\/headerBG \.png" alt="" fill loading="eager" fetchPriority="high" sizes="100vw" quality=\{90\}/);
+  assert.match(source,/rel="preload" as="image" imageSrcSet=\{heroPreload.srcSet\} imageSizes=\{heroPreload.sizes\} fetchPriority="high"/);
   assert.match(source,/objectFit: 'cover', objectPosition: 'center 20%'/);assert.match(css,/background-image: none/);
 });
 test('gallery keeps original full-resolution zoom on demand while responsive main/thumb images retain identity', async () => {
