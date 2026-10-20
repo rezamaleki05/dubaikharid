@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 import StockLaptopCatalog from '@/components/laptop/StockLaptopCatalog';
 import { getPublicLaptopModelGroups } from '@/lib/publicLaptopSeo';
 import { NOINDEX_METADATA, publicPageMetadata } from '@/lib/seo';
@@ -58,6 +59,7 @@ export default async function StockLaptopsPage() {
               <p>
                 {section.groups.length.toLocaleString('fa-IR')} مدل موجود از {section.brand} را می‌توانید بر اساس مشخصات واقعی، وضعیت ظاهری و بازه قیمت مقایسه کنید.
               </p>
+              <ul>{section.groups.map(group => <li key={group.slug}><Link href={`/laptops/${group.slug}`}>{group.name}</Link></li>)}</ul>
             </article>
           ))}
           <article className={styles.seoSection}>
@@ -65,6 +67,9 @@ export default async function StockLaptopsPage() {
             <p>
               پیش از انتخاب، پردازنده، رم، نوع حافظه، کارت گرافیک، نمایشگر و وضعیت هر دستگاه را بررسی کنید. هر صفحه مدل، واحدهای واقعاً موجود و تفاوت مشخصات و قیمت آن‌ها را یک‌جا نشان می‌دهد.
             </p>
+            <p>برای کار مهندسی یا تدوین، ابتدا نیاز نرم‌افزار و نوع پروژه را مشخص کنید. نام ورک‌استیشن به‌تنهایی کافی نیست؛ مدل دقیق پردازنده و گرافیک، حافظه و نمایشگر همان واحد را بررسی کنید. نتیجه تستی که ثبت نشده، از نام خانواده دستگاه قابل استنتاج نیست.</p>
+            <p>4K و لمسی بودن، ویژگی همه نسخه‌های یک مدل نیست. اگر وضعیت باتری، نمایشگر یا اقلام همراه درج نشده، پیش از خرید سؤال کنید؛ اطلاعات نامعلوم به معنی تأیید سلامت نیست.</p>
+            <Link href="/guides/stock-laptop-checklist">برگه بررسی وضعیت، نمایشگر و مشخصات هر واحد ←</Link>
           </article>
         </section>
       </main>

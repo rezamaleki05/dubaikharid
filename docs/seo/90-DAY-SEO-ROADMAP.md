@@ -1,0 +1,71 @@
+# Phase 3H — 90-day organic roadmap and measurement
+
+Planning document only; all content/development/outreach actions need their own implementation scope. Homepage remains frozen. No ranking, traffic or link-count guarantees.
+
+## Weeks1–4 — measured intent and discovery
+
+| Week | Content/page action | Internal links | Measurement / acceptance |
+|---|---|---|---|
+|1|Preserve baseline exports; confirm query→page for ordering/shoe candidates and report latency; review real source/inspection evidence.|Map actual contextual links, not just footer repetition.|Current available baseline37clicks/464impressions; latest24/244. Flag incomplete prior period and private-route contamination.|
+|2|Prepare expansion of `/buy-from-dubai` cost/eligibility example and `/sports-shoes` legitimate source/size section.|Existing store/guide→service and shoes→sizing.|Editor/owner verifies policy, examples and operational claims; no Homepage title/H1 change.|
+|3|Expand Amazon and SHEIN, then Noon/Namshi/Nike with specific offer/code/size examples.|Store→relevant collection/comparison; comparison→store.|Each page has distinct intent, reviewed facts, quote CTA, correct canonical and no duplicate route.|
+|4|Plan legitimate Adidas route exposure; expand Laptop list/checklist and About reviewer evidence.|Laptop models↔checklist/list; prioritize weak Temu/checklist discovery.|Verify technical eligibility and GSC page impressions after normal reporting delay; do not infer indexed from sitemap alone.|
+
+P0 opportunities are small-sample ordering/shoe candidates. Existing core phrase remains a monitoring/link-earning target, not permission to edit Homepage. Avoid clothing variants and other shops’ branded terms. No new category pages with empty inventory.
+
+## Weeks5–8 — substantive clusters and reusable assets
+
+| Week | Deliverable | Links / evidence | Acceptance |
+|---|---|---|---|
+|5|Original illustrated sizing checklist and dated store comparison.|Brand-specific official references; link source pages.|Accurate measurements/options, no universal conversion/fake affiliations.|
+|6|Anonymized real Laptop inspection sheet and condition photos.|Checklist→exact available configurations.|No inferred missing battery/display specs; per-unit facts.|
+|7|One substantive engineering/editing workload guide, conditional on real test evidence.|Workload→actual model pages; models→checklist.|Method/software/config/date disclosed; no invented benchmarks.|
+|8|Exact-generation Precision-vs-ZBook and combined display-choice guide if evidence supports both.|Comparison/display→list/models and inspection guide.|Distinct intent; no model keyword clones. If evidence insufficient, improve existing guide instead.|
+
+No near-term recommendation-tool build. Perfume/beauty/wearables expansion uses existing collections first; legal supplements remain low priority pending operational/legal source review. Sale calendar only if someone owns ongoing source/date maintenance.
+
+## Weeks9–12 — authority and review
+
+Week9: qualify8 publisher/supplier prospects with real topic fit and official contact sources; distinguish promotional examples from earned editorial. Week10: prepare3 original-evidence pitches, seeking2 editorial conversations after outreach authorization. Week11: review any legitimately earned mentions/links, rel attributes, referral engagement and landing fit; no link buying for DR. Week12: compare28-day cohorts, identify pages gaining non-brand impressions/clicks and qualified lead events, revise priorities and decide whether paid competitor data is justified. Do not fabricate gains when samples remain small.
+
+## KPI definitions
+
+| KPI | Source / calculation | Caveat / decision |
+|---|---|---|
+|Google clicks/impressions/CTR|GSC Web; CTR=sum clicks/sum impressions.|Same completed date/country/device cohorts; do not average row CTRs.|
+|Non-brand clicks|Disclosed GSC query regex excluding DubaiKharid spelling variants; report disclosure coverage.|Current query disclosure10/37clicks; hidden rows unclassified, not zero.|
+|Top10/top3 queries|GSC disclosed query cohorts with repeated impressions; use a consistent minimum threshold.|Average position is not a neutral rank-tracker position; exclude0-impression rows.|
+|Organic sessions|GA4 Organic Search, landing page, public-route segment.|Historic owner/Admin visits contaminate baseline41sessions; segment analytically.|
+|`whatsapp_click`|GA4 event counts by organic/AI landing and placement where valid.|Intent interaction, not unique customer or completed lead; baseline organic2,AI5.|
+|`lead_created`|GA4 authoritative persisted-lead event count.|Historical requested interval returned no row; do not fake leads or change semantics.|
+|Relevant referring domains/editorial links|Verified live links, topic fit, link type and landing; GSC/Bing samples plus licensed crawl if available.|Current GSC0reported; web total unknown. No DR-only objective.|
+|Brand mentions|Dated genuine coverage with sourceURL and link/no-link status.|No paid/fake mentions presented as independent endorsement.|
+|AI Assistant sessions / events|GA4 channel/source where available; landing page and WhatsApp/lead event counts.|Baseline55sessions/5WhatsApp; referrer loss means under/overclassification possible.|
+|AI citations|Fixed monthly prompt panel, engine/version/date/locale/sourceURLs.|Different from sessions; one observed Google AI Overview is not sustained visibility.|
+
+Business targets should be set after a clean completed28-day measurement period. Initial success signals: non-Homepage relevant impressions spread to genuine store/guide/model pages; repeatable commercial-query clicks; qualified backend lead events; relevant editorial referral traffic. No guaranteed percentage growth.
+
+## Seven-day monitoring checklist
+
+- Day1: record release/content change dates (if a later phase implements them), canonical/noindex/HTTP status for changed routes; verify no Homepage regression.
+- Day2: inspect GSC coverage of changed pages without requesting indexing/removals by default; retain normal reporting lag.
+- Day3: read GA4 public organic/AI landings and event semantics; separate owner/private-route activity analytically. Never submit a fake lead.
+- Day4: check contextual links, selected source URLs, genuine inventory and quote assumptions.
+- Day5: review named publisher fit and any **authorized** outreach responses; validate new links/mentions manually.
+- Day6: inspect unexpected errors/indexing shifts only if actionable; no daily ranking obsession.
+- Day7: summarize one completed week, small-sample limits, anomalies and next decision. Maintain a short changelog; do not change priorities on one-day rank movement.
+
+## Twenty-eight-day review template
+
+Period/current completeness: ___; prior matched period/completeness: ___; timezone/property/search type/country/device: ___. Known interventions/date: ___. Seasonality/reporting lag: ___.
+
+| Segment | Clicks | Impressions | CTR | Position | Public organic sessions | WhatsApp events | Persisted-lead events |
+|---|---:|---:|---:|---:|---:|---:|---:|
+|Homepage / core| | | | | | | |
+|Ordering guide| | | | | | | |
+|Store pages| | | | | | | |
+|Category pages| | | | | | | |
+|Laptop list/models| | | | | | | |
+|Guides| | | | | | | |
+
+Query disclosure coverage ___; brand/non-brand classification ___; position4–15/11–20/21–30 opportunities ___; gains/declines with minimum evidence ___; cannibalization URL pairs ___; relevant new/lost RDs ___; verified editorial links ___; AI sessions/events/citation panel ___; data/access gaps ___; retain/expand/defer decisions and accountable owner ___ . Avoid attributing all observed changes to content or adding channel-event counts as unique customers.

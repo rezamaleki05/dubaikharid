@@ -1,0 +1,21 @@
+﻿id,action,target,class,priority,deliverable,evidence,intent_boundary
+C01,EXPAND,/buy-from-dubai,TRANSACTIONAL;AEO,P0,Worked link-to-quote example with all assumptions and uncertainty,Existing 1021 visible words including chrome; GA4 AI12 sessions,Purchase process; do not retarget head Homepage phrase
+C02,EXPAND,/sports-shoes,TRANSACTIONAL,P0,Model-code/source/size table using legitimate available examples,GSC shoe query position8; current231 words including chrome,Own collection; size procedure belongs guide
+C03,EXPAND,/stores/amazon,TRANSACTIONAL;AEO,P1,"Sold-by vs shipped-by, selected offer, fees, return limitations",Iranicard calculator/steps; existing521 words,No duplicate Amazon UAE route
+C04,EXPAND,/stores/noon,TRANSACTIONAL;AEO,P1,UAE seller/offer choice and quote example,AZDubai dedicated page;466 words,No second Noon landing
+C05,EXPAND,/stores/namshi,TRANSACTIONAL;AEO,P1,"نامشی/نمشی variants, size, return eligibility",AZDubai and Malltina SERP;464 words,Variants on one URL
+C06,EXPAND,/brands/shein,TRANSACTIONAL;AEO,P1,"SKU/color/size, promotion eligibility and actual quote",AZDubai guide; own569 words,No separate /stores/shein
+C07,EXPAND,/brands/nike,TRANSACTIONAL,P1,Style code/source and legitimate model selection,AZDubai/Iranicard SERP;491 words,Brand transactional vs general shoe collection
+C08,NEW PAGE,/brands/adidas,TRANSACTIONAL,P1,Future public route using approved source guide after legitimate catalog setup,Live404 although source guide exists,One Adidas route only; no fabricated products
+C09,EXPAND,/guides/temu-ordering,AEO,P1,Country/offer eligibility and unavailable-store cases,Google Temu cluster;514 words,Do not create second Temu transactional page yet
+C10,EXPAND,/guides/uae-store-comparison,COMMERCIAL INVESTIGATION;GEO,P1,"Dated side-by-side seller, currency, exact code and fee checklist",Existing528 words; competitors cited in observed Google AI Overview,Compare workflow; do not duplicate core service page
+C11,EXPAND,/guides/shoe-sizing,INFORMATIONAL;GEO,P1,Original measurement diagram and worked brand-specific example,Existing494 words;3rd-party shoe guides,Avoid universal numeric conversion claim
+C12,EXPAND,/guides/stock-laptop-checklist,INFORMATIONAL;GEO,P1,Original anonymized inspection form and photo evidence,Existing503 words;Qeshmoff/Rinotek questions,Keep stock-definition questions here
+C13,EXPAND,/stock-laptops,TRANSACTIONAL,P1,Unit inspection process and workload selection; model links,431 words incl chrome;Raitop workstation collection,List owns broad inventory; model pages own exact model
+C14,NEW GUIDE,/guides/workstation-selection,COMMERCIAL INVESTIGATION;GEO,P2,Engineering/editing workload matrix with real tests,Raitop/Laptopsara/Techtip coverage,One substantive guide for both workload variants
+C15,NEW GUIDE,/guides/precision-vs-zbook,COMMERCIAL INVESTIGATION;GEO,P2,Exact-generation comparison with configuration/date/method,Dell/HP comparison intent,Link model pages; no repetitive model clones
+C16,NEW GUIDE,/guides/laptop-display-selection,INFORMATIONAL;AEO,P2,FHD/4K/touch trade-offs verified per panel,Actual live display variants;Raitop filters,One display guide for two questions
+C17,EXPAND,/bags-accessories,TRANSACTIONAL,P1,Size/material/model/source comparison,Existing248 words;Nomoras collection,Do not target specific Parker model with generic page
+C18,EXPAND,/beauty-health,TRANSACTIONAL;AEO,P2,Authenticity/batch/expiry and transport-review scope,Existing241 words;Nomoras beauty category,Separate perfume only after legitimate range and demand
+C19,EXPAND,/electronics,TRANSACTIONAL,P2,Wearable region/subscription compatibility buying notes,Existing236 words;AZDubai WHOOP category,Avoid medical advice; confirm /watches scope
+C20,EXPAND,/about,GEO,P1,"Verifiable operator/reviewer identity, contact/process evidence",Existing379 words,"No invented offices, licenses, testimonials or partnerships"

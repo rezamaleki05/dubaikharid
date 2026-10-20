@@ -1,0 +1,54 @@
+{
+  "property": "DubaiKharid",
+  "property_id": "551798888",
+  "requested_dates": [
+    "2026-07-20",
+    "2026-10-17"
+  ],
+  "first_returned_date": "2026-08-27",
+  "sessions_by_channel": {
+    "Direct": 84,
+    "AI Assistant": 55,
+    "Referral": 35,
+    "Organic Search": 41
+  },
+  "last_28_days": {
+    "Direct": 37,
+    "Organic Search": 29,
+    "AI Assistant": 18,
+    "Referral": 24
+  },
+  "previous_28_days": {
+    "Direct": 47,
+    "Organic Search": 12,
+    "AI Assistant": 37,
+    "Referral": 11
+  },
+  "events": {
+    "status": "done",
+    "data": [
+      {
+        "session_default_channel_group": "AI Assistant",
+        "event_name": "whatsapp_click",
+        "event_count": 5
+      },
+      {
+        "session_default_channel_group": "Direct",
+        "event_name": "whatsapp_click",
+        "event_count": 3
+      },
+      {
+        "session_default_channel_group": "Referral",
+        "event_name": "whatsapp_click",
+        "event_count": 1
+      },
+      {
+        "session_default_channel_group": "Organic Search",
+        "event_name": "whatsapp_click",
+        "event_count": 2
+      }
+    ],
+    "total_rows": 4
+  },
+  "caveat": "Includes historic owner/admin traffic; no customer conversion-rate claim."
+}

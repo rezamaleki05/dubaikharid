@@ -1,6 +1,8 @@
 import MultiStoreNotice from '@/components/seo/MultiStoreNotice';
 import AnswerSections from '@/components/seo/AnswerSections';
 import { storeAnswers } from '@/lib/commerceGuides';
+import { orderingEvidence, storeGuideLinks } from '@/lib/organicGrowthContent';
+import ContentEvidence from '@/components/seo/ContentEvidence';
 import { collectionSeoState, collectionPageExists } from '@/lib/collectionSeoDomain';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -70,7 +72,8 @@ export default async function StorePage({ params, searchParams }) {
           <ol><li>محصول و گزینه‌های موردنظر را در صفحه فروشگاه انتخاب کنید.</li><li>لینک مستقیم محصول را کپی کنید.</li><li>لینک را در فرم استعلام وارد کنید تا برآورد اولیه محاسبه شود.</li><li>پس از بررسی قیمت، موجودی و وزن واقعی، ادامه سفارش هماهنگ می‌شود.</li></ol>
           <Link href="/#calculator" className={styles.cta}>ثبت سفارش از {intent.fa}</Link>
         </section>
-        {storeAnswers[store.id] && <AnswerSections answers={storeAnswers[store.id]} links={[[ '/guides/uae-store-comparison', 'مقایسه مبدأ سفارش' ], [ '/guides/shoe-sizing', 'راهنمای سایز کفش' ]]} />}
+        {storeAnswers[store.id] && <AnswerSections answers={storeAnswers[store.id]} links={storeGuideLinks[store.id] || []} />}
+        {orderingEvidence[store.id] && <ContentEvidence evidence={orderingEvidence[store.id]} />}
         {catalog.data.length > 0 && <section className={styles.products}><h2>محصولات ثبت‌شده از {store.name}</h2><div className={styles.grid}>{catalog.data.map(product => <Link key={product.id} href={`/product/${product.id}`}><span>{product.name}</span></Link>)}</div>{catalog.pagination.totalPages > 1 && <nav aria-label="صفحه‌بندی محصولات" style={{display:'flex',justifyContent:'center',gap:'18px',marginTop:'24px'}}>{page > 1 && <Link href={`?page=${page - 1}`}>صفحه قبل</Link>}{page < catalog.pagination.totalPages && <Link href={`?page=${page + 1}`}>صفحه بعد</Link>}</nav>}</section>}
         <MultiStoreNotice />
         <section className={styles.related}><Link href="/buy-from-dubai">راهنمای کامل خرید مستقیم از دبی</Link><Link href="/brands">مشاهده برندها و فروشگاه‌های دیگر</Link></section>

@@ -22,8 +22,8 @@ const catalogPresets = {
   },
   sportsShoes: {
     defaultSub: 'shoes',
-    title: 'کفش ورزشی',
-    subtitle: 'مشاهده و سفارش کفش‌های ورزشی زنانه، مردانه و کودک از برندهای معتبر دبی',
+    title: 'خرید کفش و کتونی از دبی',
+    subtitle: 'مرور کفش‌های ثبت‌شده و ارسال لینک مدل دلخواه؛ منبع خرید، کد کالا و استاندارد سایز پیش از تأیید بررسی می‌شوند.',
   },
   clothing: {
     defaultSub: 'clothing',
@@ -32,7 +32,7 @@ const catalogPresets = {
   },
 };
 
-export function MenContent({ preset = 'men' }) {
+export function MenContent({ preset = 'men', children }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const catalogPreset = catalogPresets[preset] || catalogPresets.men;
@@ -244,6 +244,7 @@ export function MenContent({ preset = 'men' }) {
           </section>
 
         </div>
+        {children}
       </main>
 
       <Footer />
@@ -251,10 +252,10 @@ export function MenContent({ preset = 'men' }) {
   );
 }
 
-export function FashionCatalog({ preset = 'men' }) {
+export function FashionCatalog({ preset = 'men', children }) {
   return (
     <Suspense fallback={<div style={{padding: '100px', textAlign: 'center', color: '#fff'}}>در حال بارگذاری...</div>}>
-      <MenContent preset={preset} />
+      <MenContent preset={preset}>{children}</MenContent>
     </Suspense>
   );
 }
