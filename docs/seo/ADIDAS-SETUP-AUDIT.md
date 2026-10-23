@@ -196,3 +196,46 @@ Approval confirms the intended conditional purchasing offer. Execution remains
 for a controlled scope covering the existing publication hook. The draft content
 expansion is separate from record creation. No owner research or manual data
 entry is needed to make this decision.
+
+## Approved execution — 2026-10-24
+
+The owner explicitly approved the exact record above and the normal single-URL
+IndexNow publication workflow. An authenticated POST `/api/admin/brands` returned
+201 with that exact payload, no categories and no Products. No SQL write or
+application modification was used. This entry supersedes the pending decision
+for entity creation only; the longer Persian expansion above remains unpublished.
+
+Read-only before/after checks confirmed exactly one Adidas Brand, Product count0,
+30 applied migrations and0 failures. Fingerprints across public application
+tables (excluding activity logs and migration bookkeeping) changed only for Brand;
+the separate fingerprint of all non-Adidas Brands was identical. Telegram and
+Laptop publication records, all Settings and unrelated business tables were
+unchanged. The expected BRAND_CREATED audit/revalidation side effects belong to
+the protected service path, not unrelated business mutations.
+
+Public GET confirmed HTTP200, SSR title/H1 `خرید کفش و محصولات آدیداس از دبی`,
+the existing guide intro as meta description, apex canonical
+`https://dubaikharid.shop/brands/adidas`, no noindex, the honest empty-product
+notice and explicit non-representation statement. Sitemap includes this URL once.
+The hydrated Brand directory shows Adidas and the exact official UAE source;
+existing internal search for `adidas` returns one Brand result linking to the
+canonical Brand page. The directory's existing cards link to official source
+sites rather than internal guides; no directory/Homepage code was changed.
+
+Browser checks at320,360,390,412,768,1440px found document scrollWidth equal to
+clientWidth. The settled390px screenshot was visually inspected and retained as
+`adidas-live-mobile.png` in the task visualization artifacts.
+
+IndexNow: protected creation invoked the existing deferred comparison hook; source
+inspection confirms its only eligible change is the new Adidas canonical URL.
+No manual or bulk submission. The API does not return or persist a delivery
+receipt, and successful deliveries are not logged by this implementation, so
+external acceptance is not independently confirmed here. No Telegram send path
+is called by Brand creation; publication-table fingerprints remain unchanged.
+
+Validation:39 focused Brand-category, SEO foundation and IndexNow tests passed
+before the data write. No application source changed, so no new build/deployment
+was needed. Research documents were committed as
+`38e3f99545087036311526ae9403e6076b5f4e23`; this execution record is documentation
+only. No migration, seed, allowlist, pricing, Homepage, analytics, Telegram,
+outreach, Vercel environment or origin/main change.
