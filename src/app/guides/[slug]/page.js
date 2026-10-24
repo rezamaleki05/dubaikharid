@@ -9,6 +9,8 @@ import AnswerSections from '@/components/seo/AnswerSections';
 import { guides } from '@/lib/commerceGuides';
 import { laptopInspectionEvidence } from '@/lib/organicGrowthContent';
 import ContentEvidence from '@/components/seo/ContentEvidence';
+import ShoeSizingWorkflow from '@/components/seo/ShoeSizingWorkflow';
+import LaptopInspectionWorksheet from '@/components/seo/LaptopInspectionWorksheet';
 import { absoluteUrl, breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
 import styles from '@/components/seo/Guide.module.css';
 
@@ -32,7 +34,9 @@ export default async function GuidePage({ params }) {
       <Breadcrumbs items={crumbs} />
       <header className={styles.hero}><span className={styles.eyebrow}>راهنمای تصمیم خرید · DubaiKharid</span><h1>{guide.title}</h1><p>{guide.intro}</p></header>
       <AnswerSections answers={guide.answers} links={guide.links} />
-      {slug === 'stock-laptop-checklist' && <ContentEvidence evidence={laptopInspectionEvidence} />}
+      {slug === 'shoe-sizing' && <ShoeSizingWorkflow />}
+      {slug === 'stock-laptop-checklist' && <ContentEvidence evidence={laptopInspectionEvidence} mobileStacked />}
+      {slug === 'stock-laptop-checklist' && <LaptopInspectionWorksheet />}
       {slug === 'stock-laptop-checklist' && <Link href="/stock-laptops" className={styles.cta}>مقایسه مشخصات واحدهای موجود در صفحه هر مدل ←</Link>}
       <MultiStoreNotice />
       <Link href="/buy-from-dubai" className={styles.cta}>مراحل ثبت درخواست و بررسی هزینه ←</Link>

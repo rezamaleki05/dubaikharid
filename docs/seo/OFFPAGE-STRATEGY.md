@@ -178,3 +178,20 @@ separate content/outreach scope, add the missing sizing evidence, resolve P1
 channel checks and prepare **one owner-reviewed** resource contribution for the
 P0 publisher. Sending still requires explicit later authorization. No need to buy
 links, obtain paid SEO data or invent a new page to complete the current decision.
+
+## Phase 3K update — 2026-10-25
+
+See [asset readiness](LINKABLE-ASSET-READINESS.md) and
+[owner shortlist](OUTREACH-READY-SHORTLIST.md). Retained14 (1P0/3P1/10P2), rejected7.
+Cost methodology is the strongest general reference; Laptop criteria/blank sheet
+is the strongest immediate editorial fit for Shahrsakhtafzar. KEEP AS P0 follows
+current specialist guides plus public tip/collaboration route, not competitor PR.
+Only one is contact-ready; P1 still needs routing verification. No outreach sent.
+
+Original sizing visual and official chart links resolve the asset gap, not the
+fashion publisher editorial-contact gap. TechEngage is a newly evidenced natural
+contributor path, P2 pending qualified author, original English reporting and its
+human-authorship/disclosure requirements. No free placement or backlink promised.
+Separate sponsored offers are research observations only; no package purchase,
+reciprocal scheme or bulk directory recommended. Phase3L requires fresh owner
+instruction before any contact. Homepage and runtime accounts remain untouched.

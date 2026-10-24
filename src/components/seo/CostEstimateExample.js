@@ -10,8 +10,10 @@ const format = value => Number(value).toLocaleString('fa-IR', { maximumFractionD
 export default async function CostEstimateExample() {
   await connection();
   let quote;
+  let pricingSettings;
   try {
-    quote = calculateProductPricing({ priceAed: 200, weight: 1.2 }, await getPricingSettings());
+    pricingSettings = await getPricingSettings();
+    quote = calculateProductPricing({ priceAed: 200, weight: 1.2 }, pricingSettings);
   } catch {
     // Guidance stays useful without substituting invented rates when settings are unavailable.
   }
@@ -28,5 +30,11 @@ export default async function CostEstimateExample() {
     ],
     closing: 'این فرمول فقط اجزای محاسبه‌شده در سامانه را توضیح می‌دهد. تخفیف وابسته به حساب، هزینه احتمالی مبدأ، وزن واقعی یا شرایط خاص کالا ممکن است نیاز به بررسی جداگانه داشته باشند؛ درباره هزینه‌های نامشخص و مبلغ نهایی پیش از ادامه سفارش سؤال کنید. تغییر تنظیمات یا ورودی‌ها نتیجه مثال را تغییر می‌دهد.',
   };
-  return <div id="cost-example"><ContentEvidence evidence={evidence} mobileStacked /><Link className={styles.cta} href="/#calculator">برآورد کالای خودتان با لینک محصول ←</Link></div>;
+  const weightMethod = { ceil: 'رو به بالا', floor: 'رو به پایین', round: 'به نزدیک‌ترین عدد صحیح' }[pricingSettings?.roundingMethod] || 'رو به بالا';
+  const observedAt = new Date();
+  return <div id="cost-example">
+    <ContentEvidence evidence={evidence} mobileStacked />
+    {quote && <p className={styles.exampleNote}>زمان محاسبه این نمونه: <time dateTime={observedAt.toISOString()}>{new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Dubai' }).format(observedAt)} دبی</time>؛ حداقل وزن محاسبه: {format(pricingSettings.minWeightClass)} کیلوگرم؛ گردکردن وزن: {weightMethod}. با تغییر نرخ یا تنظیمات، نتیجه تغییر می‌کند.</p>}
+    <Link className={styles.cta} href="/#calculator">برآورد کالای خودتان با لینک محصول ←</Link>
+  </div>;
 }

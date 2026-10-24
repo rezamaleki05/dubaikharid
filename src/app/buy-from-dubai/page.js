@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/seo/Breadcrumbs';
 import JsonLd from '@/components/seo/JsonLd';
 import CostEstimateExample from '@/components/seo/CostEstimateExample';
+import CostMethodology from '@/components/seo/CostMethodology';
 import { breadcrumbSchema, publicPageMetadata } from '@/lib/seo';
 import styles from './BuyFromDubai.module.css';
 
@@ -80,6 +81,7 @@ export default function BuyFromDubaiPage() {
           <p>مبلغ نهایی، گزینه دقیق کالا، شرایط ادامه سفارش و امکان لغو یا بازگشت را بپرسید. زمان تحویل و پذیرش کالا به بررسی همان درخواست وابسته است؛ برای همه فروشگاه‌ها یا کالاها زمان ثابت و تضمین یکسانی فرض نکنید.</p>
         </section>
 
+        <CostMethodology />
         <CostEstimateExample />
 
         <section className={styles.split} id="stores">

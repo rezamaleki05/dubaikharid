@@ -15,9 +15,10 @@ export default async function SportsShoesPage() {
   return <FashionCatalog preset="sportsShoes">
     <JsonLd data={breadcrumbSchema(crumbs)} />
     <Breadcrumbs items={crumbs} />
-    <ContentEvidence evidence={shoeEvidence} />
+    <ContentEvidence evidence={shoeEvidence} mobileStacked />
     <nav className={styles.evidenceLinks} aria-label="راهنمای انتخاب و سفارش کفش">
       <Link href="/brands/nike">انتخاب کد مدل نایکی</Link>
+      <Link href="/brands/adidas">بررسی مدل و سایز آدیداس</Link>
       <Link href="/guides/shoe-sizing">راهنمای اندازه‌گیری پا</Link>
       <Link href="/stores/namshi">انتخاب کفش در نمشی</Link>
       <Link href="/buy-from-dubai#cost-example">بررسی اجزای هزینه</Link>

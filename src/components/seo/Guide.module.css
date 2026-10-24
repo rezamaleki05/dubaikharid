@@ -23,6 +23,28 @@
 .evidenceTable td { color: var(--text-secondary); }
 .evidenceTable thead th { color: var(--accent); }
 .mobileLabel { display: none; }
+.reviewDate { font-size: 13px; color: var(--text-secondary); }
+.exampleNote { font-size: 14px; line-height: 2.2; color: var(--text-secondary); overflow-wrap: anywhere; }
+.methodList { margin-block: 28px; max-width: 80ch; }
+.methodList > div { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(0, 3fr); gap: 24px; border-block-start: 1px solid var(--border-primary); padding-block: 22px; }
+.methodList dt { color: var(--accent); font-weight: 700; }
+.methodList dd { margin: 0; line-height: 2.2; color: var(--text-secondary); }
+.evidence h3 { font-size: 20px; line-height: 1.8; margin-block: 32px 12px; }
+.workflow { padding-inline-start: 26px; max-width: 80ch; line-height: 2.2; }
+.workflow li { padding: 16px 8px; border-block-start: 1px solid var(--border-primary); }
+.workflow strong { color: var(--text-primary); }
+.sizeFigure { margin: 28px 0; max-width: 680px; }
+.sizeDiagram { display: block; width: 100%; height: auto; color: var(--text-primary); }
+.sizeFigure figcaption { line-height: 2; font-size: 14px; color: var(--text-secondary); }
+.sourceLinks { line-height: 2.2; padding-inline-start: 24px; }
+.sourceLinks a { color: var(--accent); text-underline-offset: 5px; }
+.writeLine { color: var(--text-secondary); font-size: 14px; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .methodList > div { grid-template-columns: minmax(0, 1fr); gap: 10px; } }
+@media print {
+  .worksheet { break-before: page; color: black; }
+  .worksheet li { break-inside: avoid; }
+  .worksheet .writeLine { min-height: 3em; }
+}
 @media (max-width: 600px) {
   .mobileStacked { overflow: visible; min-width: 0; }
   .mobileStacked .evidenceTable,
