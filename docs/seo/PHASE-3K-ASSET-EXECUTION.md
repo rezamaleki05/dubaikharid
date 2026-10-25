@@ -68,7 +68,28 @@ No outreach, email, form, purchase, reciprocal link, PBN or bulk submission.
 
 ## Release record
 
-Candidate release SHA and deployment ID will be recorded after commit/deployment.
+Deployed code SHA: `abfc974f49fda656bdada9ff94ea156d8faa8e4f`.
+Production deployment: `dpl_D3usCcCYorfuTc9QeTsGTbSMQxMS`.
+URL: https://dubaikharid-3bf35f391-rezamaleki05s-projects.vercel.app
+Vercel Production READY, build complete, exact Git commit verified in deployment UI.
+The automatic Preview build failed under Preview configuration; no Preview settings
+were altered. Existing redeploy UI selected Production for the same exact source;
+Production build passed. Existing CLI token was invalid, so no API write used.
+
+Post-deploy public GETs: all seven selected routes and health/ready200; SSR
+method/sizing/worksheet present; apex canonical and metadata valid. Homepage
+H1/title/description equal the live pre-release values. Brand Nike, Namshi,
+comparison guide and Dell5530/5580 links return200. Live browser56 width checks
+(7routes x8widths) all pass without document overflow. Local and live screenshots
+saved outside repo; no new client module or Homepage import change.
+
+Read-only post-deploy fingerprints for all14 listed tables equal baseline exactly;
+30 applied/0failed migrations; TelegramPublication3 unchanged. No data write,
+seed, migration, analytics configuration, Telegram request or bulk IndexNow call.
+Remote release branch matches code SHA; origin/main remains baseline. Source
+worktree clean after code commit. Final evidence-only docs commit follows and is
+not a different deployed code candidate. Lint0errors/48existing warnings; diff check
+passed. All required technical checks complete.
 A successful build alone is not a live release. Post-deploy checks must confirm
 exact SHA READY, live SSR/metadata/apex URLs, all widths, health and unchanged
 migration/data fingerprints. No main push, schema, Telegram, GA4, Clarity, Search
