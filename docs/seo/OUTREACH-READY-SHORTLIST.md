@@ -1,5 +1,7 @@
 # Phase 3K — owner-review shortlist
 
+**Closeout 2026-10-31: OFF-PAGE OUTREACH = DEFERRED BY OWNER.** Research and local message previews are retained for future reference only. No send, mailbox draft, contact form, DM, purchase or follow-up is authorized. Historical readiness tiers describe prospect fit, not permission to contact.
+
 2026-10-25. **Nothing sent.** P0 = genuinely ready for owner review of a narrow
 proposal. P1 = relevant but explicit verification remains. Neither is permission
 to contact, a free-placement promise or a followed-link entitlement.
@@ -43,3 +45,33 @@ explicitly authorized, disclose commercial affiliation and accept no-link editor
 use. First qualify Digiato/Ecomotive/Mehrparvaz editorial routes without inventing
 free acceptance. Develop genuine authored evidence before international pitches.
 Never mass-send, buy followed links or use an AI draft against publisher rules.
+
+## Phase 3L current decision — 2026-10-30
+
+This dated update supersedes earlier contact-readiness observations above; history
+is retained. **NOT SENT.** See [qualification report](PHASE-3L-OUTREACH-PREP.md)
+and [three Persian drafts](OUTREACH-MESSAGES.md).
+
+- **Shahrsakhtafzar P0: READY for owner approval.** Current Laptop buying guide
+  dated2026-10-27; tips/collaboration still invited. Public info@shahrsakhtafzar.com
+  is shared with advertising, not a dedicated editorial mailbox. Keep purposes
+  separate. Exact canonical resource:
+  https://dubaikharid.shop/guides/stock-laptop-checklist (worksheet fragment optional).
+  Fresh200, technically indexable, mobile readable. Use short resource proposal;
+  no laboratory/results/inspection-volume claims or commercial placement request.
+- **Digiato P1: NEEDS MORE EVIDENCE.** Contact form now loads; previous timeout
+  blocker resolved. No named editorial recipient/contribution invitation verified.
+  Advertising/reportage routes separate. Best second prospect to qualify for
+  `/buy-from-dubai#cost-methodology`; no automatic readiness upgrade.
+- **Ecomotive P1: NEEDS MORE EVIDENCE.** Independent GET200, public organisational
+  email/form and current business headline rail; web-tool403 persists. Specific
+  editorial routing/current authored-contribution evidence still missing.
+- **Mehrparvaz P1: NEEDS MORE EVIDENCE.** Public agency business email verified in
+  contact source; magazine navigation does not establish editorial acceptance.
+  Keep narrow shipping-process angle and resolve magazine routing first.
+
+P1 results: READY0 / NEEDS MORE EVIDENCE3 / NOT SUITABLE0. Total contact-ready1.
+Retained14 (1P0/3P1/10P2), rejected7 unchanged. No outreach, paid placement,
+message, account or follow-up scheduled. Owner approves actual recipient/text/
+sender before Phase3M. One optional follow-up only after7–10business days from
+an approved actual initial send; nothing starts automatically.

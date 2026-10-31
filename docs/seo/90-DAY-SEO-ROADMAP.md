@@ -1,5 +1,32 @@
 # Phase 3H — 90-day organic roadmap and measurement
 
+## Accepted closeout — 2026-10-31
+
+**SEO FOUNDATION = COMPLETE**
+**MODE = MONITORING & GROWTH**
+**OFF-PAGE OUTREACH = DEFERRED BY OWNER**
+
+GSC and Bing sitemap registration both succeeded with **35 discovered URLs** each. No confirmed P0 defects. Production remains healthy at `abfc974f49fda656bdada9ff94ea156d8faa8e4f`; no application change or deployment is justified.
+
+Homepage LCP: **MONITOR — unresolved lab paint-delay variance; no proven code defect and no deployment justified.** This is an accepted monitoring item, not a foundation-completion blocker, a proven code regression or a claim of field CWV success. Earlier investigation/approval recommendations below are historical and superseded by this closeout.
+
+Next weekly review: **2026-11-07**; next completed 28-day measurement review: **2026-11-28**. Continue weekly technical/discovery monitoring, monthly public-route conversion/content measurement and quarterly CWV/content-gap review. No external automation or outreach is authorized.
+
+## Current Phase 3M handoff — 2026-10-30
+
+**OFF-PAGE OUTREACH = DEFERRED BY OWNER.** Historical week 9–11 outreach recommendations below are superseded; no contacting, drafts, link purchases or outreach automation is authorized. Research remains preserved.
+
+Current priorities: post-registration search discovery, accepted Homepage LCP monitoring, and clean public-route conversion measurement. No P0 was confirmed and no deployment is required now. Homepage copy/H1/title/canonical remain protected.
+
+Use [SEO-MAINTENANCE-PLAN.md](SEO-MAINTENANCE-PLAN.md) for the current 28-item ledger and dated plan: DONE 12, MONITOR 8, DEFERRED 2, FUTURE 6. Adidas is now a legitimate public Brand with zero Products; the historical approval-pending note below is superseded. Checklist completion describes criteria/blank worksheet, not measured inspection outcomes.
+
+- Next 30 days, by 2026-11-29: discovery, repeated LCP investigation, CTR and public conversion cohorts.
+- Next 60 days, by 2026-12-29: select evidence-backed content/internal links and grow genuine inventory coverage.
+- Next 90 days, by 2027-01-28: reassess demand, field CWV and authority assets; outreach only if explicitly re-approved.
+
+Latest GSC comparison: Oct 1–28 versus Sep 3–30, 30/281 clicks/impressions versus 14/196. Latest GA4 completed period: Oct 2–29, 56 organic sessions (41 clearly public), 13 AI sessions; organic WhatsApp 3, AI WhatsApp 0, no reported lead_created. Historical baselines below remain historical. See [PHASE-3M-FINAL-SEO-REVIEW.md](PHASE-3M-FINAL-SEO-REVIEW.md) and [SEO-KPI-BASELINE.csv](SEO-KPI-BASELINE.csv).
+
+
 Planning document only; all content/development/outreach actions need their own implementation scope. Homepage remains frozen. No ranking, traffic or link-count guarantees.
 
 ## Weeks1–4 — measured intent and discovery

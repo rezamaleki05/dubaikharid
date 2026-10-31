@@ -1,0 +1,66 @@
+source,period_start,period_end,segment,metric,value,unit,limitations
+GSC,2026-10-01,2026-10-28,current,clicks,30,count,Web; all countries/devices; query disclosure incomplete
+GSC,2026-10-01,2026-10-28,current,impressions,281,count,Web; all countries/devices; query disclosure incomplete
+GSC,2026-10-01,2026-10-28,current,ctr,10.7,percent,Web; all countries/devices; query disclosure incomplete
+GSC,2026-10-01,2026-10-28,current,average_position,8.5,position,Web; all countries/devices; query disclosure incomplete
+GSC,2026-09-03,2026-09-30,previous,clicks,14,count,Web; all countries/devices; query disclosure incomplete
+GSC,2026-09-03,2026-09-30,previous,impressions,196,count,Web; all countries/devices; query disclosure incomplete
+GSC,2026-09-03,2026-09-30,previous,ctr,7.1,percent,Web; all countries/devices; query disclosure incomplete
+GSC,2026-09-03,2026-09-30,previous,average_position,8.7,position,Web; all countries/devices; query disclosure incomplete
+GSC,2026-10-23,2026-10-23,coverage,indexed_pages,10,count,Coverage snapshot; sitemap list inspected Oct 30
+GSC,2026-10-23,2026-10-23,coverage,excluded_pages,14,count,Coverage snapshot; sitemap list inspected Oct 30
+GSC,2026-10-23,2026-10-23,coverage,noindex,5,count,Coverage snapshot; sitemap list inspected Oct 30
+GSC,2026-10-23,2026-10-23,coverage,redirect,3,count,Coverage snapshot; sitemap list inspected Oct 30
+GSC,2026-10-23,2026-10-23,coverage,crawled_not_indexed,6,count,Coverage snapshot; sitemap list inspected Oct 30
+GSC,2026-10-23,2026-10-23,coverage,submitted_sitemaps,0,count,Coverage snapshot; sitemap list inspected Oct 30
+GA4,2026-10-02,2026-10-29,all,sessions,132,count,Historical private/owner traffic; public segment not proven customers
+GA4,2026-10-02,2026-10-29,Organic Search,sessions,56,count,Historical private/owner traffic; public segment not proven customers
+GA4,2026-10-02,2026-10-29,Direct,sessions,51,count,Historical private/owner traffic; public segment not proven customers
+GA4,2026-10-02,2026-10-29,AI Assistant,sessions,13,count,Historical private/owner traffic; public segment not proven customers
+GA4,2026-10-02,2026-10-29,Referral,sessions,12,count,Historical private/owner traffic; public segment not proven customers
+GA4,2026-10-02,2026-10-29,clearly_public_organic,sessions,41,count,Historical private/owner traffic; public segment not proven customers
+GA4,2026-10-02,2026-10-29,all,active_users,46,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,engaged_sessions,99,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,engagement_rate,75,percent,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,whatsapp_click,8,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,lead_created,0,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,add_to_cart,4,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,begin_checkout,5,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,all,purchase,0,count,Zero lead/purchase means no reported row; raw events are not users
+GA4,2026-10-02,2026-10-29,Organic Search,whatsapp_click,3,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,Organic Search,lead_created,0,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,AI Assistant,whatsapp_click,0,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,AI Assistant,lead_created,0,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,Direct,whatsapp_click,4,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,Direct,lead_created,0,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,Referral,whatsapp_click,1,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,Referral,lead_created,0,count,Raw events; no reported lead row
+GA4,2026-10-02,2026-10-29,all,whatsapp_key_events,3,count,Distinct metric from raw WhatsApp count 8
+Clarity,,2026-10-30,last28days_UI,sessions_nonbot,79,count,Includes current partial day; insufficient real mobile traffic
+Clarity,,2026-10-30,last28days_UI,mobile_sessions,9,count,Includes current partial day; insufficient real mobile traffic
+Clarity,,2026-10-30,last28days_UI,desktop_sessions,70,count,Includes current partial day; insufficient real mobile traffic
+Clarity,,2026-10-30,last28days_UI,dead_click_sessions,2,count,Includes current partial day; insufficient real mobile traffic
+Clarity,,2026-10-30,last28days_UI,rage_click_sessions,0,count,Includes current partial day; insufficient real mobile traffic
+Clarity,,2026-10-30,last28days_UI,javascript_error_sessions,0,count,Includes current partial day; insufficient real mobile traffic
+Lighthouse13.5.0,2026-10-30,2026-10-30,Homepage,LCP,6.46264,seconds,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Homepage,CLS,0.001260032,score,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Homepage,performance,74,score100,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Homepage_repeat,LCP,6.545083,seconds,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Homepage_repeat,CLS,0.001260032,score,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Homepage_repeat,performance,75,score100,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Product,LCP,3.170613,seconds,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Product,CLS,0,score,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Product,performance,93,score100,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Laptop,LCP,4.978602,seconds,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Laptop,CLS,0,score,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,Laptop,performance,81,score100,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,buy-from-dubai,LCP,4.827869,seconds,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,buy-from-dubai,CLS,0,score,Mobile simulated lab; not field CWV
+Lighthouse13.5.0,2026-10-30,2026-10-30,buy-from-dubai,performance,82,score100,Mobile simulated lab; not field CWV
+Bing,2026-10-30,2026-10-30,site,indexed_urls,3,count,Read-only dashboard snapshot
+Bing,2026-10-30,2026-10-30,site,excluded_urls,3,count,Read-only dashboard snapshot
+Bing,2026-10-30,2026-10-30,site,crawl_errors,0,count,Read-only dashboard snapshot
+Bing,2026-10-30,2026-10-30,site,crawl_warnings,0,count,Read-only dashboard snapshot
+Bing,2026-10-30,2026-10-30,site,submitted_sitemaps,0,count,Read-only dashboard snapshot
+GSC,2026-10-31,2026-10-31,sitemap_closeout,discovered_urls,35,count,Registration succeeded in Phase 3N; discovery is not per-URL indexation. Bing UI date displays Oct 30.
+Bing,2026-10-31,2026-10-31,sitemap_closeout,discovered_urls,35,count,Registration succeeded in Phase 3N; discovery is not per-URL indexation. Bing UI date displays Oct 30.
