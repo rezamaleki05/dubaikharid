@@ -1,3 +1,4 @@
+import { publicProductHref } from './productUrl.js';
 import { cartItemKey } from './clientCollectionState.js';
 import { buildSelectedOptionsSnapshot } from './productVariantOrderItemDomain.js';
 import { DEFAULT_PRODUCT_VARIANT_SIGNATURE } from './productVariantDomain.js';
@@ -86,6 +87,7 @@ export function serializeResolvedProductCartLine({ product, variant, pricing, qu
   return {
     type: 'PRODUCT',
     id: product.id,
+    publicHref: publicProductHref(product),
     productId: product.id,
     productVariantId: variant.id,
     quantity,
@@ -100,7 +102,7 @@ export function serializeResolvedProductCartLine({ product, variant, pricing, qu
     brand: product.brand?.faName || product.brand?.name || '',
     store: product.store?.name || '',
     spec: product.category?.name || '',
-    image: getProductCoverImage(product, ''),
+    image: variant.accessoryImages?.find(x=>x.isPrimary)?.url || variant.accessoryImages?.[0]?.url || getProductCoverImage(product, ''),
     originalLink: product.originalLink || '',
     priceAed: product.supplyMode === 'EXTERNAL_DUBAI' ? Number(pricing.basePrice) : null,
     priceToman: product.supplyMode === 'IRAN_STOCK' ? pricing.basePrice : null,

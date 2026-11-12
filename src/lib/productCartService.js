@@ -8,6 +8,7 @@ import {
 import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
 
 const productCartSelect = Object.freeze({
+  slug: true, accessoryProfile: {select:{categorySlug:true}},
   id: true,
   nameFa: true,
   nameEn: true,
@@ -40,6 +41,7 @@ const productCartSelect = Object.freeze({
   },
   variants: {
     select: {
+      accessoryOffer: true, accessoryImages: {select:{url:true,isPrimary:true,sortOrder:true},orderBy:{sortOrder:'asc'}},
       id: true,
       productId: true,
       sku: true,

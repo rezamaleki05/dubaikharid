@@ -217,6 +217,7 @@ model Product {
   telegramPublication TelegramPublication?
   images          ProductImage[]
   attributeValues ProductAttributeValue[]
+  accessoryProfile LaptopAccessoryProfile?
   variants        ProductVariant[]
 
   @@index([status, createdAt])
@@ -641,6 +642,7 @@ model LaptopModel {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  accessoryCompatibility LaptopAccessoryCompatibility[]
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@unique([brandId, name])
@@ -774,6 +776,8 @@ model ProductVariant {
   updatedAt               DateTime @updatedAt
 
   product    Product                @relation(fields: [productId], references: [id], onDelete: Restrict)
+  accessoryOffer LaptopAccessoryOfferDetail?
+  accessoryImages ProductVariantImage[]
   options    ProductVariantOption[]
   inventory  ProductInventory?
   orderItems OrderItem[]
@@ -931,4 +935,75 @@ model LaptopTelegramPublication {
   laptop            Laptop @relation(fields: [laptopId], references: [id], onDelete: Cascade)
 
   @@index([status, lockedAt])
+}
+
+// Accessories extend existing commerce; Laptop physical units remain independent.
+model LaptopAccessoryProfile {
+  productId String @id
+  categorySlug String
+  partNumber String?
+  modelNumber String?
+  shortTechnicalName String?
+  compatibilityNotes String?
+  seoTitle String?
+  seoDescription String?
+  isFeatured Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  compatibility LaptopAccessoryCompatibility[]
+  @@index([categorySlug])
+  @@index([partNumber])
+  @@index([modelNumber])
+}
+model LaptopAccessoryCompatibility {
+  productId String
+  laptopModelId String
+  profile LaptopAccessoryProfile @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  laptopModel LaptopModel @relation(fields: [laptopModelId], references: [id], onDelete: Restrict)
+  @@id([productId, laptopModelId])
+  @@index([laptopModelId])
+}
+model LaptopAccessoryOfferDetail {
+  variantId String @id
+  authenticity AccessoryAuthenticity
+  condition AccessoryCondition
+  grade String?
+  healthPercent Int?
+  cycleCount Int?
+  powerOnHours Int?
+  smartStatus String?
+  tested Boolean?
+  testNotes String?
+  warrantyDays Int?
+  manufactureDate DateTime?
+  offerNotes String?
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  @@index([authenticity, condition])
+}
+model ProductVariantImage {
+  id String @id @default(cuid())
+  variantId String
+  url String
+  blobPathname String?
+  sortOrder Int @default(0)
+  isPrimary Boolean @default(false)
+  altFa String?
+  altEn String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  @@index([variantId, sortOrder])
+  @@index([variantId, isPrimary])
+  @@index([blobPathname])
+}
+enum AccessoryAuthenticity {
+  ORIGINAL
+  OEM
+  COMPATIBLE
+  AFTERMARKET
+}
+enum AccessoryCondition {
+  NEW
+  USED
 }

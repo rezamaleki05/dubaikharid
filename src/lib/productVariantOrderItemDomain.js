@@ -78,6 +78,7 @@ export function buildProductVariantOrderItemSnapshotFromData({ product, variant,
     throw new ProductVariantOrderItemError('نام‌های محصول برای ثبت snapshot کامل نیست.', 409, 'PRODUCT_NAME_REQUIRED');
   }
   const selectedOptionsSnapshot = buildSelectedOptionsSnapshot(variant.options);
+  if(variant.accessoryOffer) for(const [code,label] of [['healthPercent','سلامت درصد'],['cycleCount','تعداد چرخه'],['powerOnHours','ساعت کار'],['grade','گرید'],['warrantyDays','ضمانت روز'],['tested','تست شده'],['testNotes','یادداشت تست']]) { const value=variant.accessoryOffer[code];if(value!=null)selectedOptionsSnapshot.push({attributeCode:`accessory_${code}`,attributeNameFa:label,attributeNameEn:code,optionCode:String(value),labelFa:String(value),labelEn:String(value)}); }
   if (variant.optionSignature === DEFAULT_PRODUCT_VARIANT_SIGNATURE && selectedOptionsSnapshot.length !== 0) {
     throw new ProductVariantOrderItemError('تنوع پیش‌فرض نباید گزینه انتخاب‌شده داشته باشد.', 409, 'DEFAULT_VARIANT_OPTIONS_INVALID');
   }

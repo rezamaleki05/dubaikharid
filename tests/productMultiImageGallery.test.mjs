@@ -91,7 +91,7 @@ test('cover resolver prefers explicit primary, then ordered gallery, legacy imag
 test('ProductImage schema and migration are additive, ordered, cascading, and primary-safe', () => {
   assert.match(schema, /images\s+ProductImage\[\]/);
   assert.match(schema, /model ProductImage \{/);
-  assert.doesNotMatch(schema, /model ProductVariantImage/);
+  assert.match(schema, /model ProductVariantImage/); // Phase 4A: independent variant gallery; ProductImage color semantics retained.
   assert.match(migration, /CREATE TABLE "ProductImage"/);
   assert.match(migration, /ON DELETE CASCADE/);
   assert.match(migration, /WHERE "isPrimary" = true/);

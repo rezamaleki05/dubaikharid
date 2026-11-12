@@ -63,6 +63,13 @@ export default function AdminSidebar({
       icon: <svg className={styles.navIconSvg} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="20" x2="22" y2="20"/><line x1="12" y1="17" x2="12" y2="20"/></svg>
     },
     {
+      key: 'laptop_accessories',
+      label: 'قطعات و لوازم لپ تاپ',
+      href: ADMIN_ROUTES.laptop_accessories,
+      permission: ADMIN_PERMISSIONS.LAPTOP_ACCESSORIES_VIEW,
+      icon: AdminIcons.card(16)
+    },
+    {
       key: 'customers',
       label: 'مشتریان',
       href: ADMIN_ROUTES.customers,

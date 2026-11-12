@@ -1,3 +1,4 @@
+import CompatibleAccessories from '@/components/accessories/CompatibleAccessories';
 import { notFound, permanentRedirect } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -101,6 +102,7 @@ export default async function LaptopModelPage({ params }) {
           </div>
           <LaptopModelUnits units={group.units} />
         </section>
+        <CompatibleAccessories group={group} />
       </main>
       <Footer />
     </div>

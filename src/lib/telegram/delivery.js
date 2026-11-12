@@ -11,11 +11,13 @@ export function createPublicationDelivery({ db, getConfiguration, getProductPost
     return records.findUnique({ where: { productId } });
   }
   async function deliver(productId, { automatic = false, confirmRepost = false, expectedAttemptCount = 0 } = {}) {
-    const product = await db.product.findUnique({ where: { id: productId }, select: { id: true, status: true } });
+    const product = await db.product.findUnique({ where: { id: productId }, select: { id: true, status: true, accessoryProfile: {select:{productId:true}} } });
     if (!product || product.status !== 'active') throw new TelegramError('PRODUCT_NOT_PUBLISHED');
+    if(automatic && product.accessoryProfile) { const flag=await db.setting.findUnique({where:{key:'telegramAutoPublishLaptopAccessories'}});if(flag?.value!=='true')return null; }
     let row = await read(productId);
     if (automatic && (!row || row.status !== 'PENDING' || row.lockedAt)) return row;
-    const config = await getConfiguration();
+    const baseConfig = await getConfiguration();
+    const config = product.accessoryProfile ? {...baseConfig, autoPublish: (await db.setting.findUnique({where:{key:'telegramAutoPublishLaptopAccessories'}}))?.value==='true'} : baseConfig;
     if (!automatic && config.code) throw new TelegramError(config.code);
     if (!row) {
       row = await records.upsert({ where: { productId }, create: { productId, destination: config.channel || '' }, update: {} });

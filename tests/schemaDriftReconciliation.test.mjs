@@ -49,6 +49,7 @@ test('reconciliation runs after every existing release migration', () => {
     '20261009000100_laptop_model_identity',
     '20261015000100_product_color_image_galleries',
     '20261018000100_laptop_stock_complete',
+    '20261113000100_laptop_accessories',
   ]);
   for (const releaseMigration of [
     '20260902000100_category_attribute_foundation',

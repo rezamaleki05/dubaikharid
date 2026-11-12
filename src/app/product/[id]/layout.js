@@ -1,3 +1,4 @@
+import { publicProductHref } from '@/lib/productUrl';
 import { productPath } from '@/lib/productUrl';
 import { notFound, permanentRedirect } from 'next/navigation';
 import JsonLd from '@/components/seo/JsonLd';
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }) {
   return publicPageMetadata({
     title,
     description: descriptionFor(item),
-    path: item.kind === 'laptop' ? item.canonicalPath : productPath(item.id),
+    path: item.accessoryProfile ? publicProductHref(item) : item.kind === 'laptop' ? item.canonicalPath : productPath(item.id),
     image: item.image || undefined,
     type: 'website',
     ...(item.kind === 'laptop' ? { robots: { index: false, follow: true } } : {}),
@@ -38,6 +39,7 @@ export default async function ProductSeoLayout({ children, params }) {
 
   if (item.kind === 'laptop' && item.canonicalPath?.startsWith('/laptops/')) permanentRedirect(item.canonicalPath);
 
+  if(item.accessoryProfile)permanentRedirect(publicProductHref(item));
   const brandName = item.kind === 'product' ? item.brand?.faName || item.brand?.name : item.brand;
   const crumbs = [
     { name: 'صفحه اصلی', path: '/' },

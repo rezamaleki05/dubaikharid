@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AccessoryNavigation from '@/components/accessories/AccessoryNavigation';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -252,7 +253,7 @@ export default function Header() {
           <ul className={styles.navList}>
             <li><Link href="/" aria-current={isActive('/') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/') ? styles.navActive : ''}>صفحه اصلی</Link></li>
             <li><Link href="/brands" aria-current={isActive('/brands') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/brands') ? styles.navActive : ''}>برندها</Link></li>
-            <li><Link href="/stock-laptops" aria-current={isActive('/stock-laptops') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/stock-laptops') ? styles.navActive : ''}>لپتاپ استوک</Link></li>
+            <AccessoryNavigation onNavigate={closeMobileMenu} />
             <li className={styles.navDropdown}>
               <Link href="/men" aria-current={isActive('/men') ? 'page' : undefined} onClick={closeMobileMenu} className={isActive('/men') ? styles.navActive : ''}>مردانه</Link>
               <div className={styles.dropdownBridge}>

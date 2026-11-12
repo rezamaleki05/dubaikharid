@@ -1,4 +1,5 @@
 'use client';
+import { publicProductHref } from '@/lib/productUrl';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import Link from 'next/link';
@@ -48,7 +49,7 @@ export default function WishlistPage() {
                   <div 
                     key={item.key}
                     className={styles.wishItemCard}
-                    onClick={() => { if (!item.unavailable) router.push(`/product/${item.id}`); }}
+                    onClick={() => { if (!item.unavailable) router.push(publicProductHref(item)); }}
                   >
                     <div className={`${styles.imageWrap} ${item.type === 'PRODUCT' ? styles.catalogImageWrap : ''}`}>
                       <img src={item.image || item.img} alt={item.name} className={`${styles.productImg} ${item.type === 'PRODUCT' ? styles.catalogProductImg : ''}`} />

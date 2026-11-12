@@ -28,7 +28,7 @@ const delivery = createPublicationDelivery({ db: prisma, getConfiguration: getTe
 export function scheduleTelegramPublication(productId) {
   try {
     after(async () => {
-      try { await delivery.deliver(productId, { automatic: true }); }
+      try { const item=await prisma.product.findUnique({where:{id:productId},select:{accessoryProfile:{select:{productId:true}}}});if(item?.accessoryProfile){ const flag=await prisma.setting.findUnique({where:{key:'telegramAutoPublishLaptopAccessories'}});if(flag?.value!=='true')return; } await delivery.deliver(productId, { automatic: true }); }
       catch { console.warn('TELEGRAM_DELIVERY_DEFERRED: inspect Product delivery status'); }
     });
   } catch { console.warn('TELEGRAM_DELIVERY_DEFERRED: inspect Product delivery status'); }

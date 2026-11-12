@@ -1,3 +1,5 @@
+import { getPublicAccessories } from '@/lib/publicAccessories';
+import { publicProductHref } from '@/lib/productUrl';
 import { brandGuides, guides } from '@/lib/commerceGuides';
 import { prisma } from '@/lib/prisma';
 import { absoluteUrl } from '@/lib/seo';
@@ -30,7 +32,7 @@ export default async function sitemap() {
   ];
   try {
     const [products, laptopModels, stores, brands] = await Promise.all([
-      prisma.product.findMany({ where: PUBLIC_PRODUCT_VISIBILITY, select: { id: true, updatedAt: true } }),
+      prisma.product.findMany({ where: PUBLIC_PRODUCT_VISIBILITY, select: { id: true, slug: true, accessoryProfile: {select:{categorySlug:true}}, updatedAt: true } }),
       getPublicLaptopModelGroups(),
       prisma.store.findMany({
         where: { OR: [{ id: { in: ['amazon', 'noon', 'namshi'] } }, { products: { some: PUBLIC_PRODUCT_VISIBILITY } }] },
@@ -41,11 +43,14 @@ export default async function sitemap() {
         select: { id: true },
       }),
     ]);
+    const accessories=await getPublicAccessories();
+    const categories=[...new Set(accessories.map(p=>p.accessoryProfile.categorySlug))];
     return [
       ...staticEntries,
+      ...(accessories.length ? [{url:absoluteUrl('/laptop-accessories')},...categories.map(c=>({url:absoluteUrl(`/laptop-accessories/${c}`)}))] : []),
       ...stores.map(store => ({ url: absoluteUrl(`/stores/${store.id}`), changeFrequency: 'monthly', priority: 0.7 })),
       ...brands.map(brand => ({ url: absoluteUrl(`/brands/${brand.id}`), changeFrequency: 'weekly', priority: 0.7 })),
-      ...products.map(product => ({ url: absoluteUrl(`/product/${product.id}`), lastModified: product.updatedAt, changeFrequency: 'weekly', priority: 0.7 })),
+      ...products.map(product => ({ url: absoluteUrl(publicProductHref(product)), lastModified: product.updatedAt, changeFrequency: 'weekly', priority: 0.7 })),
       ...laptopModels.map(model => ({ url: absoluteUrl(`/laptops/${model.slug}`), lastModified: model.updatedAt, changeFrequency: 'daily', priority: 0.8 })),
     ];
   } catch (error) {

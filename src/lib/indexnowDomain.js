@@ -1,7 +1,7 @@
 export const INDEXNOW_ORIGIN = 'https://dubaikharid.shop';
 export const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
 export const INDEXNOW_STATIC_PATHS = Object.freeze([
-  '/', '/buy-from-dubai', '/about', '/brands', '/stock-laptops', '/mobile',
+  '/laptop-accessories', '/', '/buy-from-dubai', '/about', '/brands', '/stock-laptops', '/mobile',
   '/electronics', '/watches', '/sports-shoes', '/bags-accessories', '/beauty-health',
   '/clothing', '/women', '/men', '/kids', '/other-products', '/sale', '/best-sellers',
 ]);
@@ -17,6 +17,7 @@ export function canonicalIndexNowUrl(input) {
     if (url.origin !== INDEXNOW_ORIGIN || url.username || url.password || url.port || url.search || url.hash) return null;
     if (url.pathname !== input.slice(INDEXNOW_ORIGIN.length)) return null;
     if (INDEXNOW_STATIC_PATHS.includes(url.pathname)) return url.href;
+    if(/^\/laptop-accessories\/[a-z0-9-]+(?:\/[a-z0-9-]+)?$/.test(url.pathname)) return url.href;
     const match = /^\/(product|laptops|stores|brands|guides)\/([^/]+)$/.exec(url.pathname);
     if (!match || !/^[\p{L}\p{N}_-]{1,180}$/u.test(decodeURIComponent(match[2]))) return null;
     // Reject normalization tricks, encoded separators and dot segments.

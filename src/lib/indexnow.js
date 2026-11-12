@@ -1,3 +1,4 @@
+import { getPublicAccessory } from '@/lib/publicAccessories';
 import 'server-only';
 import { after } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -11,7 +12,17 @@ import { createIndexNowStateReader } from './indexnowPublication.js';
 
 const client = createIndexNowClient();
 const readState = createIndexNowStateReader({
-  readProduct: getPublicProduct,
+  readProduct: async id => {
+    const product=await getPublicProduct(id);
+    if(!product?.publicHref?.startsWith('/laptop-accessories/')) return product;
+    const [, ,category,slug]=product.publicHref.split('/');
+    const accessory=await getPublicAccessory(category,slug);
+    if(!accessory)return null;
+    // Compare public facts, not regenerated association IDs or update timestamps.
+    const {updatedAt,...facts}=accessory;
+    void updatedAt;
+    return {...facts,images:facts.images.map(({id,...image})=>{void id;return image}),variants:facts.variants.map(v=>({...v,accessoryImages:v.accessoryImages.map(({id,...image})=>{void id;return image})}))};
+  },
   readLaptopGroups: async () => buildLaptopModelGroups(await prisma.laptop.findMany({
     where: { status: 'AVAILABLE', archivedAt: null, reservedOrderId: null, priceToman: { gt: 0 }, brand: { not: null }, model: { not: null } },
     select: PUBLIC_LAPTOP_MODEL_SELECT, orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],

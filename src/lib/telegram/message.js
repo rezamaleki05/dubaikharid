@@ -1,5 +1,5 @@
 import { getProductCoverImage } from '../productGallery.js';
-import { productPath } from '../productUrl.js';
+import { publicProductHref } from '../productUrl.js';
 
 export const TELEGRAM_PRODUCT_ORIGIN = 'https://www.dubaikharid.shop';
 export function escapeTelegramHtml(value) {
@@ -17,7 +17,8 @@ export function telegramExcerpt(value, limit) {
   return out;
 }
 export function buildTelegramProductPost(product) {
-  const url = TELEGRAM_PRODUCT_ORIGIN + productPath(product.id);
+  const href=publicProductHref(product);
+  const url = (href.startsWith('/laptop-accessories/')?'https://dubaikharid.shop':TELEGRAM_PRODUCT_ORIGIN) + href;
   const summary = product.cardPricing;
   const price = summary?.minimumFinalPriceToman
     ? `${summary.varies ? 'از ' : ''}${BigInt(summary.minimumFinalPriceToman).toLocaleString('fa-IR')} تومان`

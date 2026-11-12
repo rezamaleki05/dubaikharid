@@ -1,3 +1,4 @@
+import { publicProductHref } from './productUrl.js';
 import { INDEXNOW_ORIGIN } from './indexnowDomain.js';
 
 // Inject the existing public projections, not raw private records or every DB write.
@@ -6,7 +7,7 @@ export function createIndexNowStateReader({ readProduct, readLaptopGroups, readE
     let pages = {};
     if (kind === 'product') {
       const product = await readProduct(id);
-      if (product) pages[`${INDEXNOW_ORIGIN}/product/${product.id}`] = product;
+      if (product) pages[`${INDEXNOW_ORIGIN}${publicProductHref(product)}`] = product;
     } else if (kind === 'laptop') {
       pages = Object.fromEntries((await readLaptopGroups()).map(group => [`${INDEXNOW_ORIGIN}/laptops/${group.slug}`, {
         ...group, units: [...group.units].sort((a, b) => a.id.localeCompare(b.id)),

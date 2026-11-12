@@ -24,7 +24,7 @@ export default function TelegramSettings({ values, onChange, onSave, canEdit, sa
   }, []);
   async function save() {
     setNotice('');
-    const saved = await onSave({ telegramEnabled: Boolean(values.telegramEnabled), telegramAutoPublishProducts: Boolean(values.telegramAutoPublishProducts), telegramAutoPublishLaptops: Boolean(values.telegramAutoPublishLaptops), telegramChannel: values.telegramChannel || '' }, 'تنظیمات تلگرام ذخیره شد.');
+    const saved = await onSave({ telegramEnabled: Boolean(values.telegramEnabled), telegramAutoPublishLaptopAccessories: Boolean(values.telegramAutoPublishLaptopAccessories), telegramAutoPublishProducts: Boolean(values.telegramAutoPublishProducts), telegramAutoPublishLaptops: Boolean(values.telegramAutoPublishLaptops), telegramChannel: values.telegramChannel || '' }, 'تنظیمات تلگرام ذخیره شد.');
     if (saved) { try { await refresh(); } catch (error) { setNotice(error.message); } }
   }
   async function test(action, confirmed = false) {
@@ -44,6 +44,7 @@ export default function TelegramSettings({ values, onChange, onSave, canEdit, sa
     <h3 id="telegram-settings-title">کانال تلگرام محصولات</h3>
     <p>انتشار محصولات در کانال فروشگاه. محصولات قبلی فقط با ارسال دستی منتشر می‌شوند.</p>
     <div className={styles.fields}>
+      <label className={styles.toggle}><input type="checkbox" disabled={disabled} checked={Boolean(values.telegramAutoPublishLaptopAccessories)} onChange={event => onChange({ ...values, telegramAutoPublishLaptopAccessories: event.target.checked })} />ارسال خودکار قطعات لپ تاپ در اولین انتشار</label>
       <label className={styles.toggle}><input type="checkbox" disabled={disabled} checked={Boolean(values.telegramAutoPublishLaptops)} onChange={event => onChange({ ...values, telegramAutoPublishLaptops: event.target.checked })} />ارسال خودکار لپ‌تاپ‌ها در اولین انتشار</label>
       <label className={styles.toggle}><input type="checkbox" disabled={disabled} checked={Boolean(values.telegramEnabled)} onChange={event => onChange({ ...values, telegramEnabled: event.target.checked })} />فعال‌سازی تلگرام</label>
       <label className={styles.toggle}><input type="checkbox" disabled={disabled} checked={Boolean(values.telegramAutoPublishProducts)} onChange={event => onChange({ ...values, telegramAutoPublishProducts: event.target.checked })} />ارسال خودکار محصولات در اولین انتشار</label>

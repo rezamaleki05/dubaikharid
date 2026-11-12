@@ -1,4 +1,5 @@
 'use client';
+import { publicProductHref } from '@/lib/productUrl';
 import { useSiteSettings, getProductCardPricing } from '@/context/SiteSettingsContext';
 
 import { Suspense, useEffect } from 'react';
@@ -154,7 +155,7 @@ function SearchContent() {
                       <div 
                         key={product.id} 
                         className={styles.productCard}
-                        onClick={() => router.push(`/product/${product.id}`)}
+                        onClick={() => router.push(publicProductHref(product))}
                       >
                         <div className={styles.imageWrap}>
                           <img src={product.image} alt={product.name} className={styles.productImg} />

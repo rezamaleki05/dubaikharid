@@ -52,6 +52,7 @@ export async function GET(request) {
   }
 
   const where = {
+    accessoryProfile: {is:null},
     ...(status ? { status } : {}),
     ...(brandId ? { brandId } : {}),
     ...(categoryId ? { categoryId } : {}),

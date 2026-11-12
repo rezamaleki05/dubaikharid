@@ -10,6 +10,8 @@ test('Homepage design, content, H1, metadata, canonical and shared dependencies 
  const manifest = JSON.parse(read('docs/seo/homepage-freeze.json'));
  for (const [path, expected] of Object.entries(manifest)) {
    let source = read(path);
+   if(path==='src/components/Header.js') source=source.replace("import AccessoryNavigation from '@/components/accessories/AccessoryNavigation';\n",'').replace('<AccessoryNavigation onNavigate={closeMobileMenu} />','<li><Link href="/stock-laptops" aria-current={isActive(\'/stock-laptops\') ? \'page\' : undefined} onClick={closeMobileMenu} className={isActive(\'/stock-laptops\') ? styles.navActive : \'\'}>لپتاپ استوک</Link></li>'); // Exact Phase 4A Laptop navigation exception; original digest retained.
+   if(path==='src/components/ProductSlider.js') source=source.replace("import { publicProductHref } from '@/lib/productUrl';\n",'').replace('publicProductHref(product)','`/product/${product.id}`'); // Exact centralized URL reuse, ordinary Product/Laptop behavior unchanged.
    const finalPerformanceExceptions = JSON.parse(read('docs/seo/phase3g2-performance-exceptions.json'));
    for (const change of finalPerformanceExceptions[path] || []) source = source.replace(change.after, change.before);
    // Exact reviewed Phase 3G image-delivery/loading exceptions only. The

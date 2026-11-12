@@ -14,6 +14,7 @@ export const getSeoProduct = cache(async id => {
   const product = await prisma.product.findFirst({
     where: { OR: [{ id }, { slug: id }], ...PUBLIC_PRODUCT_VISIBILITY },
     select: {
+      accessoryProfile: { select: { categorySlug: true } },
       id: true, slug: true, nameFa: true, nameEn: true, description: true, image: true,
       priceAed: true, priceToman: true, supplyMode: true, weight: true,
       discountPercent: true, hasDiscount: true, updatedAt: true,

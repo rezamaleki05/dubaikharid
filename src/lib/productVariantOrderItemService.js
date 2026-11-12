@@ -8,6 +8,7 @@ import {
 import { resolveAuthoritativeProductVariantPrice } from '@/lib/productSupplyPricingService';
 
 const variantSnapshotSelect = Object.freeze({
+  accessoryOffer: true,
   id: true,
   productId: true,
   sku: true,

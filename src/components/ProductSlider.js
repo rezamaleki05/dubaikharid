@@ -1,4 +1,5 @@
 'use client';
+import { publicProductHref } from '@/lib/productUrl';
 import { laptopPath } from '@/lib/laptopUrl';
 import { publicImageDelivery } from '@/lib/publicImageDelivery';
 import { useSiteSettings, getProductTomanPrice, getProductCardPricing } from '@/context/SiteSettingsContext';
@@ -44,7 +45,7 @@ export default function ProductSlider({ onSelectProduct }) {
   // Replaced hardcoded exchange rate
 
   const handleSelect = (product) => {
-    router.push(product.product_type === 'laptop_stock' ? laptopPath(product) : `/product/${product.id}`);
+    router.push(product.product_type === 'laptop_stock' ? laptopPath(product) : publicProductHref(product));
   };
 
   const fmtAed = (n) => n.toLocaleString('en-US');

@@ -1,3 +1,4 @@
+import { accessoryAdminBoundary } from '@/lib/accessoryAdminBoundary';
 import 'server-only';
 
 import { NextResponse } from 'next/server';
@@ -9,7 +10,9 @@ import {
 
 export async function authorizeAdminApiRequest(request, permission) {
   try {
-    return { admin: await requireAdminPermission(request.cookies, permission), response: null };
+    const admin=await requireAdminPermission(request.cookies,permission);
+    const response=await accessoryAdminBoundary(request,admin);
+    return {admin:response?null:admin,response};
   } catch (error) {
     if (error instanceof AdminAuthorizationError) {
       return {
@@ -27,7 +30,9 @@ export async function authorizeAdminApiRequest(request, permission) {
 
 export async function authorizeAdminApiRequestAny(request, permissions) {
   try {
-    return { admin: await requireAnyAdminPermission(request.cookies, permissions), response: null };
+    const admin=await requireAnyAdminPermission(request.cookies,permissions);
+    const response=await accessoryAdminBoundary(request,admin);
+    return {admin:response?null:admin,response};
   } catch (error) {
     if (error instanceof AdminAuthorizationError) {
       return {

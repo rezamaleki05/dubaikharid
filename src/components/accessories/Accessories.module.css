@@ -1,0 +1,165 @@
+.main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 24px 64px;
+  min-width: 0;
+  color: var(--text-primary);
+}
+.main h1 {
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.6;
+  margin: 12px 0;
+}
+.intro {
+  color: var(--text-secondary);
+  line-height: 2;
+  max-width: 760px;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin: 24px 0;
+}
+.links a {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-block: 24px;
+  border-block: 1px solid var(--border-primary);
+  margin-block: 24px;
+}
+.filters label {
+  display: grid;
+  gap: 8px;
+  flex: 1 1 150px;
+  min-width: 0;
+}
+.filters input,
+.filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  background: var(--bg-secondary);
+  color: inherit;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 32px 24px;
+}
+.card {
+  min-width: 0;
+  display: block;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 20px;
+  line-height: 1.8;
+}
+.card h3 {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+.card img {
+  aspect-ratio: 4/3;
+  object-fit: contain;
+  width: 100%;
+  height: auto;
+  background: var(--bg-secondary);
+}
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+}
+.detail > * {
+  min-width: 0;
+}
+.offers {
+  display: grid;
+  gap: 10px;
+  margin-block: 24px;
+}
+.offers button {
+  padding: 14px;
+  text-align: right;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: inherit;
+  border-radius: 6px;
+  min-height: 48px;
+}
+.offers button[aria-pressed="true"] {
+  outline: 2px solid var(--accent-primary, #ed7517);
+  outline-offset: 1px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.actions button {
+  padding: 12px 20px;
+  min-height: 44px;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: inherit;
+  border-radius: 6px;
+}
+.actions button:disabled {
+  opacity: 0.5;
+}
+.specs {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+}
+.specs th,
+.specs td {
+  text-align: right;
+  border-bottom: 1px solid var(--border-primary);
+  padding: 12px 8px;
+  overflow-wrap: anywhere;
+}
+.specs th {
+  width: 40%;
+  color: var(--text-secondary);
+}
+.details {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 2;
+}
+.empty {
+  padding: 48px 0;
+  border-block: 1px solid var(--border-primary);
+  margin: 32px 0;
+}
+.main button:focus-visible,
+.main a:focus-visible,
+.main input:focus-visible,
+.main select:focus-visible {
+  outline: 2px solid var(--accent-primary, #ed7517);
+  outline-offset: 3px;
+}
+@media (max-width: 768px) {
+  .detail {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .main {
+    padding: 24px 16px 48px;
+  }
+  .filters {
+    gap: 12px;
+  }
+  .filters label {
+    flex-basis: calc(50% - 12px);
+  }
+}

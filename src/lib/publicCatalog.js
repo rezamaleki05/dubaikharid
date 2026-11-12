@@ -1,3 +1,4 @@
+import { publicProductHref } from './productUrl';
 import 'server-only';
 
 import { serializeProductColorGalleries } from '@/lib/productColorGallery';
@@ -23,6 +24,7 @@ export const PUBLIC_PRODUCT_VISIBILITY = Object.freeze({ status: PUBLIC_PRODUCT_
 export const PUBLIC_PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg';
 
 export const PUBLIC_PRODUCT_SELECT = Object.freeze({
+  accessoryProfile: { select: { categorySlug: true, partNumber: true, modelNumber: true } },
   id: true,
   nameFa: true,
   nameEn: true,
@@ -200,6 +202,7 @@ function searchWhere(search) {
       { nameEn: { contains: search, mode: 'insensitive' } },
       {
         AND: terms.map(term => ({ OR: searchTextCandidates(term).flatMap(value => [
+          { accessoryProfile: {is:{OR:[{partNumber:{contains:value,mode:'insensitive'}},{modelNumber:{contains:value,mode:'insensitive'}},{compatibility:{some:{laptopModel:{name:{contains:value,mode:'insensitive'}}}}}]}}},
           { code: { contains: value, mode: 'insensitive' } },
           { nameFa: { contains: value, mode: 'insensitive' } },
           { nameEn: { contains: value, mode: 'insensitive' } },
@@ -244,6 +247,7 @@ export function serializePublicProduct(product) {
   const primaryImage = getProductPrimaryImage(product);
   return {
     id: product.id,
+    publicHref: publicProductHref(product),
     productId: product.id,
     product_type: 'iran_inventory',
     ...productNameApiFields(product),
@@ -385,6 +389,7 @@ export function normalizePublicCatalogOptions(options = {}) {
 
 function publicProductWhere(options, { includeBrand = true } = {}) {
   const clauses = [
+    options.search ? null : { accessoryProfile: { is: null } },
     scopeWhere(options.scope),
     categoryWhere(options.category),
     includeBrand ? brandWhere(options.brands) : null,

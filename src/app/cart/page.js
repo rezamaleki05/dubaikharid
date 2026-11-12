@@ -1,4 +1,5 @@
 'use client';
+import { publicProductHref } from '@/lib/productUrl';
 import { useSiteSettings, getProductTomanPrice } from '@/context/SiteSettingsContext';
 
 import { useEffect, useRef, useState } from 'react';
@@ -152,7 +153,7 @@ export default function CartPage() {
                       
                       <div className={styles.itemInfo}>
                         <div className={styles.brandName}>{item.brand || ''}</div>
-                        <div className={styles.itemName}>{item.name}</div>
+                        <div className={styles.itemName}>{item.type==='PRODUCT'?<Link href={publicProductHref(item)}>{item.name}</Link>:item.name}</div>
                         
                         {/* Render size and color options if selected */}
                         {(item.variant?.options?.length || item.selectedSize || item.selectedColor) && (

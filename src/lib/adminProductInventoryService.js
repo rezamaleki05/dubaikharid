@@ -147,7 +147,7 @@ function orderSql(sort) {
 }
 
 function whereSql(filters) {
-  const clauses = [Prisma.sql`p."supplyMode" = 'IRAN_STOCK'::"ProductSupplyMode"`];
+  const clauses = [Prisma.sql`NOT EXISTS (SELECT 1 FROM "LaptopAccessoryProfile" ap WHERE ap."productId" = p."id")`, Prisma.sql`p."supplyMode" = 'IRAN_STOCK'::"ProductSupplyMode"`];
   if (filters.categoryId) clauses.push(Prisma.sql`p."categoryId" = ${filters.categoryId}`);
   if (filters.brandId) clauses.push(Prisma.sql`p."brandId" = ${filters.brandId}`);
   if (filters.productId) clauses.push(Prisma.sql`p."id" = ${filters.productId}`);
