@@ -30,15 +30,20 @@ if (!process.argv.includes("--apply")) {
     !url.hostname.startsWith("ep-small-block-as5dj8mo")
   )
     throw Error("Unexpected Production endpoint");
-  const { PrismaClient } = await import("../src/generated/prisma/client.ts");
+  const { PrismaClient } = await import("../src/generated/prisma/client.js");
   const { PrismaPg } = await import("@prisma/adapter-pg");
   const { Pool } = await import("pg");
-  const pool = new Pool({ connectionString: url.href, max: 1 });
+  const pool = new Pool({
+    connectionString: url.href,
+    max: 1,
+    connectionTimeoutMillis: 30000,
+    query_timeout: 30000,
+  });
   const db = new PrismaClient({ adapter: new PrismaPg(pool) });
   try {
     const result = await db.$transaction(
       (tx) => configureAccessoryCatalog(tx, { dryRun: false }),
-      { isolationLevel: "Serializable", timeout: 30000 },
+      { isolationLevel: "Serializable", maxWait: 30000, timeout: 120000 },
     );
     console.log(JSON.stringify(result));
   } finally {
