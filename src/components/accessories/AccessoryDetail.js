@@ -8,6 +8,7 @@ import {
   accessoryGallery,
   ACCESSORY_AUTHENTICITY,
   ACCESSORY_CONDITION,
+  ACCESSORY_SPEC_LABELS,
 } from "@/lib/laptopAccessoryDomain";
 import styles from "./Accessories.module.css";
 export default function AccessoryDetail({ product: p }) {
@@ -149,7 +150,7 @@ export default function AccessoryDetail({ product: p }) {
         <tbody>
           {p.attributeValues.map((s, i) => (
             <tr key={i}>
-              <th scope="row">{s.categoryAttribute.attribute.nameFa}</th>
+              <th scope="row">{ACCESSORY_SPEC_LABELS[s.categoryAttribute.attribute.code.replace("accessory_spec_", "")] || s.categoryAttribute.attribute.nameFa}</th>
               <td>{s.textValue ?? s.numberValue}</td>
             </tr>
           ))}

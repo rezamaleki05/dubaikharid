@@ -8,6 +8,7 @@ import { ADMIN_PERMISSIONS } from "@/lib/adminPermissions";
 import {
   ACCESSORY_CATEGORIES,
   ACCESSORY_SPECS,
+  ACCESSORY_SPEC_LABELS,
   ACCESSORY_AUTHENTICITY,
   ACCESSORY_CONDITION,
 } from "@/lib/laptopAccessoryDomain";
@@ -594,7 +595,7 @@ function Content() {
             <div className={styles.fields}>
               {ACCESSORY_SPECS[form.categorySlug].map((k) => (
                 <label key={k}>
-                  {k}
+                  {ACCESSORY_SPEC_LABELS[k] || k}
                   <input
                     value={form.specs[k] || ""}
                     onChange={(e) =>

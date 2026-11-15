@@ -6,7 +6,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import AccessoryDetail from "@/components/accessories/AccessoryDetail";
 import { getPublicAccessory } from "@/lib/publicAccessories";
 import { getPublicLaptopModelGroups } from "@/lib/publicLaptopSeo";
-import { ACCESSORY_CATEGORIES } from "@/lib/laptopAccessoryDomain";
+import { ACCESSORY_CATEGORIES, accessoryCoverImage } from "@/lib/laptopAccessoryDomain";
 import { absoluteUrl, publicPageMetadata, breadcrumbSchema } from "@/lib/seo";
 import styles from "@/components/accessories/Accessories.module.css";
 export async function generateMetadata({ params }) {
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
       p.accessoryProfile.shortTechnicalName ||
       p.nameFa,
     path: p.publicHref,
-    image: p.images.find((x) => x.isPrimary)?.url || p.images[0]?.url,
+    image: accessoryCoverImage(p)?.url,
   });
 }
 export default async function AccessoryPage({ params }) {
@@ -46,7 +46,7 @@ export default async function AccessoryPage({ params }) {
     alternateName: p.nameEn,
     sku: p.accessoryProfile.partNumber || undefined,
     url: absoluteUrl(p.publicHref),
-    image: p.images.map((x) => x.url),
+    image: [...new Set([accessoryCoverImage(p)?.url, ...p.images.map((x) => x.url)].filter(Boolean))],
     brand: { "@type": "Brand", name: p.brand?.name },
     offers: p.variants.map((v) => ({
       "@type": "Offer",

@@ -8,6 +8,18 @@ export const ACCESSORY_CONDITION = Object.freeze({
   NEW: "نو",
   USED: "دست دوم",
 });
+export const ACCESSORY_SPEC_LABELS = Object.freeze({
+  part_number: "شماره قطعه", capacity_wh: "ظرفیت (Wh)",
+  capacity_mah: "ظرفیت (mAh)", voltage: "ولتاژ (V)", cell_count: "تعداد سلول",
+  chemistry: "نوع شیمی باتری", connector: "نوع اتصال", capacity: "ظرفیت",
+  ddr: "نسل DDR", speed_mhz: "سرعت (MHz)", form_factor: "فرم‌فکتور",
+  ecc: "ECC", rank: "Rank", interface: "رابط", pcie_generation: "نسل PCIe",
+  read_speed: "سرعت خواندن", write_speed: "سرعت نوشتن", rpm: "دور در دقیقه (RPM)",
+  wattage: "توان (W)", output_amp: "جریان خروجی (A)", cable_included: "کابل همراه",
+  model: "مدل", hdmi: "HDMI", displayport: "DisplayPort", usb_ports: "درگاه‌های USB",
+  ethernet: "شبکه Ethernet", power_delivery: "توان Power Delivery",
+  charger_included: "شارژر همراه", layout: "چیدمان کیبورد", notes: "یادداشت فنی",
+});
 export const ACCESSORY_CATEGORIES = Object.freeze({
   battery: "باتری لپ تاپ",
   ram: "RAM لپ تاپ",
@@ -286,6 +298,11 @@ export function accessoryGallery(product, offer) {
   return offer?.accessoryImages?.length
     ? offer.accessoryImages
     : product.images || [];
+}
+export function accessoryCoverImage(product) {
+  const shared = product.images || [];
+  const images = shared.length ? shared : accessoryGallery(product, chooseAccessoryOffer(product.variants));
+  return images.find((image) => image.isPrimary) || images[0] || null;
 }
 export function accessoryAvailable(offer) {
   return offer?.isActive === true

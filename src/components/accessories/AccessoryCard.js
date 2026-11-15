@@ -3,10 +3,11 @@ import Image from "next/image";
 import {
   ACCESSORY_AUTHENTICITY,
   ACCESSORY_CONDITION,
+  accessoryCoverImage,
 } from "@/lib/laptopAccessoryDomain";
 import styles from "./Accessories.module.css";
 export default function AccessoryCard({ product: p }) {
-  const image = p.images.find((x) => x.isPrimary) || p.images[0];
+  const image = accessoryCoverImage(p);
   return (
     <Link className={styles.card} href={p.publicHref}>
       <Image

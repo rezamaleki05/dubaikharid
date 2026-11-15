@@ -1,11 +1,17 @@
 import {
   ACCESSORY_CATEGORIES,
   ACCESSORY_SPECS,
+  ACCESSORY_SPEC_LABELS,
   ACCESSORY_AUTHENTICITY,
   ACCESSORY_CONDITION,
 } from "./laptopAccessoryDomain.js";
 export const accessoryCategoryId = (slug) => `laptop-accessory-${slug}`;
 export const accessorySpecCode = (code) => `accessory_spec_${code}`;
+// Empty-update Prisma upserts perform several reads per existing row. A read-first
+// lookup preserves existing configuration and keeps repeat runs bounded over TLS.
+async function ensureRow(model, args) {
+  return (await model.findUnique({ where: args.where })) || model.create({ data: args.create });
+}
 export async function configureAccessoryCatalog(tx, { dryRun = true } = {}) {
   const plan = {
     categories: Object.keys(ACCESSORY_CATEGORIES),
@@ -22,7 +28,7 @@ export async function configureAccessoryCatalog(tx, { dryRun = true } = {}) {
     ["accessory_condition", ACCESSORY_CONDITION],
   ]) {
     // Code uniqueness reuses exact equivalent system attributes; conflicts are never silently renamed.
-    const attribute = await tx.catalogAttribute.upsert({
+    const attribute = await ensureRow(tx.catalogAttribute, {
       where: { code },
       create: {
         code,
@@ -35,7 +41,7 @@ export async function configureAccessoryCatalog(tx, { dryRun = true } = {}) {
     if (attribute.inputType !== "SELECT" || !attribute.isActive)
       throw Error(`Incompatible system attribute: ${code}`);
     for (const [optionCode, labelFa] of Object.entries(labels))
-      await tx.attributeOption.upsert({
+      await ensureRow(tx.attributeOption, {
         where: {
           attributeId_code: { attributeId: attribute.id, code: optionCode },
         },
@@ -59,7 +65,7 @@ export async function configureAccessoryCatalog(tx, { dryRun = true } = {}) {
       throw Error(
         `Existing equivalent category requires explicit mapping: ${slug}`,
       );
-    await tx.category.upsert({
+    await ensureRow(tx.category, {
       where: { id },
       create: { id, name, query: `laptop-accessories/${slug}` },
       update: {},
@@ -73,17 +79,17 @@ export async function configureAccessoryCatalog(tx, { dryRun = true } = {}) {
         "accessory_authenticity",
         "accessory_condition",
       ].includes(code);
-      const attribute = await tx.catalogAttribute.upsert({
+      const attribute = await ensureRow(tx.catalogAttribute, {
         where: { code },
         create: {
           code,
-          nameFa: code.replace("accessory_spec_", ""),
+          nameFa: ACCESSORY_SPEC_LABELS[code.replace("accessory_spec_", "")] || code,
           nameEn: code,
           inputType: "TEXT",
         },
         update: {},
       });
-      await tx.categoryAttribute.upsert({
+      await ensureRow(tx.categoryAttribute, {
         where: {
           categoryId_attributeId: { categoryId: id, attributeId: attribute.id },
         },
@@ -97,7 +103,7 @@ export async function configureAccessoryCatalog(tx, { dryRun = true } = {}) {
       });
     }
   }
-  await tx.setting.upsert({
+  await ensureRow(tx.setting, {
     where: { key: "telegramAutoPublishLaptopAccessories" },
     create: { key: "telegramAutoPublishLaptopAccessories", value: "false" },
     update: {},

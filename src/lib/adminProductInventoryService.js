@@ -216,12 +216,12 @@ export async function listAdminProductInventory(client, rawInput = {}) {
       orderBy: [{ name: 'asc' }, { id: 'asc' }],
     }),
     client.product.findMany({
-      where: { supplyMode: 'IRAN_STOCK', variants: { some: {} } },
+      where: { supplyMode: 'IRAN_STOCK', accessoryProfile: { is: null }, variants: { some: {} } },
       select: { id: true, nameFa: true, nameEn: true },
       orderBy: [{ nameFa: 'asc' }, { id: 'asc' }],
     }),
     client.productInventory.findMany({
-      where: { location: { not: null }, variant: { product: { supplyMode: 'IRAN_STOCK' } } },
+      where: { location: { not: null }, variant: { product: { supplyMode: 'IRAN_STOCK', accessoryProfile: { is: null } } } },
       distinct: ['location'],
       select: { location: true },
       orderBy: { location: 'asc' },

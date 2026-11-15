@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { verifyAccessoryBlob } from "./laptopAccessoryUploadDomain";
-import { validateAccessory, AccessoryError } from "./laptopAccessoryDomain";
+import { validateAccessory, AccessoryError, accessoryCoverImage } from "./laptopAccessoryDomain";
 import {
   accessoryCategoryId,
   accessorySpecCode,
@@ -96,7 +96,7 @@ export async function saveAccessory(
         supplyMode: "IRAN_STOCK",
         priceToman: null,
         priceAed: null,
-        image: data.images.find((x) => x.isPrimary)?.url || null,
+        image: accessoryCoverImage({ images: data.images, variants: data.offers.map(offer => ({ ...offer, accessoryImages: offer.images, inventory: { stock: offer.stock, reserved: 0 } })) })?.url || null,
       };
       const product = id
         ? await tx.product.update({ where: { id }, data: productData })

@@ -7,6 +7,7 @@ import {
   chooseAccessoryOffer,
   accessoryAvailable,
   accessoryGallery,
+  accessoryCoverImage,
   ACCESSORY_AUTHENTICITY,
 } from "../src/lib/laptopAccessoryDomain.js";
 import { publicProductHref } from "../src/lib/productUrl.js";
@@ -247,4 +248,13 @@ test("uploaded image verification checks size MIME and content magic before atta
         }),
     ),
   );
+});
+
+test("canonical accessory cover falls back to the chosen available offer only when shared gallery is empty", () => {
+  const offerImage = { url: "offer", isPrimary: true };
+  const sharedImage = { url: "shared", isPrimary: true };
+  const product = { images: [], variants: [{ isActive: true, inventory: { stock: 2, reserved: 0 }, accessoryImages: [offerImage] }] };
+  assert.equal(accessoryCoverImage(product), offerImage);
+  assert.equal(accessoryCoverImage({ ...product, images: [sharedImage] }), sharedImage);
+  assert.equal(accessoryCoverImage({ images: [], variants: [] }), null);
 });
