@@ -84,7 +84,7 @@ test('isolated catalog replay preserves all existing system rows', { skip: !url 
   const { PrismaClient } = require('../src/generated/prisma/client.js');
   const { PrismaPg } = await import('@prisma/adapter-pg');
   const { configureAccessoryCatalog } = await import('../src/lib/laptopAccessoryCatalogConfig.js');
-  const pool = new pg.Pool({ connectionString: url, max: 1, connectionTimeoutMillis: 30000, query_timeout: 30000 });
+  const pool = new pg.Pool({ connectionString: url, max: 1, connectionTimeoutMillis: 30000, query_timeout: 60000 });
   const db = new PrismaClient({ adapter: new PrismaPg(pool) });
   const fingerprint = async tx => {
     const hashes = {};

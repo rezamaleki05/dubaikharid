@@ -37,7 +37,7 @@ if (!process.argv.includes("--apply")) {
     connectionString: url.href,
     max: 1,
     connectionTimeoutMillis: 30000,
-    query_timeout: 30000,
+    query_timeout: 60000,
   });
   const db = new PrismaClient({ adapter: new PrismaPg(pool) });
   try {
