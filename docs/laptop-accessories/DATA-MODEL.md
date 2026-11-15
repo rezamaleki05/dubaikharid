@@ -1,6 +1,6 @@
 # Data model
 
-Migration: `20261113000100_laptop_accessories` (candidate migration 31, not applied).
+Migration: `20261113000100_laptop_accessories` (migration 31, applied to Preview and Production; zero drift, 0 failed).
 
 - `LaptopAccessoryProfile`: Product primary/foreign key, category route key, part/model numbers, technical summary, compatibility notes, optional SEO and featured flag.
 - `LaptopAccessoryCompatibility`: composite Product/LaptopModel key, reverse model index, real foreign keys. Duplicate compatibility is rejected.
@@ -9,7 +9,7 @@ Migration: `20261113000100_laptop_accessories` (candidate migration 31, not appl
 
 No existing tables/columns are dropped or renamed. Existing Product, ProductVariant, ProductInventory, reservations/movements, OrderItem source and Laptop architecture remain. Physical Laptops are not Products. Existing variants are deactivated rather than deleted, preserving order references.
 
-Auth/condition CatalogAttribute options define stable variant signatures. Technical fields use category assignments and ProductAttributeValue. Config script defaults to dry-run, uses deterministic category IDs and exact codes, and aborts on conflicting equivalent category identity instead of creating duplicates. Repeated apply upserts system configuration, preserves existing setting values, and creates no Product or stock. Preview replay/idempotency must still be proved with the intended database.
+Auth/condition CatalogAttribute options define stable variant signatures. Technical fields use category assignments and ProductAttributeValue. Config script defaults to dry-run, uses deterministic category IDs and exact codes, and aborts on conflicting equivalent category identity instead of creating duplicates. Repeated apply reads existing system configuration before creating missing rows, preserves existing setting values, and creates no Product or stock. Two real Preview catalog replays preserved all five configuration-table fingerprints. Production setup preserved every existing configuration row and created only missing system rows.
 
 Writes run through the existing serializable inventory retry service. Stock adjustments retain movements, admin identity and reserved-stock checks. New variants initialize the existing inventory once. Price overrides are Toman only; no AED conversion.
 

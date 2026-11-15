@@ -12,4 +12,4 @@ Laptop model pages query real compatibility relations and display published acti
 
 Homepage content, H1, metadata, canonical, Hero and image timing remain unchanged. Only the explicitly requested Laptop navigation entry gains an accessible nested menu. Exact test exceptions reverse that navigation change and central ProductSlider URL resolution before checking the original frozen digest; the original digest is not replaced.
 
-Preview/live canonical, responsive and discoverability verification remain release gates. No field performance claims are made by unit tests or local build.
+Preview SSR canonical/Offer/Breadcrumb and bidirectional compatibility discovery were verified. Live empty landing and all eight categories return HTTP 200 with apex canonical and noindex/follow; live sitemap excludes empty routes and fixtures. Public live responsive checks passed at 320/360/375/384/390/412/430/768/1440 in light and dark. No field-performance claim is made. Final authenticated Admin smoke awaits owner sign-in.

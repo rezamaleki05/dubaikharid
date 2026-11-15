@@ -8,7 +8,7 @@ Product is the commercial identity. Add one accessory profile per Product and a 
 
 Reuse ProductInventory and its serializable retry, conditional stock updates, reservations and movements. All accessory supply is IRAN_STOCK with explicit Toman overrides, never AED conversion. Reuse PRODUCT_VARIANT OrderItem snapshots and server-authoritative pricing; extend only safe selected-offer snapshots. Existing options must carry authenticity/condition as CatalogAttribute values.
 
-Admin uses existing shell, permission authorization/CSRF and activity logger. Add dedicated view/edit permissions for ADMIN/SUPER_ADMIN only. Reuse typography, spacing, colors and tables from Admin; no sidebar redesign. Public pages retain existing header/footer, image delivery and apex SEO. Design stance: restrained technical commerce, clear specification rows, accessible explicit offer labels, no decorative animation/3D. Existing fonts/colors/grid remain; adapt offer columns to one column on narrow mobile. Frontend-design skill applied within the user's stricter preservation scope.
+Admin uses existing shell, permission authorization and activity logger. Add dedicated view/edit permissions for ADMIN/SUPER_ADMIN only. Reuse typography, spacing, colors and tables from Admin; no sidebar redesign. Public pages retain existing header/footer, image delivery and apex SEO. Design stance: restrained technical commerce, clear specification rows, accessible explicit offer labels, no decorative animation/3D. Existing fonts/colors/grid remain; adapt offer columns to one column on narrow mobile. Frontend-design skill applied within the user's stricter preservation scope.
 
 Central public href resolver will distinguish accessory profiles from ordinary ID-based Product routes; propagate it to cards, cart, wishlist, search, sitemap, IndexNow and Telegram. Generic Product entry redirects to the accessory canonical. Generic catalog/admin defaults exclude accessories. Public projections must omit costs, Blob pathnames and Admin-only notes.
 
@@ -22,10 +22,14 @@ Migration is additive only. Preview migration, data preservation and drift check
 
 The current Neon connector is bound to red-meadow-89718709, not DubaiKharid polished-bird-87924134. It explicitly rejects the intended project. No writes through that connection. Existing environment/Preview credentials must be verified independently; do not substitute Production for Preview.
 
-## Implemented candidate / remaining gates
+## Release state — 2026-11-15
 
-The four extension models, conditional outbox migration, secure Admin APIs, category-aware validation, catalog configuration script, dedicated Admin and public screens, centralized URLs, cart/order snapshots and safe public projections are implemented locally. The original Homepage frozen digest still passes after reversing only two exact approved exceptions (Laptop navigation and ProductSlider href resolver). No Hero, Homepage content, metadata, analytics or physical Laptop identity change.
+The four extension models, conditional outbox migration, secure Admin APIs, category-aware validation, catalog configuration script, dedicated Admin and public screens, centralized URLs, cart/order snapshots and safe public projections are implemented and deployed. The original Homepage frozen digest still passes after reversing only two exact approved exceptions (Laptop navigation and ProductSlider href resolver). No Hero, Homepage content, metadata, analytics or physical Laptop identity change.
 
 Uploads use signed direct-to-Blob client upload to support 10MB without the Vercel request-body cap; the server verifies file size, MIME and magic bytes before association. The current implementation requires the existing BLOB_READ_WRITE_TOKEN for client token signing; an OIDC-only store will return a clear unavailable error. Verify actual Preview and Production Blob configuration before release. No secret was exported to establish this.
 
-All 117 requested checklist fields and explicit verification limits are in RELEASE-REPORT.md. This is not a live release. Preview authentication is required to replay schema/outbox/configuration, test inventory/order integration and inspect all required responsive widths before Production.
+All 117 requested checklist fields and evidence limits are in RELEASE-REPORT.md. Preview migration, database/service/API tests, uploads and responsive QA passed; Production migration 31 and exact-SHA deployment are live and healthy. Only the final read-only Production Admin smoke check awaits owner sign-in. No fake Production accessory was created.
+
+Wishlist display now sends an explicit wishlist intent to the existing resolver. Only accessory wishlist display selects a representative available offer; cart/checkout still require explicit offer identity and use authoritative prices. The original Homepage frozen digest remains, reversing only the exact authorized navigation, URL resolver and wishlist-only request intent exceptions.
+
+Canonical accessory covers prefer the shared gallery, then the selected available offer gallery. Category technical fields display localized labels. Catalog configuration uses read-first create-if-missing operations in one serializable transaction, preserving all existing values and timestamps.
