@@ -38,8 +38,8 @@ The Neon connector remains bound to a different project, so no write used it; th
 | 4 | Preview deployment ID | dpl_4uvoCYQEvd1xzrXAcdK54XqHgVc9 — READY |
 | 5 | Production deployment ID | dpl_Ca3mgskq48CxDVLptcn94UVGHyyd |
 | 6 | Production READY | YES — READY, exact SHA verified |
-| 7 | Worktree clean | Documentation closeout committed separately; final Git check required after commit |
-| 8 | Remote match | Application commits pushed; final documentation push recorded separately |
+| 7 | Worktree clean | YES — application and documentation committed; final status verified |
+| 8 | Remote match | YES — feature branch pushed; Production app SHA distinguished from documentation-only HEAD |
 | 9 | origin/main changed YES/NO | NO — 9422d4f8ee004da3c5f2b45b34ceb264a8b032a4 preserved |
 | 10 | Starting migration count | 30 applied; 0 failed |
 | 11 | Final migration count | 31 applied; 0 failed |
@@ -141,7 +141,7 @@ The Neon connector remains bound to a different project, so no write used it; th
 | 107 | Prisma generate | PASS — Prisma Client 7.8.0 |
 | 108 | Lint | 0 errors; 48 existing warnings |
 | 109 | Build | Local production webpack PASS; exact-SHA Vercel Preview and Production builds READY |
-| 110 | git diff --check | PASS before commits; rerun for documentation closeout |
+| 110 | git diff --check | PASS — application and documentation diffs |
 | 111 | Preview smoke | PASS — API/RBAC, CRUD, uploads, galleries, cart/wishlist, compatibility, schema and responsive checks |
 | 112 | Production smoke | Public/health/SEO PASS; authenticated Admin read-only smoke PENDING owner sign-in |
 | 113 | Production accessories system usable YES/NO | Deployed empty system is healthy; final authenticated Admin acceptance PENDING |
