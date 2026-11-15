@@ -52,7 +52,7 @@ export function WishlistProvider({ children }) {
     fetch('/api/cart/resolve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: resolverPayload(storedItems) }),
+      body: JSON.stringify({ purpose: 'wishlist', items: resolverPayload(storedItems) }),
       signal: controller.signal,
     }).then(async response => {
       const payload = await response.json();

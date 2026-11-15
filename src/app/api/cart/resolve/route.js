@@ -16,7 +16,7 @@ function cleanText(value, maximum, { required = false } = {}) {
 }
 
 function parseItems(body) {
-  if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => key !== 'items')) {
+  if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => !['items', 'purpose'].includes(key)) || (body.purpose !== undefined && body.purpose !== 'wishlist')) {
     throw new Error('INVALID_INPUT');
   }
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 100) throw new Error('INVALID_INPUT');
@@ -72,7 +72,7 @@ export async function POST(request) {
           priceToman: true, weightKg: true, image: true, status: true, archivedAt: true, reservedOrderId: true,
         },
       }) : [],
-      directProductLines.length ? resolvePublicProductCartLines(prisma, directProductLines) : [],
+      directProductLines.length ? resolvePublicProductCartLines(prisma, directProductLines, { forWishlist: body.purpose === 'wishlist' }) : [],
     ]);
     const normalizedProductResults = productResults.map(result => ({
           ...result,

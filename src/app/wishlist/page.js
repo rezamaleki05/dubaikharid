@@ -45,11 +45,12 @@ export default function WishlistPage() {
             <div className={styles.grid}>
               {wishlistItems.map((item) => {
                 const tomanPrice = getProductTomanPrice(item, settings);
+                const isAccessory = item.publicHref?.startsWith('/laptop-accessories/');
                 return (
                   <div 
                     key={item.key}
                     className={styles.wishItemCard}
-                    onClick={() => { if (!item.unavailable) router.push(publicProductHref(item)); }}
+                    onClick={() => { if (!item.unavailable || isAccessory) router.push(publicProductHref(item)); }}
                   >
                     <div className={`${styles.imageWrap} ${item.type === 'PRODUCT' ? styles.catalogImageWrap : ''}`}>
                       <img src={item.image || item.img} alt={item.name} className={`${styles.productImg} ${item.type === 'PRODUCT' ? styles.catalogProductImg : ''}`} />
@@ -77,7 +78,7 @@ export default function WishlistPage() {
 
                     <div className={styles.cardBody}>
                       <span className={styles.brandBadge}>{item.brand || ''}</span>
-                      <h3 className={styles.productName}>{item.name}</h3>
+                      <h3 className={styles.productName}>{isAccessory ? <Link href={publicProductHref(item)}>{item.name}</Link> : item.name}</h3>
                       <p className={styles.productSpec}>{item.spec || ''}</p>
                       {item.unavailable && <p style={{ color: '#d93025', fontSize: '12px', fontWeight: '700' }}>این کالا در حال حاضر قابل سفارش نیست.</p>}
                       
@@ -98,8 +99,8 @@ export default function WishlistPage() {
                         )}
                       </div>
 
-                      <button className={styles.cartBtn} disabled={item.unavailable}>
-                        {item.unavailable ? 'ناموجود' : 'مشاهده و انتخاب محصول'}
+                      <button className={styles.cartBtn} disabled={item.unavailable && !isAccessory}>
+                        {isAccessory ? 'مشاهده و انتخاب حالت فروش' : item.unavailable ? 'ناموجود' : 'مشاهده و انتخاب محصول'}
                       </button>
                     </div>
                   </div>

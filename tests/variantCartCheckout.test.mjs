@@ -12,6 +12,7 @@ import {
   publicVariantAxes,
   resolveProductCartLineFromData,
   resolveProductCartVariantFromData,
+  resolveProductWishlistLineFromData,
 } from '../src/lib/productCartDomain.js';
 
 const root = process.cwd();
@@ -293,4 +294,20 @@ test('Phase 2G requires no dedicated migration and preserves the Phase 2F migrat
   const migrations = readdirSync(join(root, 'prisma/migrations')).filter(name => /^\d/.test(name)).sort();
   assert.equal(migrations.includes('20260904000100_orderitem_variant_compatibility'), true);
   assert.equal(migrations.some(name => /phase.?2g/i.test(name)), false);
+});
+
+test('accessory wishlist resolves a display offer without weakening explicit cart selection or converting Toman', () => {
+  const product = { ...iranProduct, slug: 'test-battery', accessoryProfile: { categorySlug: 'battery' }, hasDiscount: false, discountPercent: 0,
+    variants: iranProduct.variants.map((v, index) => ({ ...v, priceTomanOverride: index ? '1800000' : '2500000' })) };
+  const line = { productId: product.id, quantity: 1, requestKey: 'wishlist-product' };
+  assert.throws(() => resolveProductCartLineFromData({ product, line, settings }), error => error.code === 'VARIANT_SELECTION_REQUIRED');
+  const result = resolveProductWishlistLineFromData({ product, line, settings: { ...settings, aedRate: 9999999 } });
+  assert.equal(result.available, true);
+  assert.equal(result.priceToman, '2500000');
+  assert.equal(result.pricing.finalPriceToman, '2500000');
+  assert.equal(result.priceAed, null);
+  assert.equal(result.publicHref, '/laptop-accessories/battery/test-battery');
+  const reserved = { ...product, variants: product.variants.map((v, i) => i ? v : { ...v, inventory: { stock: 2, reserved: 2 } }) };
+  assert.equal(resolveProductWishlistLineFromData({ product: reserved, line, settings }).productVariantId, reserved.variants[1].id);
+  assert.throws(() => resolveProductWishlistLineFromData({ product: iranProduct, line: { ...line, productId: iranProduct.id }, settings }), error => error.code === 'VARIANT_SELECTION_REQUIRED');
 });

@@ -4,6 +4,7 @@ import { getPricingSettings } from '@/lib/settings';
 import {
   ProductCartError,
   resolveProductCartLineFromData,
+  resolveProductWishlistLineFromData,
 } from '@/lib/productCartDomain';
 import { PUBLIC_PRODUCT_VISIBILITY } from '@/lib/publicCatalog';
 
@@ -92,7 +93,7 @@ export async function resolveAuthoritativeProductCartLines(
   });
 }
 
-export async function resolvePublicProductCartLines(client, lines) {
+export async function resolvePublicProductCartLines(client, lines, { forWishlist = false } = {}) {
   if (!lines.length) return [];
   const products = await client.product.findMany({
     where: { id: { in: [...new Set(lines.map(line => line.productId))] }, ...PUBLIC_PRODUCT_VISIBILITY },
@@ -107,7 +108,7 @@ export async function resolvePublicProductCartLines(client, lines) {
     try {
       const product = byId.get(line.productId);
       if (!product) throw new ProductCartError('محصول پیدا نشد یا قابل سفارش نیست.', 404, 'PRODUCT_UNAVAILABLE');
-      return resolveProductCartLineFromData({ product, line, settings });
+      return (forWishlist ? resolveProductWishlistLineFromData : resolveProductCartLineFromData)({ product, line, settings });
     } catch (error) {
       if (!(error instanceof ProductCartError) && !error?.code) throw error;
       return {

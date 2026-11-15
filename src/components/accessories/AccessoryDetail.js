@@ -9,6 +9,7 @@ import {
   ACCESSORY_AUTHENTICITY,
   ACCESSORY_CONDITION,
   ACCESSORY_SPEC_LABELS,
+  accessoryCoverImage,
 } from "@/lib/laptopAccessoryDomain";
 import styles from "./Accessories.module.css";
 export default function AccessoryDetail({ product: p }) {
@@ -134,6 +135,9 @@ export default function AccessoryDetail({ product: p }) {
                       id: p.id,
                       productId: p.id,
                       name: p.nameFa,
+                      priceToman: p.priceFrom,
+                      image: accessoryCoverImage(p)?.url,
+                      brand: p.brand?.faName || p.brand?.name || '',
                     })
                   }
                 >

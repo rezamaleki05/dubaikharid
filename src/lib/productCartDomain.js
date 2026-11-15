@@ -4,6 +4,7 @@ import { buildSelectedOptionsSnapshot } from './productVariantOrderItemDomain.js
 import { DEFAULT_PRODUCT_VARIANT_SIGNATURE } from './productVariantDomain.js';
 import { resolveProductVariantPriceFromData } from './productSupplyPricingDomain.js';
 import { getProductCoverImage } from './productGallery.js';
+import { chooseAccessoryOffer } from './laptopAccessoryDomain.js';
 
 const LEGACY_SIZE_CODES = new Set(['eu_size', 'clothing_size', 'shoe_size', 'size']);
 
@@ -221,5 +222,17 @@ export function resolveLoadedProductCartLines(products, lines, settings = null) 
       throw new ProductCartError('محصول پیدا نشد یا قابل سفارش نیست.', 404, 'PRODUCT_UNAVAILABLE');
     }
     return resolveProductCartLineFromData({ product, line, settings });
+  });
+}
+// A wishlist stores Product identity, while checkout still requires an explicit
+// offer. Resolve a representative offer only for accessory wishlist display.
+export function resolveProductWishlistLineFromData({ product, line, settings }) {
+  const variant = product.accessoryProfile && !line.productVariantId
+    ? chooseAccessoryOffer(product.variants)
+    : null;
+  return resolveProductCartLineFromData({
+    product,
+    line: variant ? { ...line, productVariantId: variant.id } : line,
+    settings,
   });
 }
